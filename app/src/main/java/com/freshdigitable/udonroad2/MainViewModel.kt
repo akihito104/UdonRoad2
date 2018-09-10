@@ -14,17 +14,18 @@
  * limitations under the License.
  */
 
-package com.freshdigitable.udonroad2.di
+package com.freshdigitable.udonroad2
 
-import com.freshdigitable.udonroad2.MainActivity
-import com.freshdigitable.udonroad2.MainActivityModule
-import dagger.Module
-import dagger.android.ContributesAndroidInjector
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.ViewModel
+import twitter4j.ResponseList
+import twitter4j.Status
+import javax.inject.Inject
 
-@Module
-abstract class ActivityBuilders {
-    @ContributesAndroidInjector(modules = [
-        MainActivityModule::class
-    ])
-    abstract fun contributesMainActivity(): MainActivity
+class MainViewModel @Inject constructor(
+        private val homeRepository: HomeTimelineRepository
+) : ViewModel() {
+
+    fun getTimeline(): LiveData<ResponseList<Status>> = homeRepository.getTimeline()
+
 }

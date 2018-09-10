@@ -20,11 +20,14 @@ import android.app.Application
 import com.freshdigitable.udonroad2.AppApplication
 import dagger.BindsInstance
 import dagger.Component
+import dagger.android.support.AndroidSupportInjectionModule
 import javax.inject.Singleton
 
 @Singleton
 @Component(modules = [
+    AndroidSupportInjectionModule::class,
     ActivityBuilders::class,
+    ViewModelModule::class,
     TwitterModule::class
 ])
 interface AppComponent {

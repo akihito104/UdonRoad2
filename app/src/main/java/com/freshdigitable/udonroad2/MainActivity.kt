@@ -21,16 +21,23 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.freshdigitable.udonroad2.databinding.ViewTweetListItemBinding
+import com.freshdigitable.udonroad2.di.ViewModelKey
+import dagger.Binds
+import dagger.Module
 import dagger.android.AndroidInjection
+import dagger.multibindings.IntoMap
 import twitter4j.Status
 import javax.inject.Inject
 
 class MainActivity : AppCompatActivity() {
     @Inject
-    lateinit var homeTimelineRepository: HomeTimelineRepository
+    lateinit var factory: ViewModelProvider.Factory
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
@@ -41,7 +48,8 @@ class MainActivity : AppCompatActivity() {
         listView.layoutManager = LinearLayoutManager(this)
         val adapter = Adapter()
         listView.adapter = adapter
-        homeTimelineRepository.getTimeline().observe(this, Observer { adapter.addData(it) })
+        val viewModel = ViewModelProviders.of(this, factory).get(MainViewModel::class.java)
+        viewModel.getTimeline().observe(this, Observer { adapter.addData(it) })
     }
 }
 
@@ -66,3 +74,11 @@ class Adapter : RecyclerView.Adapter<ViewHolder>() {
 }
 
 class ViewHolder(val binding: ViewTweetListItemBinding) : RecyclerView.ViewHolder(binding.root)
+
+@Module
+interface MainActivityModule {
+    @Binds
+    @IntoMap
+    @ViewModelKey(MainViewModel::class)
+    fun bindMainViewModel(viewModel: MainViewModel) : ViewModel
+}
