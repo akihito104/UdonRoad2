@@ -10,8 +10,19 @@ android {
         minSdkVersion 15
         targetSdkVersion 28
         versionCode 1
-        versionName "1.0"
+        versionName "0.0.1"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        def properties = new Properties()
+        properties.load(project.rootProject.file('local.properties').newDataInputStream())
+        def CONSUMER_KEY = properties.getProperty('consumer_key')
+        buildConfigField "String", "CONSUMER_KEY", "\"${CONSUMER_KEY}\""
+        def CONSUMER_SECRET = properties.getProperty('consumer_secret')
+        buildConfigField "String", "CONSUMER_SECRET", "\"${CONSUMER_SECRET}\""
+        def ACCESS_TOKEN = properties.getProperty('access_token')
+        buildConfigField "String", "ACCESS_TOKEN", "\"${ACCESS_TOKEN}\""
+        def ACCESS_SECRET = properties.getProperty('access_secret')
+        buildConfigField "String", "ACCESS_SECRET", "\"${ACCESS_SECRET}\""
     }
     buildTypes {
         release {
