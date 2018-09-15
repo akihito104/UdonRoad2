@@ -18,6 +18,7 @@ package com.freshdigitable.udonroad2.di
 
 import android.app.Application
 import com.freshdigitable.udonroad2.AppApplication
+import com.freshdigitable.udonroad2.DatabaseModule
 import dagger.BindsInstance
 import dagger.Component
 import dagger.android.support.AndroidSupportInjectionModule
@@ -28,7 +29,9 @@ import javax.inject.Singleton
     AndroidSupportInjectionModule::class,
     ActivityBuilders::class,
     ViewModelModule::class,
-    TwitterModule::class
+    TwitterModule::class,
+    ExecutorModule::class,
+    DatabaseModule::class
 ])
 interface AppComponent {
 

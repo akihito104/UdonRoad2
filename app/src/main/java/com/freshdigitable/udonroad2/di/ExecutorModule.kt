@@ -14,19 +14,26 @@
  * limitations under the License.
  */
 
-package com.freshdigitable.udonroad2
+package com.freshdigitable.udonroad2.di
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.ViewModel
-import androidx.paging.PagedList
-import javax.inject.Inject
+import dagger.Module
+import dagger.Provides
+import java.util.concurrent.Executor
+import java.util.concurrent.Executors
+import javax.inject.Singleton
 
-class MainViewModel @Inject constructor(
-        private val homeRepository: HomeTimelineRepository
-) : ViewModel() {
-
-    val timeline: LiveData<PagedList<Tweet>> by lazy {
-        homeRepository.timeline
-    }
-
+@Module
+class ExecutorModule {
+    @Provides
+    @Singleton
+    fun provideAppExecutor(): AppExecutor = AppExecutor()
 }
+
+class AppExecutor {
+    val discExecutor: Executor = Executors.newFixedThreadPool(1)
+
+    fun diskIO(task: () -> Unit) {
+        discExecutor.execute(task)
+    }
+}
+

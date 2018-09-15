@@ -22,7 +22,7 @@
     <data>
         <variable
             name="tweet"
-            type="twitter4j.Status"
+            type="com.freshdigitable.udonroad2.Tweet"
             />
     </data>
 

@@ -24,6 +24,8 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
+import androidx.paging.PagedListAdapter
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.freshdigitable.udonroad2.databinding.ViewTweetListItemBinding
@@ -32,7 +34,6 @@ import dagger.Binds
 import dagger.Module
 import dagger.android.AndroidInjection
 import dagger.multibindings.IntoMap
-import twitter4j.Status
 import javax.inject.Inject
 
 class MainActivity : AppCompatActivity() {
@@ -49,26 +50,24 @@ class MainActivity : AppCompatActivity() {
         val adapter = Adapter()
         listView.adapter = adapter
         val viewModel = ViewModelProviders.of(this, factory).get(MainViewModel::class.java)
-        viewModel.getTimeline().observe(this, Observer { adapter.addData(it) })
+        viewModel.timeline.observe(this, Observer { list ->
+            adapter.submitList(list)
+        })
     }
 }
 
-class Adapter : RecyclerView.Adapter<ViewHolder>() {
-    private val data: MutableList<Status> = mutableListOf()
+class Adapter : PagedListAdapter<Tweet, ViewHolder>(object: DiffUtil.ItemCallback<Tweet>() {
+    override fun areItemsTheSame(oldItem: Tweet, newItem: Tweet): Boolean = oldItem.id == newItem.id
 
-    fun addData(data: List<Status>) {
-        this.data += data
-        notifyDataSetChanged()
-    }
-
-    override fun getItemCount(): Int = data.size
+    override fun areContentsTheSame(oldItem: Tweet, newItem: Tweet): Boolean = oldItem == newItem
+}) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder =
             ViewHolder(ViewTweetListItemBinding.inflate(LayoutInflater.from(parent.context), parent, false))
 
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.binding.tweet = data[position]
+        holder.binding.tweet = getItem(position)
     }
 
 }

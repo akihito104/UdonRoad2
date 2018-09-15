@@ -16,17 +16,33 @@
 
 package com.freshdigitable.udonroad2
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.ViewModel
-import androidx.paging.PagedList
-import javax.inject.Inject
+import androidx.room.Embedded
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+import androidx.room.RoomWarnings
 
-class MainViewModel @Inject constructor(
-        private val homeRepository: HomeTimelineRepository
-) : ViewModel() {
+@Entity
+@SuppressWarnings(RoomWarnings.PRIMARY_KEY_FROM_EMBEDDED_IS_DROPPED)
+data class Tweet(
+        @PrimaryKey
+        val id: Long,
 
-    val timeline: LiveData<PagedList<Tweet>> by lazy {
-        homeRepository.timeline
-    }
+        val text: String,
 
-}
+        val retweetCount: Int,
+
+        val favoriteCount: Int,
+
+        @Embedded(prefix = "user_")
+        val user: User
+)
+
+@Entity
+data class User(
+        @PrimaryKey
+        val id: Long,
+
+        val name: String,
+
+        val screenName: String
+)
