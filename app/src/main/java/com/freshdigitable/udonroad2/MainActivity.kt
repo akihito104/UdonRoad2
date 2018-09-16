@@ -67,9 +67,16 @@ private class Adapter : PagedListAdapter<Tweet, ViewHolder>(object: DiffUtil.Ite
             ViewHolder(ViewTweetListItemBinding.inflate(LayoutInflater.from(parent.context), parent, false))
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.binding.tweet = getItem(position)
+        getItem(position)?.let { holder.binding.tweet = it }
     }
 
+    override fun getItemViewType(position: Int): Int = R.layout.view_tweet_list_item
+
+    override fun getItemId(position: Int): Long = getItem(position)?.id ?: -1
+
+    override fun setHasStableIds(hasStableIds: Boolean) {
+        super.setHasStableIds(true)
+    }
 }
 
 private class ViewHolder(val binding: ViewTweetListItemBinding) : RecyclerView.ViewHolder(binding.root)
