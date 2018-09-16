@@ -31,4 +31,9 @@ class MainViewModel @Inject constructor(
         homeRepository.timeline
     }
 
+    override fun onCleared() {
+        super.onCleared()
+        homeRepository.clear()
+    }
+
 }

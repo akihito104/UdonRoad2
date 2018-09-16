@@ -72,4 +72,8 @@ class HomeTimelineRepository @Inject constructor(
                     executor.diskIO { tweetDao.addTweets(tweets) }
                 }
     }
+
+    fun clear() {
+        executor.diskIO { tweetDao.clear() }
+    }
 }

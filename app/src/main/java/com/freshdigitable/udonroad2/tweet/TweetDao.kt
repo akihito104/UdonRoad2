@@ -29,4 +29,7 @@ abstract class TweetDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     abstract fun addTweets(tweet: List<Tweet>)
+
+    @Query("DELETE FROM Tweet")
+    abstract fun clear()
 }
