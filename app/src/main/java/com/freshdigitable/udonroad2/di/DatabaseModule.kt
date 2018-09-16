@@ -17,31 +17,22 @@
 package com.freshdigitable.udonroad2.di
 
 import android.app.Application
-import com.freshdigitable.udonroad2.AppApplication
-import dagger.BindsInstance
-import dagger.Component
-import dagger.android.support.AndroidSupportInjectionModule
+import androidx.room.Room
+import com.freshdigitable.udonroad2.AppDatabase
+import com.freshdigitable.udonroad2.tweet.TweetDao
+import dagger.Module
+import dagger.Provides
 import javax.inject.Singleton
 
-@Singleton
-@Component(modules = [
-    AndroidSupportInjectionModule::class,
-    ActivityBuilders::class,
-    ViewModelModule::class,
-    TwitterModule::class,
-    ExecutorModule::class,
-    DatabaseModule::class
-])
-interface AppComponent {
+@Module
+class DatabaseModule {
+    @Provides
+    @Singleton
+    fun provideAppDatabase(app: Application): AppDatabase =
+        Room.databaseBuilder(app, AppDatabase::class.java, "app_data")
+                .fallbackToDestructiveMigration()
+                .build()
 
-    @Component.Builder
-    interface Builder {
-
-        @BindsInstance
-        fun application(application: Application): Builder
-
-        fun build(): AppComponent
-    }
-
-    fun inject(instance: AppApplication)
+    @Provides
+    fun providesTweetDao(db: AppDatabase): TweetDao = db.tweetDao()
 }

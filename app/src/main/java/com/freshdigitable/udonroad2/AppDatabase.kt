@@ -16,12 +16,11 @@
 
 package com.freshdigitable.udonroad2
 
-import android.app.Application
-import androidx.paging.DataSource
-import androidx.room.*
-import dagger.Module
-import dagger.Provides
-import javax.inject.Singleton
+import androidx.room.Database
+import androidx.room.RoomDatabase
+import com.freshdigitable.udonroad2.tweet.Tweet
+import com.freshdigitable.udonroad2.tweet.TweetDao
+import com.freshdigitable.udonroad2.tweet.User
 
 @Database(
         entities = [
@@ -35,24 +34,3 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun tweetDao(): TweetDao
 }
 
-@Dao
-abstract class TweetDao {
-    @Query("SELECT * FROM Tweet ORDER BY id")
-    abstract fun getHomeTimeline(): DataSource.Factory<Int, Tweet>
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    abstract fun addTweets(tweet: List<Tweet>)
-}
-
-@Module
-class DatabaseModule {
-    @Provides
-    @Singleton
-    fun provideAppDatabase(app: Application): AppDatabase =
-        Room.databaseBuilder(app, AppDatabase::class.java, "app_data")
-                .fallbackToDestructiveMigration()
-                .build()
-
-    @Provides
-    fun providesTweetDao(db: AppDatabase): TweetDao = db.tweetDao()
-}

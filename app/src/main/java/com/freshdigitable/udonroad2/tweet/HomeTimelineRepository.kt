@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.freshdigitable.udonroad2
+package com.freshdigitable.udonroad2.tweet
 
 import androidx.lifecycle.LiveData
 import androidx.paging.LivePagedListBuilder

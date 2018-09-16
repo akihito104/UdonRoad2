@@ -14,35 +14,19 @@
  * limitations under the License.
  */
 
-package com.freshdigitable.udonroad2
+package com.freshdigitable.udonroad2.tweet
 
-import androidx.room.Embedded
-import androidx.room.Entity
-import androidx.room.PrimaryKey
-import androidx.room.RoomWarnings
+import androidx.paging.DataSource
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
 
-@Entity
-@SuppressWarnings(RoomWarnings.PRIMARY_KEY_FROM_EMBEDDED_IS_DROPPED)
-data class Tweet(
-        @PrimaryKey
-        val id: Long,
+@Dao
+abstract class TweetDao {
+    @Query("SELECT * FROM Tweet ORDER BY id")
+    abstract fun getHomeTimeline(): DataSource.Factory<Int, Tweet>
 
-        val text: String,
-
-        val retweetCount: Int,
-
-        val favoriteCount: Int,
-
-        @Embedded(prefix = "user_")
-        val user: User
-)
-
-@Entity
-data class User(
-        @PrimaryKey
-        val id: Long,
-
-        val name: String,
-
-        val screenName: String
-)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    abstract fun addTweets(tweet: List<Tweet>)
+}
