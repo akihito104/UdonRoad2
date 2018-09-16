@@ -30,6 +30,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.freshdigitable.udonroad2.databinding.ViewTweetListItemBinding
 import com.freshdigitable.udonroad2.di.ViewModelKey
+import com.freshdigitable.udonroad2.tweet.Tweet
 import dagger.Binds
 import dagger.Module
 import dagger.android.AndroidInjection
@@ -56,7 +57,7 @@ class MainActivity : AppCompatActivity() {
     }
 }
 
-class Adapter : PagedListAdapter<Tweet, ViewHolder>(object: DiffUtil.ItemCallback<Tweet>() {
+private class Adapter : PagedListAdapter<Tweet, ViewHolder>(object: DiffUtil.ItemCallback<Tweet>() {
     override fun areItemsTheSame(oldItem: Tweet, newItem: Tweet): Boolean = oldItem.id == newItem.id
 
     override fun areContentsTheSame(oldItem: Tweet, newItem: Tweet): Boolean = oldItem == newItem
@@ -65,14 +66,13 @@ class Adapter : PagedListAdapter<Tweet, ViewHolder>(object: DiffUtil.ItemCallbac
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder =
             ViewHolder(ViewTweetListItemBinding.inflate(LayoutInflater.from(parent.context), parent, false))
 
-
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.binding.tweet = getItem(position)
     }
 
 }
 
-class ViewHolder(val binding: ViewTweetListItemBinding) : RecyclerView.ViewHolder(binding.root)
+private class ViewHolder(val binding: ViewTweetListItemBinding) : RecyclerView.ViewHolder(binding.root)
 
 @Module
 interface MainActivityModule {
