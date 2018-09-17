@@ -20,6 +20,7 @@ import android.app.Application
 import androidx.room.Room
 import com.freshdigitable.udonroad2.AppDatabase
 import com.freshdigitable.udonroad2.tweet.TweetDao
+import com.freshdigitable.udonroad2.user.UserDao
 import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton
@@ -29,10 +30,13 @@ class DatabaseModule {
     @Provides
     @Singleton
     fun provideAppDatabase(app: Application): AppDatabase =
-        Room.databaseBuilder(app, AppDatabase::class.java, "app_data")
+        Room.inMemoryDatabaseBuilder(app, AppDatabase::class.java)
                 .fallbackToDestructiveMigration()
                 .build()
 
     @Provides
     fun providesTweetDao(db: AppDatabase): TweetDao = db.tweetDao()
+
+    @Provides
+    fun providesUserDao(db: AppDatabase): UserDao = db.userDao()
 }

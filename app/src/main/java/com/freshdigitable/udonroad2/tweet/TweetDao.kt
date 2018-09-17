@@ -21,15 +21,60 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import com.freshdigitable.udonroad2.AppDatabase
+import com.freshdigitable.udonroad2.user.User
+import twitter4j.Status
+import javax.inject.Inject
 
 @Dao
 abstract class TweetDao {
-    @Query("SELECT * FROM Tweet ORDER BY id")
+    @Query("SELECT TweetEntity.id AS id," +
+            " TweetEntity.text, " +
+            " TweetEntity.retweet_count AS retweet_count, " +
+            " TweetEntity.favorite_count AS favorite_count, " +
+            " User.id AS user_id, " +
+            " User.name AS user_name, " +
+            " User.screen_name AS user_screen_name, " +
+            " User.icon_url AS user_icon_url " +
+            "FROM TweetEntity " +
+            "INNER JOIN User ON TweetEntity.user_id = User.id " +
+            "ORDER BY id DESC")
     abstract fun getHomeTimeline(): DataSource.Factory<Int, Tweet>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    abstract fun addTweets(tweet: List<Tweet>)
+    abstract fun addTweetEntities(tweet: List<TweetEntity>)
 
-    @Query("DELETE FROM Tweet")
+    @Query("DELETE FROM TweetEntity")
     abstract fun clear()
+}
+
+class StatusDao @Inject constructor(private val db: AppDatabase) {
+    fun addStatuses(statuses: List<Status>) {
+        val userDao = db.userDao()
+        val tweetDao = db.tweetDao()
+        val users = statuses.asSequence()
+                .map { it.user }
+                .distinctBy { it.id }
+                .map { u ->
+                    User(
+                            id = u.id,
+                            name = u.name,
+                            screenName = u.screenName,
+                            iconUrl = u.profileImageURLHttps
+                    )
+                }.toList()
+        val tweet = statuses.map { s ->
+            TweetEntity(
+                    id = s.id,
+                    text = s.text,
+                    retweetCount = s.retweetCount,
+                    favoriteCount = s.favoriteCount,
+                    userId = s.user.id
+            )
+        }
+        db.runInTransaction {
+            userDao.addUsers(users)
+            tweetDao.addTweetEntities(tweet)
+        }
+    }
 }

@@ -28,6 +28,7 @@ import javax.inject.Inject
 
 class HomeTimelineRepository @Inject constructor(
         private val tweetDao: TweetDao,
+        private val statusDao: StatusDao,
         private val executor: AppExecutor,
         private val twitter: Twitter
 ) {
@@ -51,25 +52,9 @@ class HomeTimelineRepository @Inject constructor(
         Single.create<List<Status>> { source ->
             source.onSuccess(twitter.homeTimeline)
         }
-                .map { statuses ->
-                    statuses.map { s ->
-                        val user = User(
-                                id = s.user.id,
-                                name = s.user.name,
-                                screenName = s.user.screenName
-                        )
-                        Tweet(
-                                id = s.id,
-                                text = s.text,
-                                retweetCount = s.retweetCount,
-                                favoriteCount = s.favoriteCount,
-                                user = user
-                        )
-                    }
-                }
                 .subscribeOn(Schedulers.io())
                 .subscribe { tweets ->
-                    executor.diskIO { tweetDao.addTweets(tweets) }
+                    executor.diskIO { statusDao.addStatuses(tweets) }
                 }
     }
 

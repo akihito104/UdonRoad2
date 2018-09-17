@@ -14,25 +14,24 @@
  * limitations under the License.
  */
 
-package com.freshdigitable.udonroad2
+package com.freshdigitable.udonroad2.user
 
-import androidx.room.Database
-import androidx.room.RoomDatabase
-import com.freshdigitable.udonroad2.tweet.TweetDao
-import com.freshdigitable.udonroad2.tweet.TweetEntity
-import com.freshdigitable.udonroad2.user.User
-import com.freshdigitable.udonroad2.user.UserDao
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 
-@Database(
-        entities = [
-            TweetEntity::class,
-            User::class
-        ],
-        exportSchema = false,
-        version = 1
+@Entity
+data class User(
+        @PrimaryKey
+        @ColumnInfo(name = "id")
+        val id: Long,
+
+        @ColumnInfo(name = "name")
+        val name: String,
+
+        @ColumnInfo(name = "screen_name")
+        val screenName: String,
+
+        @ColumnInfo(name = "icon_url")
+        val iconUrl: String
 )
-abstract class AppDatabase : RoomDatabase() {
-    abstract fun tweetDao(): TweetDao
-
-    abstract fun userDao(): UserDao
-}

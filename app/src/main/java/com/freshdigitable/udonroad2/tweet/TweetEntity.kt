@@ -16,11 +16,21 @@
 
 package com.freshdigitable.udonroad2.tweet
 
-import androidx.room.ColumnInfo
-import androidx.room.Embedded
+import androidx.room.*
 import com.freshdigitable.udonroad2.user.User
 
-data class Tweet(
+@Entity(
+        foreignKeys = [
+            ForeignKey(
+                    entity = User::class,
+                    parentColumns = ["id"],
+                    childColumns = ["user_id"]
+            )
+        ],
+        indices = [Index("user_id")]
+)
+class TweetEntity(
+        @PrimaryKey
         @ColumnInfo(name = "id")
         val id: Long,
 
@@ -33,6 +43,6 @@ data class Tweet(
         @ColumnInfo(name = "favorite_count")
         val favoriteCount: Int,
 
-        @Embedded(prefix = "user_")
-        val user: User
+        @ColumnInfo(name = "user_id")
+        val userId: Long
 )
