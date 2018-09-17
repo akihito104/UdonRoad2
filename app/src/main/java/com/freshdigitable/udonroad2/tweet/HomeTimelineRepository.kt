@@ -18,6 +18,7 @@ package com.freshdigitable.udonroad2.tweet
 
 import android.util.Log
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
 import com.freshdigitable.udonroad2.di.AppExecutor
@@ -39,6 +40,7 @@ class HomeTimelineRepository @Inject constructor(
         val config = PagedList.Config.Builder()
                 .setEnablePlaceholders(false)
                 .setPageSize(20)
+                .setInitialLoadSizeHint(100)
                 .build()
         LivePagedListBuilder(tweetDao.getHomeTimeline(), config)
                 .setFetchExecutor(executor.discExecutor)
@@ -50,15 +52,32 @@ class HomeTimelineRepository @Inject constructor(
 
                     override fun onItemAtEndLoaded(itemAtEnd: Tweet) {
                         super.onItemAtEndLoaded(itemAtEnd)
-                        val paging = Paging(1, 20, 1, itemAtEnd.id - 1)
+                        val paging = Paging(1, 100, 1, itemAtEnd.id - 1)
                         fetchHomeTimeline(Callable { twitter.getHomeTimeline(paging) })
                     }
                 })
                 .build()
     }
 
+    fun loadAtFront() {
+        if (timeline.value?.isEmpty() != false) {
+            fetchHomeTimeline(Callable { twitter.homeTimeline })
+        } else {
+            timeline.value?.get(0)?.let { tweet ->
+                val paging = Paging(1, 100, tweet.id + 1)
+                fetchHomeTimeline(Callable { twitter.getHomeTimeline(paging) })
+            }
+        }
+    }
+
+    private val loadingState = MutableLiveData<Boolean>()
+
+    val loading : LiveData<Boolean>
+        get() : LiveData<Boolean> = loadingState
+
     private fun fetchHomeTimeline(callable: Callable<List<Status>>) {
         Single.create<List<Status>> { source ->
+            loadingState.postValue(true)
             try {
                 val ret = callable.call()
                 source.onSuccess(ret)
@@ -69,8 +88,10 @@ class HomeTimelineRepository @Inject constructor(
                 .subscribeOn(Schedulers.io())
                 .subscribe({ tweets ->
                     executor.diskIO { statusDao.addStatuses(tweets) }
+                    loadingState.postValue(false)
                 }, { t ->
                     Log.e("TAG", "fetchHomeTimeline: ", t)
+                    loadingState.postValue(false)
                 })
     }
 

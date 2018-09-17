@@ -20,6 +20,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
+import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -28,6 +29,7 @@ import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.freshdigitable.udonroad2.databinding.ActivityMainBinding
 import com.freshdigitable.udonroad2.databinding.ViewTweetListItemBinding
 import com.freshdigitable.udonroad2.di.ViewModelKey
 import com.freshdigitable.udonroad2.tweet.Tweet
@@ -44,13 +46,15 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        val binding = DataBindingUtil.setContentView<ActivityMainBinding>(this, R.layout.activity_main)
+        val viewModel = ViewModelProviders.of(this, factory).get(MainViewModel::class.java)
+        binding.viewModel = viewModel
+        binding.setLifecycleOwner(this)
 
         val listView = findViewById<RecyclerView>(R.id.main_list)
         listView.layoutManager = LinearLayoutManager(this)
         val adapter = Adapter()
         listView.adapter = adapter
-        val viewModel = ViewModelProviders.of(this, factory).get(MainViewModel::class.java)
         viewModel.timeline.observe(this, Observer { list ->
             adapter.submitList(list)
         })

@@ -31,9 +31,16 @@ class MainViewModel @Inject constructor(
         homeRepository.timeline
     }
 
+    val loading: LiveData<Boolean> by lazy {
+        homeRepository.loading
+    }
+
+    fun onRefresh() {
+        homeRepository.loadAtFront()
+    }
+
     override fun onCleared() {
         super.onCleared()
         homeRepository.clear()
     }
-
 }
