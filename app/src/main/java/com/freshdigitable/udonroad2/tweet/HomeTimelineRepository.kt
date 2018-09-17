@@ -16,14 +16,17 @@
 
 package com.freshdigitable.udonroad2.tweet
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
 import com.freshdigitable.udonroad2.di.AppExecutor
 import io.reactivex.Single
 import io.reactivex.schedulers.Schedulers
+import twitter4j.Paging
 import twitter4j.Status
 import twitter4j.Twitter
+import java.util.concurrent.Callable
 import javax.inject.Inject
 
 class HomeTimelineRepository @Inject constructor(
@@ -42,20 +45,33 @@ class HomeTimelineRepository @Inject constructor(
                 .setBoundaryCallback(object: PagedList.BoundaryCallback<Tweet>() {
                     override fun onZeroItemsLoaded() {
                         super.onZeroItemsLoaded()
-                        fetchHomeTimeline()
+                        fetchHomeTimeline(Callable { twitter.homeTimeline })
+                    }
+
+                    override fun onItemAtEndLoaded(itemAtEnd: Tweet) {
+                        super.onItemAtEndLoaded(itemAtEnd)
+                        val paging = Paging(1, 20, 1, itemAtEnd.id - 1)
+                        fetchHomeTimeline(Callable { twitter.getHomeTimeline(paging) })
                     }
                 })
                 .build()
     }
 
-    private fun fetchHomeTimeline() {
+    private fun fetchHomeTimeline(callable: Callable<List<Status>>) {
         Single.create<List<Status>> { source ->
-            source.onSuccess(twitter.homeTimeline)
+            try {
+                val ret = callable.call()
+                source.onSuccess(ret)
+            } catch (e: Exception) {
+                source.onError(e)
+            }
         }
                 .subscribeOn(Schedulers.io())
-                .subscribe { tweets ->
+                .subscribe({ tweets ->
                     executor.diskIO { statusDao.addStatuses(tweets) }
-                }
+                }, { t ->
+                    Log.e("TAG", "fetchHomeTimeline: ", t)
+                })
     }
 
     fun clear() {
