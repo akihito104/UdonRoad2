@@ -51,7 +51,7 @@ class MainActivity : AppCompatActivity() {
         binding.viewModel = viewModel
         binding.setLifecycleOwner(this)
 
-        val listView = findViewById<RecyclerView>(R.id.main_list)
+        val listView = binding.mainList
         listView.layoutManager = LinearLayoutManager(this)
         val adapter = Adapter()
         listView.adapter = adapter
