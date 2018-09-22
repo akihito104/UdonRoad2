@@ -17,17 +17,14 @@
 package com.freshdigitable.udonroad2.tweet
 
 import androidx.paging.DataSource
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.Query
+import androidx.room.*
 import com.freshdigitable.udonroad2.AppDatabase
-import com.freshdigitable.udonroad2.user.User
-import twitter4j.Status
-import javax.inject.Inject
 
 @Dao
-abstract class TweetDao {
+abstract class TweetDao(
+        private val db: AppDatabase
+) {
+
     @Query("SELECT TweetEntity.id AS id," +
             " TweetEntity.text, " +
             " TweetEntity.retweet_count AS retweet_count, " +
@@ -41,40 +38,21 @@ abstract class TweetDao {
             "ORDER BY id DESC")
     abstract fun getHomeTimeline(): DataSource.Factory<Int, Tweet>
 
+    @Transaction
+    open fun addTweets(tweet: List<TweetEntity>) {
+        val userDao = db.userDao()
+        userDao.addUsers(
+                tweet.asSequence()
+                        .map { it.user }
+                        .filterNotNull()
+                        .distinctBy { it.id }
+                        .toList())
+        addTweetEntitiesInternal(tweet)
+    }
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    abstract fun addTweetEntities(tweet: List<TweetEntity>)
+    abstract fun addTweetEntitiesInternal(tweet: List<TweetEntity>)
 
     @Query("DELETE FROM TweetEntity")
     abstract fun clear()
-}
-
-class StatusDao @Inject constructor(private val db: AppDatabase) {
-    fun addStatuses(statuses: List<Status>) {
-        val userDao = db.userDao()
-        val tweetDao = db.tweetDao()
-        val users = statuses.asSequence()
-                .map { it.user }
-                .distinctBy { it.id }
-                .map { u ->
-                    User(
-                            id = u.id,
-                            name = u.name,
-                            screenName = u.screenName,
-                            iconUrl = u.profileImageURLHttps
-                    )
-                }.toList()
-        val tweet = statuses.map { s ->
-            TweetEntity(
-                    id = s.id,
-                    text = s.text,
-                    retweetCount = s.retweetCount,
-                    favoriteCount = s.favoriteCount,
-                    userId = s.user.id
-            )
-        }
-        db.runInTransaction {
-            userDao.addUsers(users)
-            tweetDao.addTweetEntities(tweet)
-        }
-    }
 }

@@ -22,6 +22,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
 import com.freshdigitable.udonroad2.di.AppExecutor
+import com.freshdigitable.udonroad2.user.User
 import io.reactivex.Single
 import io.reactivex.schedulers.Schedulers
 import twitter4j.Paging
@@ -32,7 +33,6 @@ import javax.inject.Inject
 
 class HomeTimelineRepository @Inject constructor(
         private val tweetDao: TweetDao,
-        private val statusDao: StatusDao,
         private val executor: AppExecutor,
         private val twitter: Twitter
 ) {
@@ -85,9 +85,27 @@ class HomeTimelineRepository @Inject constructor(
                 source.onError(e)
             }
         }
+                .map { list ->
+                    list.map { status ->
+                        TweetEntity(
+                                id = status.id,
+                                text = status.text,
+                                retweetCount = status.retweetCount,
+                                favoriteCount = status.favoriteCount,
+                                userId = status.user.id
+                        ).also {
+                            it.user = User(
+                                    id = status.user.id,
+                                    name = status.user.name,
+                                    screenName = status.user.screenName,
+                                    iconUrl = status.user.profileImageURLHttps
+                            )
+                        }
+                    }
+                }
                 .subscribeOn(Schedulers.io())
                 .subscribe({ tweets ->
-                    executor.diskIO { statusDao.addStatuses(tweets) }
+                    executor.diskIO { tweetDao.addTweets(tweets) }
                     loadingState.postValue(false)
                 }, { t ->
                     Log.e("TAG", "fetchHomeTimeline: ", t)

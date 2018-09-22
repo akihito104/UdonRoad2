@@ -45,4 +45,7 @@ class TweetEntity(
 
         @ColumnInfo(name = "user_id")
         val userId: Long
-)
+) {
+    @Ignore
+    var user: User? = null
+}
