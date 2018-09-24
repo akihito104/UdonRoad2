@@ -105,6 +105,7 @@ class HomeTimelineRepository @Inject constructor(
 
 class TweetEntityConverter {
     companion object {
+        @JvmStatic
         fun toEntity(status: Status): TweetEntity {
             return TweetEntity(
                     id = status.id,
@@ -122,7 +123,8 @@ class TweetEntityConverter {
                     inReplyToTweetId = status.inReplyToStatusId,
                     isRetweeted = status.isRetweeted,
                     isFavorited = status.isFavorited,
-                    possiblySensitive = status.isPossiblySensitive
+                    possiblySensitive = status.isPossiblySensitive,
+                    source = status.source
             )
         }
     }

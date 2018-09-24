@@ -79,7 +79,10 @@ class TweetEntity(
         val isFavorited: Boolean,
 
         @ColumnInfo(name = "possibly_sensitive")
-        val possiblySensitive: Boolean
+        val possiblySensitive: Boolean,
+
+        @ColumnInfo(name = "source")
+        val source: String
 ) {
     @Ignore constructor(
             id: Long,
@@ -92,11 +95,12 @@ class TweetEntity(
             inReplyToTweetId: Long?,
             isRetweeted: Boolean,
             isFavorited: Boolean,
-            possiblySensitive: Boolean
+            possiblySensitive: Boolean,
+            source: String
     ) : this(
             id, text, retweetCount, favoriteCount, user.id,
             retweetedTweet?.id, quotedTweet?.id, inReplyToTweetId, isRetweeted, isFavorited,
-            possiblySensitive
+            possiblySensitive, source
     ) {
         this.user = user
         this.retweetedTweet = retweetedTweet

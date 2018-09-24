@@ -14,28 +14,20 @@
  * limitations under the License.
  */
 
-package com.freshdigitable.udonroad2.tweet
+package com.freshdigitable.udonroad2.user
 
 import androidx.room.ColumnInfo
-import androidx.room.Embedded
-import com.freshdigitable.udonroad2.user.User
 
-data class Tweet(
+data class User(
         @ColumnInfo(name = "id")
         val id: Long,
 
-        @ColumnInfo(name = "text")
-        val text: String,
+        @ColumnInfo(name = "name")
+        val name: String,
 
-        @ColumnInfo(name = "retweet_count")
-        val retweetCount: Int,
+        @ColumnInfo(name = "screen_name")
+        val screenName: String,
 
-        @ColumnInfo(name = "favorite_count")
-        val favoriteCount: Int,
-
-        @Embedded(prefix = "user_")
-        val user: User,
-
-        @ColumnInfo(name = "source")
-        val source: String
+        @ColumnInfo(name = "icon_url")
+        val iconUrl: String
 )

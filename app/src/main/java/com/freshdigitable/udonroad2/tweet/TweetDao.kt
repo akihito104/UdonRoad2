@@ -29,6 +29,7 @@ abstract class TweetDao(
             " TweetEntity.text, " +
             " TweetEntity.retweet_count AS retweet_count, " +
             " TweetEntity.favorite_count AS favorite_count, " +
+            " TweetEntity.source AS source, " +
             " UserEntity.id AS user_id, " +
             " UserEntity.name AS user_name, " +
             " UserEntity.screen_name AS user_screen_name, " +
