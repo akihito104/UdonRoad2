@@ -20,13 +20,15 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import com.freshdigitable.udonroad2.tweet.TweetDao
 import com.freshdigitable.udonroad2.tweet.TweetEntity
-import com.freshdigitable.udonroad2.user.User
+import com.freshdigitable.udonroad2.tweet.TweetListEntity
+import com.freshdigitable.udonroad2.user.UserEntity
 import com.freshdigitable.udonroad2.user.UserDao
 
 @Database(
         entities = [
             TweetEntity::class,
-            User::class
+            TweetListEntity::class,
+            UserEntity::class
         ],
         exportSchema = false,
         version = 1

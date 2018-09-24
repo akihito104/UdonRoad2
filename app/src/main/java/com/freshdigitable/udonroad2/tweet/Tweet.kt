@@ -18,7 +18,7 @@ package com.freshdigitable.udonroad2.tweet
 
 import androidx.room.ColumnInfo
 import androidx.room.Embedded
-import com.freshdigitable.udonroad2.user.User
+import com.freshdigitable.udonroad2.user.UserEntity
 
 data class Tweet(
         @ColumnInfo(name = "id")
@@ -34,5 +34,5 @@ data class Tweet(
         val favoriteCount: Int,
 
         @Embedded(prefix = "user_")
-        val user: User
+        val user: UserEntity
 )

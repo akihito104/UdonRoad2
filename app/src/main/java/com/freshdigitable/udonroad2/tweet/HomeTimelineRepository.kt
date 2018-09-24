@@ -22,7 +22,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
 import com.freshdigitable.udonroad2.di.AppExecutor
-import com.freshdigitable.udonroad2.user.User
+import com.freshdigitable.udonroad2.user.UserEntity
 import io.reactivex.Single
 import io.reactivex.schedulers.Schedulers
 import twitter4j.Paging
@@ -86,22 +86,7 @@ class HomeTimelineRepository @Inject constructor(
             }
         }
                 .map { list ->
-                    list.map { status ->
-                        TweetEntity(
-                                id = status.id,
-                                text = status.text,
-                                retweetCount = status.retweetCount,
-                                favoriteCount = status.favoriteCount,
-                                userId = status.user.id
-                        ).also {
-                            it.user = User(
-                                    id = status.user.id,
-                                    name = status.user.name,
-                                    screenName = status.user.screenName,
-                                    iconUrl = status.user.profileImageURLHttps
-                            )
-                        }
-                    }
+                    list.map { TweetEntityConverter.toEntity(it) }
                 }
                 .subscribeOn(Schedulers.io())
                 .subscribe({ tweets ->
@@ -115,5 +100,30 @@ class HomeTimelineRepository @Inject constructor(
 
     fun clear() {
         executor.diskIO { tweetDao.clear() }
+    }
+}
+
+class TweetEntityConverter {
+    companion object {
+        fun toEntity(status: Status): TweetEntity {
+            return TweetEntity(
+                    id = status.id,
+                    text = status.text,
+                    retweetCount = status.retweetCount,
+                    favoriteCount = status.favoriteCount,
+                    user = UserEntity(
+                            id = status.user.id,
+                            name = status.user.name,
+                            screenName = status.user.screenName,
+                            iconUrl = status.user.profileImageURLHttps
+                    ),
+                    retweetedTweet = status.retweetedStatus?.let { toEntity(it) },
+                    quotedTweet = status.quotedStatus?.let { toEntity(it) },
+                    inReplyToTweetId = status.inReplyToStatusId,
+                    isRetweeted = status.isRetweeted,
+                    isFavorited = status.isFavorited,
+                    possiblySensitive = status.isPossiblySensitive
+            )
+        }
     }
 }

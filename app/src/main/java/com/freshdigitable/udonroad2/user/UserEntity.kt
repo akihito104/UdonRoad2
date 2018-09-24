@@ -21,7 +21,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 @Entity
-data class User(
+data class UserEntity(
         @PrimaryKey
         @ColumnInfo(name = "id")
         val id: Long,

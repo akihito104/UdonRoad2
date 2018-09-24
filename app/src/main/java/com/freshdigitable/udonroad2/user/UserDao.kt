@@ -23,5 +23,5 @@ import androidx.room.OnConflictStrategy
 @Dao
 abstract class UserDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    abstract fun addUsers(users: List<User>)
+    abstract fun addUsers(users: List<UserEntity>)
 }
