@@ -41,7 +41,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:onRefreshListener="@{viewModel::onRefresh}"
-            app:refreshing="@{viewModel.loading}"
+            app:refreshing="@{safeUnbox(viewModel.loading)}"
             >
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/main_list"
