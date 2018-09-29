@@ -25,6 +25,7 @@ import com.freshdigitable.udonroad2.di.AppExecutor
 import com.freshdigitable.udonroad2.user.UserEntity
 import io.reactivex.Single
 import io.reactivex.schedulers.Schedulers
+import org.threeten.bp.Instant
 import twitter4j.Paging
 import twitter4j.Status
 import twitter4j.Twitter
@@ -124,7 +125,8 @@ class TweetEntityConverter {
                     isRetweeted = status.isRetweeted,
                     isFavorited = status.isFavorited,
                     possiblySensitive = status.isPossiblySensitive,
-                    source = status.source
+                    source = status.source,
+                    createdAt = Instant.ofEpochMilli(status.createdAt.time)
             )
         }
     }

@@ -19,6 +19,7 @@ package com.freshdigitable.udonroad2.tweet
 import androidx.room.ColumnInfo
 import androidx.room.Embedded
 import com.freshdigitable.udonroad2.user.User
+import org.threeten.bp.Instant
 
 data class Tweet(
         @ColumnInfo(name = "id")
@@ -37,5 +38,8 @@ data class Tweet(
         val user: User,
 
         @ColumnInfo(name = "source")
-        val source: String
+        val source: String,
+
+        @ColumnInfo(name = "created_at")
+        val createdAt: Instant
 )

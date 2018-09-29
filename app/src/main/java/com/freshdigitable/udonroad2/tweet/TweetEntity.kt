@@ -18,6 +18,7 @@ package com.freshdigitable.udonroad2.tweet
 
 import androidx.room.*
 import com.freshdigitable.udonroad2.user.UserEntity
+import org.threeten.bp.Instant
 
 @Entity(
         foreignKeys = [
@@ -82,7 +83,10 @@ class TweetEntity(
         val possiblySensitive: Boolean,
 
         @ColumnInfo(name = "source")
-        val source: String
+        val source: String,
+
+        @ColumnInfo(name = "created_at")
+        val createdAt: Instant
 ) {
     @Ignore constructor(
             id: Long,
@@ -96,11 +100,12 @@ class TweetEntity(
             isRetweeted: Boolean,
             isFavorited: Boolean,
             possiblySensitive: Boolean,
-            source: String
+            source: String,
+            createdAt: Instant
     ) : this(
             id, text, retweetCount, favoriteCount, user.id,
             retweetedTweet?.id, quotedTweet?.id, inReplyToTweetId, isRetweeted, isFavorited,
-            possiblySensitive, source
+            possiblySensitive, source, createdAt
     ) {
         this.user = user
         this.retweetedTweet = retweetedTweet

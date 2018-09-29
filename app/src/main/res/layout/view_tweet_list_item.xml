@@ -33,15 +33,33 @@
         >
         <TextView
             android:id="@+id/tweetItem_names"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginRight="8dp"
+            android:layout_marginEnd="8dp"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toTopOf="@id/tweetItem_text"
             app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/tweetItem_createdAt"
+            app:layout_constraintHorizontal_bias="0"
             app:bindNames="@{tweet.user}"
             android:lines="1"
             android:ellipsize="end"
             tools:text="NAME @screen_name"
+            />
+        <TextView
+            android:id="@+id/tweetItem_createdAt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toTopOf="@id/tweetItem_names"
+            app:layout_constraintBottom_toBottomOf="@id/tweetItem_names"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="1"
+            app:layout_constraintVertical_bias="0"
+            app:bindCreatedAtRelative="@{tweet.createdAt}"
+            android:textSize="12sp"
+            tools:text="now"
             />
         <TextView
             android:id="@+id/tweetItem_text"

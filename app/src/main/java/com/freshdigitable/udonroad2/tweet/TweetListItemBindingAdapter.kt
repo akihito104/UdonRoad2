@@ -24,6 +24,10 @@ import android.widget.TextView
 import androidx.databinding.BindingAdapter
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.user.User
+import org.threeten.bp.Duration
+import org.threeten.bp.Instant
+import org.threeten.bp.LocalDate
+import org.threeten.bp.format.DateTimeFormatter
 import java.util.regex.Pattern
 
 private val SOURCE_PATTERN = Pattern.compile("<a href=\".*\".*>(.*)</a>")
@@ -54,4 +58,30 @@ fun bindNames(v: TextView, user: User?) {
         append(user.screenName)
     }
     v.text = ssb
+}
+
+@BindingAdapter("bindCreatedAtRelative")
+fun bindCreatedAtRelative(v: TextView, createdAt: Instant?) {
+    if (createdAt == null) {
+        return
+    }
+    val delta = Duration.between(createdAt, Instant.now())
+    v.text = when {
+        delta.seconds <= 1 -> v.context.getString(R.string.created_now)
+        delta.seconds < 60 -> v.context.getString(R.string.created_seconds_ago, delta.seconds)
+
+        delta.toMinutes() < 45 -> delta.toMinutes().toInt().let { min ->
+            v.context.resources.getQuantityString(R.plurals.created_minutes_ago, min, min)
+        }
+        delta.toMinutes() < 105 ->
+            v.context.resources.getQuantityString(R.plurals.created_hours_ago, 1, 1)
+
+        delta.toHours() < 24 -> delta.toHours().toInt().let { hours ->
+            v.context.resources.getQuantityString(R.plurals.created_hours_ago, hours, hours)
+        }
+        delta.toDays() < 30 ->
+            LocalDate.from(createdAt).format(DateTimeFormatter.ofPattern(v.context.getString(R.string.created_date)))
+        else ->
+            LocalDate.from(createdAt).format(DateTimeFormatter.ofPattern(v.context.getString(R.string.created_year_date)))
+    }
 }
