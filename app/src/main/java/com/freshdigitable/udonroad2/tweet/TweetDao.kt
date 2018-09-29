@@ -25,40 +25,42 @@ abstract class TweetDao(
         private val db: AppDatabase
 ) {
 
-    @Query("SELECT TweetListEntity.item_id AS id," +
-            " TweetEntity.text, " +
-            " TweetEntity.retweet_count AS retweet_count, " +
-            " TweetEntity.favorite_count AS favorite_count, " +
-            " TweetEntity.source AS source, " +
-            " UserEntity.id AS user_id, " +
-            " UserEntity.name AS user_name, " +
-            " UserEntity.screen_name AS user_screen_name, " +
-            " UserEntity.icon_url AS user_icon_url " +
-            "FROM TweetListEntity " +
-            "INNER JOIN TweetEntity ON TweetEntity.id = TweetListEntity.item_id " +
-            "INNER JOIN UserEntity ON TweetEntity.user_id = UserEntity.id " +
-            "WHERE TweetListEntity.owner = 'home' "+
-            "ORDER BY id DESC")
+    @Query("""
+        SELECT TweetListEntity.item_id AS id,
+         TweetEntity.text,
+         TweetEntity.created_at,
+         TweetEntity.retweet_count AS retweet_count,
+         TweetEntity.favorite_count AS favorite_count,
+         TweetEntity.source AS source,
+         UserEntity.id AS user_id,
+         UserEntity.name AS user_name,
+         UserEntity.screen_name AS user_screen_name,
+         UserEntity.icon_url AS user_icon_url
+        FROM TweetListEntity
+        INNER JOIN TweetEntity ON TweetEntity.id = TweetListEntity.item_id
+        INNER JOIN UserEntity ON TweetEntity.user_id = UserEntity.id
+        WHERE TweetListEntity.owner = 'home'
+        ORDER BY id DESC""")
     abstract fun getHomeTimeline(): DataSource.Factory<Int, Tweet>
 
     @Transaction
     open fun addTweets(tweet: List<TweetEntity>) {
-        addTweetListEntities(
-                tweet.map{ TweetListEntity(itemId = it.id, order = it.id, owner = "home") })
-        val userDao = db.userDao()
         val tweetEntities = tweet.asSequence()
                 .map { arrayOf(it, it.retweetedTweet, it.retweetedTweet?.quotedTweet, it.quotedTweet) }
                 .flatMap { it.asSequence() }
                 .filterNotNull()
                 .distinctBy { it.id }
                 .toList()
-        addTweetEntitiesInternal(tweetEntities)
+        val userDao = db.userDao()
         userDao.addUsers(
                 tweetEntities.asSequence()
                         .map { it.user }
                         .filterNotNull()
                         .distinctBy { it.id }
                         .toList())
+        addTweetEntitiesInternal(tweetEntities)
+        addTweetListEntities(
+                tweet.map{ TweetListEntity(itemId = it.id, order = it.id, owner = "home") })
     }
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
