@@ -32,7 +32,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.freshdigitable.udonroad2.databinding.ActivityMainBinding
 import com.freshdigitable.udonroad2.databinding.ViewTweetListItemBinding
 import com.freshdigitable.udonroad2.di.ViewModelKey
-import com.freshdigitable.udonroad2.tweet.Tweet
+import com.freshdigitable.udonroad2.tweet.TweetListItem
 import dagger.Binds
 import dagger.Module
 import dagger.android.AndroidInjection
@@ -61,10 +61,10 @@ class MainActivity : AppCompatActivity() {
     }
 }
 
-private class Adapter : PagedListAdapter<Tweet, ViewHolder>(object: DiffUtil.ItemCallback<Tweet>() {
-    override fun areItemsTheSame(oldItem: Tweet, newItem: Tweet): Boolean = oldItem.id == newItem.id
+private class Adapter : PagedListAdapter<TweetListItem, ViewHolder>(object: DiffUtil.ItemCallback<TweetListItem>() {
+    override fun areItemsTheSame(oldItem: TweetListItem, newItem: TweetListItem): Boolean = oldItem.originalId == newItem.originalId
 
-    override fun areContentsTheSame(oldItem: Tweet, newItem: Tweet): Boolean = oldItem == newItem
+    override fun areContentsTheSame(oldItem: TweetListItem, newItem: TweetListItem): Boolean = oldItem == newItem
 }) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder =
@@ -76,7 +76,7 @@ private class Adapter : PagedListAdapter<Tweet, ViewHolder>(object: DiffUtil.Ite
 
     override fun getItemViewType(position: Int): Int = R.layout.view_tweet_list_item
 
-    override fun getItemId(position: Int): Long = getItem(position)?.id ?: -1
+    override fun getItemId(position: Int): Long = getItem(position)?.originalId ?: -1
 
     override fun setHasStableIds(hasStableIds: Boolean) {
         super.setHasStableIds(true)

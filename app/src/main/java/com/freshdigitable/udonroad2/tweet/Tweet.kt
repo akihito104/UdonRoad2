@@ -43,3 +43,16 @@ data class Tweet(
         @ColumnInfo(name = "created_at")
         val createdAt: Instant
 )
+
+data class TweetListItem(
+        @ColumnInfo(name = "original_id")
+        val originalId: Long,
+        @Embedded(prefix = "original_user_")
+        val originalUser: User,
+
+        @Embedded
+        val body: Tweet,
+
+        @Embedded(prefix = "qt_")
+        val quoted: Tweet?
+)

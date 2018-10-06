@@ -33,18 +33,11 @@ import org.threeten.bp.Instant
                     parentColumns = ["id"],
                     childColumns = ["retweeted_tweet_id"],
                     deferred = true
-            ),
-            ForeignKey(
-                    entity = TweetEntity::class,
-                    parentColumns = ["id"],
-                    childColumns = ["quoted_tweet_id"],
-                    deferred = true
             )
         ],
         indices = [
             Index("user_id"),
-            Index("retweeted_tweet_id"),
-            Index("quoted_tweet_id")
+            Index("retweeted_tweet_id")
         ]
 )
 class TweetEntity(
@@ -95,6 +88,7 @@ class TweetEntity(
             favoriteCount: Int,
             user: UserEntity,
             retweetedTweet: TweetEntity?,
+            quotedTweetId: Long?,
             quotedTweet: TweetEntity?,
             inReplyToTweetId: Long?,
             isRetweeted: Boolean,
@@ -104,7 +98,7 @@ class TweetEntity(
             createdAt: Instant
     ) : this(
             id, text, retweetCount, favoriteCount, user.id,
-            retweetedTweet?.id, quotedTweet?.id, inReplyToTweetId, isRetweeted, isFavorited,
+            retweetedTweet?.id, quotedTweetId, inReplyToTweetId, isRetweeted, isFavorited,
             possiblySensitive, source, createdAt
     ) {
         this.user = user
@@ -120,6 +114,4 @@ class TweetEntity(
 
     @Ignore
     var quotedTweet: TweetEntity? = null
-
-    fun isRetweet(): Boolean = retweetedTweetId != null
 }

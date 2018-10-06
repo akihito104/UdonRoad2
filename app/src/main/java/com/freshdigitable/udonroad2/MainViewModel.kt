@@ -20,14 +20,14 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.paging.PagedList
 import com.freshdigitable.udonroad2.tweet.HomeTimelineRepository
-import com.freshdigitable.udonroad2.tweet.Tweet
+import com.freshdigitable.udonroad2.tweet.TweetListItem
 import javax.inject.Inject
 
 class MainViewModel @Inject constructor(
         private val homeRepository: HomeTimelineRepository
 ) : ViewModel() {
 
-    val timeline: LiveData<PagedList<Tweet>> by lazy {
+    val timeline: LiveData<PagedList<TweetListItem>> by lazy {
         homeRepository.timeline
     }
 

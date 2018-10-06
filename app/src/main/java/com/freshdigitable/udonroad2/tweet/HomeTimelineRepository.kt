@@ -37,23 +37,23 @@ class HomeTimelineRepository @Inject constructor(
         private val executor: AppExecutor,
         private val twitter: Twitter
 ) {
-    val timeline: LiveData<PagedList<Tweet>> by lazy {
+    val timeline: LiveData<PagedList<TweetListItem>> by lazy {
         val config = PagedList.Config.Builder()
                 .setEnablePlaceholders(false)
                 .setPageSize(20)
                 .setInitialLoadSizeHint(100)
                 .build()
-        LivePagedListBuilder(tweetDao.getHomeTimeline(), config)
+        LivePagedListBuilder(tweetDao.getHomeTimeline("home"), config)
                 .setFetchExecutor(executor.discExecutor)
-                .setBoundaryCallback(object: PagedList.BoundaryCallback<Tweet>() {
+                .setBoundaryCallback(object: PagedList.BoundaryCallback<TweetListItem>() {
                     override fun onZeroItemsLoaded() {
                         super.onZeroItemsLoaded()
                         fetchHomeTimeline(Callable { twitter.homeTimeline })
                     }
 
-                    override fun onItemAtEndLoaded(itemAtEnd: Tweet) {
+                    override fun onItemAtEndLoaded(itemAtEnd: TweetListItem) {
                         super.onItemAtEndLoaded(itemAtEnd)
-                        val paging = Paging(1, 100, 1, itemAtEnd.id - 1)
+                        val paging = Paging(1, 50, 1, itemAtEnd.originalId - 1)
                         fetchHomeTimeline(Callable { twitter.getHomeTimeline(paging) })
                     }
                 })
@@ -65,7 +65,7 @@ class HomeTimelineRepository @Inject constructor(
             fetchHomeTimeline(Callable { twitter.homeTimeline })
         } else {
             timeline.value?.get(0)?.let { tweet ->
-                val paging = Paging(1, 100, tweet.id + 1)
+                val paging = Paging(1, 50, tweet.originalId + 1)
                 fetchHomeTimeline(Callable { twitter.getHomeTimeline(paging) })
             }
         }
@@ -120,6 +120,7 @@ class TweetEntityConverter {
                             iconUrl = status.user.profileImageURLHttps
                     ),
                     retweetedTweet = status.retweetedStatus?.let { toEntity(it) },
+                    quotedTweetId = status.quotedStatusId,
                     quotedTweet = status.quotedStatus?.let { toEntity(it) },
                     inReplyToTweetId = status.inReplyToStatusId,
                     isRetweeted = status.isRetweeted,
