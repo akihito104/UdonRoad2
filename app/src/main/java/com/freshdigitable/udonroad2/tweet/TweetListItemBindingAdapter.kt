@@ -26,7 +26,8 @@ import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.user.User
 import org.threeten.bp.Duration
 import org.threeten.bp.Instant
-import org.threeten.bp.LocalDate
+import org.threeten.bp.LocalDateTime
+import org.threeten.bp.ZoneId
 import org.threeten.bp.format.DateTimeFormatter
 import java.util.regex.Pattern
 
@@ -80,8 +81,10 @@ fun bindCreatedAtRelative(v: TextView, createdAt: Instant?) {
             v.context.resources.getQuantityString(R.plurals.created_hours_ago, hours, hours)
         }
         delta.toDays() < 30 ->
-            LocalDate.from(createdAt).format(DateTimeFormatter.ofPattern(v.context.getString(R.string.created_date)))
+            DateTimeFormatter.ofPattern(v.context.getString(R.string.created_date))
+                    .format(LocalDateTime.ofInstant(createdAt, ZoneId.systemDefault()))
         else ->
-            LocalDate.from(createdAt).format(DateTimeFormatter.ofPattern(v.context.getString(R.string.created_year_date)))
+            DateTimeFormatter.ofPattern(v.context.getString(R.string.created_year_date))
+                    .format(LocalDateTime.ofInstant(createdAt, ZoneId.systemDefault()))
     }
 }
