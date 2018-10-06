@@ -55,4 +55,6 @@ data class TweetListItem(
 
         @Embedded(prefix = "qt_")
         val quoted: Tweet?
-)
+) {
+    fun isRetweet(): Boolean = originalId != body.id
+}

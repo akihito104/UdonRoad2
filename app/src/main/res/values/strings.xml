@@ -2,4 +2,5 @@
     <string name="app_name" translatable="false">UdonRoad2</string>
     <string name="tweet_names_format" translatable="false">%1$s @%2$s</string>
     <string name="tweet_list_item_via" translatable="false">via %1$s</string>
+    <string name="tweet_list_item_rt_user" translatable="false">RT: @%1$s</string>
 </resources>
