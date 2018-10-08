@@ -20,8 +20,10 @@ import android.graphics.Typeface
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.text.style.StyleSpan
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.databinding.BindingAdapter
+import com.bumptech.glide.Glide
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.user.User
 import org.threeten.bp.Duration
@@ -87,4 +89,15 @@ fun bindCreatedAtRelative(v: TextView, createdAt: Instant?) {
             DateTimeFormatter.ofPattern(v.context.getString(R.string.created_year_date))
                     .format(LocalDateTime.ofInstant(createdAt, ZoneId.systemDefault()))
     }
+}
+
+@BindingAdapter("bindUserIcon")
+fun bindUserIcon(v: ImageView, url: String?) {
+    if (url == null) {
+        Glide.with(v).clear(v)
+        return
+    }
+    Glide.with(v)
+            .load(url)
+            .into(v)
 }

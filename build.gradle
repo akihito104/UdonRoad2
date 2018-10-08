@@ -13,6 +13,7 @@ buildscript {
         rx_version = '2.2.1'
         rxAndroid_version = '2.1.0'
         t4j_version = '4.0.7'
+        glide_version = '4.8.0'
         // test
         junit_version = '4.12'
         robolectric_version = '4.0-beta-2-SNAPSHOT'
