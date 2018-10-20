@@ -66,7 +66,6 @@ abstract class TweetDao(
         val tweetEntities = tweet.asSequence()
                 .map { arrayOf(it, it.retweetedTweet, it.retweetedTweet?.quotedTweet, it.quotedTweet).filterNotNull() }
                 .flatMap { it.asSequence() }
-//                .filterNotNull()
                 .distinctBy { it.id }
                 .toList()
         val userDao = db.userDao()
@@ -110,8 +109,13 @@ abstract class TweetDao(
                     deferred = true
             )
         ],
-        indices = [Index("original_id", "body_item_id", "owner",
-                name = "tweet_list_entity_idx")]
+        indices = [
+            Index(
+                    "original_id", "owner",
+                    name = "tweet_list_entity_idx"
+            ),
+            Index("body_item_id")
+        ]
 )
 class TweetListEntity(
         @ColumnInfo(name = "original_id")
