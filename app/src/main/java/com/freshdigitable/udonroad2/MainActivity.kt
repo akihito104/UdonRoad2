@@ -16,10 +16,13 @@
 
 package com.freshdigitable.udonroad2
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.annotation.NonNull
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
@@ -31,6 +34,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.freshdigitable.udonroad2.databinding.ActivityMainBinding
 import com.freshdigitable.udonroad2.databinding.ViewTweetListItemBinding
+import com.freshdigitable.udonroad2.databinding.ViewTweetListQuotedItemBinding
 import com.freshdigitable.udonroad2.di.ViewModelKey
 import com.freshdigitable.udonroad2.tweet.TweetListItem
 import dagger.Binds
@@ -66,24 +70,78 @@ private class Adapter : PagedListAdapter<TweetListItem, ViewHolder>(object: Diff
 
     override fun areContentsTheSame(oldItem: TweetListItem, newItem: TweetListItem): Boolean = oldItem == newItem
 }) {
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder =
             ViewHolder(ViewTweetListItemBinding.inflate(LayoutInflater.from(parent.context), parent, false))
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        getItem(position)?.let { holder.binding.tweet = it }
+        getItem(position)?.let { item ->
+            holder.binding.tweet = item
+            if (item.quoted != null) {
+                ensureQuotedView(holder).tweet = item
+            } else {
+                removeQuotedView(holder)
+            }
+        }
+    }
+
+    override fun onViewRecycled(holder: ViewHolder) {
+        super.onViewRecycled(holder)
+        removeQuotedView(holder)
     }
 
     override fun getItemViewType(position: Int): Int = R.layout.view_tweet_list_item
 
     override fun getItemId(position: Int): Long = getItem(position)?.originalId ?: -1
 
-    override fun setHasStableIds(hasStableIds: Boolean) {
-        super.setHasStableIds(true)
+    override fun setHasStableIds(hasStableIds: Boolean) = super.setHasStableIds(true)
+
+    private fun ensureQuotedView(holder: ViewHolder): ViewTweetListQuotedItemBinding {
+        return holder.quotedView
+                ?: getQuotedViewBinding(holder.root).also {
+                    holder.root.addView(it.root, createQuotedItemLayoutParams(it.root.context))
+                    holder.quotedView = it
+                }
+    }
+
+    private val quotedViewCache: MutableList<ViewTweetListQuotedItemBinding> = mutableListOf()
+
+    private fun removeQuotedView(holder: ViewHolder) {
+        holder.quotedView?.let {
+            holder.root.removeView(it.root)
+            quotedViewCache.add(it)
+        }
+        holder.quotedView = null
+    }
+
+    private fun getQuotedViewBinding(constraintLayout: ViewGroup): ViewTweetListQuotedItemBinding {
+        return if (quotedViewCache.isEmpty()) {
+            ViewTweetListQuotedItemBinding.inflate(LayoutInflater.from(constraintLayout.context),
+                    constraintLayout, false)
+        } else {
+            quotedViewCache.removeAt(quotedViewCache.lastIndex)
+        }
+    }
+
+    @NonNull
+    private fun createQuotedItemLayoutParams(context: Context): ViewGroup.LayoutParams {
+        return ConstraintLayout.LayoutParams(
+                ConstraintLayout.LayoutParams.MATCH_CONSTRAINT, ConstraintLayout.LayoutParams.WRAP_CONTENT
+        ).also { lp ->
+            lp.topMargin = context.resources.getDimensionPixelSize(R.dimen.margin_half)
+            lp.topToBottom = R.id.tweetItem_via
+            lp.bottomToBottom = ConstraintLayout.LayoutParams.PARENT_ID
+            lp.startToStart = R.id.tweetItem_names
+            lp.endToEnd = ConstraintLayout.LayoutParams.PARENT_ID
+        }
     }
 }
 
-private class ViewHolder(val binding: ViewTweetListItemBinding) : RecyclerView.ViewHolder(binding.root)
+private class ViewHolder(
+        internal val binding: ViewTweetListItemBinding,
+        internal var quotedView: ViewTweetListQuotedItemBinding? = null
+) : RecyclerView.ViewHolder(binding.root) {
+    internal val root: ViewGroup = itemView as ViewGroup
+}
 
 @Module
 interface MainActivityModule {
