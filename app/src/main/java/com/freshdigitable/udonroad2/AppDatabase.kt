@@ -18,21 +18,35 @@ package com.freshdigitable.udonroad2
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverter
+import androidx.room.TypeConverters
 import com.freshdigitable.udonroad2.tweet.TweetDao
 import com.freshdigitable.udonroad2.tweet.TweetEntity
-import com.freshdigitable.udonroad2.user.User
+import com.freshdigitable.udonroad2.tweet.TweetListEntity
 import com.freshdigitable.udonroad2.user.UserDao
+import com.freshdigitable.udonroad2.user.UserEntity
+import org.threeten.bp.Instant
 
 @Database(
         entities = [
             TweetEntity::class,
-            User::class
+            TweetListEntity::class,
+            UserEntity::class
         ],
         exportSchema = false,
         version = 1
 )
+@TypeConverters(TimestampConverter::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun tweetDao(): TweetDao
 
     abstract fun userDao(): UserDao
+}
+
+class TimestampConverter {
+    @TypeConverter
+    fun serialize(time: Instant) = time.toEpochMilli()
+
+    @TypeConverter
+    fun deserialize(time: Long): Instant = Instant.ofEpochMilli(time)
 }

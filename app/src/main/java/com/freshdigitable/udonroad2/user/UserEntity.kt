@@ -16,12 +16,22 @@
 
 package com.freshdigitable.udonroad2.user
 
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 
-@Dao
-abstract class UserDao {
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    abstract fun addUsers(users: List<UserEntity>)
-}
+@Entity
+data class UserEntity(
+        @PrimaryKey
+        @ColumnInfo(name = "id")
+        val id: Long,
+
+        @ColumnInfo(name = "name")
+        val name: String,
+
+        @ColumnInfo(name = "screen_name")
+        val screenName: String,
+
+        @ColumnInfo(name = "icon_url")
+        val iconUrl: String
+)

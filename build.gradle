@@ -2,7 +2,7 @@
 
 buildscript {
     ext {
-        kotlin_version = '1.2.70'
+        kotlin_version = '1.2.71'
         appcompat_version = '1.0.0'
         coreKtx_version = '1.0.0'
         lifecycle_version = '2.0.0'
@@ -13,8 +13,10 @@ buildscript {
         rx_version = '2.2.1'
         rxAndroid_version = '2.1.0'
         t4j_version = '4.0.7'
+        glide_version = '4.8.0'
         // test
         junit_version = '4.12'
+        robolectric_version = '4.0-beta-2-SNAPSHOT'
         // android test
         androidTestRunner_version = '1.1.0-alpha4'
         espresso_version = '3.1.0-alpha4'
@@ -22,9 +24,10 @@ buildscript {
     repositories {
         google()
         jcenter()
+        maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.3.0-alpha11'
+        classpath 'com.android.tools.build:gradle:3.3.0-alpha13'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
@@ -35,6 +38,7 @@ allprojects {
     repositories {
         google()
         jcenter()
+        maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
     }
 }
 

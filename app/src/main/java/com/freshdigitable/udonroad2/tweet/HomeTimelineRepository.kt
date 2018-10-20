@@ -22,9 +22,10 @@ import androidx.lifecycle.MutableLiveData
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
 import com.freshdigitable.udonroad2.di.AppExecutor
-import com.freshdigitable.udonroad2.user.User
+import com.freshdigitable.udonroad2.user.UserEntity
 import io.reactivex.Single
 import io.reactivex.schedulers.Schedulers
+import org.threeten.bp.Instant
 import twitter4j.Paging
 import twitter4j.Status
 import twitter4j.Twitter
@@ -36,23 +37,23 @@ class HomeTimelineRepository @Inject constructor(
         private val executor: AppExecutor,
         private val twitter: Twitter
 ) {
-    val timeline: LiveData<PagedList<Tweet>> by lazy {
+    val timeline: LiveData<PagedList<TweetListItem>> by lazy {
         val config = PagedList.Config.Builder()
                 .setEnablePlaceholders(false)
                 .setPageSize(20)
                 .setInitialLoadSizeHint(100)
                 .build()
-        LivePagedListBuilder(tweetDao.getHomeTimeline(), config)
+        LivePagedListBuilder(tweetDao.getHomeTimeline("home"), config)
                 .setFetchExecutor(executor.discExecutor)
-                .setBoundaryCallback(object: PagedList.BoundaryCallback<Tweet>() {
+                .setBoundaryCallback(object: PagedList.BoundaryCallback<TweetListItem>() {
                     override fun onZeroItemsLoaded() {
                         super.onZeroItemsLoaded()
                         fetchHomeTimeline(Callable { twitter.homeTimeline })
                     }
 
-                    override fun onItemAtEndLoaded(itemAtEnd: Tweet) {
+                    override fun onItemAtEndLoaded(itemAtEnd: TweetListItem) {
                         super.onItemAtEndLoaded(itemAtEnd)
-                        val paging = Paging(1, 100, 1, itemAtEnd.id - 1)
+                        val paging = Paging(1, 50, 1, itemAtEnd.originalId - 1)
                         fetchHomeTimeline(Callable { twitter.getHomeTimeline(paging) })
                     }
                 })
@@ -64,7 +65,7 @@ class HomeTimelineRepository @Inject constructor(
             fetchHomeTimeline(Callable { twitter.homeTimeline })
         } else {
             timeline.value?.get(0)?.let { tweet ->
-                val paging = Paging(1, 100, tweet.id + 1)
+                val paging = Paging(1, 50, tweet.originalId + 1)
                 fetchHomeTimeline(Callable { twitter.getHomeTimeline(paging) })
             }
         }
@@ -86,22 +87,7 @@ class HomeTimelineRepository @Inject constructor(
             }
         }
                 .map { list ->
-                    list.map { status ->
-                        TweetEntity(
-                                id = status.id,
-                                text = status.text,
-                                retweetCount = status.retweetCount,
-                                favoriteCount = status.favoriteCount,
-                                userId = status.user.id
-                        ).also {
-                            it.user = User(
-                                    id = status.user.id,
-                                    name = status.user.name,
-                                    screenName = status.user.screenName,
-                                    iconUrl = status.user.profileImageURLHttps
-                            )
-                        }
-                    }
+                    list.map { TweetEntityConverter.toEntity(it) }
                 }
                 .subscribeOn(Schedulers.io())
                 .subscribe({ tweets ->
@@ -115,5 +101,34 @@ class HomeTimelineRepository @Inject constructor(
 
     fun clear() {
         executor.diskIO { tweetDao.clear() }
+    }
+}
+
+class TweetEntityConverter {
+    companion object {
+        @JvmStatic
+        fun toEntity(status: Status): TweetEntity {
+            return TweetEntity(
+                    id = status.id,
+                    text = status.text,
+                    retweetCount = status.retweetCount,
+                    favoriteCount = status.favoriteCount,
+                    user = UserEntity(
+                            id = status.user.id,
+                            name = status.user.name,
+                            screenName = status.user.screenName,
+                            iconUrl = status.user.profileImageURLHttps
+                    ),
+                    retweetedTweet = status.retweetedStatus?.let { toEntity(it) },
+                    quotedTweetId = status.quotedStatusId,
+                    quotedTweet = status.quotedStatus?.let { toEntity(it) },
+                    inReplyToTweetId = status.inReplyToStatusId,
+                    isRetweeted = status.isRetweeted,
+                    isFavorited = status.isFavorited,
+                    possiblySensitive = status.isPossiblySensitive,
+                    source = status.source,
+                    createdAt = Instant.ofEpochMilli(status.createdAt.time)
+            )
+        }
     }
 }

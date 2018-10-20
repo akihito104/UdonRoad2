@@ -19,6 +19,7 @@ package com.freshdigitable.udonroad2
 import android.app.Activity
 import android.app.Application
 import com.freshdigitable.udonroad2.di.DaggerAppComponent
+import com.jakewharton.threetenabp.AndroidThreeTen
 import dagger.android.AndroidInjector
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasActivityInjector
@@ -28,6 +29,7 @@ class AppApplication : HasActivityInjector, Application() {
 
     override fun onCreate() {
         super.onCreate()
+        AndroidThreeTen.init(this)
         val component = DaggerAppComponent.builder()
                 .application(this)
                 .build()

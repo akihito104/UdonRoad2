@@ -19,6 +19,7 @@ package com.freshdigitable.udonroad2.tweet
 import androidx.room.ColumnInfo
 import androidx.room.Embedded
 import com.freshdigitable.udonroad2.user.User
+import org.threeten.bp.Instant
 
 data class Tweet(
         @ColumnInfo(name = "id")
@@ -34,5 +35,26 @@ data class Tweet(
         val favoriteCount: Int,
 
         @Embedded(prefix = "user_")
-        val user: User
+        val user: User,
+
+        @ColumnInfo(name = "source")
+        val source: String,
+
+        @ColumnInfo(name = "created_at")
+        val createdAt: Instant
 )
+
+data class TweetListItem(
+        @ColumnInfo(name = "original_id")
+        val originalId: Long,
+        @Embedded(prefix = "original_user_")
+        val originalUser: User,
+
+        @Embedded
+        val body: Tweet,
+
+        @Embedded(prefix = "qt_")
+        val quoted: Tweet?
+) {
+    fun isRetweet(): Boolean = originalId != body.id
+}
