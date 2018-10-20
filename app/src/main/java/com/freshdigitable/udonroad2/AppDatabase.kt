@@ -48,5 +48,5 @@ class TimestampConverter {
     fun serialize(time: Instant) = time.toEpochMilli()
 
     @TypeConverter
-    fun deserialize(time: Long) = Instant.ofEpochMilli(time)
+    fun deserialize(time: Long): Instant = Instant.ofEpochMilli(time)
 }
