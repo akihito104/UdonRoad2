@@ -18,8 +18,10 @@ package com.freshdigitable.udonroad2.di
 
 import dagger.Module
 import dagger.Provides
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.util.concurrent.Executor
-import java.util.concurrent.Executors
 import javax.inject.Singleton
 
 @Module
@@ -30,10 +32,18 @@ class ExecutorModule {
 }
 
 class AppExecutor {
-    val discExecutor: Executor = Executors.newFixedThreadPool(1)
-
-    fun diskIO(task: () -> Unit) {
-        discExecutor.execute(task)
+    private val disk: Executor = Executor {
+        GlobalScope.launch(Dispatchers.IO) {
+            it.run()
+        }
     }
+
+    val network: Executor = Executor {
+        GlobalScope.launch(Dispatchers.Default) {
+            it.run()
+        }
+    }
+
+    fun diskIO(task: () -> Unit) = disk.execute(task)
 }
 
