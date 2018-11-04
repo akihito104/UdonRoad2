@@ -17,7 +17,15 @@
 package com.freshdigitable.udonroad2.tweet
 
 import androidx.paging.DataSource
-import androidx.room.*
+import androidx.room.ColumnInfo
+import androidx.room.Dao
+import androidx.room.Entity
+import androidx.room.ForeignKey
+import androidx.room.Index
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import androidx.room.Transaction
 import com.freshdigitable.udonroad2.AppDatabase
 
 @Dao
@@ -25,40 +33,49 @@ abstract class TweetDao(
         private val db: AppDatabase
 ) {
 
-    @Query("""SELECT TweetListEntity.body_item_id AS id,
-         TweetEntity.text,
-         TweetEntity.created_at,
-         TweetEntity.retweet_count AS retweet_count,
-         TweetEntity.favorite_count AS favorite_count,
-         TweetEntity.source AS source,
+    @Query("""WITH
+        body AS (
+        SELECT
+         TweetEntity.id, text, created_at, retweet_count, favorite_count, source,
          UserEntity.id AS user_id,
          UserEntity.name AS user_name,
          UserEntity.screen_name AS user_screen_name,
-         UserEntity.icon_url AS user_icon_url,
-         TweetListEntity.original_id AS original_id,
-         OriginalUser.id AS original_user_id,
-         OriginalUser.name AS original_user_name,
-         OriginalUser.screen_name AS original_user_screen_name,
-         OriginalUser.icon_url AS original_user_icon_url,
-         Quoted.id AS qt_id,
-         Quoted.text AS qt_text,
-         Quoted.created_at AS qt_created_at,
-         Quoted.retweet_count AS qt_retweet_count,
-         Quoted.favorite_count AS qt_favorite_count,
-         Quoted.source AS qt_source,
-         QuotedUser.id AS qt_user_id,
-         QuotedUser.name AS qt_user_name,
-         QuotedUser.screen_name AS qt_user_screen_name,
-         QuotedUser.icon_url AS qt_user_icon_url
-        FROM TweetListEntity
-        INNER JOIN TweetEntity ON TweetEntity.id = TweetListEntity.body_item_id
+         UserEntity.icon_url AS user_icon_url
+        FROM TweetEntity
         INNER JOIN UserEntity ON TweetEntity.user_id = UserEntity.id
-        INNER JOIN TweetEntity AS Original ON Original.id = TweetListEntity.original_id
-        INNER JOIN UserEntity AS OriginalUser ON Original.user_id = OriginalUser.id
-        LEFT OUTER JOIN TweetEntity AS Quoted ON TweetListEntity.quoted_item_id = Quoted.id
-        LEFT OUTER JOIN UserEntity AS QuotedUser ON Quoted.user_id = QuotedUser.id
+        ),
+        original AS (
+        SELECT
+         TweetEntity.id AS original_id,
+         UserEntity.id AS original_user_id,
+         UserEntity.name AS original_user_name,
+         UserEntity.screen_name AS original_user_screen_name,
+         UserEntity.icon_url AS original_user_icon_url
+        FROM TweetEntity
+        INNER JOIN UserEntity ON TweetEntity.user_id = UserEntity.id
+        ),
+        quoted AS (
+        SELECT
+         TweetEntity.id AS qt_id,
+         text AS qt_text,
+         created_at AS qt_created_at,
+         retweet_count AS qt_retweet_count,
+         favorite_count AS qt_favorite_count,
+         source AS qt_source,
+         UserEntity.id AS qt_user_id,
+         UserEntity.name AS qt_user_name,
+         UserEntity.screen_name AS qt_user_screen_name,
+         UserEntity.icon_url AS qt_user_icon_url
+        FROM TweetEntity
+        INNER JOIN UserEntity ON TweetEntity.user_id = UserEntity.id
+        )
+        SELECT body.*, original.*, quoted.*
+        FROM TweetListEntity
+        INNER JOIN body ON body.id = TweetListEntity.body_item_id
+        INNER JOIN original ON original.original_id = TweetListEntity.original_id
+        LEFT OUTER JOIN quoted ON quoted.qt_id = TweetListEntity.quoted_item_id
         WHERE TweetListEntity.owner = :owner
-        ORDER BY original_id DESC""")
+        ORDER BY TweetListEntity.`order` DESC""")
     abstract fun getHomeTimeline(owner: String): DataSource.Factory<Int, TweetListItem>
 
     @Transaction
