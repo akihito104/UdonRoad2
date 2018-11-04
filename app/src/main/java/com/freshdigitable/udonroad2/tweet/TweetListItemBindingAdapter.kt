@@ -37,14 +37,13 @@ private val SOURCE_PATTERN = Pattern.compile("<a href=\".*\".*>(.*)</a>")
 
 @BindingAdapter("bindSource")
 fun bindSource(v: TextView, source: String?) {
-    source?.let {
+    v.text = source?.let {
         val matcher = SOURCE_PATTERN.matcher(it)
-        val via = if (matcher.find()) {
+        if (matcher.find()) {
             v.context.getString(R.string.tweet_list_item_via, matcher.group(1))
         } else {
             ""
         }
-        v.text = via
     }
 }
 
@@ -52,15 +51,13 @@ private val NAME_STYLE = StyleSpan(Typeface.BOLD)
 
 @BindingAdapter("bindNames")
 fun bindNames(v: TextView, user: User?) {
-    if (user == null) {
-        return
+    v.text = user?.let {
+        SpannableStringBuilder(it.name).apply {
+            setSpan(NAME_STYLE, 0, it.name.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            append(" @")
+            append(it.screenName)
+        }
     }
-    val ssb = SpannableStringBuilder(user.name).apply {
-        setSpan(NAME_STYLE, 0, user.name.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-        append(" @")
-        append(user.screenName)
-    }
-    v.text = ssb
 }
 
 @BindingAdapter("bindCreatedAtRelative")
