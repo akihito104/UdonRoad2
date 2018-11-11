@@ -20,6 +20,8 @@ import dagger.Module
 import dagger.Provides
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import java.util.concurrent.Executor
 import javax.inject.Singleton
@@ -33,9 +35,7 @@ class ExecutorModule {
 
 class AppExecutor {
     private val disk: Executor = Executor {
-        GlobalScope.launch(Dispatchers.IO) {
-            it.run()
-        }
+        diskAccess { it.run() }
     }
 
     val network: Executor = Executor {
@@ -44,6 +44,15 @@ class AppExecutor {
         }
     }
 
-    fun diskIO(task: () -> Unit) = disk.execute(task)
+    fun diskIO(task: () -> Unit) = diskAccess(task)
 }
 
+fun diskAccess(task: () -> Unit) = GlobalScope.launch(Dispatchers.IO) {
+    task()
+}
+
+suspend fun <T> networkAccess(callable: () -> T): T = coroutineScope {
+    async(Dispatchers.Default) {
+        callable()
+    }.await()
+}
