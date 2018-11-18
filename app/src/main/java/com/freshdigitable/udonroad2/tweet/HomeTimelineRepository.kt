@@ -32,18 +32,21 @@ import javax.inject.Inject
 
 class HomeTimelineRepository @Inject constructor(
         private val tweetDao: TweetDao,
-        private val executor: AppExecutor,
-        private val apiClient: HomeApiClient
+        private val apiClient: HomeApiClient,
+        executor: AppExecutor
 ) {
-    val timeline: LiveData<PagedList<TweetListItem>> by lazy {
-        val config = PagedList.Config.Builder()
+    companion object {
+        private val config = PagedList.Config.Builder()
                 .setEnablePlaceholders(false)
                 .setPageSize(20)
                 .setInitialLoadSizeHint(100)
                 .build()
+    }
+
+    val timeline: LiveData<PagedList<TweetListItem>> by lazy {
         LivePagedListBuilder(tweetDao.getHomeTimeline("home"), config)
                 .setFetchExecutor(executor.network)
-                .setBoundaryCallback(object: PagedList.BoundaryCallback<TweetListItem>() {
+                .setBoundaryCallback(object : PagedList.BoundaryCallback<TweetListItem>() {
                     override fun onZeroItemsLoaded() {
                         super.onZeroItemsLoaded()
                         fetchHomeTimeline { loadInit() }
