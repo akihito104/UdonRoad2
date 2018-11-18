@@ -22,113 +22,68 @@ import androidx.lifecycle.MutableLiveData
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
 import com.freshdigitable.udonroad2.di.AppExecutor
-import com.freshdigitable.udonroad2.user.UserEntity
-import io.reactivex.Single
-import io.reactivex.schedulers.Schedulers
-import org.threeten.bp.Instant
-import twitter4j.Paging
-import twitter4j.Status
-import twitter4j.Twitter
-import java.util.concurrent.Callable
+import com.freshdigitable.udonroad2.di.diskAccess
+import com.freshdigitable.udonroad2.di.networkAccess
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class HomeTimelineRepository @Inject constructor(
         private val tweetDao: TweetDao,
-        private val executor: AppExecutor,
-        private val twitter: Twitter
+        private val apiClient: HomeApiClient,
+        executor: AppExecutor
 ) {
-    val timeline: LiveData<PagedList<TweetListItem>> by lazy {
-        val config = PagedList.Config.Builder()
+    companion object {
+        private val config = PagedList.Config.Builder()
                 .setEnablePlaceholders(false)
                 .setPageSize(20)
                 .setInitialLoadSizeHint(100)
                 .build()
+    }
+
+    val timeline: LiveData<PagedList<TweetListItem>> by lazy {
         LivePagedListBuilder(tweetDao.getHomeTimeline("home"), config)
-                .setFetchExecutor(executor.discExecutor)
-                .setBoundaryCallback(object: PagedList.BoundaryCallback<TweetListItem>() {
+                .setFetchExecutor(executor.network)
+                .setBoundaryCallback(object : PagedList.BoundaryCallback<TweetListItem>() {
                     override fun onZeroItemsLoaded() {
                         super.onZeroItemsLoaded()
-                        fetchHomeTimeline(Callable { twitter.homeTimeline })
+                        fetchHomeTimeline { loadInit() }
                     }
 
                     override fun onItemAtEndLoaded(itemAtEnd: TweetListItem) {
                         super.onItemAtEndLoaded(itemAtEnd)
-                        val paging = Paging(1, 50, 1, itemAtEnd.originalId - 1)
-                        fetchHomeTimeline(Callable { twitter.getHomeTimeline(paging) })
+                        fetchHomeTimeline { loadAtLast(itemAtEnd.originalId - 1) }
                     }
                 })
                 .build()
     }
 
     fun loadAtFront() {
-        if (timeline.value?.isEmpty() != false) {
-            fetchHomeTimeline(Callable { twitter.homeTimeline })
-        } else {
-            timeline.value?.get(0)?.let { tweet ->
-                val paging = Paging(1, 50, tweet.originalId + 1)
-                fetchHomeTimeline(Callable { twitter.getHomeTimeline(paging) })
+        timeline.value?.getOrNull(0)?.let {
+            fetchHomeTimeline { loadAtTop(it.originalId + 1) }
+        } ?: fetchHomeTimeline { loadInit() }
+    }
+
+    private val _loading = MutableLiveData<Boolean>()
+    val loading: LiveData<Boolean> = _loading
+
+    private fun fetchHomeTimeline(
+            block: HomeApiClient.() -> List<TweetEntity>
+    ) = GlobalScope.launch {
+        _loading.postValue(true)
+        try {
+            val timeline = networkAccess { block(apiClient) }
+            diskAccess { tweetDao.addTweets(timeline) }
+        } catch (e: Exception) {
+            Log.e("HomeTimelineRepository", "fetchHomeTimeline: ", e)
+        } finally {
+            withContext(NonCancellable) {
+                _loading.postValue(false)
             }
         }
     }
 
-    private val loadingState = MutableLiveData<Boolean>()
-
-    val loading : LiveData<Boolean>
-        get() : LiveData<Boolean> = loadingState
-
-    private fun fetchHomeTimeline(callable: Callable<List<Status>>) {
-        Single.create<List<Status>> { source ->
-            loadingState.postValue(true)
-            try {
-                val ret = callable.call()
-                source.onSuccess(ret)
-            } catch (e: Exception) {
-                source.onError(e)
-            }
-        }
-                .map { list ->
-                    list.map { TweetEntityConverter.toEntity(it) }
-                }
-                .subscribeOn(Schedulers.io())
-                .subscribe({ tweets ->
-                    executor.diskIO { tweetDao.addTweets(tweets) }
-                    loadingState.postValue(false)
-                }, { t ->
-                    Log.e("TAG", "fetchHomeTimeline: ", t)
-                    loadingState.postValue(false)
-                })
-    }
-
-    fun clear() {
-        executor.diskIO { tweetDao.clear() }
-    }
-}
-
-class TweetEntityConverter {
-    companion object {
-        @JvmStatic
-        fun toEntity(status: Status): TweetEntity {
-            return TweetEntity(
-                    id = status.id,
-                    text = status.text,
-                    retweetCount = status.retweetCount,
-                    favoriteCount = status.favoriteCount,
-                    user = UserEntity(
-                            id = status.user.id,
-                            name = status.user.name,
-                            screenName = status.user.screenName,
-                            iconUrl = status.user.profileImageURLHttps
-                    ),
-                    retweetedTweet = status.retweetedStatus?.let { toEntity(it) },
-                    quotedTweetId = status.quotedStatusId,
-                    quotedTweet = status.quotedStatus?.let { toEntity(it) },
-                    inReplyToTweetId = status.inReplyToStatusId,
-                    isRetweeted = status.isRetweeted,
-                    isFavorited = status.isFavorited,
-                    possiblySensitive = status.isPossiblySensitive,
-                    source = status.source,
-                    createdAt = Instant.ofEpochMilli(status.createdAt.time)
-            )
-        }
-    }
+    fun clear() = diskAccess { tweetDao.clear() }
 }
