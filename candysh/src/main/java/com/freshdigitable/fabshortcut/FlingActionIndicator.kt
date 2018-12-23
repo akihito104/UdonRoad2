@@ -55,32 +55,32 @@ class FlingActionIndicator @JvmOverloads constructor(
 
         if (direction.isOnAxis) {
             translationTo(direction, TransCoefs.ORIGIN)
-        } else {
-            drawables[direction]?.let {
-                val neighbor = direction.bothNeighbor[0]
-                views[neighbor]?.setImageDrawable(it)
-                translationTo(neighbor, TransCoefs.ORIGIN)
-                return
+            return
+        }
+        drawables[direction]?.let {
+            val neighbor = direction.bothNeighbor[0]
+            views[neighbor]?.setImageDrawable(it)
+            translationTo(neighbor, TransCoefs.ORIGIN)
+            return
+        }
+        when(direction) {
+            Direction.UP_RIGHT -> {
+                translationTo(Direction.UP, TransCoefs.SECOND_QUAD)
+                translationTo(Direction.RIGHT, TransCoefs.FORTH_QUAD)
             }
-            when(direction) {
-                Direction.UP_RIGHT -> {
-                    translationTo(Direction.UP, TransCoefs.SECOND_QUAD)
-                    translationTo(Direction.RIGHT, TransCoefs.FORTH_QUAD)
-                }
-                Direction.DOWN_RIGHT -> {
-                    translationTo(Direction.RIGHT, TransCoefs.FIRST_QUAD)
-                    translationTo(Direction.DOWN, TransCoefs.THIRD_QUAD)
-                }
-                Direction.DOWN_LEFT -> {
-                    translationTo(Direction.LEFT, TransCoefs.SECOND_QUAD)
-                    translationTo(Direction.DOWN, TransCoefs.FORTH_QUAD)
-                }
-                Direction.UP_LEFT -> {
-                    translationTo(Direction.UP, TransCoefs.FIRST_QUAD)
-                    translationTo(Direction.LEFT, TransCoefs.THIRD_QUAD)
-                }
-                else -> return
+            Direction.DOWN_RIGHT -> {
+                translationTo(Direction.RIGHT, TransCoefs.FIRST_QUAD)
+                translationTo(Direction.DOWN, TransCoefs.THIRD_QUAD)
             }
+            Direction.DOWN_LEFT -> {
+                translationTo(Direction.LEFT, TransCoefs.SECOND_QUAD)
+                translationTo(Direction.DOWN, TransCoefs.FORTH_QUAD)
+            }
+            Direction.UP_LEFT -> {
+                translationTo(Direction.UP, TransCoefs.FIRST_QUAD)
+                translationTo(Direction.LEFT, TransCoefs.THIRD_QUAD)
+            }
+            else -> return
         }
     }
 
@@ -107,10 +107,10 @@ class FlingActionIndicator @JvmOverloads constructor(
         } else {
             direction.bothNeighbor.forEach { resetViewTransforms(it) }
         }
-        views.entries.forEach { entry ->
-            entry.value.setImageDrawable(drawables[entry.key])
+        views.entries.forEach { (direction, v) ->
+            v.setImageDrawable(drawables[direction])
+            v.visibility = View.VISIBLE
         }
-        views.values.forEach { it.visibility = View.VISIBLE }
     }
 
     private fun resetViewTransforms(direction: Direction) {
@@ -161,4 +161,3 @@ class FlingActionIndicator @JvmOverloads constructor(
         FORTH_QUAD(0.75f, 0.75f, 1.5f)
     }
 }
-

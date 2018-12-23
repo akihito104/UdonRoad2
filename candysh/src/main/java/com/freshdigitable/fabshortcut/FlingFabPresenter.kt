@@ -27,7 +27,17 @@ internal class FlingFabPresenter(
         defStyleAttr: Int = 0
 ) {
     private val indicator = FlingActionIndicator(context, attrs, defStyleAttr)
-    private val menu = FfabMenu()
+    private val menu = FfabMenu(context)
+
+    init {
+        val a = context.obtainStyledAttributes(attrs,
+                R.styleable.FlingFAB, defStyleAttr, R.style.Widget_FlingFAB)
+        if (a.hasValue(R.styleable.FlingFAB_menu)) {
+            val menuRes = a.getResourceId(R.styleable.FlingFAB_menu, 0)
+            FfabMenuItemInflater.inflate(context, menu, menuRes)
+        }
+        a.recycle()
+    }
 
     private val flingListener = object : OnFlingEventListener {
         private var prevDirection: Direction = Direction.UNDEFINED

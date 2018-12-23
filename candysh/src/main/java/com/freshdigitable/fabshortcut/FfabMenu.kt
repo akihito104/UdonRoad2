@@ -17,103 +17,50 @@
 package com.freshdigitable.fabshortcut
 
 import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
 import android.view.KeyEvent
 import android.view.Menu
 import android.view.MenuItem
 import android.view.SubMenu
 
-internal class FfabMenu : Menu {
-    override fun clear() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+internal class FfabMenu(
+        private val context: Context
+) : Menu {
+    private val items = mutableListOf<FfabMenuItem>()
+
+    override fun add(title: CharSequence?): MenuItem = add(0, 0, 0, title)
+
+    override fun add(titleRes: Int): MenuItem = add(context.getString(titleRes))
+
+    override fun add(
+            groupId: Int,
+            itemId: Int,
+            order: Int,
+            titleRes: Int
+    ): MenuItem = add(groupId, itemId, order, context.getString(titleRes))
+
+    override fun add(
+            groupId: Int,
+            itemId: Int,
+            order: Int,
+            title: CharSequence?
+    ): MenuItem = FfabMenuItem(context, itemId, groupId, order)
 
     override fun removeItem(id: Int) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        items.firstOrNull { it.itemId == id }?.let { items.remove(it) }
     }
 
-    override fun setGroupCheckable(group: Int, checkable: Boolean, exclusive: Boolean) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun getItem(index: Int): MenuItem = items[index]
 
-    override fun performIdentifierAction(id: Int, flags: Int): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun hasVisibleItems(): Boolean = items.firstOrNull { it.isVisible } != null
 
-    override fun setGroupEnabled(group: Int, enabled: Boolean) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun findItem(id: Int): MenuItem = items.first { it.itemId == id }
 
-    override fun getItem(index: Int): MenuItem {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun size(): Int = items.size
 
-    override fun performShortcut(keyCode: Int, event: KeyEvent?, flags: Int): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun removeGroup(groupId: Int) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun setGroupVisible(group: Int, visible: Boolean) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun add(title: CharSequence?): MenuItem {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun add(titleRes: Int): MenuItem {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun add(groupId: Int, itemId: Int, order: Int, title: CharSequence?): MenuItem {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun add(groupId: Int, itemId: Int, order: Int, titleRes: Int): MenuItem {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun isShortcutKey(keyCode: Int, event: KeyEvent?): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun setQwertyMode(isQwerty: Boolean) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun hasVisibleItems(): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun addSubMenu(title: CharSequence?): SubMenu {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun addSubMenu(titleRes: Int): SubMenu {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun addSubMenu(groupId: Int, itemId: Int, order: Int, title: CharSequence?): SubMenu {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun addSubMenu(groupId: Int, itemId: Int, order: Int, titleRes: Int): SubMenu {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun addIntentOptions(groupId: Int, itemId: Int, order: Int, caller: ComponentName?, specifics: Array<out Intent>?, intent: Intent?, flags: Int, outSpecificItems: Array<out MenuItem>?): Int {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun findItem(id: Int): MenuItem {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun size(): Int {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    override fun clear() {
+        items.clear()
     }
 
     override fun close() {
@@ -127,4 +74,25 @@ internal class FfabMenu : Menu {
     internal fun dispatchSelectedMenuItem(direction: Direction) {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
+
+    override fun performIdentifierAction(id: Int, flags: Int): Boolean = unsupported()
+    override fun performShortcut(keyCode: Int, event: KeyEvent?, flags: Int): Boolean = unsupported()
+    override fun setQwertyMode(isQwerty: Boolean) = unsupported()
+    override fun addIntentOptions(
+            groupId: Int, itemId: Int, order: Int, caller: ComponentName?, specifics: Array<out Intent>?,
+            intent: Intent?, flags: Int, outSpecificItems: Array<out MenuItem>?): Int = unsupported()
+
+    override fun addSubMenu(title: CharSequence?): SubMenu = unsupported()
+    override fun addSubMenu(titleRes: Int): SubMenu = unsupported()
+    override fun addSubMenu(
+            groupId: Int, itemId: Int, order: Int, title: CharSequence?): SubMenu = unsupported()
+    override fun addSubMenu(
+            groupId: Int, itemId: Int, order: Int, titleRes: Int): SubMenu = unsupported()
+    override fun setGroupEnabled(group: Int, enabled: Boolean) = unsupported()
+    override fun setGroupCheckable(group: Int, checkable: Boolean, exclusive: Boolean) = unsupported()
+    override fun removeGroup(groupId: Int) = unsupported()
+    override fun setGroupVisible(group: Int, visible: Boolean) = unsupported()
+    override fun isShortcutKey(keyCode: Int, event: KeyEvent?): Boolean = unsupported()
 }
+
+internal fun unsupported(): Nothing = throw UnsupportedOperationException()

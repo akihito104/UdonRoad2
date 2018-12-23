@@ -123,43 +123,28 @@ internal class FfabMenuItem(
 
     override fun hasSubMenu(): Boolean = false
 
-    override fun getSubMenu(): SubMenu = throw UnsupportedOperationException()
-
-    override fun expandActionView(): Boolean = throw UnsupportedOperationException()
-
-    override fun getMenuInfo(): ContextMenu.ContextMenuInfo = throw UnsupportedOperationException()
-
-    override fun getAlphabeticShortcut(): Char = throw UnsupportedOperationException()
-
-    override fun getActionView(): View = throw UnsupportedOperationException()
-
+    override fun getSubMenu(): SubMenu = unsupported()
+    override fun expandActionView(): Boolean = unsupported()
+    override fun getMenuInfo(): ContextMenu.ContextMenuInfo = unsupported()
+    override fun getAlphabeticShortcut(): Char = unsupported()
+    override fun getActionView(): View = unsupported()
     override fun setOnActionExpandListener(
             listener: MenuItem.OnActionExpandListener?
-    ): MenuItem = throw UnsupportedOperationException()
-
-    override fun setShowAsAction(actionEnum: Int): Unit = throw UnsupportedOperationException()
+    ): MenuItem = unsupported()
+    override fun setShowAsAction(actionEnum: Int): Unit = unsupported()
+    override fun getNumericShortcut(): Char = unsupported()
+    override fun isActionViewExpanded(): Boolean = unsupported()
+    override fun collapseActionView(): Boolean = unsupported()
+    override fun getActionProvider(): ActionProvider = unsupported()
 
     override fun setActionProvider(actionProvider: ActionProvider?): MenuItem = this
-
-    override fun getNumericShortcut(): Char = throw UnsupportedOperationException()
-
-    override fun isActionViewExpanded(): Boolean = throw UnsupportedOperationException()
-
-    override fun collapseActionView(): Boolean = throw UnsupportedOperationException()
-
     override fun setNumericShortcut(numericChar: Char): MenuItem = this
-
     override fun setActionView(view: View?): MenuItem = this
-
     override fun setActionView(resId: Int): MenuItem = this
-
     override fun setAlphabeticShortcut(alphaChar: Char): MenuItem = this
-
     override fun setShortcut(numericChar: Char, alphaChar: Char): MenuItem = this
-
     override fun setShowAsActionFlags(actionEnum: Int): MenuItem = this
-
-    override fun setOnMenuItemClickListener(menuItemClickListener: MenuItem.OnMenuItemClickListener?): MenuItem = this
-
-    override fun getActionProvider(): ActionProvider = throw UnsupportedOperationException()
+    override fun setOnMenuItemClickListener(
+            menuItemClickListener: MenuItem.OnMenuItemClickListener?
+    ): MenuItem = this
 }
