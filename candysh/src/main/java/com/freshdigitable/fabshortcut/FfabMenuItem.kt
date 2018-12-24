@@ -34,6 +34,7 @@ internal class FfabMenuItem(
         private val groupId: Int,
         private val order: Int
 ) : MenuItem {
+    internal var direction: Direction? = null
 
     override fun getItemId(): Int = itemId
     override fun getGroupId(): Int = groupId

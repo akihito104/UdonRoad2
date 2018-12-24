@@ -16,11 +16,30 @@
   -->
 
 <resources>
+    <attr name="indicatorTint" format="reference|color"/>
+    <attr name="indicatorIconTint" format="reference|color"/>
+    <attr name="marginFabToIndicator" format="dimension"/>
+    <attr name="menu" format="reference"/>
+    <attr name="direction" format="enum">
+        <enum name="up" />
+        <enum name="up_right" />
+        <enum name="right" />
+        <enum name="down_right" />
+        <enum name="down" />
+        <enum name="down_left" />
+        <enum name="left" />
+        <enum name="up_left" />
+    </attr>
+
     <declare-styleable name="FlingFAB">
-        <attr name="indicatorTint" format="reference|color"/>
-        <attr name="indicatorIconTint" format="reference|color"/>
-        <attr name="marginFabToIndicator" format="dimension"/>
-        <attr name="menu" format="reference"/>
+        <attr name="indicatorTint" />
+        <attr name="indicatorIconTint" />
+        <attr name="marginFabToIndicator" />
+        <attr name="menu" />
+    </declare-styleable>
+
+    <declare-styleable name="FlingFABMenu">
+        <attr name="direction" />
     </declare-styleable>
 
     <declare-styleable name="FlingFABTheme">

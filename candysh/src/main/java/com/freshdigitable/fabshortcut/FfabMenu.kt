@@ -71,9 +71,7 @@ internal class FfabMenu(
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    internal fun dispatchSelectedMenuItem(direction: Direction) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    internal fun findItem(direction: Direction) = items.first { it.direction == direction }
 
     override fun performIdentifierAction(id: Int, flags: Int): Boolean = unsupported()
     override fun performShortcut(keyCode: Int, event: KeyEvent?, flags: Int): Boolean = unsupported()

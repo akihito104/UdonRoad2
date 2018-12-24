@@ -28,6 +28,7 @@ internal class FlingFabPresenter(
 ) {
     private val indicator = FlingActionIndicator(context, attrs, defStyleAttr)
     private val menu = FfabMenu(context)
+    internal var menuSelectedListener: OnMenuSelectedListener? = null
 
     init {
         val a = context.obtainStyledAttributes(attrs,
@@ -60,10 +61,11 @@ internal class FlingFabPresenter(
                     prevDirection = event.direction
                 }
                 is FlingEvent.FLING -> {
-                    menu.dispatchSelectedMenuItem(event.direction)
                     indicator.postDelayed({
                         indicator.visibility = View.INVISIBLE
                     }, 200)
+                    val item = menu.findItem(event.direction)
+                    menuSelectedListener?.onMenuSelected(item)
                 }
                 is FlingEvent.CANCEL -> {
                     indicator.onActionLeave(prevDirection)

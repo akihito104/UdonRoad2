@@ -45,9 +45,9 @@ internal class FfabMenuItemInflater(
         val parser: XmlResourceParser = context.resources.getLayout(menuRes)
         try {
             val attributeSet = Xml.asAttributeSet(parser)
-            parseMenu(parser, attributeSet)
+            parseMenu(parser, attributeSet, menu)
         } catch (e: XmlPullParserException) {
-            e.printStackTrace()// XXX
+            e.printStackTrace()
         } catch (e: IOException) {
             e.printStackTrace()
         } finally {
@@ -56,7 +56,7 @@ internal class FfabMenuItemInflater(
     }
 
     @Throws(XmlPullParserException::class, IOException::class)
-    private fun parseMenu(parser: XmlResourceParser, attributeSet: AttributeSet) {
+    private fun parseMenu(parser: XmlResourceParser, attributeSet: AttributeSet, menu: FfabMenu) {
         var eventType = parser.eventType
         var tag: String
         while (eventType != XmlPullParser.END_DOCUMENT) {
@@ -76,23 +76,29 @@ internal class FfabMenuItemInflater(
                 eventType = parser.next()
                 continue
             }
-            val resourceId = findId(parser)
-            if (resourceId != 0) {
-                val ta = context.obtainStyledAttributes(attributeSet, R.styleable.FlingFAB)
+            findId(parser)?.let { id ->
+                val ta = context.obtainStyledAttributes(attributeSet, R.styleable.FlingFABMenu)
+                val direction = ta.getString(R.styleable.FlingFABMenu_direction)?.let { d ->
+                    Direction.valueOf(d.toUpperCase())
+                }
+                val item = menu.findItem(id)
+                if (item is FfabMenuItem) {
+                    item.direction = direction
+                }
                 ta.recycle()
             }
             eventType = parser.next()
         }
     }
 
-    private fun findId(parser: XmlPullParser): Int {
-        return 0.until(parser.attributeCount)
+    private fun findId(parser: XmlPullParser): Int? {
+        return (0 until parser.attributeCount)
                 .find { parser.getAttributeName(it) == "id" }
                 ?.let { index ->
                     val attributeValue = parser.getAttributeValue(index)
                     attributeValue.substring(1)
                 }
                 ?.takeIf { TextUtils.isDigitsOnly(it) }
-                ?.let { Integer.parseInt(it) } ?: 0
+                ?.let { Integer.parseInt(it) }
     }
 }
