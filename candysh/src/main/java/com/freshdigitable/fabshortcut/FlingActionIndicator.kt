@@ -17,6 +17,7 @@
 package com.freshdigitable.fabshortcut
 
 import android.content.Context
+import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.view.View
@@ -44,7 +45,24 @@ class FlingActionIndicator @JvmOverloads constructor(
     private val drawables: MutableMap<Direction, Drawable> = mutableMapOf()
 
     init {
+        id = R.id.indicator
         visibility = View.INVISIBLE
+        layoutParams = generateDefaultLayoutParams()
+        setBackgroundColor(Color.GRAY)
+
+        if (isInEditMode) {
+            visibility = View.VISIBLE
+        }
+    }
+
+    override fun generateDefaultLayoutParams(): LayoutParams {
+        val iconSize = resources.getDimensionPixelSize(R.dimen.indicator_icon_size)
+        val margin = resources.getDimensionPixelSize(R.dimen.margin)
+        val size = iconSize * 3 + margin * 2
+        return super.generateDefaultLayoutParams().apply {
+            width = size
+            height = size
+        }
     }
 
     internal fun onActionSelected(direction: Direction) {

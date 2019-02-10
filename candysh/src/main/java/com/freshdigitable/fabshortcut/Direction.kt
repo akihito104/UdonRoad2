@@ -36,8 +36,8 @@ enum class Direction constructor(
         get() = if (this == UNDEFINED) {
             arrayOf()
         } else arrayOf(
-                getWithIndex((index + 1) % 8),
-                getWithIndex(if ((index - 1) < 0) 7 else index - 1)
+                findByIndex((index + 1) % 8),
+                findByIndex(if ((index - 1) < 0) 7 else index - 1)
         )
 
     internal val isOnAxis: Boolean
@@ -88,7 +88,7 @@ enum class Direction constructor(
             return if (angle < 0) 2 * Math.PI + angle else angle
         }
 
-        private fun getWithIndex(
+        internal fun findByIndex(
                 i: Int
         ): Direction = values().firstOrNull { it.index == i } ?: UNDEFINED
 
@@ -97,7 +97,7 @@ enum class Direction constructor(
                 return UNDEFINED
             }
             val index = (8 - angle / 45) % 8 // XXX
-            return getWithIndex(index)
+            return findByIndex(index)
         }
     }
 }

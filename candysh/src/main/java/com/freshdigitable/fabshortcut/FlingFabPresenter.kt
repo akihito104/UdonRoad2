@@ -16,27 +16,29 @@
 
 package com.freshdigitable.fabshortcut
 
-import android.content.Context
 import android.util.AttributeSet
 import android.view.View
+import android.view.ViewGroup
+import androidx.constraintlayout.widget.ConstraintLayout
 
 internal class FlingFabPresenter(
         private val fab: FlingFAB,
-        context: Context,
         attrs: AttributeSet? = null,
         defStyleAttr: Int = 0
 ) {
-    private val indicator = FlingActionIndicator(context, attrs, defStyleAttr)
-    private val menu = FfabMenu(context)
+    private val indicator = FlingActionIndicator(fab.context, attrs, defStyleAttr)
+    private val menu = FfabMenu(fab.context)
     internal var menuSelectedListener: OnMenuSelectedListener? = null
+    private val marginFromFab: Int
 
     init {
-        val a = context.obtainStyledAttributes(attrs,
+        val a = fab.context.obtainStyledAttributes(attrs,
                 R.styleable.FlingFAB, defStyleAttr, R.style.Widget_FlingFAB)
         if (a.hasValue(R.styleable.FlingFAB_menu)) {
             val menuRes = a.getResourceId(R.styleable.FlingFAB_menu, 0)
-            FfabMenuItemInflater.inflate(context, menu, menuRes)
+            FfabMenuItemInflater.inflate(fab.context, menu, menuRes)
         }
+        marginFromFab = a.getDimensionPixelSize(R.styleable.FlingFAB_marginFabToIndicator, 0)
         a.recycle()
     }
 
@@ -64,7 +66,7 @@ internal class FlingFabPresenter(
                     indicator.postDelayed({
                         indicator.visibility = View.INVISIBLE
                     }, 200)
-                    val item = menu.findItem(event.direction)
+                    val item = menu.findItem(event.direction) ?: return
                     menuSelectedListener?.onMenuSelected(item)
                 }
                 is FlingEvent.CANCEL -> {
@@ -77,10 +79,29 @@ internal class FlingFabPresenter(
     }
 
     internal fun onAttached() {
+        fab.post { attachIndicator() }
         fab.flingEventListener = flingListener
     }
 
     internal fun onDetached() {
         fab.flingEventListener = null
+    }
+
+    private fun attachIndicator() {
+        if (indicator.parent != null) {
+            return
+        }
+        val lp = when (fab.layoutParams) {
+            is ConstraintLayout.LayoutParams -> {
+                ConstraintLayout.LayoutParams(indicator.layoutParams).also {
+                    it.bottomToTop = fab.id
+                    it.startToStart = fab.id
+                    it.endToEnd = fab.id
+                    it.bottomMargin = marginFromFab
+               }
+            }
+            else -> unsupported()
+        }
+        (fab.parent as ViewGroup).addView(indicator, lp)
     }
 }

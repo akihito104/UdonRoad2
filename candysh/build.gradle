@@ -53,6 +53,3 @@ dependencies {
     androidTestImplementation "androidx.test:runner:$androidTestRunner_version"
     androidTestImplementation "androidx.test.espresso:espresso-core:$espresso_version"
 }
-repositories {
-    mavenCentral()
-}

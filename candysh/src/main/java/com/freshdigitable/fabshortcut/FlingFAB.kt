@@ -28,7 +28,7 @@ class FlingFAB @JvmOverloads constructor(
         defStyleAttr: Int = 0
 ) : FloatingActionButton(context, attrs, defStyleAttr) {
 
-    private val presenter = FlingFabPresenter(this, context, attrs, defStyleAttr)
+    private val presenter = FlingFabPresenter(this, attrs, defStyleAttr)
 
     internal var flingEventListener: OnFlingEventListener? = null
 
@@ -53,7 +53,8 @@ class FlingFAB @JvmOverloads constructor(
             MotionEvent.ACTION_UP -> {
                 return old?.let {
                     val direction = Direction.getDirection(it, motionEvent)
-                    listener.onFlingEvent(FlingEvent.FLING(direction))
+                    val isFling = direction != Direction.UNDEFINED
+                    listener.onFlingEvent(if (isFling) FlingEvent.FLING(direction) else FlingEvent.CANCEL)
                     it.recycle()
                     return true
                 } ?: super.onTouchEvent(motionEvent)

@@ -28,7 +28,7 @@ import org.xmlpull.v1.XmlPullParserException
 import java.io.IOException
 
 
-internal class FfabMenuItemInflater(
+internal class FfabMenuItemInflater private constructor(
         private val context: Context
 ) {
     companion object {
@@ -78,8 +78,10 @@ internal class FfabMenuItemInflater(
             }
             findId(parser)?.let { id ->
                 val ta = context.obtainStyledAttributes(attributeSet, R.styleable.FlingFABMenu)
-                val direction = ta.getString(R.styleable.FlingFABMenu_direction)?.let { d ->
-                    Direction.valueOf(d.toUpperCase())
+                val direction = Direction.findByIndex(
+                        ta.getInt(R.styleable.FlingFABMenu_direction, Direction.UNDEFINED.index))
+                if (direction == Direction.UNDEFINED) {
+                    throw IllegalArgumentException("undefined direction value")
                 }
                 val item = menu.findItem(id)
                 if (item is FfabMenuItem) {

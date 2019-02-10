@@ -45,7 +45,9 @@ internal class FfabMenu(
             itemId: Int,
             order: Int,
             title: CharSequence?
-    ): MenuItem = FfabMenuItem(context, itemId, groupId, order)
+    ): MenuItem = FfabMenuItem(context, itemId, groupId, order).also {
+        items.add(it)
+    }
 
     override fun removeItem(id: Int) {
         items.firstOrNull { it.itemId == id }?.let { items.remove(it) }
@@ -53,7 +55,7 @@ internal class FfabMenu(
 
     override fun getItem(index: Int): MenuItem = items[index]
 
-    override fun hasVisibleItems(): Boolean = items.firstOrNull { it.isVisible } != null
+    override fun hasVisibleItems(): Boolean = items.any { it.isVisible }
 
     override fun findItem(id: Int): MenuItem = items.first { it.itemId == id }
 
@@ -67,11 +69,11 @@ internal class FfabMenu(
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    internal fun isVisibleByDirection(direction: Direction): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    internal fun isVisibleByDirection(
+            direction: Direction
+    ): Boolean = items.any { it.direction == direction }
 
-    internal fun findItem(direction: Direction) = items.first { it.direction == direction }
+    internal fun findItem(direction: Direction) = items.firstOrNull { it.direction == direction }
 
     override fun performIdentifierAction(id: Int, flags: Int): Boolean = unsupported()
     override fun performShortcut(keyCode: Int, event: KeyEvent?, flags: Int): Boolean = unsupported()

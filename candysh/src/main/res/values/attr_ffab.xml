@@ -21,14 +21,14 @@
     <attr name="marginFabToIndicator" format="dimension"/>
     <attr name="menu" format="reference"/>
     <attr name="direction" format="enum">
-        <enum name="up" />
-        <enum name="up_right" />
-        <enum name="right" />
-        <enum name="down_right" />
-        <enum name="down" />
-        <enum name="down_left" />
-        <enum name="left" />
-        <enum name="up_left" />
+        <enum name="up" value="6" />
+        <enum name="up_right" value="7" />
+        <enum name="right" value="0" />
+        <enum name="down_right" value="1" />
+        <enum name="down" value="2" />
+        <enum name="down_left" value="3" />
+        <enum name="left" value="4" />
+        <enum name="up_left" value="5" />
     </attr>
 
     <declare-styleable name="FlingFAB">
@@ -54,6 +54,9 @@
         <item name="fabSize">normal</item>
     </style>
 
+    <item name="indicator" type="id" />
     <dimen name="ffab_margin_bottom">32dp</dimen>
     <dimen name="ffab_toolbar_icon_padding">12dp</dimen>
+    <dimen name="indicator_icon_size">16dp</dimen>
+    <dimen name="margin">8dp</dimen>
 </resources>
