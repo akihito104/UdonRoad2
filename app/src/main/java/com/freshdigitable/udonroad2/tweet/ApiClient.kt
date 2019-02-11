@@ -16,7 +16,8 @@
 
 package com.freshdigitable.udonroad2.tweet
 
-import com.freshdigitable.udonroad2.user.UserEntity
+import com.freshdigitable.udonroad2.data.db.entity.TweetEntity
+import com.freshdigitable.udonroad2.data.db.entity.UserEntity
 import org.threeten.bp.Instant
 import twitter4j.Paging
 import twitter4j.Status

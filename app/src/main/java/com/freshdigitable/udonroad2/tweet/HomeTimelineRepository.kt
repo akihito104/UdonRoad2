@@ -21,6 +21,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
+import com.freshdigitable.udonroad2.data.db.dao.TweetDao
+import com.freshdigitable.udonroad2.data.db.dbview.TweetListItem
+import com.freshdigitable.udonroad2.data.db.entity.TweetEntity
 import com.freshdigitable.udonroad2.di.AppExecutor
 import com.freshdigitable.udonroad2.di.diskAccess
 import com.freshdigitable.udonroad2.di.networkAccess
