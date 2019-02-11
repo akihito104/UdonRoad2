@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-package com.freshdigitable.udonroad2
+package com.freshdigitable.udonroad2.data.db
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverter
 import androidx.room.TypeConverters
-import com.freshdigitable.udonroad2.tweet.TweetDao
-import com.freshdigitable.udonroad2.tweet.TweetEntity
-import com.freshdigitable.udonroad2.tweet.TweetListEntity
-import com.freshdigitable.udonroad2.user.UserDao
-import com.freshdigitable.udonroad2.user.UserEntity
+import com.freshdigitable.udonroad2.data.db.dao.TweetDao
+import com.freshdigitable.udonroad2.data.db.dao.TweetListEntity
+import com.freshdigitable.udonroad2.data.db.dao.UserDao
+import com.freshdigitable.udonroad2.data.db.entity.TweetEntity
+import com.freshdigitable.udonroad2.data.db.entity.UserEntity
 import org.threeten.bp.Instant
 
 @Database(

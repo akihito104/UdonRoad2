@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.freshdigitable.udonroad2.tweet
+package com.freshdigitable.udonroad2.data.db.dao
 
 import androidx.paging.DataSource
 import androidx.room.ColumnInfo
@@ -26,7 +26,9 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
-import com.freshdigitable.udonroad2.AppDatabase
+import com.freshdigitable.udonroad2.data.db.AppDatabase
+import com.freshdigitable.udonroad2.data.db.dbview.TweetListItem
+import com.freshdigitable.udonroad2.data.db.entity.TweetEntity
 
 @Dao
 abstract class TweetDao(
@@ -94,10 +96,14 @@ abstract class TweetDao(
                         .toList())
         addTweetEntitiesInternal(tweetEntities)
         addTweetListEntities(
-                tweet.map{ TweetListEntity(originalId = it.id,
-                        bodyTweetId = it.retweetedTweet?.id ?: it.id,
-                        quotedTweetId = it.retweetedTweet?.quotedTweet?.id ?: it.quotedTweet?.id,
-                        order = it.id, owner = "home") })
+                tweet.map{
+                    TweetListEntity(
+                            originalId = it.id,
+                            bodyTweetId = it.retweetedTweet?.id ?: it.id,
+                            quotedTweetId = it.retweetedTweet?.quotedTweet?.id
+                                    ?: it.quotedTweet?.id,
+                            order = it.id, owner = "home")
+                })
     }
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

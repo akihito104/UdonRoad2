@@ -18,9 +18,9 @@ package com.freshdigitable.udonroad2.di
 
 import android.app.Application
 import androidx.room.Room
-import com.freshdigitable.udonroad2.AppDatabase
-import com.freshdigitable.udonroad2.tweet.TweetDao
-import com.freshdigitable.udonroad2.user.UserDao
+import com.freshdigitable.udonroad2.data.db.AppDatabase
+import com.freshdigitable.udonroad2.data.db.dao.TweetDao
+import com.freshdigitable.udonroad2.data.db.dao.UserDao
 import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton

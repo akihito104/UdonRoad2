@@ -14,11 +14,15 @@
  * limitations under the License.
  */
 
-package com.freshdigitable.udonroad2.user
+package com.freshdigitable.udonroad2.data.db.entity
 
 import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 
-data class User(
+@Entity
+data class UserEntity(
+        @PrimaryKey
         @ColumnInfo(name = "id")
         val id: Long,
 

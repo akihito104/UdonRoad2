@@ -14,14 +14,20 @@
  * limitations under the License.
  */
 
-package com.freshdigitable.udonroad2.user
+package com.freshdigitable.udonroad2.data.db.dbview
 
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
+import androidx.room.ColumnInfo
 
-@Dao
-abstract class UserDao {
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    abstract fun addUsers(users: List<UserEntity>)
-}
+data class User(
+        @ColumnInfo(name = "id")
+        val id: Long,
+
+        @ColumnInfo(name = "name")
+        val name: String,
+
+        @ColumnInfo(name = "screen_name")
+        val screenName: String,
+
+        @ColumnInfo(name = "icon_url")
+        val iconUrl: String
+)

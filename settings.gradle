@@ -1,1 +1,1 @@
-include ':app', ':candysh'
+include ':app', ':candysh', ':data:db'

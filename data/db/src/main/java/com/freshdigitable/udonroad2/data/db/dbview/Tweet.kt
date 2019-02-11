@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-package com.freshdigitable.udonroad2.tweet
+package com.freshdigitable.udonroad2.data.db.dbview
 
 import androidx.room.ColumnInfo
 import androidx.room.Embedded
-import com.freshdigitable.udonroad2.user.User
 import org.threeten.bp.Instant
 
 data class Tweet(
