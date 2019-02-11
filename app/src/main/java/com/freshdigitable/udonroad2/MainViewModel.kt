@@ -16,6 +16,8 @@
 
 package com.freshdigitable.udonroad2
 
+import android.util.Log
+import android.view.MenuItem
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.paging.PagedList
@@ -42,5 +44,9 @@ class MainViewModel @Inject constructor(
     override fun onCleared() {
         super.onCleared()
         homeRepository.clear()
+    }
+
+    fun onFabMenuSelected(item: MenuItem) {
+        Log.d("MainViewModel", "onFabSelected: $item")
     }
 }
