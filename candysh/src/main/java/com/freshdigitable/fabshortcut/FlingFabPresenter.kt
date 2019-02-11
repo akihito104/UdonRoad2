@@ -37,6 +37,12 @@ internal class FlingFabPresenter(
         if (a.hasValue(R.styleable.FlingFAB_menu)) {
             val menuRes = a.getResourceId(R.styleable.FlingFAB_menu, 0)
             FfabMenuItemInflater.inflate(fab.context, menu, menuRes)
+
+            (0 until menu.size()).map {
+                menu.getItem(it) as FfabMenuItem
+            }.forEach {
+                indicator.setDrawable(it.direction!!, it.icon)
+            }
         }
         marginFromFab = a.getDimensionPixelSize(R.styleable.FlingFAB_marginFabToIndicator, 0)
         a.recycle()

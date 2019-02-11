@@ -17,13 +17,12 @@
 package com.freshdigitable.fabshortcut
 
 import android.content.Context
-import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.view.View
+import android.widget.FrameLayout
 import android.widget.ImageView
 import androidx.annotation.ColorInt
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.graphics.drawable.DrawableCompat
 
 
@@ -31,24 +30,24 @@ class FlingActionIndicator @JvmOverloads constructor(
         context: Context,
         attrs: AttributeSet? = null,
         defStyleAttr: Int = 0
-) : ConstraintLayout(context, attrs, defStyleAttr) {
-    private val views: Map<Direction, ImageView> by lazy {
-        val v = View.inflate(context, R.layout.view_fling_action_indicator, this)
-        mapOf<Direction, ImageView>(
-                Direction.UP to v.findViewById(R.id.actionIndicator_up),
-                Direction.DOWN to v.findViewById(R.id.actionIndicator_down),
-                Direction.LEFT to v.findViewById(R.id.actionIndicator_left),
-                Direction.RIGHT to v.findViewById(R.id.actionIndicator_right)
-        )
-    }
+) : FrameLayout(context, attrs, defStyleAttr) {
 
+    private val views: Map<Direction, ImageView>
     private val drawables: MutableMap<Direction, Drawable> = mutableMapOf()
 
     init {
         id = R.id.indicator
         visibility = View.INVISIBLE
         layoutParams = generateDefaultLayoutParams()
-        setBackgroundColor(Color.GRAY)
+        setBackgroundColor(0xcccc)
+
+        val v = View.inflate(context, R.layout.view_fling_action_indicator, this)
+        views = mapOf(
+                Direction.UP to v.findViewById(R.id.actionIndicator_up),
+                Direction.DOWN to v.findViewById(R.id.actionIndicator_down),
+                Direction.LEFT to v.findViewById(R.id.actionIndicator_left),
+                Direction.RIGHT to v.findViewById(R.id.actionIndicator_right)
+        )
 
         if (isInEditMode) {
             visibility = View.VISIBLE
@@ -63,6 +62,10 @@ class FlingActionIndicator @JvmOverloads constructor(
             width = size
             height = size
         }
+    }
+
+    internal fun setDrawable(direction: Direction, drawable: Drawable) {
+        drawables[direction] = drawable
     }
 
     internal fun onActionSelected(direction: Direction) {
@@ -103,11 +106,7 @@ class FlingActionIndicator @JvmOverloads constructor(
     }
 
     private fun translationTo(direction: Direction, coefs: TransCoefs) {
-        translationTo(views[direction], coefs)
-    }
-
-    private fun translationTo(icon: View?, coefs: TransCoefs) {
-        val ic = icon ?: return
+        val ic = views[direction] ?: return
 
         val dX = paddingLeft + coefs.xCoef * calcContentWidth() - calcCenterX(ic)
         val dY = paddingTop + coefs.yCoef * calcContentHeight() - calcCenterY(ic)
@@ -117,16 +116,15 @@ class FlingActionIndicator @JvmOverloads constructor(
     }
 
     internal fun onActionLeave(direction: Direction) {
-        if (direction === Direction.UNDEFINED) {
-            return
+        if (direction != Direction.UNDEFINED) {
+            if (direction.isOnAxis) {
+                resetViewTransforms(direction)
+            } else {
+                direction.bothNeighbor.forEach { resetViewTransforms(it) }
+            }
         }
-        if (direction.isOnAxis) {
-            resetViewTransforms(direction)
-        } else {
-            direction.bothNeighbor.forEach { resetViewTransforms(it) }
-        }
-        views.entries.forEach { (direction, v) ->
-            v.setImageDrawable(drawables[direction])
+        views.entries.forEach { (d, v) ->
+            v.setImageDrawable(drawables[d])
             v.visibility = View.VISIBLE
         }
     }
