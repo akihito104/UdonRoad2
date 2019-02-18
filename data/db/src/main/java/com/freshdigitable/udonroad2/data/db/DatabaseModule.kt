@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-package com.freshdigitable.udonroad2.di
+package com.freshdigitable.udonroad2.data.db
 
 import android.app.Application
 import androidx.room.Room
-import com.freshdigitable.udonroad2.data.db.AppDatabase
 import com.freshdigitable.udonroad2.data.db.dao.TweetDao
 import com.freshdigitable.udonroad2.data.db.dao.UserDao
 import dagger.Module

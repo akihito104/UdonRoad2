@@ -18,6 +18,7 @@ package com.freshdigitable.udonroad2.di
 
 import android.app.Application
 import com.freshdigitable.udonroad2.AppApplication
+import com.freshdigitable.udonroad2.data.db.DatabaseModule
 import dagger.BindsInstance
 import dagger.Component
 import dagger.android.support.AndroidSupportInjectionModule
