@@ -25,7 +25,7 @@ import android.widget.TextView
 import androidx.databinding.BindingAdapter
 import com.bumptech.glide.Glide
 import com.freshdigitable.udonroad2.R
-import com.freshdigitable.udonroad2.data.db.dbview.User
+import com.freshdigitable.udonroad2.model.User
 import org.threeten.bp.Duration
 import org.threeten.bp.Instant
 import org.threeten.bp.LocalDateTime

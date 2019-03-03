@@ -16,14 +16,9 @@
 
 package com.freshdigitable.udonroad2.di
 
+import com.freshdigitable.udonroad2.data.repository.AppExecutor
 import dagger.Module
 import dagger.Provides
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
-import java.util.concurrent.Executor
 import javax.inject.Singleton
 
 @Module
@@ -31,28 +26,4 @@ class ExecutorModule {
     @Provides
     @Singleton
     fun provideAppExecutor(): AppExecutor = AppExecutor()
-}
-
-class AppExecutor {
-    private val disk: Executor = Executor {
-        diskAccess { it.run() }
-    }
-
-    val network: Executor = Executor {
-        GlobalScope.launch(Dispatchers.Default) {
-            it.run()
-        }
-    }
-
-    fun diskIO(task: () -> Unit) = diskAccess(task)
-}
-
-fun diskAccess(task: () -> Unit) = GlobalScope.launch(Dispatchers.IO) {
-    task()
-}
-
-suspend fun <T> networkAccess(callable: () -> T): T = coroutineScope {
-    async(Dispatchers.Default) {
-        callable()
-    }.await()
 }

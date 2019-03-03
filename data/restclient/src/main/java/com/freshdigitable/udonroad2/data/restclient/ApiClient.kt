@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-package com.freshdigitable.udonroad2.tweet
+package com.freshdigitable.udonroad2.data.restclient
 
-import com.freshdigitable.udonroad2.data.db.entity.TweetEntity
-import com.freshdigitable.udonroad2.data.db.entity.UserEntity
+import com.freshdigitable.udonroad2.model.TweetEntity
 import org.threeten.bp.Instant
 import twitter4j.Paging
 import twitter4j.Status
@@ -43,19 +42,18 @@ class HomeApiClient @Inject constructor(
 }
 
 fun toEntity(status: Status): TweetEntity {
-    return TweetEntity(
+    return TweetEntityRest(
             id = status.id,
             text = status.text,
             retweetCount = status.retweetCount,
             favoriteCount = status.favoriteCount,
-            user = UserEntity(
+            user = UserEntityRest(
                     id = status.user.id,
                     name = status.user.name,
                     screenName = status.user.screenName,
                     iconUrl = status.user.profileImageURLHttps
             ),
             retweetedTweet = status.retweetedStatus?.let { toEntity(it) },
-            quotedTweetId = status.quotedStatusId,
             quotedTweet = status.quotedStatus?.let { toEntity(it) },
             inReplyToTweetId = status.inReplyToStatusId,
             isRetweeted = status.isRetweeted,

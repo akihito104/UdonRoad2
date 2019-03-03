@@ -19,19 +19,20 @@ package com.freshdigitable.udonroad2.data.db.entity
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.freshdigitable.udonroad2.model.User
 
 @Entity
 data class UserEntity(
-        @PrimaryKey
+    @PrimaryKey
         @ColumnInfo(name = "id")
-        val id: Long,
+    override val id: Long,
 
-        @ColumnInfo(name = "name")
-        val name: String,
+    @ColumnInfo(name = "name")
+    override val name: String,
 
-        @ColumnInfo(name = "screen_name")
-        val screenName: String,
+    @ColumnInfo(name = "screen_name")
+    override val screenName: String,
 
-        @ColumnInfo(name = "icon_url")
-        val iconUrl: String
-)
+    @ColumnInfo(name = "icon_url")
+    override val iconUrl: String
+) : User

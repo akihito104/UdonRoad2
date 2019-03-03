@@ -1,1 +1,6 @@
-include ':app', ':candysh', ':data:db'
+include ':app',
+        ':candysh',
+        ':data:db',
+        ':data:restclient',
+        ':data:repository',
+        ':model'

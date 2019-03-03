@@ -19,103 +19,68 @@ package com.freshdigitable.udonroad2.data.db.entity
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
-import androidx.room.Ignore
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import org.threeten.bp.Instant
 
 @Entity(
-        foreignKeys = [
-            ForeignKey(
-                    entity = UserEntity::class,
-                    parentColumns = ["id"],
-                    childColumns = ["user_id"],
-                    deferred = true
-            ),
-            ForeignKey(
-                    entity = TweetEntity::class,
-                    parentColumns = ["id"],
-                    childColumns = ["retweeted_tweet_id"],
-                    deferred = true
-            )
-        ],
-        indices = [
-            Index("user_id"),
-            Index("retweeted_tweet_id")
-        ]
+    foreignKeys = [
+        ForeignKey(
+            entity = UserEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["user_id"],
+            deferred = true
+        ),
+        ForeignKey(
+            entity = TweetEntityDb::class,
+            parentColumns = ["id"],
+            childColumns = ["retweeted_tweet_id"],
+            deferred = true
+        )
+    ],
+    indices = [
+        Index("user_id"),
+        Index("retweeted_tweet_id")
+    ]
 )
-class TweetEntity(
-        @PrimaryKey
-        @ColumnInfo(name = "id")
-        val id: Long,
+class TweetEntityDb(
+    @PrimaryKey
+    @ColumnInfo(name = "id")
+    val id: Long,
 
-        @ColumnInfo(name = "text")
-        val text: String,
+    @ColumnInfo(name = "text")
+    val text: String,
 
-        @ColumnInfo(name = "retweet_count")
-        val retweetCount: Int,
+    @ColumnInfo(name = "retweet_count")
+    val retweetCount: Int,
 
-        @ColumnInfo(name = "favorite_count")
-        val favoriteCount: Int,
+    @ColumnInfo(name = "favorite_count")
+    val favoriteCount: Int,
 
-        @ColumnInfo(name = "user_id")
-        val userId: Long,
+    @ColumnInfo(name = "user_id")
+    val userId: Long,
 
-        @ColumnInfo(name = "retweeted_tweet_id")
-        val retweetedTweetId: Long?,
+    @ColumnInfo(name = "retweeted_tweet_id")
+    val retweetedTweetId: Long?,
 
-        @ColumnInfo(name = "quoted_tweet_id")
-        val quotedTweetId: Long?,
+    @ColumnInfo(name = "quoted_tweet_id")
+    val quotedTweetId: Long?,
 
-        @ColumnInfo(name = "in_reply_to_tweet_id")
-        val inReplyToTweetId: Long?,
+    @ColumnInfo(name = "in_reply_to_tweet_id")
+    val inReplyToTweetId: Long?,
 
-        @ColumnInfo(name = "is_retweeted")
-        val isRetweeted: Boolean,
+    @ColumnInfo(name = "is_retweeted")
+    val isRetweeted: Boolean,
 
-        @ColumnInfo(name = "is_favorited")
-        val isFavorited: Boolean,
+    @ColumnInfo(name = "is_favorited")
+    val isFavorited: Boolean,
 
-        @ColumnInfo(name = "possibly_sensitive")
-        val possiblySensitive: Boolean,
+    @ColumnInfo(name = "possibly_sensitive")
+    val possiblySensitive: Boolean,
 
-        @ColumnInfo(name = "source")
-        val source: String,
+    @ColumnInfo(name = "source")
+    val source: String,
 
-        @ColumnInfo(name = "created_at")
-        val createdAt: Instant
-) {
-    @Ignore constructor(
-            id: Long,
-            text: String,
-            retweetCount: Int,
-            favoriteCount: Int,
-            user: UserEntity,
-            retweetedTweet: TweetEntity?,
-            quotedTweetId: Long?,
-            quotedTweet: TweetEntity?,
-            inReplyToTweetId: Long?,
-            isRetweeted: Boolean,
-            isFavorited: Boolean,
-            possiblySensitive: Boolean,
-            source: String,
-            createdAt: Instant
-    ) : this(
-            id, text, retweetCount, favoriteCount, user.id,
-            retweetedTweet?.id, quotedTweetId, inReplyToTweetId, isRetweeted, isFavorited,
-            possiblySensitive, source, createdAt
-    ) {
-        this.user = user
-        this.retweetedTweet = retweetedTweet
-        this.quotedTweet = quotedTweet
-    }
-
-    @Ignore
-    var user: UserEntity? = null
-
-    @Ignore
-    var retweetedTweet: TweetEntity? = null
-
-    @Ignore
-    var quotedTweet: TweetEntity? = null
-}
+    @ColumnInfo(name = "created_at")
+    val createdAt: Instant
+)

@@ -18,42 +18,42 @@ package com.freshdigitable.udonroad2.data.db.dbview
 
 import androidx.room.ColumnInfo
 import androidx.room.Embedded
+import com.freshdigitable.udonroad2.model.TweetListItem
 import org.threeten.bp.Instant
 
 data class Tweet(
-        @ColumnInfo(name = "id")
-        val id: Long,
+    @ColumnInfo(name = "id")
+    override val id: Long,
 
-        @ColumnInfo(name = "text")
-        val text: String,
+    @ColumnInfo(name = "text")
+    override val text: String,
 
-        @ColumnInfo(name = "retweet_count")
-        val retweetCount: Int,
+    @ColumnInfo(name = "retweet_count")
+    override val retweetCount: Int,
 
-        @ColumnInfo(name = "favorite_count")
-        val favoriteCount: Int,
+    @ColumnInfo(name = "favorite_count")
+    override val favoriteCount: Int,
 
-        @Embedded(prefix = "user_")
-        val user: User,
+    @Embedded(prefix = "user_")
+    override val user: User,
 
-        @ColumnInfo(name = "source")
-        val source: String,
+    @ColumnInfo(name = "source")
+    override val source: String,
 
-        @ColumnInfo(name = "created_at")
-        val createdAt: Instant
-)
+    @ColumnInfo(name = "created_at")
+    override val createdAt: Instant
+): com.freshdigitable.udonroad2.model.Tweet
 
 data class TweetListItem(
-        @ColumnInfo(name = "original_id")
-        val originalId: Long,
-        @Embedded(prefix = "original_user_")
-        val originalUser: User,
+    @ColumnInfo(name = "original_id")
+    override val originalId: Long,
 
-        @Embedded
-        val body: Tweet,
+    @Embedded(prefix = "original_user_")
+    override val originalUser: User,
 
-        @Embedded(prefix = "qt_")
-        val quoted: Tweet?
-) {
-    fun isRetweet(): Boolean = originalId != body.id
-}
+    @Embedded
+    override val body: Tweet,
+
+    @Embedded(prefix = "qt_")
+    override val quoted: Tweet?
+) : TweetListItem

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.freshdigitable.udonroad2.tweet
+package com.freshdigitable.udonroad2.data.repository
 
 import android.util.Log
 import androidx.lifecycle.LiveData
@@ -22,21 +22,22 @@ import androidx.lifecycle.MutableLiveData
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
 import com.freshdigitable.udonroad2.data.db.dao.TweetDao
-import com.freshdigitable.udonroad2.data.db.dbview.TweetListItem
-import com.freshdigitable.udonroad2.data.db.entity.TweetEntity
-import com.freshdigitable.udonroad2.di.AppExecutor
-import com.freshdigitable.udonroad2.di.diskAccess
-import com.freshdigitable.udonroad2.di.networkAccess
+import com.freshdigitable.udonroad2.data.restclient.HomeApiClient
+import com.freshdigitable.udonroad2.model.TweetEntity
+import com.freshdigitable.udonroad2.model.TweetListItem
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.concurrent.Executor
 import javax.inject.Inject
 
 class HomeTimelineRepository @Inject constructor(
-        private val tweetDao: TweetDao,
-        private val apiClient: HomeApiClient,
-        executor: AppExecutor
+    private val tweetDao: TweetDao,
+    private val apiClient: HomeApiClient,
+    private val executor: AppExecutor
 ) {
     companion object {
         private val config = PagedList.Config.Builder()
@@ -47,20 +48,20 @@ class HomeTimelineRepository @Inject constructor(
     }
 
     val timeline: LiveData<PagedList<TweetListItem>> by lazy {
-        LivePagedListBuilder(tweetDao.getHomeTimeline("home"), config)
-                .setFetchExecutor(executor.network)
-                .setBoundaryCallback(object : PagedList.BoundaryCallback<TweetListItem>() {
-                    override fun onZeroItemsLoaded() {
-                        super.onZeroItemsLoaded()
-                        fetchHomeTimeline { loadInit() }
-                    }
+        LivePagedListBuilder(tweetDao.getHomeTimeline("home").map { it as TweetListItem }, config)
+            .setFetchExecutor(executor.disk)
+            .setBoundaryCallback(object : PagedList.BoundaryCallback<TweetListItem>() {
+                override fun onZeroItemsLoaded() {
+                    super.onZeroItemsLoaded()
+                    fetchHomeTimeline { loadInit() }
+                }
 
-                    override fun onItemAtEndLoaded(itemAtEnd: TweetListItem) {
-                        super.onItemAtEndLoaded(itemAtEnd)
-                        fetchHomeTimeline { loadAtLast(itemAtEnd.originalId - 1) }
-                    }
-                })
-                .build()
+                override fun onItemAtEndLoaded(itemAtEnd: TweetListItem) {
+                    super.onItemAtEndLoaded(itemAtEnd)
+                    fetchHomeTimeline { loadAtLast(itemAtEnd.originalId - 1) }
+                }
+            })
+            .build()
     }
 
     fun loadAtFront() {
@@ -89,4 +90,28 @@ class HomeTimelineRepository @Inject constructor(
     }
 
     fun clear() = diskAccess { tweetDao.clear() }
+}
+
+class AppExecutor {
+    val disk: Executor = Executor {
+        diskAccess { it.run() }
+    }
+
+    val network: Executor = Executor {
+        GlobalScope.launch(Dispatchers.Default) {
+            it.run()
+        }
+    }
+
+    fun diskIO(task: () -> Unit) = diskAccess(task)
+}
+
+fun diskAccess(task: () -> Unit) = GlobalScope.launch(Dispatchers.IO) {
+    task()
+}
+
+suspend fun <T> networkAccess(callable: () -> T): T = coroutineScope {
+    withContext(Dispatchers.Default) {
+        callable()
+    }
 }

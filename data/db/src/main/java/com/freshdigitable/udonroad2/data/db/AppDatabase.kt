@@ -23,13 +23,13 @@ import androidx.room.TypeConverters
 import com.freshdigitable.udonroad2.data.db.dao.TweetDao
 import com.freshdigitable.udonroad2.data.db.dao.TweetListEntity
 import com.freshdigitable.udonroad2.data.db.dao.UserDao
-import com.freshdigitable.udonroad2.data.db.entity.TweetEntity
+import com.freshdigitable.udonroad2.data.db.entity.TweetEntityDb
 import com.freshdigitable.udonroad2.data.db.entity.UserEntity
 import org.threeten.bp.Instant
 
 @Database(
         entities = [
-            TweetEntity::class,
+            TweetEntityDb::class,
             TweetListEntity::class,
             UserEntity::class
         ],

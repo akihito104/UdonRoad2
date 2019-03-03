@@ -28,7 +28,10 @@ import androidx.room.Query
 import androidx.room.Transaction
 import com.freshdigitable.udonroad2.data.db.AppDatabase
 import com.freshdigitable.udonroad2.data.db.dbview.TweetListItem
-import com.freshdigitable.udonroad2.data.db.entity.TweetEntity
+import com.freshdigitable.udonroad2.data.db.entity.TweetEntityDb
+import com.freshdigitable.udonroad2.data.db.entity.UserEntity
+import com.freshdigitable.udonroad2.model.TweetEntity
+import com.freshdigitable.udonroad2.model.User
 
 @Dao
 abstract class TweetDao(
@@ -38,27 +41,27 @@ abstract class TweetDao(
     @Query("""WITH
         body AS (
         SELECT
-         TweetEntity.id, text, created_at, retweet_count, favorite_count, source,
+         TweetEntityDb.id, text, created_at, retweet_count, favorite_count, source,
          UserEntity.id AS user_id,
          UserEntity.name AS user_name,
          UserEntity.screen_name AS user_screen_name,
          UserEntity.icon_url AS user_icon_url
-        FROM TweetEntity
-        INNER JOIN UserEntity ON TweetEntity.user_id = UserEntity.id
+        FROM TweetEntityDb
+        INNER JOIN UserEntity ON TweetEntityDb.user_id = UserEntity.id
         ),
         original AS (
         SELECT
-         TweetEntity.id AS original_id,
+         TweetEntityDb.id AS original_id,
          UserEntity.id AS original_user_id,
          UserEntity.name AS original_user_name,
          UserEntity.screen_name AS original_user_screen_name,
          UserEntity.icon_url AS original_user_icon_url
-        FROM TweetEntity
-        INNER JOIN UserEntity ON TweetEntity.user_id = UserEntity.id
+        FROM TweetEntityDb
+        INNER JOIN UserEntity ON TweetEntityDb.user_id = UserEntity.id
         ),
         quoted AS (
         SELECT
-         TweetEntity.id AS qt_id,
+         TweetEntityDb.id AS qt_id,
          text AS qt_text,
          created_at AS qt_created_at,
          retweet_count AS qt_retweet_count,
@@ -68,8 +71,8 @@ abstract class TweetDao(
          UserEntity.name AS qt_user_name,
          UserEntity.screen_name AS qt_user_screen_name,
          UserEntity.icon_url AS qt_user_icon_url
-        FROM TweetEntity
-        INNER JOIN UserEntity ON TweetEntity.user_id = UserEntity.id
+        FROM TweetEntityDb
+        INNER JOIN UserEntity ON TweetEntityDb.user_id = UserEntity.id
         )
         SELECT body.*, original.*, quoted.*
         FROM TweetListEntity
@@ -83,18 +86,19 @@ abstract class TweetDao(
     @Transaction
     open fun addTweets(tweet: List<TweetEntity>) {
         val tweetEntities = tweet.asSequence()
-                .map { arrayOf(it, it.retweetedTweet, it.retweetedTweet?.quotedTweet, it.quotedTweet).filterNotNull() }
-                .flatMap { it.asSequence() }
-                .distinctBy { it.id }
-                .toList()
+            .map { arrayOf(it, it.retweetedTweet, it.retweetedTweet?.quotedTweet, it.quotedTweet).filterNotNull() }
+            .flatMap { it.asSequence() }
+            .distinctBy { it.id }
+            .toList()
         val userDao = db.userDao()
         userDao.addUsers(
-                tweetEntities.asSequence()
-                        .map { it.user }
-                        .filterNotNull()
-                        .distinctBy { it.id }
-                        .toList())
-        addTweetEntitiesInternal(tweetEntities)
+            tweetEntities.asSequence()
+                .map { it.user }
+                .filterNotNull()
+                .distinctBy { it.id }
+                .map { it.toDbEntity() }
+                .toList())
+        addTweetEntitiesInternal(tweetEntities.map(TweetEntity::toDbEntity))
         addTweetListEntities(
                 tweet.map{
                     TweetListEntity(
@@ -107,7 +111,7 @@ abstract class TweetDao(
     }
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    abstract fun addTweetEntitiesInternal(tweet: List<TweetEntity>)
+    abstract fun addTweetEntitiesInternal(tweet: List<TweetEntityDb>)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     abstract fun addTweetListEntities(listEntities: List<TweetListEntity>)
@@ -120,13 +124,13 @@ abstract class TweetDao(
         primaryKeys = ["original_id", "owner"],
         foreignKeys = [
             ForeignKey(
-                    entity = TweetEntity::class,
+                    entity = TweetEntityDb::class,
                     parentColumns = ["id"],
                     childColumns = ["original_id"],
                     deferred = true
             ),
             ForeignKey(
-                    entity = TweetEntity::class,
+                    entity = TweetEntityDb::class,
                     parentColumns = ["id"],
                     childColumns = ["body_item_id"],
                     deferred = true
@@ -156,3 +160,27 @@ class TweetListEntity(
         @ColumnInfo(name = "owner")
         val owner: String
 )
+
+private fun TweetEntity.toDbEntity(): TweetEntityDb {
+    return TweetEntityDb(
+        id = id,
+        createdAt = createdAt,
+        favoriteCount = favoriteCount,
+        inReplyToTweetId = inReplyToTweetId,
+        isFavorited = isFavorited,
+        isRetweeted = isRetweeted,
+        possiblySensitive = possiblySensitive,
+        quotedTweetId = quotedTweet?.id,
+        retweetCount = retweetCount,
+        retweetedTweetId = retweetedTweet?.id,
+        source = source,
+        text = text,
+        userId = user.id
+    )
+}
+
+private fun User.toDbEntity(): UserEntity {
+    return UserEntity(
+        id, name, screenName, iconUrl
+    )
+}
