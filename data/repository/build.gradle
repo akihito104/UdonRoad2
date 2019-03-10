@@ -25,10 +25,10 @@ dependencies {
     implementation project(':data:restclient')
     implementation project(':model')
 
-    implementation "androidx.core:core-ktx:$coreKtx_version"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutine_version"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutine_version"
 
+    implementation "androidx.core:core-ktx:$coreKtx_version"
     implementation "androidx.appcompat:appcompat:$appcompat_version"
 
     implementation "androidx.room:room-runtime:$room_version"
@@ -40,9 +40,9 @@ dependencies {
     kapt "com.google.dagger:dagger-compiler:$dagger_version"
     kapt "com.google.dagger:dagger-android-processor:$dagger_version"
 
-    implementation 'com.jakewharton.threetenabp:threetenabp:1.1.0'
-    implementation 'androidx.appcompat:appcompat:1.0.2'
-    testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'androidx.test:runner:1.1.1'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.1'
+    implementation "com.jakewharton.threetenabp:threetenabp:$threetenbp_version"
+
+    testImplementation "junit:junit:$junit_version"
+    androidTestImplementation "androidx.test:runner:$androidTestRunner_version"
+    androidTestImplementation "androidx.test.espresso:espresso-core:$espresso_version"
 }

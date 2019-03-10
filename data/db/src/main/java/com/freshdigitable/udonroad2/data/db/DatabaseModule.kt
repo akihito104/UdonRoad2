@@ -22,20 +22,21 @@ import com.freshdigitable.udonroad2.data.db.dao.TweetDao
 import com.freshdigitable.udonroad2.data.db.dao.UserDao
 import dagger.Module
 import dagger.Provides
-import javax.inject.Singleton
 
 @Module
-class DatabaseModule {
+object DatabaseModule {
     @Provides
-    @Singleton
+    @JvmStatic
     fun provideAppDatabase(app: Application): AppDatabase =
         Room.inMemoryDatabaseBuilder(app, AppDatabase::class.java)
                 .fallbackToDestructiveMigration()
                 .build()
 
     @Provides
+    @JvmStatic
     fun providesTweetDao(db: AppDatabase): TweetDao = db.tweetDao()
 
     @Provides
+    @JvmStatic
     fun providesUserDao(db: AppDatabase): UserDao = db.userDao()
 }

@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-package com.freshdigitable.udonroad2.di
+package com.freshdigitable.udonroad2.data.restclient
 
-import com.freshdigitable.udonroad2.BuildConfig
 import dagger.Module
 import dagger.Provides
 import twitter4j.Twitter
@@ -25,8 +24,9 @@ import twitter4j.auth.AccessToken
 import twitter4j.conf.ConfigurationBuilder
 
 @Module
-class TwitterModule {
+object TwitterModule {
     @Provides
+    @JvmStatic
     fun providesTwitter() : Twitter {
         val configuration = ConfigurationBuilder()
                 .setTweetModeExtended(true)

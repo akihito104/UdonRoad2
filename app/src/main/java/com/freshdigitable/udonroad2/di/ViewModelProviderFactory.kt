@@ -30,10 +30,9 @@ class ViewModelProviderFactory @Inject constructor(
 ) : ViewModelProvider.Factory {
 
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        val provider: Provider<out ViewModel>? = providers[modelClass] ?: find(modelClass)
-        if (provider == null) {
-            throw IllegalStateException("unregistered class: $modelClass")
-        }
+        val provider: Provider<out ViewModel> = providers[modelClass]
+            ?: find(modelClass)
+            ?: throw IllegalStateException("unregistered class: $modelClass")
         @Suppress("UNCHECKED_CAST")
         return provider.get() as T
     }
