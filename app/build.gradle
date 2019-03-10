@@ -3,26 +3,12 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 
+apply from: rootProject.file("android_build.gradle")
+
 android {
-    compileSdkVersion 28
     defaultConfig {
         applicationId "com.freshdigitable.udonroad2"
-        minSdkVersion 15
-        targetSdkVersion 28
-        versionCode 1
-        versionName "0.0.1"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-
-        def properties = new Properties()
-        properties.load(project.rootProject.file('local.properties').newDataInputStream())
-        def CONSUMER_KEY = properties.getProperty('consumer_key')
-        buildConfigField "String", "CONSUMER_KEY", "\"${CONSUMER_KEY}\""
-        def CONSUMER_SECRET = properties.getProperty('consumer_secret')
-        buildConfigField "String", "CONSUMER_SECRET", "\"${CONSUMER_SECRET}\""
-        def ACCESS_TOKEN = properties.getProperty('access_token')
-        buildConfigField "String", "ACCESS_TOKEN", "\"${ACCESS_TOKEN}\""
-        def ACCESS_SECRET = properties.getProperty('access_secret')
-        buildConfigField "String", "ACCESS_SECRET", "\"${ACCESS_SECRET}\""
     }
     buildTypes {
         release {
@@ -43,6 +29,11 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation project(':candysh')
+    implementation project(':data:repository')
+    implementation project(':data:db')
+    implementation project(':data:restclient')
+    implementation project(':model')
+
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutine_version"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutine_version"
@@ -59,8 +50,6 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-reactivestreams:$lifecycle_version"
 
     implementation "androidx.paging:paging-runtime:$paging_version"
-    implementation "androidx.room:room-runtime:$room_version"
-    kapt "androidx.room:room-compiler:$room_version"
 
     implementation "com.google.dagger:dagger-android:$dagger_version"
     implementation "com.google.dagger:dagger-android-support:$dagger_version"
@@ -70,12 +59,10 @@ dependencies {
     implementation "io.reactivex.rxjava2:rxjava:$rx_version"
     implementation "io.reactivex.rxjava2:rxandroid:$rxAndroid_version"
 
-    implementation "org.twitter4j:twitter4j-core:$t4j_version"
-    implementation "org.twitter4j:twitter4j-http2-support:$t4j_version"
     implementation "com.github.bumptech.glide:glide:$glide_version"
     kapt "com.github.bumptech.glide:compiler:$glide_version"
 
-    implementation 'com.jakewharton.threetenabp:threetenabp:1.1.0'
+    implementation "com.jakewharton.threetenabp:threetenabp:$threetenbp_version"
     // test
     testImplementation "junit:junit:$junit_version"
     testImplementation "org.robolectric:robolectric:$robolectric_version"

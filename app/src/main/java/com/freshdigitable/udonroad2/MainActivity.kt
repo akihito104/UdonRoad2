@@ -36,7 +36,7 @@ import com.freshdigitable.udonroad2.databinding.ActivityMainBinding
 import com.freshdigitable.udonroad2.databinding.ViewTweetListItemBinding
 import com.freshdigitable.udonroad2.databinding.ViewTweetListQuotedItemBinding
 import com.freshdigitable.udonroad2.di.ViewModelKey
-import com.freshdigitable.udonroad2.tweet.TweetListItem
+import com.freshdigitable.udonroad2.model.TweetListItem
 import dagger.Binds
 import dagger.Module
 import dagger.android.AndroidInjection

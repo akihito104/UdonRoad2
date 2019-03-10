@@ -1,0 +1,55 @@
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-kapt'
+
+apply from: rootProject.file("android_build.gradle")
+
+android {
+    defaultConfig {
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        def properties = new Properties()
+        properties.load(project.rootProject.file('local.properties').newDataInputStream())
+        def CONSUMER_KEY = properties.getProperty('consumer_key')
+        buildConfigField "String", "CONSUMER_KEY", "\"${CONSUMER_KEY}\""
+        def CONSUMER_SECRET = properties.getProperty('consumer_secret')
+        buildConfigField "String", "CONSUMER_SECRET", "\"${CONSUMER_SECRET}\""
+        def ACCESS_TOKEN = properties.getProperty('access_token')
+        buildConfigField "String", "ACCESS_TOKEN", "\"${ACCESS_TOKEN}\""
+        def ACCESS_SECRET = properties.getProperty('access_secret')
+        buildConfigField "String", "ACCESS_SECRET", "\"${ACCESS_SECRET}\""
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation project(':model')
+
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutine_version"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutine_version"
+
+    implementation "androidx.appcompat:appcompat:$appcompat_version"
+
+    implementation "org.twitter4j:twitter4j-core:$t4j_version"
+    implementation "org.twitter4j:twitter4j-http2-support:$t4j_version"
+    implementation "com.jakewharton.threetenabp:threetenabp:$threetenbp_version"
+
+    implementation "com.google.dagger:dagger-android:$dagger_version"
+    implementation "com.google.dagger:dagger-android-support:$dagger_version"
+    kapt "com.google.dagger:dagger-compiler:$dagger_version"
+    kapt "com.google.dagger:dagger-android-processor:$dagger_version"
+
+    testImplementation "junit:junit:$junit_version"
+    androidTestImplementation "androidx.test:runner:$androidTestRunner_version"
+    androidTestImplementation "androidx.test.espresso:espresso-core:$espresso_version"
+}

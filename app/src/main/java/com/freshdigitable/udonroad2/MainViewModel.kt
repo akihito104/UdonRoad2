@@ -21,8 +21,8 @@ import android.view.MenuItem
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.paging.PagedList
-import com.freshdigitable.udonroad2.tweet.HomeTimelineRepository
-import com.freshdigitable.udonroad2.tweet.TweetListItem
+import com.freshdigitable.udonroad2.data.repository.HomeTimelineRepository
+import com.freshdigitable.udonroad2.model.TweetListItem
 import javax.inject.Inject
 
 class MainViewModel @Inject constructor(

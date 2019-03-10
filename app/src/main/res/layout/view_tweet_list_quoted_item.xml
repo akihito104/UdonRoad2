@@ -22,7 +22,7 @@
     <data>
         <variable
             name="tweet"
-            type="com.freshdigitable.udonroad2.tweet.TweetListItem"
+            type="com.freshdigitable.udonroad2.model.TweetListItem"
             />
     </data>
 
