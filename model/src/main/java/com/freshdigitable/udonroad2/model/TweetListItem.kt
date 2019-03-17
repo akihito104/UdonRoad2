@@ -15,6 +15,10 @@ interface TweetListItem {
 
     val isRetweet: Boolean
         get() = originalId != body.id
+
+    override fun equals(other: Any?): Boolean
+
+    override fun hashCode(): Int
 }
 
 interface Tweet {

@@ -65,11 +65,7 @@ class MainActivity : AppCompatActivity() {
     }
 }
 
-private class Adapter : PagedListAdapter<TweetListItem, ViewHolder>(object: DiffUtil.ItemCallback<TweetListItem>() {
-    override fun areItemsTheSame(oldItem: TweetListItem, newItem: TweetListItem): Boolean = oldItem.originalId == newItem.originalId
-
-    override fun areContentsTheSame(oldItem: TweetListItem, newItem: TweetListItem): Boolean = oldItem == newItem
-}) {
+private class Adapter : PagedListAdapter<TweetListItem, ViewHolder>(diffUtil) {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder =
             ViewHolder(ViewTweetListItemBinding.inflate(LayoutInflater.from(parent.context), parent, false))
 
@@ -134,6 +130,18 @@ private class Adapter : PagedListAdapter<TweetListItem, ViewHolder>(object: Diff
             lp.endToEnd = ConstraintLayout.LayoutParams.PARENT_ID
         }
     }
+}
+
+private val diffUtil = object : DiffUtil.ItemCallback<TweetListItem>() {
+    override fun areItemsTheSame(
+        oldItem: TweetListItem,
+        newItem: TweetListItem
+    ): Boolean = oldItem.originalId == newItem.originalId
+
+    override fun areContentsTheSame(
+        oldItem: TweetListItem,
+        newItem: TweetListItem
+    ): Boolean = oldItem == newItem
 }
 
 private class ViewHolder(
