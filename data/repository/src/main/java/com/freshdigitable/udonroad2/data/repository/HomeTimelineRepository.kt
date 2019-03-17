@@ -21,10 +21,15 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
+import com.freshdigitable.udonroad2.data.db.DatabaseModule
 import com.freshdigitable.udonroad2.data.db.dao.TweetDao
 import com.freshdigitable.udonroad2.data.restclient.HomeApiClient
+import com.freshdigitable.udonroad2.data.restclient.TwitterModule
+import com.freshdigitable.udonroad2.model.RepositoryScope
 import com.freshdigitable.udonroad2.model.TweetEntity
 import com.freshdigitable.udonroad2.model.TweetListItem
+import dagger.Module
+import dagger.Provides
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.NonCancellable
@@ -32,9 +37,9 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.concurrent.Executor
-import javax.inject.Inject
 
-class HomeTimelineRepository @Inject constructor(
+@RepositoryScope
+class HomeTimelineRepository(
     private val tweetDao: TweetDao,
     private val apiClient: HomeApiClient,
     private val executor: AppExecutor
@@ -114,4 +119,19 @@ suspend fun <T> networkAccess(callable: () -> T): T = coroutineScope {
     withContext(Dispatchers.Default) {
         callable()
     }
+}
+
+@Module(includes = [
+    DatabaseModule::class,
+    TwitterModule::class
+])
+object HomeTimelineRepositoryModule {
+    @Provides
+    @JvmStatic
+    @RepositoryScope
+    fun provideHomeTimelineRepository(
+        tweetDao: TweetDao,
+        apiClient: HomeApiClient,
+        executor: AppExecutor
+    ): HomeTimelineRepository = HomeTimelineRepository(tweetDao, apiClient, executor)
 }

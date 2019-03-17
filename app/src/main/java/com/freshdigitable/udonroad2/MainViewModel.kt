@@ -23,9 +23,8 @@ import androidx.lifecycle.ViewModel
 import androidx.paging.PagedList
 import com.freshdigitable.udonroad2.data.repository.HomeTimelineRepository
 import com.freshdigitable.udonroad2.model.TweetListItem
-import javax.inject.Inject
 
-class MainViewModel @Inject constructor(
+class MainViewModel(
         private val homeRepository: HomeTimelineRepository
 ) : ViewModel() {
 

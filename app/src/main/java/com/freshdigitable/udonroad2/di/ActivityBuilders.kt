@@ -18,13 +18,16 @@ package com.freshdigitable.udonroad2.di
 
 import com.freshdigitable.udonroad2.MainActivity
 import com.freshdigitable.udonroad2.MainActivityModule
+import com.freshdigitable.udonroad2.model.ActivityScope
 import dagger.Module
 import dagger.android.ContributesAndroidInjector
 
 @Module
 abstract class ActivityBuilders {
+    @ActivityScope
     @ContributesAndroidInjector(modules = [
-        MainActivityModule::class
+        MainActivityModule::class,
+        MainViewModelModule::class
     ])
     abstract fun contributesMainActivity(): MainActivity
 }

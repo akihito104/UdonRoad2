@@ -18,6 +18,7 @@ package com.freshdigitable.udonroad2.di
 
 import android.app.Application
 import com.freshdigitable.udonroad2.AppApplication
+import com.freshdigitable.udonroad2.data.repository.RepositoryComponent
 import com.freshdigitable.udonroad2.data.repository.RepositoryModule
 import dagger.BindsInstance
 import dagger.Component
@@ -42,6 +43,8 @@ interface AppComponent {
 
         fun build(): AppComponent
     }
+
+    fun repositoryModule(): RepositoryComponent.Builder
 
     fun inject(instance: AppApplication)
 }
