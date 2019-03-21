@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.freshdigitable.udonroad2
+package com.freshdigitable.udonroad2.timeline
 
 import android.util.Log
 import android.view.MenuItem
@@ -24,7 +24,7 @@ import androidx.paging.PagedList
 import com.freshdigitable.udonroad2.data.repository.HomeTimelineRepository
 import com.freshdigitable.udonroad2.model.TweetListItem
 
-class MainViewModel(
+class TimelineViewModel(
         private val homeRepository: HomeTimelineRepository
 ) : ViewModel() {
 
@@ -46,6 +46,6 @@ class MainViewModel(
     }
 
     fun onFabMenuSelected(item: MenuItem) {
-        Log.d("MainViewModel", "onFabSelected: $item")
+        Log.d("TimelineViewModel", "onFabSelected: $item")
     }
 }

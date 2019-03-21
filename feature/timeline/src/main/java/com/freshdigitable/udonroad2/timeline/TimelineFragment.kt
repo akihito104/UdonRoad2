@@ -1,4 +1,4 @@
-package com.freshdigitable.udonroad2
+package com.freshdigitable.udonroad2.timeline
 
 import android.content.Context
 import android.os.Bundle
@@ -16,10 +16,10 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.freshdigitable.udonroad2.databinding.FragmentTimelineBinding
-import com.freshdigitable.udonroad2.databinding.ViewTweetListItemBinding
-import com.freshdigitable.udonroad2.databinding.ViewTweetListQuotedItemBinding
 import com.freshdigitable.udonroad2.model.TweetListItem
+import com.freshdigitable.udonroad2.timeline.databinding.FragmentTimelineBinding
+import com.freshdigitable.udonroad2.timeline.databinding.ViewTweetListItemBinding
+import com.freshdigitable.udonroad2.timeline.databinding.ViewTweetListQuotedItemBinding
 import dagger.android.support.AndroidSupportInjection
 import javax.inject.Inject
 
@@ -45,7 +45,7 @@ class TimelineFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val viewModel = ViewModelProviders.of(requireActivity(), factory).get(MainViewModel::class.java)
+        val viewModel = ViewModelProviders.of(requireActivity(), factory).get(TimelineViewModel::class.java)
         binding.viewModel = viewModel
         binding.lifecycleOwner = viewLifecycleOwner
 

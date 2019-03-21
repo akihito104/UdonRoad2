@@ -23,6 +23,8 @@ import androidx.lifecycle.ViewModel
 import com.freshdigitable.udonroad2.data.repository.RepositoryComponent
 import com.freshdigitable.udonroad2.di.ViewModelKey
 import com.freshdigitable.udonroad2.model.ActivityScope
+import com.freshdigitable.udonroad2.timeline.TimelineFragment
+import com.freshdigitable.udonroad2.timeline.TimelineViewModel
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -60,8 +62,8 @@ interface MainActivityModule {
 
     @Binds
     @IntoMap
-    @ViewModelKey(MainViewModel::class)
-    fun bindMainViewModel(viewModel: MainViewModel): ViewModel
+    @ViewModelKey(TimelineViewModel::class)
+    fun bindMainViewModel(viewModel: TimelineViewModel): ViewModel
 }
 
 @Module
@@ -69,7 +71,7 @@ object MainViewModelModule {
     @Provides
     @JvmStatic
     @ActivityScope
-    fun provideMainViewModel(repositories: RepositoryComponent.Builder): MainViewModel {
-        return MainViewModel(repositories.build().homeTimelineRepository())
+    fun provideMainViewModel(repositories: RepositoryComponent.Builder): TimelineViewModel {
+        return TimelineViewModel(repositories.build().homeTimelineRepository())
     }
 }
