@@ -18,13 +18,9 @@ package com.freshdigitable.udonroad2.di
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.freshdigitable.udonroad2.MainViewModel
-import com.freshdigitable.udonroad2.data.repository.RepositoryComponent
-import com.freshdigitable.udonroad2.model.ActivityScope
 import dagger.Binds
 import dagger.MapKey
 import dagger.Module
-import dagger.Provides
 import javax.inject.Inject
 import javax.inject.Provider
 import kotlin.reflect.KClass
@@ -42,12 +38,9 @@ class ViewModelProviderFactory @Inject constructor(
     }
 
     private fun <T : ViewModel> find(modelClass: Class<T>): Provider<out ViewModel>? {
-        for ((k, v) in providers) {
-            if (modelClass.isAssignableFrom(k)) {
-                return v
-            }
-        }
-        return null
+        return providers.entries.firstOrNull { (k, _) ->
+            modelClass.isAssignableFrom(k)
+        }?.value
     }
 
 }
@@ -66,14 +59,4 @@ annotation class ViewModelKey(val value: KClass<out ViewModel>)
 interface ViewModelModule {
     @Binds
     fun bindViewModelFactory(factory: ViewModelProviderFactory): ViewModelProvider.Factory
-}
-
-@Module
-object MainViewModelModule {
-    @Provides
-    @JvmStatic
-    @ActivityScope
-    fun provideMainViewModel(repositories: RepositoryComponent.Builder): MainViewModel {
-        return MainViewModel(repositories.build().homeTimelineRepository())
-    }
 }
