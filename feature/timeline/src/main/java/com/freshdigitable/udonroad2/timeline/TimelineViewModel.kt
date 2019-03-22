@@ -22,7 +22,10 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.paging.PagedList
 import com.freshdigitable.udonroad2.data.repository.HomeTimelineRepository
+import com.freshdigitable.udonroad2.data.repository.RepositoryComponent
 import com.freshdigitable.udonroad2.model.TweetListItem
+import dagger.Module
+import dagger.Provides
 
 class TimelineViewModel(
         private val homeRepository: HomeTimelineRepository
@@ -47,5 +50,14 @@ class TimelineViewModel(
 
     fun onFabMenuSelected(item: MenuItem) {
         Log.d("TimelineViewModel", "onFabSelected: $item")
+    }
+}
+
+@Module
+object TimelineViewModelModule {
+    @Provides
+    @JvmStatic
+    fun provideMainViewModel(repositories: RepositoryComponent.Builder): TimelineViewModel {
+        return TimelineViewModel(repositories.build().homeTimelineRepository())
     }
 }

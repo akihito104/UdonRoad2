@@ -45,7 +45,7 @@ class TimelineFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val viewModel = ViewModelProviders.of(requireActivity(), factory).get(TimelineViewModel::class.java)
+        val viewModel = ViewModelProviders.of(this, factory).get(TimelineViewModel::class.java)
         binding.viewModel = viewModel
         binding.lifecycleOwner = viewLifecycleOwner
 

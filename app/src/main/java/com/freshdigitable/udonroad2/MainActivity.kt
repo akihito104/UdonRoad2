@@ -20,14 +20,13 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModel
-import com.freshdigitable.udonroad2.data.repository.RepositoryComponent
-import com.freshdigitable.udonroad2.di.ViewModelKey
-import com.freshdigitable.udonroad2.model.ActivityScope
+import com.freshdigitable.udonroad2.model.FragmentScope
+import com.freshdigitable.udonroad2.model.ViewModelKey
 import com.freshdigitable.udonroad2.timeline.TimelineFragment
 import com.freshdigitable.udonroad2.timeline.TimelineViewModel
+import com.freshdigitable.udonroad2.timeline.TimelineViewModelModule
 import dagger.Binds
 import dagger.Module
-import dagger.Provides
 import dagger.android.AndroidInjection
 import dagger.android.AndroidInjector
 import dagger.android.ContributesAndroidInjector
@@ -54,9 +53,10 @@ class MainActivity : AppCompatActivity(), HasSupportFragmentInjector {
 }
 
 @Module(includes = [
-    MainViewModelModule::class
+    TimelineViewModelModule::class
 ])
 interface MainActivityModule {
+    @FragmentScope
     @ContributesAndroidInjector
     fun contributeTimelineFragment(): TimelineFragment
 
@@ -64,14 +64,4 @@ interface MainActivityModule {
     @IntoMap
     @ViewModelKey(TimelineViewModel::class)
     fun bindMainViewModel(viewModel: TimelineViewModel): ViewModel
-}
-
-@Module
-object MainViewModelModule {
-    @Provides
-    @JvmStatic
-    @ActivityScope
-    fun provideMainViewModel(repositories: RepositoryComponent.Builder): TimelineViewModel {
-        return TimelineViewModel(repositories.build().homeTimelineRepository())
-    }
 }
