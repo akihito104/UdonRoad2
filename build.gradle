@@ -20,6 +20,7 @@ buildscript {
         t4j_version = '4.0.7'
         glide_version = '4.8.0'
         threetenbp_version = '1.1.0'
+        leakcanary_version = '1.6.3'
         // test
         junit_version = '4.12'
         robolectric_version = '4.0'
