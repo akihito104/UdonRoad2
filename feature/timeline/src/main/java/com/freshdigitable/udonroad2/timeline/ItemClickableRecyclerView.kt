@@ -155,8 +155,8 @@ class ItemSelectableRecyclerView @JvmOverloads constructor(
 
         companion object CREATOR : Parcelable.ClassLoaderCreator<SavedState> {
             override fun createFromParcel(source: Parcel?, loader: ClassLoader?): SavedState {
-                val s = requireNotNull(source) { "source should be null." }
-                val superState = requireNotNull(s.readParcelable<Parcelable>(loader)) { "superState should be not noll." }
+                val s = requireNotNull(source) { "source should not be null." }
+                val superState = requireNotNull(s.readParcelable<Parcelable>(loader)) { "superState should not be null." }
                 val selectedItemId = s.readLong()
                 return SavedState(superState, selectedItemId)
             }
