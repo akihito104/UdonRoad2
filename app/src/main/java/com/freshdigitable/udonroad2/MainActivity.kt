@@ -42,9 +42,13 @@ class MainActivity : AppCompatActivity(), HasSupportFragmentInjector {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.main_container, TimelineFragment())
-            .commit()
+        if (supportFragmentManager.fragments.any { it is TimelineFragment }) {
+            return
+        } else {
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.main_container, TimelineFragment())
+                .commit()
+        }
     }
 
     @Inject

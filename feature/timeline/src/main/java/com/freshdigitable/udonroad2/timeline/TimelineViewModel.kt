@@ -35,9 +35,8 @@ class TimelineViewModel(
         homeRepository.timeline
     }
 
-    val loading: LiveData<Boolean> by lazy {
-        homeRepository.loading
-    }
+    val loading: LiveData<Boolean>
+        get() = homeRepository.loading
 
     fun onRefresh() {
         homeRepository.loadAtFront()
@@ -50,6 +49,10 @@ class TimelineViewModel(
 
     fun onFabMenuSelected(item: MenuItem) {
         Log.d("TimelineViewModel", "onFabSelected: $item")
+    }
+
+    fun onItemClicked(itemId: Long) {
+        Log.d("TimelineViewModel", "itemId: $itemId")
     }
 }
 

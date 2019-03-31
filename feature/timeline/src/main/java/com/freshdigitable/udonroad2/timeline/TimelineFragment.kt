@@ -55,13 +55,18 @@ class TimelineFragment : Fragment() {
         listView.addItemDecoration(DividerItemDecoration(view.context, linearLayoutManager.orientation))
         val adapter = Adapter()
         listView.adapter = adapter
-        viewModel.timeline.observe(this, Observer { list ->
+        viewModel.timeline.observe(viewLifecycleOwner, Observer { list ->
             adapter.submitList(list)
         })
     }
 }
 
 private class Adapter : PagedListAdapter<TweetListItem, ViewHolder>(diffUtil) {
+
+    init {
+        setHasStableIds(true)
+    }
+
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int
@@ -87,8 +92,6 @@ private class Adapter : PagedListAdapter<TweetListItem, ViewHolder>(diffUtil) {
     override fun getItemViewType(position: Int): Int = R.layout.view_tweet_list_item
 
     override fun getItemId(position: Int): Long = getItem(position)?.originalId ?: -1
-
-    override fun setHasStableIds(hasStableIds: Boolean) = super.setHasStableIds(true)
 
     private fun ensureQuotedView(holder: ViewHolder): ViewTweetListQuotedItemBinding {
         return holder.quotedView

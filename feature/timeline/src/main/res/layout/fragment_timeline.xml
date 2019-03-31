@@ -42,10 +42,11 @@
             app:onRefreshListener="@{viewModel::onRefresh}"
             app:refreshing="@{safeUnbox(viewModel.loading)}"
             >
-            <androidx.recyclerview.widget.RecyclerView
+            <com.freshdigitable.udonroad2.timeline.ItemSelectableRecyclerView
                 android:id="@+id/main_list"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                app:itemClickListener="@{vh -> viewModel.onItemClicked(vh.itemId)}"
                 tools:listitem="@layout/view_tweet_list_item"
                 />
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
