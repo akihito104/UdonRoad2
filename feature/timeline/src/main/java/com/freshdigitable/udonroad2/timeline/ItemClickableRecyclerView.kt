@@ -79,7 +79,7 @@ open class ItemClickableRecyclerView @JvmOverloads constructor(
         onClickItem(vh)
     }
 
-    open fun onClickItem(viewHolder: RecyclerView.ViewHolder) {
+    open fun onClickItem(viewHolder: ViewHolder) {
         itemClickListener?.onItemClick(viewHolder)
     }
 }
@@ -92,7 +92,7 @@ class ItemSelectableRecyclerView @JvmOverloads constructor(
 
     private var selectedItemId: Long? = null
 
-    override fun onClickItem(viewHolder: RecyclerView.ViewHolder) {
+    override fun onClickItem(viewHolder: ViewHolder) {
         val itemId = viewHolder.itemId
         if (selectedItemId == null) {
             selectedItemId = itemId
