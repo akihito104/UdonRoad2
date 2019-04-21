@@ -27,7 +27,7 @@ open class ItemClickableRecyclerView @JvmOverloads constructor(
         removeOnItemTouchListener(touchListener)
     }
 
-    private val touchListener = object : OnItemTouchListener {
+    private val touchListener = object : SimpleOnItemTouchListener() {
         private var prevEvent: MotionEvent? = null
 
         override fun onInterceptTouchEvent(rv: RecyclerView, e: MotionEvent): Boolean {
@@ -55,16 +55,13 @@ open class ItemClickableRecyclerView @JvmOverloads constructor(
             val dx = (currentEvent.x - previewEvent.x).toDouble()
             val dy = (currentEvent.y - previewEvent.y).toDouble()
             return currentEvent.eventTime - previewEvent.eventTime < ViewConfiguration.getTapTimeout()
-                || Math.hypot(dx, dy) < ViewConfiguration.get(context).scaledTouchSlop
+                && Math.hypot(dx, dy) < ViewConfiguration.get(context).scaledTouchSlop
         }
 
         private fun clearPreviewEvent() {
             prevEvent?.recycle()
             prevEvent = null
         }
-
-        override fun onTouchEvent(rv: RecyclerView, e: MotionEvent) = Unit
-        override fun onRequestDisallowInterceptTouchEvent(disallowIntercept: Boolean) = Unit
     }
 
     interface OnItemClickListener {
@@ -77,6 +74,7 @@ open class ItemClickableRecyclerView @JvmOverloads constructor(
         val v = rv.findChildViewUnder(e.x, e.y) ?: return
         val vh = rv.findContainingViewHolder(v) ?: return
         onClickItem(vh)
+        v.performClick()
     }
 
     open fun onClickItem(viewHolder: ViewHolder) {
@@ -91,6 +89,10 @@ class ItemSelectableRecyclerView @JvmOverloads constructor(
 ) : ItemClickableRecyclerView(context, attr, defStyle) {
 
     private var selectedItemId: Long? = null
+        set(value) {
+            itemSelectedListener?.onItemSelected(value)
+            field = value
+        }
 
     override fun onClickItem(viewHolder: ViewHolder) {
         val itemId = viewHolder.itemId
@@ -123,6 +125,12 @@ class ItemSelectableRecyclerView @JvmOverloads constructor(
         super.onChildDetachedFromWindow(child)
         child.isSelected = false
     }
+
+    interface OnItemSelectedListener {
+        fun onItemSelected(itemId: Long?)
+    }
+
+    var itemSelectedListener: OnItemSelectedListener? = null
 
     override fun onSaveInstanceState(
     ): Parcelable? = SavedState(requireNotNull(super.onSaveInstanceState()), selectedItemId)

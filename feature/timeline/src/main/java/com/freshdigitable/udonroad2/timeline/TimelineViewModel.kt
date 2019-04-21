@@ -51,7 +51,7 @@ class TimelineViewModel(
         Log.d("TimelineViewModel", "onFabSelected: $item")
     }
 
-    fun onItemClicked(itemId: Long) {
+    fun onItemSelected(itemId: Long?) {
         Log.d("TimelineViewModel", "itemId: $itemId")
     }
 }
