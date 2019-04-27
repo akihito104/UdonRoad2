@@ -88,30 +88,55 @@ class ItemSelectableRecyclerView @JvmOverloads constructor(
     defStyle: Int = 0
 ) : ItemClickableRecyclerView(context, attr, defStyle) {
 
-    private var selectedItemId: Long? = null
+    var selectedItemId: Long? = null
         set(value) {
-            itemSelectedListener?.onItemSelected(value)
+            if (field == value) {
+                return
+            }
+            updateSelectedItemViewHolder(value)
             field = value
+            itemSelectedListener?.onItemSelected(value)
         }
 
     override fun onClickItem(viewHolder: ViewHolder) {
+        if (selectedItemId == viewHolder.itemId) {
+            selectedItemId = null
+        } else {
+            selectedItemId = viewHolder.itemId
+        }
+        super.onClickItem(viewHolder)
+    }
+
+    private fun updateSelectedItemViewHolder(itemId: Long?) {
+        if (itemId == null) {
+            clearSelectedItemViewHolder()
+        } else {
+            val vh = findViewHolderForItemId(itemId) ?: return
+            updateSelectedItemViewHolder(vh)
+        }
+    }
+
+    private fun updateSelectedItemViewHolder(viewHolder: ViewHolder) {
         val itemId = viewHolder.itemId
         if (selectedItemId == null) {
-            selectedItemId = itemId
             viewHolder.itemView.isSelected = true
         } else {
             if (selectedItemId == itemId) {
-                selectedItemId = null
                 viewHolder.itemView.isSelected = false
             } else {
                 val selected = selectedItemId ?: return
                 val vh = findViewHolderForItemId(selected)
                 vh?.itemView?.isSelected = false
-                selectedItemId = itemId
                 viewHolder.itemView.isSelected = true
             }
         }
-        super.onClickItem(viewHolder)
+    }
+
+    private fun clearSelectedItemViewHolder() {
+        selectedItemId?.let {
+            val vh = findViewHolderForItemId(it)
+            vh?.itemView?.isSelected = false
+        }
     }
 
     override fun onChildAttachedToWindow(child: View) {
@@ -142,10 +167,6 @@ class ItemSelectableRecyclerView @JvmOverloads constructor(
         }
         state.superState?.let { super.onRestoreInstanceState(it) }
         this.selectedItemId = state.selectedItemId
-        this.selectedItemId?.let {
-            val vh = findViewHolderForItemId(it)
-            vh?.itemView?.isSelected = true
-        }
     }
 
     @Keep
