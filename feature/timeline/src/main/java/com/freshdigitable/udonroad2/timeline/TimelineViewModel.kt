@@ -29,7 +29,7 @@ import dagger.Provides
 
 class TimelineViewModel(
         private val homeRepository: HomeTimelineRepository
-) : ViewModel() {
+) : TweetListItemClickListener, ViewModel() {
 
     val timeline: LiveData<PagedList<TweetListItem>> by lazy {
         homeRepository.timeline
@@ -46,13 +46,20 @@ class TimelineViewModel(
         super.onCleared()
         homeRepository.clear()
     }
-
     fun onFabMenuSelected(item: MenuItem) {
         Log.d("TimelineViewModel", "onFabSelected: $item")
     }
 
-    fun onItemSelected(itemId: Long?) {
-        Log.d("TimelineViewModel", "itemId: $itemId")
+    override fun onBodyItemClicked(item: TweetListItem) {
+        Log.d("TimelineViewModel", "onBodyItemClicked: ${item.body.id}")
+    }
+
+    override fun onQuoteItemClicked(item: TweetListItem) {
+        Log.d("TimelineViewModel", "onQuoteItemClicked: ${item.quoted?.id}")
+    }
+
+    override fun onUserIconClicked(item: TweetListItem) {
+        Log.d("TimelineViewModel", "onUserIconClicked: ${item.body.user.id}")
     }
 }
 

@@ -25,6 +25,10 @@
             name="tweet"
             type="com.freshdigitable.udonroad2.model.TweetListItem"
             />
+        <variable
+            name="clickListener"
+            type="com.freshdigitable.udonroad2.timeline.TweetListItemClickListener"
+            />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -32,6 +36,7 @@
         android:layout_height="wrap_content"
         android:padding="8dp"
         android:background="@drawable/selector_item_background"
+        android:onClick="@{v -> clickListener.onBodyItemClicked(tweet)}"
         >
         <TextView
             android:id="@+id/tweetItem_retweetUser"
@@ -58,6 +63,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@id/tweetItem_names"
             app:bindUserIcon="@{tweet.body.user.iconUrl}"
+            android:onClick="@{v -> clickListener.onUserIconClicked(tweet)}"
             />
         <TextView
             android:id="@+id/tweetItem_names"

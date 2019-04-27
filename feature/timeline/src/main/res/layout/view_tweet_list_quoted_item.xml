@@ -24,12 +24,17 @@
             name="tweet"
             type="com.freshdigitable.udonroad2.model.TweetListItem"
             />
+        <variable
+            name="clickListener"
+            type="com.freshdigitable.udonroad2.timeline.TweetListItemClickListener"
+            />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="@dimen/margin_half"
+        android:onClick="@{v -> clickListener.onQuoteItemClicked(tweet)}"
         >
         <ImageView
             android:id="@+id/quotedItem_icon"

@@ -53,7 +53,7 @@ class TimelineFragment : Fragment() {
         val linearLayoutManager = LinearLayoutManager(view.context)
         listView.layoutManager = linearLayoutManager
         listView.addItemDecoration(DividerItemDecoration(view.context, linearLayoutManager.orientation))
-        val adapter = Adapter()
+        val adapter = Adapter(viewModel)
         listView.adapter = adapter
         viewModel.timeline.observe(viewLifecycleOwner, Observer { list ->
             adapter.submitList(list)
@@ -61,7 +61,9 @@ class TimelineFragment : Fragment() {
     }
 }
 
-private class Adapter : PagedListAdapter<TweetListItem, ViewHolder>(diffUtil) {
+private class Adapter(
+    private val clickListener: TweetListItemClickListener
+) : PagedListAdapter<TweetListItem, ViewHolder>(diffUtil) {
 
     init {
         setHasStableIds(true)
@@ -82,6 +84,18 @@ private class Adapter : PagedListAdapter<TweetListItem, ViewHolder>(diffUtil) {
         } else {
             removeQuotedView(holder)
         }
+    }
+
+    override fun onViewAttachedToWindow(holder: ViewHolder) {
+        super.onViewAttachedToWindow(holder)
+        holder.binding.clickListener = clickListener
+        holder.quotedView?.clickListener = clickListener
+    }
+
+    override fun onViewDetachedFromWindow(holder: ViewHolder) {
+        super.onViewDetachedFromWindow(holder)
+        holder.binding.clickListener = null
+        holder.quotedView?.clickListener = null
     }
 
     override fun onViewRecycled(holder: ViewHolder) {
@@ -106,6 +120,7 @@ private class Adapter : PagedListAdapter<TweetListItem, ViewHolder>(diffUtil) {
     private fun removeQuotedView(holder: ViewHolder) {
         holder.quotedView?.let {
             holder.root.removeView(it.root)
+            it.clickListener = null
             quotedViewCache.add(it)
         }
         holder.quotedView = null
