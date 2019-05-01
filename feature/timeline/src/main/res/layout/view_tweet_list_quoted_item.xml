@@ -24,12 +24,23 @@
             name="tweet"
             type="com.freshdigitable.udonroad2.model.TweetListItem"
             />
+        <variable
+            name="clickListener"
+            type="com.freshdigitable.udonroad2.timeline.TweetListItemClickListener"
+            />
+        <variable
+            name="eventListener"
+            type="com.freshdigitable.udonroad2.timeline.TweetListEventListener"
+            />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="@dimen/margin_half"
+        android:background="@drawable/selector_item_background"
+        android:onClick="@{v -> clickListener.onQuoteItemClicked(tweet)}"
+        app:selected="@{eventListener.selectedItemId.equalsTo(tweet.originalId, tweet.quoted.id)}"
         >
         <ImageView
             android:id="@+id/quotedItem_icon"

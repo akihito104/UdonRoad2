@@ -39,7 +39,6 @@ class FlingActionIndicator @JvmOverloads constructor(
         id = R.id.indicator
         visibility = View.INVISIBLE
         layoutParams = generateDefaultLayoutParams()
-        setBackgroundColor(0xcccc)
 
         val v = View.inflate(context, R.layout.view_fling_action_indicator, this)
         views = mapOf(

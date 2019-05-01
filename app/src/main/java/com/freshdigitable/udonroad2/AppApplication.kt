@@ -20,6 +20,7 @@ import android.app.Activity
 import android.app.Application
 import com.freshdigitable.udonroad2.di.DaggerAppComponent
 import com.jakewharton.threetenabp.AndroidThreeTen
+import com.squareup.leakcanary.LeakCanary
 import dagger.android.AndroidInjector
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasActivityInjector
@@ -29,11 +30,21 @@ class AppApplication : HasActivityInjector, Application() {
 
     override fun onCreate() {
         super.onCreate()
+        setupLeakCanary()
         AndroidThreeTen.init(this)
         val component = DaggerAppComponent.builder()
                 .application(this)
                 .build()
         component.inject(this)
+    }
+
+    private fun setupLeakCanary() {
+        if (LeakCanary.isInAnalyzerProcess(this)) {
+            // This process is dedicated to LeakCanary for heap analysis.
+            // You should not init your app in this process.
+            return
+        }
+        LeakCanary.install(this)
     }
 
     @Inject

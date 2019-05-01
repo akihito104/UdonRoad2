@@ -45,6 +45,10 @@ internal class FlingFabPresenter(
             }
         }
         marginFromFab = a.getDimensionPixelSize(R.styleable.FlingFAB_marginFabToIndicator, 0)
+        val indicatorTint = a.getColor(R.styleable.FlingFAB_indicatorTint, 0)
+        indicator.setBackgroundColor(indicatorTint)
+        val indicatorIconTint = a.getColor(R.styleable.FlingFAB_indicatorIconTint, 0)
+        indicator.setIndicatorIconTint(indicatorIconTint)
         a.recycle()
     }
 

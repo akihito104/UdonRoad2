@@ -10,8 +10,13 @@ android {
     }
 
     buildTypes {
+        debug {
+            minifyEnabled true
+            useProguard false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
         release {
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
@@ -29,6 +34,8 @@ dependencies {
 
     implementation "com.google.dagger:dagger-android:$dagger_version"
     implementation "com.google.dagger:dagger-android-support:$dagger_version"
+
+    implementation "io.reactivex.rxjava2:rxjava:$rx_version"
 
     testImplementation "junit:junit:$junit_version"
     androidTestImplementation "androidx.test:runner:$androidTestRunner_version"

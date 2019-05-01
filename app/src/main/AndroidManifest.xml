@@ -30,6 +30,10 @@
             </intent-filter>
         </activity-alias>
 
+        <activity
+            android:name=".UserActivity"
+            />
+
     </application>
 
 </manifest>
