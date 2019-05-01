@@ -22,11 +22,15 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModel
 import com.freshdigitable.udonroad2.model.FragmentScope
 import com.freshdigitable.udonroad2.model.ViewModelKey
+import com.freshdigitable.udonroad2.navigation.Navigation
+import com.freshdigitable.udonroad2.navigation.NavigationDispatcher
+import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.TimelineFragment
 import com.freshdigitable.udonroad2.timeline.TimelineViewModel
 import com.freshdigitable.udonroad2.timeline.TimelineViewModelModule
 import dagger.Binds
 import dagger.Module
+import dagger.Provides
 import dagger.android.AndroidInjection
 import dagger.android.AndroidInjector
 import dagger.android.ContributesAndroidInjector
@@ -36,19 +40,19 @@ import dagger.multibindings.IntoMap
 import javax.inject.Inject
 
 class MainActivity : AppCompatActivity(), HasSupportFragmentInjector {
+    @Inject
+    lateinit var navigation: Navigation<MainActivityState>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        if (supportFragmentManager.fragments.any { it is TimelineFragment }) {
-            return
-        } else {
-            supportFragmentManager.beginTransaction()
-                .replace(R.id.main_container, TimelineFragment())
-                .commit()
-        }
+        navigation.navigator.postEvent(TimelineEvent.Init)
+    }
+
+    override fun onBackPressed() {
+        navigation.navigator.postEvent(TimelineEvent.Back)
     }
 
     @Inject
@@ -59,13 +63,25 @@ class MainActivity : AppCompatActivity(), HasSupportFragmentInjector {
 @Module(includes = [
     TimelineViewModelModule::class
 ])
-interface MainActivityModule {
+abstract class MainActivityModule {
     @FragmentScope
     @ContributesAndroidInjector
-    fun contributeTimelineFragment(): TimelineFragment
+    abstract fun contributeTimelineFragment(): TimelineFragment
 
     @Binds
     @IntoMap
     @ViewModelKey(TimelineViewModel::class)
-    fun bindMainViewModel(viewModel: TimelineViewModel): ViewModel
+    abstract fun bindMainViewModel(viewModel: TimelineViewModel): ViewModel
+
+    @Module
+    companion object {
+        @Provides
+        @JvmStatic
+        fun provideNavigation(
+            navigator: NavigationDispatcher,
+            activity: MainActivity
+        ): Navigation<MainActivityState> {
+            return MainActivityNavigation(navigator, activity, R.id.main_container)
+        }
+    }
 }

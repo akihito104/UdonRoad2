@@ -18,18 +18,23 @@ package com.freshdigitable.udonroad2.timeline
 
 import android.util.Log
 import android.view.MenuItem
+import android.view.View
+import androidx.databinding.ObservableField
+import androidx.databinding.ObservableInt
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.paging.PagedList
 import com.freshdigitable.udonroad2.data.repository.HomeTimelineRepository
 import com.freshdigitable.udonroad2.data.repository.RepositoryComponent
 import com.freshdigitable.udonroad2.model.TweetListItem
+import com.freshdigitable.udonroad2.navigation.NavigationDispatcher
 import dagger.Module
 import dagger.Provides
 
 class TimelineViewModel(
-        private val homeRepository: HomeTimelineRepository
-) : TweetListItemClickListener, ViewModel() {
+    private val navigator: NavigationDispatcher,
+    private val homeRepository: HomeTimelineRepository
+) : TweetListItemClickListener, TweetListEventListener, ViewModel() {
 
     val timeline: LiveData<PagedList<TweetListItem>> by lazy {
         homeRepository.timeline
@@ -46,20 +51,41 @@ class TimelineViewModel(
         super.onCleared()
         homeRepository.clear()
     }
+
     fun onFabMenuSelected(item: MenuItem) {
         Log.d("TimelineViewModel", "onFabSelected: $item")
+        val selected = requireNotNull(selectedItemId.get()) { "selectedItem should not be null." }
+        when (item.itemId) {
+            R.id.iffabMenu_main_detail -> {
+                navigator.postEvent(TimelineEvent.TweetDetailRequested(
+                    selected.quoteId ?: selected.originalId))
+            }
+        }
+    }
+
+    override val selectedItemId: ObservableField<SelectedItemId?> = ObservableField()
+    val isFabVisible: ObservableInt = ObservableInt(View.INVISIBLE)
+
+    private fun updateSelectedItem(selected: SelectedItemId) {
+        when (selected) {
+            selectedItemId.get() -> selectedItemId.set(null)
+            else -> selectedItemId.set(selected)
+        }
+        isFabVisible.set(if (selectedItemId.get() != null) View.VISIBLE else View.INVISIBLE)
     }
 
     override fun onBodyItemClicked(item: TweetListItem) {
         Log.d("TimelineViewModel", "onBodyItemClicked: ${item.body.id}")
+        updateSelectedItem(SelectedItemId(item.originalId))
     }
 
     override fun onQuoteItemClicked(item: TweetListItem) {
         Log.d("TimelineViewModel", "onQuoteItemClicked: ${item.quoted?.id}")
+        updateSelectedItem(SelectedItemId(item.originalId, item.quoted?.id))
     }
 
     override fun onUserIconClicked(item: TweetListItem) {
-        Log.d("TimelineViewModel", "onUserIconClicked: ${item.body.user.id}")
+        navigator.postEvent(TimelineEvent.UserIconClicked(item.body.user.id))
     }
 }
 
@@ -67,7 +93,10 @@ class TimelineViewModel(
 object TimelineViewModelModule {
     @Provides
     @JvmStatic
-    fun provideMainViewModel(repositories: RepositoryComponent.Builder): TimelineViewModel {
-        return TimelineViewModel(repositories.build().homeTimelineRepository())
+    fun provideMainViewModel(
+        navigator: NavigationDispatcher,
+        repositories: RepositoryComponent.Builder
+    ): TimelineViewModel {
+        return TimelineViewModel(navigator, repositories.build().homeTimelineRepository())
     }
 }

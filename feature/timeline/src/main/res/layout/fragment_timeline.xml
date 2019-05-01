@@ -61,6 +61,7 @@
             app:menu="@menu/iffab_main"
             style="@style/Widget.FlingFAB"
             app:menuListener="@{viewModel::onFabMenuSelected}"
+            android:visibility="@{viewModel.isFabVisible}"
             />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

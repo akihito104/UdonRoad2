@@ -29,6 +29,10 @@
             name="clickListener"
             type="com.freshdigitable.udonroad2.timeline.TweetListItemClickListener"
             />
+        <variable
+            name="eventListener"
+            type="com.freshdigitable.udonroad2.timeline.TweetListEventListener"
+            />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -37,6 +41,7 @@
         android:padding="8dp"
         android:background="@drawable/selector_item_background"
         android:onClick="@{v -> clickListener.onBodyItemClicked(tweet)}"
+        app:selected="@{eventListener.selectedItemId.equalsTo(tweet.originalId)}"
         >
         <TextView
             android:id="@+id/tweetItem_retweetUser"

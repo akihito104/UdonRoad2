@@ -53,7 +53,7 @@ class TimelineFragment : Fragment() {
         val linearLayoutManager = LinearLayoutManager(view.context)
         listView.layoutManager = linearLayoutManager
         listView.addItemDecoration(DividerItemDecoration(view.context, linearLayoutManager.orientation))
-        val adapter = Adapter(viewModel)
+        val adapter = Adapter(viewModel, viewModel)
         listView.adapter = adapter
         viewModel.timeline.observe(viewLifecycleOwner, Observer { list ->
             adapter.submitList(list)
@@ -62,7 +62,8 @@ class TimelineFragment : Fragment() {
 }
 
 private class Adapter(
-    private val clickListener: TweetListItemClickListener
+    private val clickListener: TweetListItemClickListener,
+    private val eventListener: TweetListEventListener
 ) : PagedListAdapter<TweetListItem, ViewHolder>(diffUtil) {
 
     init {
@@ -88,14 +89,26 @@ private class Adapter(
 
     override fun onViewAttachedToWindow(holder: ViewHolder) {
         super.onViewAttachedToWindow(holder)
-        holder.binding.clickListener = clickListener
-        holder.quotedView?.clickListener = clickListener
+        holder.binding.apply {
+            clickListener = this@Adapter.clickListener
+            eventListener = this@Adapter.eventListener
+        }
+        holder.quotedView?.apply {
+            clickListener = this@Adapter.clickListener
+            eventListener = this@Adapter.eventListener
+        }
     }
 
     override fun onViewDetachedFromWindow(holder: ViewHolder) {
         super.onViewDetachedFromWindow(holder)
-        holder.binding.clickListener = null
-        holder.quotedView?.clickListener = null
+        holder.binding.apply {
+            clickListener = null
+            eventListener = null
+        }
+        holder.quotedView?.apply {
+            clickListener = null
+            eventListener = null
+        }
     }
 
     override fun onViewRecycled(holder: ViewHolder) {
