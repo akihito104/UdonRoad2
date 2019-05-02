@@ -21,7 +21,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
-import com.freshdigitable.udonroad2.data.db.DatabaseModule
+import com.freshdigitable.udonroad2.data.db.DaoModule
 import com.freshdigitable.udonroad2.data.db.dao.TweetDao
 import com.freshdigitable.udonroad2.data.restclient.HomeApiClient
 import com.freshdigitable.udonroad2.data.restclient.TwitterModule
@@ -122,7 +122,7 @@ suspend fun <T> networkAccess(callable: () -> T): T = coroutineScope {
 }
 
 @Module(includes = [
-    DatabaseModule::class,
+    DaoModule::class,
     TwitterModule::class
 ])
 object HomeTimelineRepositoryModule {

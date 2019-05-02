@@ -16,6 +16,7 @@
 
 package com.freshdigitable.udonroad2.data.db.dao
 
+import androidx.lifecycle.LiveData
 import androidx.paging.DataSource
 import androidx.room.ColumnInfo
 import androidx.room.Dao
@@ -46,6 +47,9 @@ abstract class TweetDao(
         WHERE tweet_list.owner = :owner
         ORDER BY tweet_list.`order` DESC""")
     abstract fun getHomeTimeline(owner: String): DataSource.Factory<Int, TweetListItem>
+
+    @Query("SELECT * FROM tweet_list_item WHERE original_id = :id")
+    abstract fun findTweetItem(id: Long): LiveData<TweetListItem?>
 
     @Transaction
     open fun addTweets(tweet: List<TweetEntity>) {
