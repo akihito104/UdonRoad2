@@ -24,6 +24,7 @@ import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
+import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.Transaction
 import com.freshdigitable.udonroad2.data.db.AppDatabase
@@ -35,52 +36,15 @@ import com.freshdigitable.udonroad2.model.User
 
 @Dao
 abstract class TweetDao(
-        private val db: AppDatabase
+    private val db: AppDatabase
 ) {
 
-    @Query("""WITH
-        body AS (
-        SELECT
-         TweetEntityDb.id, text, created_at, retweet_count, favorite_count, source,
-         UserEntity.id AS user_id,
-         UserEntity.name AS user_name,
-         UserEntity.screen_name AS user_screen_name,
-         UserEntity.icon_url AS user_icon_url
-        FROM TweetEntityDb
-        INNER JOIN UserEntity ON TweetEntityDb.user_id = UserEntity.id
-        ),
-        original AS (
-        SELECT
-         TweetEntityDb.id AS original_id,
-         UserEntity.id AS original_user_id,
-         UserEntity.name AS original_user_name,
-         UserEntity.screen_name AS original_user_screen_name,
-         UserEntity.icon_url AS original_user_icon_url
-        FROM TweetEntityDb
-        INNER JOIN UserEntity ON TweetEntityDb.user_id = UserEntity.id
-        ),
-        quoted AS (
-        SELECT
-         TweetEntityDb.id AS qt_id,
-         text AS qt_text,
-         created_at AS qt_created_at,
-         retweet_count AS qt_retweet_count,
-         favorite_count AS qt_favorite_count,
-         source AS qt_source,
-         UserEntity.id AS qt_user_id,
-         UserEntity.name AS qt_user_name,
-         UserEntity.screen_name AS qt_user_screen_name,
-         UserEntity.icon_url AS qt_user_icon_url
-        FROM TweetEntityDb
-        INNER JOIN UserEntity ON TweetEntityDb.user_id = UserEntity.id
-        )
-        SELECT body.*, original.*, quoted.*
-        FROM TweetListEntity
-        INNER JOIN body ON body.id = TweetListEntity.body_item_id
-        INNER JOIN original ON original.original_id = TweetListEntity.original_id
-        LEFT OUTER JOIN quoted ON quoted.qt_id = TweetListEntity.quoted_item_id
-        WHERE TweetListEntity.owner = :owner
-        ORDER BY TweetListEntity.`order` DESC""")
+    @Query("""
+        SELECT tweet_list_item.*
+        FROM tweet_list
+        INNER JOIN tweet_list_item ON tweet_list_item.original_id = tweet_list.original_id
+        WHERE tweet_list.owner = :owner
+        ORDER BY tweet_list.`order` DESC""")
     abstract fun getHomeTimeline(owner: String): DataSource.Factory<Int, TweetListItem>
 
     @Transaction
@@ -99,66 +63,92 @@ abstract class TweetDao(
                 .map { it.toDbEntity() }
                 .toList())
         addTweetEntitiesInternal(tweetEntities.map(TweetEntity::toDbEntity))
-        addTweetListEntities(
-                tweet.map{
-                    TweetListEntity(
-                            originalId = it.id,
-                            bodyTweetId = it.retweetedTweet?.id ?: it.id,
-                            quotedTweetId = it.retweetedTweet?.quotedTweet?.id
-                                    ?: it.quotedTweet?.id,
-                            order = it.id, owner = "home")
-                })
+        addStructuredTweetEntities(tweet.map {
+            StructuredTweetEntity(
+                originalId = it.id,
+                bodyTweetId = it.retweetedTweet?.id ?: it.id,
+                quotedTweetId = it.retweetedTweet?.quotedTweet?.id ?: it.quotedTweet?.id)
+        })
+        addTweetListEntities(tweet.map {
+            TweetListEntity(
+                originalId = it.id,
+                order = it.id,
+                owner = "home")
+        })
     }
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     abstract fun addTweetEntitiesInternal(tweet: List<TweetEntityDb>)
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    abstract fun addStructuredTweetEntities(listEntities: List<StructuredTweetEntity>)
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     abstract fun addTweetListEntities(listEntities: List<TweetListEntity>)
 
-    @Query("DELETE FROM TweetListEntity WHERE owner = 'home'")
+    @Query("DELETE FROM tweet_list WHERE owner = 'home'")
     abstract fun clear()
 }
 
 @Entity(
-        primaryKeys = ["original_id", "owner"],
-        foreignKeys = [
-            ForeignKey(
-                    entity = TweetEntityDb::class,
-                    parentColumns = ["id"],
-                    childColumns = ["original_id"],
-                    deferred = true
-            ),
-            ForeignKey(
-                    entity = TweetEntityDb::class,
-                    parentColumns = ["id"],
-                    childColumns = ["body_item_id"],
-                    deferred = true
-            )
-        ],
-        indices = [
-            Index(
-                    "original_id", "owner",
-                    name = "tweet_list_entity_idx"
-            ),
-            Index("body_item_id")
-        ]
+    tableName = "structured_tweet",
+    foreignKeys = [
+        ForeignKey(
+            entity = TweetEntityDb::class,
+            parentColumns = ["id"],
+            childColumns = ["original_id"],
+            deferred = true
+        ),
+        ForeignKey(
+            entity = TweetEntityDb::class,
+            parentColumns = ["id"],
+            childColumns = ["body_item_id"],
+            deferred = true
+        )
+    ],
+    indices = [
+        Index("body_item_id")
+    ]
+)
+class StructuredTweetEntity(
+    @PrimaryKey
+    @ColumnInfo(name = "original_id")
+    val originalId: Long,
+
+    @ColumnInfo(name = "body_item_id")
+    val bodyTweetId: Long,
+
+    @ColumnInfo(name = "quoted_item_id")
+    val quotedTweetId: Long?
+)
+
+@Entity(
+    tableName = "tweet_list",
+    primaryKeys = ["original_id", "owner"],
+    foreignKeys = [
+        ForeignKey(
+            entity = StructuredTweetEntity::class,
+            parentColumns = ["original_id"],
+            childColumns = ["original_id"],
+            deferred = true
+        )
+    ],
+    indices = [
+        Index(
+            "original_id", "owner",
+            name = "tweet_list_entity_idx"
+        )
+    ]
 )
 class TweetListEntity(
-        @ColumnInfo(name = "original_id")
-        val originalId: Long,
+    @ColumnInfo(name = "original_id")
+    val originalId: Long,
 
-        @ColumnInfo(name = "body_item_id")
-        val bodyTweetId: Long,
+    @ColumnInfo(name = "order")
+    val order: Long,
 
-        @ColumnInfo(name = "quoted_item_id")
-        val quotedTweetId: Long?,
-
-        @ColumnInfo(name = "order")
-        val order: Long,
-
-        @ColumnInfo(name = "owner")
-        val owner: String
+    @ColumnInfo(name = "owner")
+    val owner: String
 )
 
 private fun TweetEntity.toDbEntity(): TweetEntityDb {

@@ -17,10 +17,21 @@
 package com.freshdigitable.udonroad2.data.db.dbview
 
 import androidx.room.ColumnInfo
+import androidx.room.DatabaseView
 import androidx.room.Embedded
 import com.freshdigitable.udonroad2.model.TweetListItem
 import org.threeten.bp.Instant
 
+@DatabaseView(viewName = "tweet", value = """
+    SELECT
+     TweetEntityDb.id, text, created_at, retweet_count, favorite_count, source,
+     UserEntity.id AS user_id,
+     UserEntity.name AS user_name,
+     UserEntity.screen_name AS user_screen_name,
+     UserEntity.icon_url AS user_icon_url
+    FROM TweetEntityDb
+    INNER JOIN UserEntity ON TweetEntityDb.user_id = UserEntity.id
+""")
 data class Tweet(
     @ColumnInfo(name = "id")
     override val id: Long,
@@ -42,8 +53,41 @@ data class Tweet(
 
     @ColumnInfo(name = "created_at")
     override val createdAt: Instant
-): com.freshdigitable.udonroad2.model.Tweet
+) : com.freshdigitable.udonroad2.model.Tweet
 
+@DatabaseView(viewName = "tweet_list_item", value = """
+    WITH
+    original AS (
+    SELECT
+     TweetEntityDb.id AS original_id,
+     UserEntity.id AS original_user_id,
+     UserEntity.name AS original_user_name,
+     UserEntity.screen_name AS original_user_screen_name,
+     UserEntity.icon_url AS original_user_icon_url
+    FROM TweetEntityDb
+    INNER JOIN UserEntity ON TweetEntityDb.user_id = UserEntity.id
+    ),
+    quoted AS (
+    SELECT
+     tweet.id AS qt_id,
+     text AS qt_text,
+     created_at AS qt_created_at,
+     retweet_count AS qt_retweet_count,
+     favorite_count AS qt_favorite_count,
+     source AS qt_source,
+     UserEntity.id AS qt_user_id,
+     UserEntity.name AS qt_user_name,
+     UserEntity.screen_name AS qt_user_screen_name,
+     UserEntity.icon_url AS qt_user_icon_url
+    FROM tweet
+    INNER JOIN UserEntity ON tweet.user_id = UserEntity.id
+    )
+    SELECT tweet.*, original.*, quoted.*
+    FROM structured_tweet
+    INNER JOIN tweet ON tweet.id = structured_tweet.body_item_id
+    INNER JOIN original ON original.original_id = structured_tweet.original_id
+    LEFT OUTER JOIN quoted ON quoted.qt_id = structured_tweet.quoted_item_id
+""")
 data class TweetListItem(
     @ColumnInfo(name = "original_id")
     override val originalId: Long,
