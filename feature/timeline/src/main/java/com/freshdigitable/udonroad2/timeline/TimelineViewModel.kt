@@ -93,7 +93,7 @@ class TimelineViewModel(
 object TimelineViewModelModule {
     @Provides
     @JvmStatic
-    fun provideMainViewModel(
+    fun provideTimelineViewModel(
         navigator: NavigationDispatcher,
         repositories: RepositoryComponent.Builder
     ): TimelineViewModel {

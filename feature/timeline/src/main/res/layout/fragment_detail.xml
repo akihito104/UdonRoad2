@@ -6,7 +6,12 @@
     >
 
     <data>
+        <import type="android.view.View" />
 
+        <variable
+            name="viewModel"
+            type="com.freshdigitable.udonroad2.timeline.TweetDetailViewModel"
+            />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -18,6 +23,8 @@
             android:id="@+id/detail_rtBy"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
+            android:layout_marginStart="20dp"
             android:layout_marginBottom="8dp"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toTopOf="@id/detail_icon"
@@ -27,7 +34,8 @@
             app:layout_constraintHorizontal_bias="0"
             app:layout_constraintVertical_bias="0"
             android:maxLines="1"
-            android:visibility="gone"
+            android:text="@{@string/tweet_list_item_rt_user(viewModel.tweetItem.originalUser.screenName)}"
+            android:visibility="@{viewModel.tweetItem.isRetweet ? View.VISIBLE : View.GONE}"
             tools:text="RT: @account"
             tools:visibility="visible"
             />
@@ -44,6 +52,7 @@
             app:layout_constraintEnd_toStartOf="@id/detail_name"
             app:layout_constraintHorizontal_bias="0"
             app:layout_constraintHorizontal_chainStyle="packed"
+            app:bindUserIcon="@{viewModel.tweetItem.body.user.iconUrl}"
             tools:background="#000"
             />
         <View
@@ -61,7 +70,10 @@
             app:layout_constraintTop_toTopOf="@id/detail_icon"
             app:layout_constraintStart_toEndOf="@id/detail_icon"
             app:layout_constraintEnd_toStartOf="@id/detail_twitter"
+            android:text="@{viewModel.tweetItem.body.user.name}"
+            android:maxLines="1"
             android:textStyle="bold"
+            android:ellipsize="end"
             tools:text="Name"
             />
         <TextView
@@ -72,6 +84,7 @@
             app:layout_constraintStart_toStartOf="@id/detail_name"
             app:layout_constraintEnd_toStartOf="@id/detail_twitter"
             app:layout_constraintHorizontal_bias="0"
+            android:text="@{`@` + viewModel.tweetItem.body.user.screenName}"
             tools:text="\@screen_name"
             />
         <TextView
@@ -83,6 +96,7 @@
             app:layout_constraintBottom_toTopOf="@id/detail_date"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
+            android:text="@{viewModel.tweetItem.body.text}"
             android:textSize="18sp"
             tools:text="tweet body\nlorem ipsum"
             />
@@ -93,6 +107,7 @@
             app:layout_constraintTop_toBottomOf="@id/detail_tweet"
             app:layout_constraintBottom_toTopOf="@id/detail_via"
             app:layout_constraintStart_toStartOf="parent"
+            app:bindCreatedAtAbsolute="@{viewModel.tweetItem.body.createdAt}"
             tools:text="2019/5/1 20:30"
             />
         <TextView
@@ -100,11 +115,12 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:layout_constraintTop_toBottomOf="@id/detail_date"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/detail_quote"
             app:layout_constraintStart_toEndOf="@id/detail_reactionContainer"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="1"
             app:layout_constraintVertical_bias="0"
+            app:bindSource="@{viewModel.tweetItem.body.source}"
             android:ellipsize="end"
             tools:text="via Twitter web client"
             />
@@ -118,6 +134,19 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@id/detail_via"
             app:layout_constraintHorizontal_chainStyle="spread_inside"
+            />
+        <include
+            android:id="@+id/detail_quote"
+            layout="@layout/view_tweet_list_quoted_item"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            app:layout_constraintTop_toBottomOf="@id/detail_via"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:tweet="@{viewModel.tweetItem}"
+            android:visibility="@{viewModel.tweetItem.quoted != null ? View.VISIBLE : View.GONE}"
             />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

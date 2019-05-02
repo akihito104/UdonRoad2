@@ -28,6 +28,9 @@ import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.TimelineFragment
 import com.freshdigitable.udonroad2.timeline.TimelineViewModel
 import com.freshdigitable.udonroad2.timeline.TimelineViewModelModule
+import com.freshdigitable.udonroad2.timeline.TweetDetailFragment
+import com.freshdigitable.udonroad2.timeline.TweetDetailViewModel
+import com.freshdigitable.udonroad2.timeline.TweetDetailViewModelModule
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -61,17 +64,27 @@ class MainActivity : AppCompatActivity(), HasSupportFragmentInjector {
 }
 
 @Module(includes = [
-    TimelineViewModelModule::class
+    TimelineViewModelModule::class,
+    TweetDetailViewModelModule::class
 ])
 abstract class MainActivityModule {
     @FragmentScope
     @ContributesAndroidInjector
     abstract fun contributeTimelineFragment(): TimelineFragment
 
+    @FragmentScope
+    @ContributesAndroidInjector
+    abstract fun contributeTweetDetailFragment(): TweetDetailFragment
+
     @Binds
     @IntoMap
     @ViewModelKey(TimelineViewModel::class)
-    abstract fun bindMainViewModel(viewModel: TimelineViewModel): ViewModel
+    abstract fun bindTimelineViewModel(viewModel: TimelineViewModel): ViewModel
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(TweetDetailViewModel::class)
+    abstract fun bindTweetDetailViewModel(viewModel: TweetDetailViewModel): ViewModel
 
     @Module
     companion object {

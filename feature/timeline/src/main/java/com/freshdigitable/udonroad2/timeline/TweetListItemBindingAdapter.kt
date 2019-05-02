@@ -19,6 +19,7 @@ package com.freshdigitable.udonroad2.timeline
 import android.graphics.Typeface
 import android.text.SpannableStringBuilder
 import android.text.Spanned
+import android.text.format.DateUtils
 import android.text.style.StyleSpan
 import android.widget.ImageView
 import android.widget.TextView
@@ -59,9 +60,20 @@ fun bindNames(v: TextView, user: User?) {
     }
 }
 
+@BindingAdapter("bindCreatedAtAbsolute")
+fun bindCreatedAtAbsolute(v: TextView, createdAt: Instant?) {
+    v.text = if (createdAt == null) {
+        ""
+    } else {
+        DateUtils.formatDateTime(v.context, createdAt.toEpochMilli(),
+            DateUtils.FORMAT_SHOW_YEAR.or(DateUtils.FORMAT_SHOW_DATE).or(DateUtils.FORMAT_SHOW_TIME))
+    }
+}
+
 @BindingAdapter("bindCreatedAtRelative")
 fun bindCreatedAtRelative(v: TextView, createdAt: Instant?) {
     if (createdAt == null) {
+        v.text = ""
         return
     }
     val delta = Duration.between(createdAt, Instant.now())
