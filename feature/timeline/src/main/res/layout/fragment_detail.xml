@@ -1,13 +1,123 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout
+<layout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     >
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:text="tweet detail!!!"
-        />
-</FrameLayout>
+
+    <data>
+
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="8dp"
+        >
+        <TextView
+            android:id="@+id/detail_rtBy"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/detail_icon"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintVertical_chainStyle="packed"
+            app:layout_constraintHorizontal_bias="0"
+            app:layout_constraintVertical_bias="0"
+            android:maxLines="1"
+            android:visibility="gone"
+            tools:text="RT: @account"
+            tools:visibility="visible"
+            />
+        <ImageView
+            android:id="@+id/detail_icon"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginBottom="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginRight="8dp"
+            app:layout_constraintTop_toBottomOf="@id/detail_rtBy"
+            app:layout_constraintBottom_toTopOf="@id/detail_tweet"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/detail_name"
+            app:layout_constraintHorizontal_bias="0"
+            app:layout_constraintHorizontal_chainStyle="packed"
+            tools:background="#000"
+            />
+        <View
+            android:id="@+id/detail_twitter"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            app:layout_constraintTop_toTopOf="@id/detail_icon"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:background="#00f"
+            />
+        <TextView
+            android:id="@+id/detail_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toTopOf="@id/detail_icon"
+            app:layout_constraintStart_toEndOf="@id/detail_icon"
+            app:layout_constraintEnd_toStartOf="@id/detail_twitter"
+            android:textStyle="bold"
+            tools:text="Name"
+            />
+        <TextView
+            android:id="@+id/detail_screenName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/detail_name"
+            app:layout_constraintStart_toStartOf="@id/detail_name"
+            app:layout_constraintEnd_toStartOf="@id/detail_twitter"
+            app:layout_constraintHorizontal_bias="0"
+            tools:text="\@screen_name"
+            />
+        <TextView
+            android:id="@+id/detail_tweet"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            app:layout_constraintTop_toBottomOf="@id/detail_icon"
+            app:layout_constraintBottom_toTopOf="@id/detail_date"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:textSize="18sp"
+            tools:text="tweet body\nlorem ipsum"
+            />
+        <TextView
+            android:id="@+id/detail_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/detail_tweet"
+            app:layout_constraintBottom_toTopOf="@id/detail_via"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:text="2019/5/1 20:30"
+            />
+        <TextView
+            android:id="@+id/detail_via"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/detail_date"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@id/detail_reactionContainer"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="1"
+            app:layout_constraintVertical_bias="0"
+            android:ellipsize="end"
+            tools:text="via Twitter web client"
+            />
+        <LinearLayout
+            android:id="@+id/detail_reactionContainer"
+            android:layout_width="0dp"
+            android:layout_height="14dp"
+            android:orientation="horizontal"
+            app:layout_constraintTop_toTopOf="@id/detail_via"
+            app:layout_constraintBottom_toBottomOf="@id/detail_via"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/detail_via"
+            app:layout_constraintHorizontal_chainStyle="spread_inside"
+            />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>
