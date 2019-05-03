@@ -36,6 +36,7 @@
             android:maxLines="1"
             android:text="@{@string/tweet_list_item_rt_user(viewModel.tweetItem.originalUser.screenName)}"
             android:visibility="@{viewModel.tweetItem.isRetweet ? View.VISIBLE : View.GONE}"
+            android:onClick="@{v -> viewModel.onOriginalUserClicked()}"
             tools:text="RT: @account"
             tools:visibility="visible"
             />
@@ -53,6 +54,7 @@
             app:layout_constraintHorizontal_bias="0"
             app:layout_constraintHorizontal_chainStyle="packed"
             app:bindUserIcon="@{viewModel.tweetItem.body.user.iconUrl}"
+            android:onClick="@{v -> viewModel.onBodyUserClicked()}"
             tools:background="#000"
             />
         <View
@@ -74,6 +76,7 @@
             android:maxLines="1"
             android:textStyle="bold"
             android:ellipsize="end"
+            android:onClick="@{v -> viewModel.onBodyUserClicked()}"
             tools:text="Name"
             />
         <TextView
@@ -85,6 +88,7 @@
             app:layout_constraintEnd_toStartOf="@id/detail_twitter"
             app:layout_constraintHorizontal_bias="0"
             android:text="@{`@` + viewModel.tweetItem.body.user.screenName}"
+            android:onClick="@{v -> viewModel.onBodyUserClicked()}"
             tools:text="\@screen_name"
             />
         <TextView
