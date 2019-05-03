@@ -26,6 +26,10 @@ class MainActivityNavigation(
             is TimelineEvent.TweetDetailRequested -> {
                 MainActivityState.TweetDetail(event.tweetId)
             }
+            is TimelineEvent.RetweetUserClicked -> {
+                UserActivity.start(activity, event.userId)
+                null
+            }
             TimelineEvent.Back -> {
                 if (currentState is MainActivityState.TweetDetail) {
                     MainActivityState.MainTimeline
@@ -37,13 +41,21 @@ class MainActivityNavigation(
         }
     }
 
+    companion object {
+        private const val BACK_STACK_TWEET_DETAIL = "tweet_detail"
+    }
+
     override fun navigate(s: MainActivityState?) {
         when (s) {
             is MainActivityState.MainTimeline -> {
-                replace(TimelineFragment())
+                if (isStackedOnTop(BACK_STACK_TWEET_DETAIL)) {
+                    activity.supportFragmentManager.popBackStack()
+                } else {
+                    replace(TimelineFragment())
+                }
             }
             is MainActivityState.TweetDetail -> {
-                replace(TweetDetailFragment.newInstance(s.tweetId))
+                replace(TweetDetailFragment.newInstance(s.tweetId), BACK_STACK_TWEET_DETAIL)
             }
             MainActivityState.Halt -> activity.finish()
         }

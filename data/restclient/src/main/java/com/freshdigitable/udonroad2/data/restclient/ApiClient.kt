@@ -27,39 +27,47 @@ class HomeApiClient @Inject constructor(
         private val twitter: Twitter
 ) {
     fun loadInit(): List<TweetEntity> {
-        return twitter.homeTimeline.map { toEntity(it) }
+        return twitter.homeTimeline.map { it.toEntity() }
     }
 
     fun loadAtTop(token: Long): List<TweetEntity> {
         val paging = Paging(1, 50, token)
-        return twitter.getHomeTimeline(paging).map { toEntity(it) }
+        return twitter.getHomeTimeline(paging).map { it.toEntity() }
     }
 
     fun loadAtLast(token: Long): List<TweetEntity> {
         val paging = Paging(1, 50, 1, token)
-        return twitter.getHomeTimeline(paging).map { toEntity(it) }
+        return twitter.getHomeTimeline(paging).map { it.toEntity() }
     }
 }
 
-fun toEntity(status: Status): TweetEntity {
+class TweetApiClient @Inject constructor(
+    private val twitter: Twitter
+) {
+    fun fetchTweet(id: Long): TweetEntity {
+        return twitter.showStatus(id).toEntity()
+    }
+}
+
+private fun Status.toEntity(): TweetEntity {
     return TweetEntityRest(
-            id = status.id,
-            text = status.text,
-            retweetCount = status.retweetCount,
-            favoriteCount = status.favoriteCount,
+            id = id,
+            text = text,
+            retweetCount = retweetCount,
+            favoriteCount = favoriteCount,
             user = UserEntityRest(
-                    id = status.user.id,
-                    name = status.user.name,
-                    screenName = status.user.screenName,
-                    iconUrl = status.user.profileImageURLHttps
+                    id = user.id,
+                    name = user.name,
+                    screenName = user.screenName,
+                    iconUrl = user.profileImageURLHttps
             ),
-            retweetedTweet = status.retweetedStatus?.let { toEntity(it) },
-            quotedTweet = status.quotedStatus?.let { toEntity(it) },
-            inReplyToTweetId = status.inReplyToStatusId,
-            isRetweeted = status.isRetweeted,
-            isFavorited = status.isFavorited,
-            possiblySensitive = status.isPossiblySensitive,
-            source = status.source,
-            createdAt = Instant.ofEpochMilli(status.createdAt.time)
+            retweetedTweet = retweetedStatus?.toEntity(),
+            quotedTweet = quotedStatus?.toEntity(),
+            inReplyToTweetId = inReplyToStatusId,
+            isRetweeted = isRetweeted,
+            isFavorited = isFavorited,
+            possiblySensitive = isPossiblySensitive,
+            source = source,
+            createdAt = Instant.ofEpochMilli(createdAt.time)
     )
 }

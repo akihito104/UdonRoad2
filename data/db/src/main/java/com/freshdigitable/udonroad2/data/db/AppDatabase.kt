@@ -20,21 +20,29 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverter
 import androidx.room.TypeConverters
+import com.freshdigitable.udonroad2.data.db.dao.StructuredTweetEntity
 import com.freshdigitable.udonroad2.data.db.dao.TweetDao
 import com.freshdigitable.udonroad2.data.db.dao.TweetListEntity
 import com.freshdigitable.udonroad2.data.db.dao.UserDao
+import com.freshdigitable.udonroad2.data.db.dbview.Tweet
+import com.freshdigitable.udonroad2.data.db.dbview.TweetListItem
 import com.freshdigitable.udonroad2.data.db.entity.TweetEntityDb
 import com.freshdigitable.udonroad2.data.db.entity.UserEntity
 import org.threeten.bp.Instant
 
 @Database(
-        entities = [
-            TweetEntityDb::class,
-            TweetListEntity::class,
-            UserEntity::class
-        ],
-        exportSchema = false,
-        version = 1
+    entities = [
+        TweetEntityDb::class,
+        StructuredTweetEntity::class,
+        TweetListEntity::class,
+        UserEntity::class
+    ],
+    views = [
+        Tweet::class,
+        TweetListItem::class
+    ],
+    exportSchema = false,
+    version = 1
 )
 @TypeConverters(TimestampConverter::class)
 abstract class AppDatabase : RoomDatabase() {

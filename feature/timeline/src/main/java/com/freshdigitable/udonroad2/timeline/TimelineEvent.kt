@@ -9,5 +9,7 @@ sealed class TimelineEvent : NavigationEvent {
 
     data class UserIconClicked(val userId: Long) : TimelineEvent()
 
+    data class RetweetUserClicked(val userId: Long) : TimelineEvent()
+
     object Back : TimelineEvent()
 }

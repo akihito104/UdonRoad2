@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.NonNull
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -27,9 +28,7 @@ class TimelineFragment : Fragment() {
     @Inject
     lateinit var factory: ViewModelProvider.Factory
 
-    private lateinit var binding: FragmentTimelineBinding
-
-    override fun onAttach(context: Context?) {
+    override fun onAttach(context: Context) {
         AndroidSupportInjection.inject(this)
         super.onAttach(context)
     }
@@ -39,15 +38,17 @@ class TimelineFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        binding = FragmentTimelineBinding.inflate(inflater, container, false)
+        val binding = FragmentTimelineBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val viewModel = ViewModelProviders.of(this, factory).get(TimelineViewModel::class.java)
-        binding.viewModel = viewModel
+        val binding = DataBindingUtil.findBinding<FragmentTimelineBinding>(view) ?: return
         binding.lifecycleOwner = viewLifecycleOwner
+
+        val viewModel = ViewModelProviders.of(requireActivity(), factory).get(TimelineViewModel::class.java)
+        binding.viewModel = viewModel
 
         val listView = binding.mainList
         val linearLayoutManager = LinearLayoutManager(view.context)
