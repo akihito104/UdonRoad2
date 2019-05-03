@@ -44,6 +44,7 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutine_version"
 
     implementation "androidx.appcompat:appcompat:$appcompat_version"
+    implementation "androidx.fragment:fragment:$fragment_version"
     implementation "androidx.recyclerview:recyclerview:$recyclerview_version"
     implementation "androidx.core:core-ktx:$coreKtx_version"
     implementation "androidx.constraintlayout:constraintlayout:$constraintLayout_version"

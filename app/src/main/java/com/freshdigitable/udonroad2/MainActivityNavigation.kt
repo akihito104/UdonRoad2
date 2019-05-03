@@ -41,13 +41,21 @@ class MainActivityNavigation(
         }
     }
 
+    companion object {
+        private const val BACK_STACK_TWEET_DETAIL = "tweet_detail"
+    }
+
     override fun navigate(s: MainActivityState?) {
         when (s) {
             is MainActivityState.MainTimeline -> {
-                replace(TimelineFragment())
+                if (isStackedOnTop(BACK_STACK_TWEET_DETAIL)) {
+                    activity.supportFragmentManager.popBackStack()
+                } else {
+                    replace(TimelineFragment())
+                }
             }
             is MainActivityState.TweetDetail -> {
-                replace(TweetDetailFragment.newInstance(s.tweetId))
+                replace(TweetDetailFragment.newInstance(s.tweetId), BACK_STACK_TWEET_DETAIL)
             }
             MainActivityState.Halt -> activity.finish()
         }
