@@ -29,6 +29,7 @@ import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.Transaction
 import com.freshdigitable.udonroad2.data.db.AppDatabase
+import com.freshdigitable.udonroad2.data.db.dbview.Tweet
 import com.freshdigitable.udonroad2.data.db.dbview.TweetListItem
 import com.freshdigitable.udonroad2.data.db.entity.TweetEntityDb
 import com.freshdigitable.udonroad2.data.db.entity.UserEntity
@@ -51,8 +52,15 @@ abstract class TweetDao(
     @Query("SELECT * FROM tweet_list_item WHERE original_id = :id")
     abstract fun findTweetItem(id: Long): LiveData<TweetListItem?>
 
+    @Query("SELECT * FROM tweet WHERE id = :id")
+    abstract fun findTweet(id: Long): LiveData<Tweet?>
+
+    fun addTweet(tweet: TweetEntity, owner: String? = null) {
+        addTweets(listOf(tweet), owner)
+    }
+
     @Transaction
-    open fun addTweets(tweet: List<TweetEntity>) {
+    open fun addTweets(tweet: List<TweetEntity>, owner: String? = null) {
         val tweetEntities = tweet.asSequence()
             .map { arrayOf(it, it.retweetedTweet, it.retweetedTweet?.quotedTweet, it.quotedTweet).filterNotNull() }
             .flatMap { it.asSequence() }
@@ -73,12 +81,14 @@ abstract class TweetDao(
                 bodyTweetId = it.retweetedTweet?.id ?: it.id,
                 quotedTweetId = it.retweetedTweet?.quotedTweet?.id ?: it.quotedTweet?.id)
         })
-        addTweetListEntities(tweet.map {
-            TweetListEntity(
-                originalId = it.id,
-                order = it.id,
-                owner = "home")
-        })
+        if (owner != null) {
+            addTweetListEntities(tweet.map {
+                TweetListEntity(
+                    originalId = it.id,
+                    order = it.id,
+                    owner = owner)
+            })
+        }
     }
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

@@ -84,7 +84,7 @@ class HomeTimelineRepository(
         _loading.postValue(true)
         try {
             val timeline = networkAccess { block(apiClient) }
-            diskAccess { tweetDao.addTweets(timeline) }
+            diskAccess { tweetDao.addTweets(timeline, "home") }
         } catch (e: Exception) {
             Log.e("HomeTimelineRepository", "fetchHomeTimeline: ", e)
         } finally {
