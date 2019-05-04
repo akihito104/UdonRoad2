@@ -30,13 +30,10 @@ import com.freshdigitable.udonroad2.model.TweetEntity
 import com.freshdigitable.udonroad2.model.TweetListItem
 import dagger.Module
 import dagger.Provides
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.NonCancellable
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.concurrent.Executor
 
 @RepositoryScope
 class HomeTimelineRepository(
@@ -45,15 +42,17 @@ class HomeTimelineRepository(
     private val executor: AppExecutor
 ) {
     companion object {
+        private const val OWNER = "home"
+
         private val config = PagedList.Config.Builder()
-                .setEnablePlaceholders(false)
-                .setPageSize(20)
-                .setInitialLoadSizeHint(100)
-                .build()
+            .setEnablePlaceholders(false)
+            .setPageSize(20)
+            .setInitialLoadSizeHint(100)
+            .build()
     }
 
     val timeline: LiveData<PagedList<TweetListItem>> by lazy {
-        LivePagedListBuilder(tweetDao.getHomeTimeline("home").map { it as TweetListItem }, config)
+        LivePagedListBuilder(tweetDao.getHomeTimeline(OWNER).map { it as TweetListItem }, config)
             .setFetchExecutor(executor.disk)
             .setBoundaryCallback(object : PagedList.BoundaryCallback<TweetListItem>() {
                 override fun onZeroItemsLoaded() {
@@ -79,12 +78,12 @@ class HomeTimelineRepository(
     val loading: LiveData<Boolean> = _loading
 
     private fun fetchHomeTimeline(
-            block: HomeApiClient.() -> List<TweetEntity>
+        block: HomeApiClient.() -> List<TweetEntity>
     ) = GlobalScope.launch {
         _loading.postValue(true)
         try {
             val timeline = networkAccess { block(apiClient) }
-            diskAccess { tweetDao.addTweets(timeline, "home") }
+            diskAccess { tweetDao.addTweets(timeline, OWNER) }
         } catch (e: Exception) {
             Log.e("HomeTimelineRepository", "fetchHomeTimeline: ", e)
         } finally {
@@ -94,31 +93,7 @@ class HomeTimelineRepository(
         }
     }
 
-    fun clear() = diskAccess { tweetDao.clear() }
-}
-
-class AppExecutor {
-    val disk: Executor = Executor {
-        diskAccess { it.run() }
-    }
-
-    val network: Executor = Executor {
-        GlobalScope.launch(Dispatchers.Default) {
-            it.run()
-        }
-    }
-
-    fun diskIO(task: () -> Unit) = diskAccess(task)
-}
-
-fun diskAccess(task: () -> Unit) = GlobalScope.launch(Dispatchers.IO) {
-    task()
-}
-
-suspend fun <T> networkAccess(callable: () -> T): T = coroutineScope {
-    withContext(Dispatchers.Default) {
-        callable()
-    }
+    fun clear() = diskAccess { tweetDao.clear(OWNER) }
 }
 
 @Module(includes = [

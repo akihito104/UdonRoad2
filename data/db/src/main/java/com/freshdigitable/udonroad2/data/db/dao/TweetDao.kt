@@ -75,19 +75,9 @@ abstract class TweetDao(
                 .map { it.toDbEntity() }
                 .toList())
         addTweetEntitiesInternal(tweetEntities.map(TweetEntity::toDbEntity))
-        addStructuredTweetEntities(tweet.map {
-            StructuredTweetEntity(
-                originalId = it.id,
-                bodyTweetId = it.retweetedTweet?.id ?: it.id,
-                quotedTweetId = it.retweetedTweet?.quotedTweet?.id ?: it.quotedTweet?.id)
-        })
+        addStructuredTweetEntities(tweet.map { it.toStructuredTweet() })
         if (owner != null) {
-            addTweetListEntities(tweet.map {
-                TweetListEntity(
-                    originalId = it.id,
-                    order = it.id,
-                    owner = owner)
-            })
+            addTweetListEntities(tweet.map { it.toListEntity(owner) })
         }
     }
 
@@ -100,8 +90,8 @@ abstract class TweetDao(
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     abstract fun addTweetListEntities(listEntities: List<TweetListEntity>)
 
-    @Query("DELETE FROM tweet_list WHERE owner = 'home'")
-    abstract fun clear()
+    @Query("DELETE FROM tweet_list WHERE owner = :owner")
+    abstract fun clear(owner: String)
 }
 
 @Entity(
@@ -187,4 +177,18 @@ private fun User.toDbEntity(): UserEntity {
     return UserEntity(
         id, name, screenName, iconUrl
     )
+}
+
+private fun TweetEntity.toStructuredTweet(): StructuredTweetEntity {
+    return StructuredTweetEntity(
+        originalId = id,
+        bodyTweetId = retweetedTweet?.id ?: id,
+        quotedTweetId = retweetedTweet?.quotedTweet?.id ?: quotedTweet?.id)
+}
+
+private fun TweetEntity.toListEntity(owner: String): TweetListEntity {
+    return TweetListEntity(
+        originalId = id,
+        order = id,
+        owner = owner)
 }
