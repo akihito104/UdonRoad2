@@ -47,7 +47,7 @@ abstract class TweetDao(
         INNER JOIN tweet_list_item ON tweet_list_item.original_id = tweet_list.original_id
         WHERE tweet_list.owner = :owner
         ORDER BY tweet_list.`order` DESC""")
-    abstract fun getHomeTimeline(owner: String): DataSource.Factory<Int, TweetListItem>
+    abstract fun getTimeline(owner: String): DataSource.Factory<Int, TweetListItem>
 
     @Query("SELECT * FROM tweet_list_item WHERE original_id = :id")
     abstract fun findTweetItem(id: Long): LiveData<TweetListItem?>

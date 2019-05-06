@@ -24,8 +24,9 @@ import androidx.databinding.ObservableInt
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.paging.PagedList
-import com.freshdigitable.udonroad2.data.repository.HomeTimelineRepository
 import com.freshdigitable.udonroad2.data.repository.RepositoryComponent
+import com.freshdigitable.udonroad2.data.repository.TweetTimelineRepository
+import com.freshdigitable.udonroad2.model.ListQuery
 import com.freshdigitable.udonroad2.model.TweetListItem
 import com.freshdigitable.udonroad2.navigation.NavigationDispatcher
 import dagger.Module
@@ -33,11 +34,11 @@ import dagger.Provides
 
 class TimelineViewModel(
     private val navigator: NavigationDispatcher,
-    private val homeRepository: HomeTimelineRepository
+    private val homeRepository: TweetTimelineRepository
 ) : TweetListItemClickListener, TweetListEventListener, ViewModel() {
 
     val timeline: LiveData<PagedList<TweetListItem>> by lazy {
-        homeRepository.timeline
+        homeRepository.getTimeline("home", ListQuery.Timeline())
     }
 
     val loading: LiveData<Boolean>
@@ -97,6 +98,6 @@ object TimelineViewModelModule {
         navigator: NavigationDispatcher,
         repositories: RepositoryComponent.Builder
     ): TimelineViewModel {
-        return TimelineViewModel(navigator, repositories.build().homeTimelineRepository())
+        return TimelineViewModel(navigator, repositories.build().tweetTimelineRepository())
     }
 }

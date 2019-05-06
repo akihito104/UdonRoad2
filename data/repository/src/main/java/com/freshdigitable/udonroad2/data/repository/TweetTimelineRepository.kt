@@ -19,12 +19,15 @@ package com.freshdigitable.udonroad2.data.repository
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Transformations
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
 import com.freshdigitable.udonroad2.data.db.DaoModule
 import com.freshdigitable.udonroad2.data.db.dao.TweetDao
-import com.freshdigitable.udonroad2.data.restclient.HomeApiClient
+import com.freshdigitable.udonroad2.data.restclient.ListRestClient
+import com.freshdigitable.udonroad2.data.restclient.ListRestClientProvider
 import com.freshdigitable.udonroad2.data.restclient.TwitterModule
+import com.freshdigitable.udonroad2.model.ListQuery
 import com.freshdigitable.udonroad2.model.RepositoryScope
 import com.freshdigitable.udonroad2.model.TweetEntity
 import com.freshdigitable.udonroad2.model.TweetListItem
@@ -36,14 +39,16 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @RepositoryScope
-class HomeTimelineRepository(
+class TweetTimelineRepository(
     private val tweetDao: TweetDao,
-    private val apiClient: HomeApiClient,
+    private val clientProvider: ListRestClientProvider,
     private val executor: AppExecutor
-) {
-    companion object {
-        private const val OWNER = "home"
+) : TimelineRepository, TimelineFetcher<ListRestClient<ListQuery>> by TweetTimelineFetcher() {
 
+    private val _loading = MutableLiveData<Boolean>()
+    override val loading: LiveData<Boolean> = _loading
+
+    companion object {
         private val config = PagedList.Config.Builder()
             .setEnablePlaceholders(false)
             .setPageSize(20)
@@ -51,39 +56,60 @@ class HomeTimelineRepository(
             .build()
     }
 
-    val timeline: LiveData<PagedList<TweetListItem>> by lazy {
-        LivePagedListBuilder(tweetDao.getHomeTimeline(OWNER).map { it as TweetListItem }, config)
+    private val owner = MutableLiveData<String>()
+    private val listTable: MutableMap<String, LiveData<PagedList<TweetListItem>>> = mutableMapOf()
+
+    private val timeline: LiveData<PagedList<TweetListItem>> = Transformations.switchMap(owner) {
+        listTable.getOrPut(it) { getPagedList(it) }
+    }
+
+    private lateinit var apiClient: ListRestClient<ListQuery>
+
+    override fun getTimeline(owner: String, query: ListQuery): LiveData<PagedList<TweetListItem>> {
+        apiClient = clientProvider.get(query)
+        this.owner.value = owner
+        return timeline
+    }
+
+    private fun getPagedList(owner: String): LiveData<PagedList<TweetListItem>> {
+        val timeline = tweetDao.getTimeline(owner).map { it as TweetListItem }
+        return LivePagedListBuilder(timeline, config)
             .setFetchExecutor(executor.disk)
             .setBoundaryCallback(object : PagedList.BoundaryCallback<TweetListItem>() {
                 override fun onZeroItemsLoaded() {
                     super.onZeroItemsLoaded()
-                    fetchHomeTimeline { loadInit() }
+                    fetchTimeline(owner, fetchOnZeroItems)
                 }
 
                 override fun onItemAtEndLoaded(itemAtEnd: TweetListItem) {
                     super.onItemAtEndLoaded(itemAtEnd)
-                    fetchHomeTimeline { loadAtLast(itemAtEnd.originalId - 1) }
+                    fetchTimeline(owner, fetchOnBottom(itemAtEnd))
                 }
             })
             .build()
     }
 
-    fun loadAtFront() {
-        timeline.value?.getOrNull(0)?.let {
-            fetchHomeTimeline { loadAtTop(it.originalId + 1) }
-        } ?: fetchHomeTimeline { loadInit() }
+    override fun loadAtFront() {
+        val owner = requireNotNull(this.owner.value) {
+            "owner should be set before calling loadAtFront()."
+        }
+
+        val item = timeline.value?.getOrNull(0)
+        if (item != null) {
+            fetchTimeline(owner, fetchOnTop(item))
+        } else {
+            fetchTimeline(owner, fetchOnZeroItems)
+        }
     }
 
-    private val _loading = MutableLiveData<Boolean>()
-    val loading: LiveData<Boolean> = _loading
-
-    private fun fetchHomeTimeline(
-        block: HomeApiClient.() -> List<TweetEntity>
+    private fun fetchTimeline(
+        owner: String,
+        block: ListRestClient<ListQuery>.() -> List<TweetEntity>
     ) = GlobalScope.launch {
         _loading.postValue(true)
         try {
             val timeline = networkAccess { block(apiClient) }
-            diskAccess { tweetDao.addTweets(timeline, OWNER) }
+            diskAccess { tweetDao.addTweets(timeline, owner) }
         } catch (e: Exception) {
             Log.e("HomeTimelineRepository", "fetchHomeTimeline: ", e)
         } finally {
@@ -93,20 +119,26 @@ class HomeTimelineRepository(
         }
     }
 
-    fun clear() = diskAccess { tweetDao.clear(OWNER) }
+    override fun clear() {
+        diskAccess {
+            listTable.keys.forEach { tweetDao.clear(it) }
+        }
+    }
 }
 
 @Module(includes = [
     DaoModule::class,
     TwitterModule::class
 ])
-object HomeTimelineRepositoryModule {
+object TimelineRepositoryModule {
     @Provides
     @JvmStatic
     @RepositoryScope
-    fun provideHomeTimelineRepository(
+    fun provideTweetTimelineRepository(
         tweetDao: TweetDao,
-        apiClient: HomeApiClient,
+        clientProvider: ListRestClientProvider,
         executor: AppExecutor
-    ): HomeTimelineRepository = HomeTimelineRepository(tweetDao, apiClient, executor)
+    ): TweetTimelineRepository {
+        return TweetTimelineRepository(tweetDao, clientProvider, executor)
+    }
 }
