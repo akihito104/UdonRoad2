@@ -17,11 +17,13 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.freshdigitable.udonroad2.model.ListQuery
 import com.freshdigitable.udonroad2.model.TweetListItem
 import com.freshdigitable.udonroad2.timeline.databinding.FragmentTimelineBinding
 import com.freshdigitable.udonroad2.timeline.databinding.ViewTweetListItemBinding
 import com.freshdigitable.udonroad2.timeline.databinding.ViewTweetListQuotedItemBinding
 import dagger.android.support.AndroidSupportInjection
+import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
 
 class TimelineFragment : Fragment() {
@@ -47,7 +49,7 @@ class TimelineFragment : Fragment() {
         val binding = DataBindingUtil.findBinding<FragmentTimelineBinding>(view) ?: return
         binding.lifecycleOwner = viewLifecycleOwner
 
-        val viewModel = ViewModelProviders.of(requireActivity(), factory).get(TimelineViewModel::class.java)
+        val viewModel = ViewModelProviders.of(this, factory).get(TimelineViewModel::class.java)
         binding.viewModel = viewModel
 
         val listView = binding.mainList
@@ -56,9 +58,30 @@ class TimelineFragment : Fragment() {
         listView.addItemDecoration(DividerItemDecoration(view.context, linearLayoutManager.orientation))
         val adapter = Adapter(viewModel, viewModel)
         listView.adapter = adapter
-        viewModel.timeline.observe(viewLifecycleOwner, Observer { list ->
+        viewModel.getTimeline(ListOwner(ownerId, query)).observe(viewLifecycleOwner, Observer { list ->
             adapter.submitList(list)
         })
+    }
+
+    private val ownerId: Int
+        get() = requireArguments().getInt(ARGS_OWNER_ID)
+
+    private val query: ListQuery
+        get() = requireArguments().getSerializable(ARGS_QUERY) as ListQuery
+
+    companion object {
+        private val ownerIdGen = AtomicInteger(0)
+        private const val ARGS_OWNER_ID = "owner_id"
+        private const val ARGS_QUERY = "query"
+
+        fun newInstance(query: ListQuery): TimelineFragment {
+            return TimelineFragment().apply {
+                arguments = Bundle().apply {
+                    putSerializable(ARGS_QUERY, query)
+                    putInt(ARGS_OWNER_ID, ownerIdGen.getAndIncrement())
+                }
+            }
+        }
     }
 }
 

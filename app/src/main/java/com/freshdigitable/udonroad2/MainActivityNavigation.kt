@@ -2,6 +2,7 @@ package com.freshdigitable.udonroad2
 
 import androidx.annotation.IdRes
 import androidx.appcompat.app.AppCompatActivity
+import com.freshdigitable.udonroad2.model.ListQuery
 import com.freshdigitable.udonroad2.navigation.FragmentContainerState
 import com.freshdigitable.udonroad2.navigation.Navigation
 import com.freshdigitable.udonroad2.navigation.NavigationDispatcher
@@ -51,7 +52,7 @@ class MainActivityNavigation(
                 if (isStackedOnTop(BACK_STACK_TWEET_DETAIL)) {
                     activity.supportFragmentManager.popBackStack()
                 } else {
-                    replace(TimelineFragment())
+                    replace(TimelineFragment.newInstance(ListQuery.Timeline()))
                 }
             }
             is MainActivityState.TweetDetail -> {

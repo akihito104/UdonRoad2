@@ -22,6 +22,8 @@ import android.view.View
 import androidx.databinding.ObservableField
 import androidx.databinding.ObservableInt
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
 import androidx.paging.PagedList
 import com.freshdigitable.udonroad2.data.repository.RepositoryComponent
@@ -37,8 +39,15 @@ class TimelineViewModel(
     private val homeRepository: TweetTimelineRepository
 ) : TweetListItemClickListener, TweetListEventListener, ViewModel() {
 
-    val timeline: LiveData<PagedList<TweetListItem>> by lazy {
-        homeRepository.getTimeline("home", ListQuery.Timeline())
+    private val listOwner = MutableLiveData<ListOwner>()
+
+    val timeline: LiveData<PagedList<TweetListItem>> = Transformations.switchMap(listOwner) {
+        homeRepository.getTimeline("${it.id}", it.query)
+    }
+
+    fun getTimeline(listOwner: ListOwner): LiveData<PagedList<TweetListItem>> {
+        this.listOwner.postValue(listOwner)
+        return timeline
     }
 
     val loading: LiveData<Boolean>
@@ -89,6 +98,11 @@ class TimelineViewModel(
         navigator.postEvent(TimelineEvent.UserIconClicked(item.body.user.id))
     }
 }
+
+data class ListOwner(
+    val id: Int,
+    val query: ListQuery
+)
 
 @Module
 object TimelineViewModelModule {
