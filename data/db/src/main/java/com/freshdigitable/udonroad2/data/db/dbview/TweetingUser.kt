@@ -17,9 +17,13 @@
 package com.freshdigitable.udonroad2.data.db.dbview
 
 import androidx.room.ColumnInfo
-import com.freshdigitable.udonroad2.model.User
+import androidx.room.DatabaseView
+import com.freshdigitable.udonroad2.model.TweetingUser
 
-data class User(
+@DatabaseView(viewName = "view_user_in_tweet", value = """
+    SELECT id, name, screen_name, icon_url FROM UserEntity
+""")
+data class TweetingUser(
     @ColumnInfo(name = "id")
     override val id: Long,
 
@@ -31,4 +35,4 @@ data class User(
 
     @ColumnInfo(name = "icon_url")
     override val iconUrl: String
-) : User
+) : TweetingUser

@@ -26,6 +26,7 @@ import com.freshdigitable.udonroad2.data.db.dao.TweetListEntity
 import com.freshdigitable.udonroad2.data.db.dao.UserDao
 import com.freshdigitable.udonroad2.data.db.dbview.Tweet
 import com.freshdigitable.udonroad2.data.db.dbview.TweetListItem
+import com.freshdigitable.udonroad2.data.db.dbview.TweetingUser
 import com.freshdigitable.udonroad2.data.db.entity.TweetEntityDb
 import com.freshdigitable.udonroad2.data.db.entity.UserEntity
 import org.threeten.bp.Instant
@@ -39,7 +40,8 @@ import org.threeten.bp.Instant
     ],
     views = [
         Tweet::class,
-        TweetListItem::class
+        TweetListItem::class,
+        TweetingUser::class
     ],
     exportSchema = false,
     version = 1

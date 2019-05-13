@@ -25,12 +25,12 @@ import org.threeten.bp.Instant
 @DatabaseView(viewName = "tweet", value = """
     SELECT
      TweetEntityDb.id, text, created_at, retweet_count, favorite_count, source,
-     UserEntity.id AS user_id,
-     UserEntity.name AS user_name,
-     UserEntity.screen_name AS user_screen_name,
-     UserEntity.icon_url AS user_icon_url
+     u.id AS user_id,
+     u.name AS user_name,
+     u.screen_name AS user_screen_name,
+     u.icon_url AS user_icon_url
     FROM TweetEntityDb
-    INNER JOIN UserEntity ON TweetEntityDb.user_id = UserEntity.id
+    INNER JOIN view_user_in_tweet AS u ON TweetEntityDb.user_id = u.id
 """)
 data class Tweet(
     @ColumnInfo(name = "id")
@@ -46,7 +46,7 @@ data class Tweet(
     override val favoriteCount: Int,
 
     @Embedded(prefix = "user_")
-    override val user: User,
+    override val user: TweetingUser,
 
     @ColumnInfo(name = "source")
     override val source: String,
@@ -60,12 +60,12 @@ data class Tweet(
     original AS (
     SELECT
      TweetEntityDb.id AS original_id,
-     UserEntity.id AS original_user_id,
-     UserEntity.name AS original_user_name,
-     UserEntity.screen_name AS original_user_screen_name,
-     UserEntity.icon_url AS original_user_icon_url
+     u.id AS original_user_id,
+     u.name AS original_user_name,
+     u.screen_name AS original_user_screen_name,
+     u.icon_url AS original_user_icon_url
     FROM TweetEntityDb
-    INNER JOIN UserEntity ON TweetEntityDb.user_id = UserEntity.id
+    INNER JOIN view_user_in_tweet AS u ON TweetEntityDb.user_id = u.id
     ),
     quoted AS (
     SELECT
@@ -75,12 +75,12 @@ data class Tweet(
      retweet_count AS qt_retweet_count,
      favorite_count AS qt_favorite_count,
      source AS qt_source,
-     UserEntity.id AS qt_user_id,
-     UserEntity.name AS qt_user_name,
-     UserEntity.screen_name AS qt_user_screen_name,
-     UserEntity.icon_url AS qt_user_icon_url
+     u.id AS qt_user_id,
+     u.name AS qt_user_name,
+     u.screen_name AS qt_user_screen_name,
+     u.icon_url AS qt_user_icon_url
     FROM tweet
-    INNER JOIN UserEntity ON tweet.user_id = UserEntity.id
+    INNER JOIN view_user_in_tweet AS u ON tweet.user_id = u.id
     )
     SELECT tweet.*, original.*, quoted.*
     FROM structured_tweet
@@ -93,7 +93,7 @@ data class TweetListItem(
     override val originalId: Long,
 
     @Embedded(prefix = "original_user_")
-    override val originalUser: User,
+    override val originalUser: TweetingUser,
 
     @Embedded
     override val body: Tweet,

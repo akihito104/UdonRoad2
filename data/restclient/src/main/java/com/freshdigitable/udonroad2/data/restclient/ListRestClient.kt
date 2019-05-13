@@ -1,10 +1,12 @@
 package com.freshdigitable.udonroad2.data.restclient
 
+import android.graphics.Color
 import com.freshdigitable.udonroad2.model.ListQuery
 import com.freshdigitable.udonroad2.model.TweetEntity
 import org.threeten.bp.Instant
 import twitter4j.Paging
 import twitter4j.Status
+import twitter4j.User
 
 private const val FETCH_COUNT = 50
 
@@ -34,12 +36,7 @@ internal fun Status.toEntity(): TweetEntity {
         text = text,
         retweetCount = retweetCount,
         favoriteCount = favoriteCount,
-        user = UserEntityRest(
-            id = user.id,
-            name = user.name,
-            screenName = user.screenName,
-            iconUrl = user.profileImageURLHttps
-        ),
+        user = user.toEntity(),
         retweetedTweet = retweetedStatus?.toEntity(),
         quotedTweet = quotedStatus?.toEntity(),
         inReplyToTweetId = inReplyToStatusId,
@@ -48,5 +45,25 @@ internal fun Status.toEntity(): TweetEntity {
         possiblySensitive = isPossiblySensitive,
         source = source,
         createdAt = Instant.ofEpochMilli(createdAt.time)
+    )
+}
+
+internal fun User.toEntity(): UserEntityRest {
+    return UserEntityRest(
+        id = id,
+        name = name,
+        screenName = screenName,
+        description = description,
+        iconUrl = profileImageURLHttps,
+        profileBannerImageUrl = profileBannerURL,
+        followerCount = followersCount,
+        followingCount = friendsCount,
+        tweetCount = statusesCount,
+        favoriteCount = favouritesCount,
+        listedCount = listedCount,
+        profileLinkColor = Color.parseColor("#$profileLinkColor"),
+        location = location,
+        verified = isVerified,
+        isProtected = isProtected
     )
 }

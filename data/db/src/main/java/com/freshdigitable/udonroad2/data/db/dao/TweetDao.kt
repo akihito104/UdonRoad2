@@ -174,9 +174,7 @@ private fun TweetEntity.toDbEntity(): TweetEntityDb {
 }
 
 private fun User.toDbEntity(): UserEntity {
-    return UserEntity(
-        id, name, screenName, iconUrl
-    )
+    return UserEntity(this)
 }
 
 private fun TweetEntity.toStructuredTweet(): StructuredTweetEntity {

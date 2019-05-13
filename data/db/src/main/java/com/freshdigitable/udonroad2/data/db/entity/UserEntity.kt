@@ -24,7 +24,7 @@ import com.freshdigitable.udonroad2.model.User
 @Entity
 data class UserEntity(
     @PrimaryKey
-        @ColumnInfo(name = "id")
+    @ColumnInfo(name = "id")
     override val id: Long,
 
     @ColumnInfo(name = "name")
@@ -34,5 +34,56 @@ data class UserEntity(
     override val screenName: String,
 
     @ColumnInfo(name = "icon_url")
-    override val iconUrl: String
-) : User
+    override val iconUrl: String,
+
+    @ColumnInfo(name = "description")
+    override val description: String,
+
+    @ColumnInfo(name = "profile_banner_image_url")
+    override val profileBannerImageUrl: String?,
+
+    @ColumnInfo(name = "follower_count")
+    override val followerCount: Int,
+
+    @ColumnInfo(name = "following_count")
+    override val followingCount: Int,
+
+    @ColumnInfo(name = "tweet_count")
+    override val tweetCount: Int,
+
+    @ColumnInfo(name = "favorite_count")
+    override val favoriteCount: Int,
+
+    @ColumnInfo(name = "listed_count")
+    override val listedCount: Int,
+
+    @ColumnInfo(name = "profile_link_color")
+    override val profileLinkColor: Int,
+
+    @ColumnInfo(name = "location")
+    override val location: String,
+
+    @ColumnInfo(name = "verified")
+    override val verified: Boolean,
+
+    @ColumnInfo(name = "is_protected")
+    override val isProtected: Boolean
+) : User {
+
+    constructor(user: User) : this(
+        id = user.id,
+        name = user.name,
+        screenName = user.screenName,
+        description = user.description,
+        iconUrl = user.iconUrl,
+        profileBannerImageUrl = user.profileBannerImageUrl,
+        followerCount = user.followerCount,
+        followingCount = user.followingCount,
+        tweetCount = user.tweetCount,
+        favoriteCount = user.favoriteCount,
+        listedCount = user.listedCount,
+        profileLinkColor = user.profileLinkColor,
+        location = user.location,
+        verified = user.verified,
+        isProtected = user.isProtected)
+}

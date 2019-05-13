@@ -25,7 +25,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.databinding.BindingAdapter
 import com.bumptech.glide.Glide
-import com.freshdigitable.udonroad2.model.User
+import com.freshdigitable.udonroad2.model.TweetingUser
 import org.threeten.bp.Duration
 import org.threeten.bp.Instant
 import org.threeten.bp.LocalDateTime
@@ -50,7 +50,7 @@ fun bindSource(v: TextView, source: String?) {
 private val NAME_STYLE = StyleSpan(Typeface.BOLD)
 
 @BindingAdapter("bindNames")
-fun bindNames(v: TextView, user: User?) {
+fun bindNames(v: TextView, user: TweetingUser?) {
     v.text = user?.let {
         SpannableStringBuilder(it.name).apply {
             setSpan(NAME_STYLE, 0, it.name.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
