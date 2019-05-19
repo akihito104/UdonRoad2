@@ -5,7 +5,10 @@
     >
 
     <data>
-
+        <variable
+            name="viewModel"
+            type="com.freshdigitable.udonroad2.UserViewModel"
+            />
     </data>
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
@@ -36,6 +39,7 @@
                         android:ellipsize="end"
                         android:textSize="20sp"
                         android:textStyle="bold"
+                        android:text="@{'@' + viewModel.user.screenName}"
                         tools:text="\@screen_name"
                         />
                 </androidx.appcompat.widget.Toolbar>

@@ -8,6 +8,8 @@ import androidx.databinding.DataBindingUtil.setContentView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentStatePagerAdapter
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
 import com.freshdigitable.udonroad2.databinding.ActivityUserBinding
 import com.freshdigitable.udonroad2.model.FragmentScope
 import com.freshdigitable.udonroad2.model.ListQuery
@@ -26,11 +28,14 @@ import dagger.multibindings.IntoMap
 import javax.inject.Inject
 
 class UserActivity : HasSupportFragmentInjector, AppCompatActivity() {
+    @Inject
+    lateinit var viewModelFactory: ViewModelProvider.Factory
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
         super.onCreate(savedInstanceState)
         val binding = setContentView<ActivityUserBinding>(this, R.layout.activity_user)
+        binding.lifecycleOwner = this
 
         binding.userPager.adapter = object : FragmentStatePagerAdapter(
             supportFragmentManager, RESUME_ONLY_CURRENT_FRAGMENT) {
@@ -54,6 +59,10 @@ class UserActivity : HasSupportFragmentInjector, AppCompatActivity() {
         }
 
         binding.userTabContainer.setupWithViewPager(binding.userPager)
+
+        val viewModel = ViewModelProviders.of(this, viewModelFactory).get(UserViewModel::class.java)
+        binding.viewModel = viewModel
+        viewModel.setUserId(userId)
     }
 
     private val userId: Long
@@ -75,7 +84,10 @@ class UserActivity : HasSupportFragmentInjector, AppCompatActivity() {
     override fun supportFragmentInjector(): AndroidInjector<Fragment> = injector
 }
 
-@Module(includes = [TimelineViewModelModule::class])
+@Module(includes = [
+    TimelineViewModelModule::class,
+    UserViewModelModule::class
+])
 interface UserActivityModule {
     @ContributesAndroidInjector
     @FragmentScope
@@ -85,4 +97,9 @@ interface UserActivityModule {
     @IntoMap
     @ViewModelKey(TimelineViewModel::class)
     fun bindTimelineFragment(viewModel: TimelineViewModel): ViewModel
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(UserViewModel::class)
+    fun bindUserViewModel(viewModel: UserViewModel): ViewModel
 }
