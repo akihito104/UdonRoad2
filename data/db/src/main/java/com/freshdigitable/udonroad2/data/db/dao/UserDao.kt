@@ -16,13 +16,18 @@
 
 package com.freshdigitable.udonroad2.data.db.dao
 
+import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
+import androidx.room.Query
 import com.freshdigitable.udonroad2.data.db.entity.UserEntity
 
 @Dao
 abstract class UserDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     abstract fun addUsers(users: List<UserEntity>)
+
+    @Query("SELECT * FROM UserEntity WHERE id = :id")
+    abstract fun getUser(id: Long) : LiveData<UserEntity?>
 }
