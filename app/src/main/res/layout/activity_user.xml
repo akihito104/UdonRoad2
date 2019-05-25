@@ -16,6 +16,7 @@
         android:layout_height="match_parent"
         >
         <com.google.android.material.appbar.AppBarLayout
+            android:id="@+id/user_appBar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             >
@@ -26,6 +27,10 @@
                 app:contentScrim="?attr/colorPrimary"
                 app:titleEnabled="false"
                 >
+                <include
+                    layout="@layout/view_user_header"
+                    app:item="@{viewModel.user}"
+                    />
                 <androidx.appcompat.widget.Toolbar
                     android:layout_width="match_parent"
                     android:layout_height="?attr/actionBarSize"
@@ -40,6 +45,7 @@
                         android:textSize="20sp"
                         android:textStyle="bold"
                         android:text="@{'@' + viewModel.user.screenName}"
+                        android:alpha="@{viewModel.titleAlpha}"
                         tools:text="\@screen_name"
                         />
                 </androidx.appcompat.widget.Toolbar>

@@ -19,6 +19,19 @@ class UserViewModel(
     fun setUserId(id: Long) {
         userId.value = id
     }
+
+    private val appBarScrollRate = MutableLiveData<Float>()
+    val titleAlpha: LiveData<Float> = Transformations.map(appBarScrollRate) { r ->
+        if (r >= 0.9f) {
+            Math.min((r - 0.9f) * 10, 1f)
+        } else {
+            0f
+        }
+    }
+
+    fun setAppBarScrollRate(rate: Float) {
+        appBarScrollRate.value = rate
+    }
 }
 
 @Module

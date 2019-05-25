@@ -17,6 +17,7 @@ import com.freshdigitable.udonroad2.model.ViewModelKey
 import com.freshdigitable.udonroad2.timeline.TimelineFragment
 import com.freshdigitable.udonroad2.timeline.TimelineViewModel
 import com.freshdigitable.udonroad2.timeline.TimelineViewModelModule
+import com.google.android.material.appbar.AppBarLayout
 import dagger.Binds
 import dagger.Module
 import dagger.android.AndroidInjection
@@ -63,6 +64,10 @@ class UserActivity : HasSupportFragmentInjector, AppCompatActivity() {
         val viewModel = ViewModelProviders.of(this, viewModelFactory).get(UserViewModel::class.java)
         binding.viewModel = viewModel
         viewModel.setUserId(userId)
+
+        binding.userAppBar.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener { appBar, offset ->
+            viewModel.setAppBarScrollRate(Math.abs(offset).toFloat() / appBar.totalScrollRange.toFloat())
+        })
     }
 
     private val userId: Long
