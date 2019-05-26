@@ -16,6 +16,7 @@ class UserEntityRest(
     override val listedCount: Int,
     override val profileLinkColor: Int,
     override val location: String,
+    override val url: String?,
     override val verified: Boolean,
     override val isProtected: Boolean
 ) : User

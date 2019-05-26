@@ -63,6 +63,9 @@ data class UserEntity(
     @ColumnInfo(name = "location")
     override val location: String,
 
+    @ColumnInfo(name = "url")
+    override val url: String?,
+
     @ColumnInfo(name = "verified")
     override val verified: Boolean,
 
@@ -84,6 +87,7 @@ data class UserEntity(
         listedCount = user.listedCount,
         profileLinkColor = user.profileLinkColor,
         location = user.location,
+        url = user.url,
         verified = user.verified,
         isProtected = user.isProtected)
 }

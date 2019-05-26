@@ -48,9 +48,9 @@
             />
         <TextView
             android:id="@+id/userHeader_screenName"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:layout_constraintWidth_default="wrap"
+            app:layout_constrainedWidth="true"
             app:layout_constraintTop_toTopOf="@id/userHeader_icon"
             app:layout_constraintStart_toEndOf="@id/userHeader_icon"
             app:layout_constraintEnd_toEndOf="parent"
@@ -66,9 +66,9 @@
             />
         <TextView
             android:id="@+id/userHeader_name"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:layout_constraintWidth_default="wrap"
+            app:layout_constrainedWidth="true"
             app:layout_constraintTop_toBottomOf="@id/userHeader_screenName"
             app:layout_constraintStart_toStartOf="@id/userHeader_screenName"
             app:layout_constraintBottom_toTopOf="@id/userHeader_bio"
@@ -110,6 +110,7 @@
             android:paddingEnd="4dp"
             android:text="@{item.location}"
             android:maxLines="1"
+            app:visibility_goneIfNullOrEmpty="@{item.location}"
             tools:text="tokyo, jp"
             />
         <TextView
@@ -123,7 +124,9 @@
             app:layout_constraintBottom_toBottomOf="parent"
             android:paddingStart="4dp"
             android:paddingEnd="4dp"
+            android:text="@{item.url}"
             android:maxLines="1"
+            app:visibility_goneIfNullOrEmpty="@{item.url}"
             tools:text="http://"
             />
     </androidx.constraintlayout.widget.ConstraintLayout>

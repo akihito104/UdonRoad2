@@ -63,6 +63,7 @@ internal fun User.toEntity(): UserEntityRest {
         listedCount = listedCount,
         profileLinkColor = Color.parseColor("#$profileLinkColor"),
         location = location,
+        url = url,
         verified = isVerified,
         isProtected = isProtected
     )

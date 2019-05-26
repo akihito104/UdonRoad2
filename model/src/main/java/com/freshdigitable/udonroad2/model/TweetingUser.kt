@@ -21,6 +21,7 @@ interface User : TweetingUser {
     val listedCount: Int
     val profileLinkColor: Int
     val location: String
+    val url: String?
     val verified: Boolean
     val isProtected: Boolean
 }
