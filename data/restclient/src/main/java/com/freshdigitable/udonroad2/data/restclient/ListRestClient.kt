@@ -55,7 +55,7 @@ internal fun User.toEntity(): UserEntityRest {
         screenName = screenName,
         description = description,
         iconUrl = profileImageURLHttps,
-        profileBannerImageUrl = profileBannerURL,
+        profileBannerImageUrl = profileBanner600x200URL,
         followerCount = followersCount,
         followingCount = friendsCount,
         tweetCount = statusesCount,

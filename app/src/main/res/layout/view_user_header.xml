@@ -18,7 +18,8 @@
         <ImageView
             android:id="@+id/userHeader_banner"
             android:layout_width="0dp"
-            android:layout_height="120dp"
+            android:layout_height="0dp"
+            app:layout_constraintDimensionRatio="h,3:1"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -27,16 +28,23 @@
             app:bindUserIcon="@{item.profileBannerImageUrl}"
             tools:background="#800"
             />
+        <Space
+            android:id="@+id/userHeader_space"
+            android:layout_width="1dp"
+            android:layout_height="43dp"
+            app:layout_constraintBottom_toBottomOf="@id/userHeader_banner"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintVertical_bias="1"
+            />
         <ImageView
             android:id="@+id/userHeader_icon"
             android:layout_width="60dp"
             android:layout_height="60dp"
-            android:layout_marginTop="77dp"
             android:layout_marginStart="20dp"
             android:layout_marginLeft="20dp"
             android:layout_marginEnd="4dp"
             android:layout_marginRight="4dp"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintTop_toTopOf="@id/userHeader_space"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@id/userHeader_screenName"
             app:layout_constraintHorizontal_bias="0"
@@ -121,7 +129,6 @@
             app:layout_constraintTop_toBottomOf="@id/userHeader_location"
             app:layout_constraintStart_toStartOf="@id/userHeader_screenName"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
             android:paddingStart="4dp"
             android:paddingEnd="4dp"
             android:text="@{item.url}"
