@@ -17,10 +17,7 @@
 package com.freshdigitable.udonroad2.timeline
 
 import android.util.Log
-import android.view.MenuItem
-import android.view.View
 import androidx.databinding.ObservableField
-import androidx.databinding.ObservableInt
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
@@ -62,26 +59,14 @@ class TimelineViewModel(
         homeRepository.clear()
     }
 
-    fun onFabMenuSelected(item: MenuItem) {
-        Log.d("TimelineViewModel", "onFabSelected: $item")
-        val selected = requireNotNull(selectedItemId.get()) { "selectedItem should not be null." }
-        when (item.itemId) {
-            R.id.iffabMenu_main_detail -> {
-                navigator.postEvent(TimelineEvent.TweetDetailRequested(
-                    selected.quoteId ?: selected.originalId))
-            }
-        }
-    }
-
     override val selectedItemId: ObservableField<SelectedItemId?> = ObservableField()
-    val isFabVisible: ObservableInt = ObservableInt(View.INVISIBLE)
 
     private fun updateSelectedItem(selected: SelectedItemId) {
         when (selected) {
             selectedItemId.get() -> selectedItemId.set(null)
             else -> selectedItemId.set(selected)
         }
-        isFabVisible.set(if (selectedItemId.get() != null) View.VISIBLE else View.INVISIBLE)
+        navigator.postEvent(TimelineEvent.TweetItemSelected(selectedItemId.get()))
     }
 
     override fun onBodyItemClicked(item: TweetListItem) {

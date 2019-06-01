@@ -49,19 +49,5 @@
                 tools:listitem="@layout/view_tweet_list_item"
                 />
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
-
-        <com.freshdigitable.fabshortcut.FlingFAB
-            android:id="@+id/main_fab"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginBottom="56dp"
-            app:menu="@menu/iffab_main"
-            style="@style/Widget.FlingFAB"
-            app:menuListener="@{viewModel::onFabMenuSelected}"
-            android:visibility="@{viewModel.isFabVisible}"
-            />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

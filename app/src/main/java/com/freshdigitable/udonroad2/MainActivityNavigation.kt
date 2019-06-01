@@ -2,6 +2,8 @@ package com.freshdigitable.udonroad2
 
 import androidx.annotation.IdRes
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
 import com.freshdigitable.udonroad2.model.ListQuery
 import com.freshdigitable.udonroad2.navigation.FragmentContainerState
 import com.freshdigitable.udonroad2.navigation.Navigation
@@ -14,8 +16,11 @@ import com.freshdigitable.udonroad2.timeline.TweetDetailFragment
 class MainActivityNavigation(
     dispatcher: NavigationDispatcher,
     activity: AppCompatActivity,
+    viewModelFactory: ViewModelProvider.Factory,
     @IdRes containerId: Int
 ) : Navigation<MainActivityState>(dispatcher, activity, containerId) {
+
+    val viewModel = ViewModelProviders.of(activity, viewModelFactory).get(MainViewModel::class.java)
 
     override fun onEvent(event: NavigationEvent): MainActivityState? {
         return when (event) {
@@ -29,6 +34,10 @@ class MainActivityNavigation(
             }
             is TimelineEvent.RetweetUserClicked -> {
                 UserActivity.start(activity, event.userId)
+                null
+            }
+            is TimelineEvent.TweetItemSelected -> {
+                viewModel.setSelectedItemId(event.selectedItemId)
                 null
             }
             TimelineEvent.Back -> {
@@ -54,8 +63,10 @@ class MainActivityNavigation(
                 } else {
                     replace(TimelineFragment.newInstance(ListQuery.Timeline()))
                 }
+                viewModel.setFabVisible(true)
             }
             is MainActivityState.TweetDetail -> {
+                viewModel.setFabVisible(false)
                 replace(TweetDetailFragment.newInstance(s.tweetId), BACK_STACK_TWEET_DETAIL)
             }
             MainActivityState.Halt -> activity.finish()

@@ -11,5 +11,7 @@ sealed class TimelineEvent : NavigationEvent {
 
     data class RetweetUserClicked(val userId: Long) : TimelineEvent()
 
+    data class TweetItemSelected(val selectedItemId: SelectedItemId?) : TimelineEvent()
+
     object Back : TimelineEvent()
 }
