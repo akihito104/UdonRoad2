@@ -3,24 +3,19 @@ package com.freshdigitable.udonroad2
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import androidx.annotation.IdRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil.setContentView
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentStatePagerAdapter
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import androidx.viewpager.widget.ViewPager
 import com.freshdigitable.udonroad2.databinding.ActivityUserBinding
 import com.freshdigitable.udonroad2.model.FragmentScope
-import com.freshdigitable.udonroad2.model.ListQuery
 import com.freshdigitable.udonroad2.model.ViewModelKey
-import com.freshdigitable.udonroad2.navigation.FragmentContainerState
 import com.freshdigitable.udonroad2.navigation.Navigation
 import com.freshdigitable.udonroad2.navigation.NavigationDispatcher
-import com.freshdigitable.udonroad2.navigation.NavigationEvent
-import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.TimelineFragment
 import com.freshdigitable.udonroad2.timeline.TimelineViewModel
 import com.freshdigitable.udonroad2.timeline.TimelineViewModelModule
@@ -46,44 +41,47 @@ class UserActivity : HasSupportFragmentInjector, AppCompatActivity() {
         AndroidInjection.inject(this)
         super.onCreate(savedInstanceState)
         val binding = setContentView<ActivityUserBinding>(this, R.layout.activity_user)
-        binding.lifecycleOwner = this
-
-        binding.userPager.adapter = object : FragmentStatePagerAdapter(
-            supportFragmentManager, RESUME_ONLY_CURRENT_FRAGMENT
-        ) {
-            override fun getItem(position: Int): Fragment {
-                return when (position) {
-                    0 -> TimelineFragment.newInstance(ListQuery.Timeline(userId))
-                    1 -> TimelineFragment.newInstance(ListQuery.Fav(userId))
-                    else -> throw IllegalStateException()
-                }
-            }
-
-            override fun getPageTitle(position: Int): CharSequence? {
-                return when (position) {
-                    0 -> "tweet"
-                    1 -> "fav"
-                    else -> throw IllegalStateException()
-                }
-            }
-
-            override fun getCount(): Int = 2
-        }
-
-        binding.userTabContainer.setupWithViewPager(binding.userPager)
-
         val viewModel = ViewModelProviders.of(this, viewModelFactory).get(UserViewModel::class.java)
-        binding.viewModel = viewModel
-        viewModel.setUserId(userId)
+        val adapter = UserFragmentPagerAdapter(supportFragmentManager, userId)
 
-        binding.userAppBar.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener { appBar, offset ->
+        binding.setup(viewModel, adapter)
+        viewModel.setUserId(userId)
+    }
+
+    private fun ActivityUserBinding.setup(
+        viewModel: UserViewModel,
+        adapter: UserFragmentPagerAdapter
+    ) {
+        lifecycleOwner = this@UserActivity
+
+        userAppBar.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener { appBar, offset ->
             viewModel.setAppBarScrollRate(Math.abs(offset).toFloat() / appBar.totalScrollRange.toFloat())
         })
-        binding.userPager.addOnPageChangeListener(object : ViewPager.SimpleOnPageChangeListener() {
-            override fun onPageSelected(position: Int) {
-                viewModel.setCurrentPage(position)
-            }
+
+        viewModel.user.observe(this@UserActivity, Observer { u ->
+            adapter.apply {
+                titles.clear()
+                titles.addAll(UserPage.values().map { p ->
+                    if (p.count != null) {
+                        this@UserActivity.getString(p.titleRes, p.count.invoke(u) ?: "---")
+                    } else {
+                        this@UserActivity.getString(p.titleRes)
+                    }
+                })
+            }.notifyDataSetChanged()
         })
+        userPager.apply {
+            this.adapter = adapter
+            addOnPageChangeListener(object : ViewPager.SimpleOnPageChangeListener() {
+                override fun onPageSelected(position: Int) {
+                    viewModel.setCurrentPage(position)
+                }
+            })
+        }
+
+        userTabContainer.setupWithViewPager(userPager)
+
+        this.viewModel = viewModel
     }
 
     private val userId: Long
@@ -103,28 +101,6 @@ class UserActivity : HasSupportFragmentInjector, AppCompatActivity() {
     lateinit var injector: DispatchingAndroidInjector<Fragment>
 
     override fun supportFragmentInjector(): AndroidInjector<Fragment> = injector
-}
-
-class UserActivityState : FragmentContainerState
-
-class UserActivityNavigation(
-    navigator: NavigationDispatcher,
-    activity: UserActivity,
-    @IdRes containerId: Int,
-    viewModelFactory: ViewModelProvider.Factory
-) : Navigation<UserActivityState>(navigator, activity, containerId) {
-
-    private val viewModel =
-        ViewModelProviders.of(activity, viewModelFactory).get(UserViewModel::class.java)
-
-    override fun onEvent(event: NavigationEvent): UserActivityState? {
-        if (event is TimelineEvent.TweetItemSelected) {
-            viewModel.setSelectedItemId(event.selectedItemId)
-        }
-        return null
-    }
-
-    override fun navigate(s: UserActivityState?) {}
 }
 
 @Module(
