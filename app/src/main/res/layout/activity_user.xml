@@ -64,5 +64,15 @@
             android:layout_height="match_parent"
             app:layout_behavior="@string/appbar_scrolling_view_behavior"
             />
+        <com.freshdigitable.fabshortcut.FlingFAB
+            android:id="@+id/user_fab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center_horizontal"
+            android:layout_marginBottom="56dp"
+            app:menu="@menu/iffab_main"
+            style="@style/Widget.FlingFAB"
+            android:visibility="invisible"
+            />
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </layout>
