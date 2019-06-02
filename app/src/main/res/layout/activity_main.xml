@@ -24,7 +24,7 @@
             app:menu="@menu/iffab_main"
             style="@style/Widget.FlingFAB"
             app:menuListener="@{viewModel::onFabMenuSelected}"
-            android:visibility="invisible"
+            app:isVisible="@{viewModel.fabVisible}"
             />
     </FrameLayout>
 </layout>

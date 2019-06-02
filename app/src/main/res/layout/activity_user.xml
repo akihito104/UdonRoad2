@@ -72,7 +72,7 @@
             android:layout_marginBottom="56dp"
             app:menu="@menu/iffab_main"
             style="@style/Widget.FlingFAB"
-            android:visibility="invisible"
+            app:isVisible="@{viewModel.fabVisible}"
             />
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </layout>

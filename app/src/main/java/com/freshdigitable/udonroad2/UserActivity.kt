@@ -8,7 +8,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil.setContentView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentStatePagerAdapter
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
@@ -83,13 +82,6 @@ class UserActivity : HasSupportFragmentInjector, AppCompatActivity() {
         binding.userPager.addOnPageChangeListener(object : ViewPager.SimpleOnPageChangeListener() {
             override fun onPageSelected(position: Int) {
                 viewModel.setCurrentPage(position)
-            }
-        })
-        viewModel.fabVisible.observe(this, Observer {
-            if (it == true) {
-                binding.userFab.show()
-            } else {
-                binding.userFab.hide()
             }
         })
     }

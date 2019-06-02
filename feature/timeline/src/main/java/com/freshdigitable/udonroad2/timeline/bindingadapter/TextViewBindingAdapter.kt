@@ -1,4 +1,4 @@
-package com.freshdigitable.udonroad2.timeline
+package com.freshdigitable.udonroad2.timeline.bindingadapter
 
 import android.view.View
 import android.widget.TextView

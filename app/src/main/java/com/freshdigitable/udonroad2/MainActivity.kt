@@ -25,7 +25,6 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
@@ -70,13 +69,6 @@ class MainActivity : AppCompatActivity(), HasSupportFragmentInjector {
         val viewModel = ViewModelProviders.of(this, viewModelFactory).get(MainViewModel::class.java)
         binding.lifecycleOwner = this
         binding.viewModel = viewModel
-        viewModel.isFabVisible.observe(this, Observer {
-            if (it) {
-                binding.mainFab.show()
-            } else {
-                binding.mainFab.hide()
-            }
-        })
     }
 
     override fun onBackPressed() {

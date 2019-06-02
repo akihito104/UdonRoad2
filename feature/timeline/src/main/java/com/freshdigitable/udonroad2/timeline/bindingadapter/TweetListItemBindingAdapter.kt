@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.freshdigitable.udonroad2.timeline
+package com.freshdigitable.udonroad2.timeline.bindingadapter
 
 import android.graphics.Typeface
 import android.text.SpannableStringBuilder
@@ -26,6 +26,7 @@ import android.widget.TextView
 import androidx.databinding.BindingAdapter
 import com.bumptech.glide.Glide
 import com.freshdigitable.udonroad2.model.TweetingUser
+import com.freshdigitable.udonroad2.timeline.R
 import org.threeten.bp.Duration
 import org.threeten.bp.Instant
 import org.threeten.bp.LocalDateTime
