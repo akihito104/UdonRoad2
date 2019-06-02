@@ -26,14 +26,14 @@ class MainActivityNavigation(
         return when (event) {
             TimelineEvent.Init -> MainActivityState.MainTimeline
             is TimelineEvent.UserIconClicked -> {
-                UserActivity.start(activity, event.userId)
+                UserActivity.start(activity, event.user)
                 null
             }
             is TimelineEvent.TweetDetailRequested -> {
                 MainActivityState.TweetDetail(event.tweetId)
             }
             is TimelineEvent.RetweetUserClicked -> {
-                UserActivity.start(activity, event.userId)
+                UserActivity.start(activity, event.user)
                 null
             }
             is TimelineEvent.TweetItemSelected -> {

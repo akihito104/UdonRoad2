@@ -80,7 +80,7 @@ class TimelineViewModel(
     }
 
     override fun onUserIconClicked(item: TweetListItem) {
-        navigator.postEvent(TimelineEvent.UserIconClicked(item.body.user.id))
+        navigator.postEvent(TimelineEvent.UserIconClicked(item.body.user))
     }
 }
 

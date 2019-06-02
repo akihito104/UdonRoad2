@@ -18,6 +18,7 @@ package com.freshdigitable.udonroad2.data.restclient
 
 import com.freshdigitable.udonroad2.model.ListQuery
 import twitter4j.Paging
+import twitter4j.Query
 import twitter4j.Status
 import twitter4j.Twitter
 import javax.inject.Inject
@@ -61,5 +62,21 @@ class FavTimelineClient @Inject constructor(
         } else {
             twitter.getFavorites(paging)
         }
+    }
+}
+
+class MediaTimelineClient @Inject constructor(
+    private val twitter: Twitter
+) : ListRestClient<ListQuery.Media> {
+    override lateinit var query: ListQuery.Media
+
+    override fun fetchTimeline(paging: Paging?): List<Status> {
+        val q = Query(query.query).apply {
+            maxId = paging?.maxId ?: -1
+            sinceId = paging?.sinceId ?: -1
+            count = paging?.count ?: 100
+            resultType = Query.ResultType.recent
+        }
+        return twitter.search(q).tweets
     }
 }

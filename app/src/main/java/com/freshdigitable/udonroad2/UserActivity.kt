@@ -13,6 +13,7 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.viewpager.widget.ViewPager
 import com.freshdigitable.udonroad2.databinding.ActivityUserBinding
 import com.freshdigitable.udonroad2.model.FragmentScope
+import com.freshdigitable.udonroad2.model.TweetingUser
 import com.freshdigitable.udonroad2.model.ViewModelKey
 import com.freshdigitable.udonroad2.navigation.Navigation
 import com.freshdigitable.udonroad2.navigation.NavigationDispatcher
@@ -42,10 +43,10 @@ class UserActivity : HasSupportFragmentInjector, AppCompatActivity() {
         super.onCreate(savedInstanceState)
         val binding = setContentView<ActivityUserBinding>(this, R.layout.activity_user)
         val viewModel = ViewModelProviders.of(this, viewModelFactory).get(UserViewModel::class.java)
-        val adapter = UserFragmentPagerAdapter(supportFragmentManager, userId)
+        val adapter = UserFragmentPagerAdapter(supportFragmentManager, user)
 
         binding.setup(viewModel, adapter)
-        viewModel.setUserId(userId)
+        viewModel.setUserId(user.id)
     }
 
     private fun ActivityUserBinding.setup(
@@ -84,15 +85,15 @@ class UserActivity : HasSupportFragmentInjector, AppCompatActivity() {
         this.viewModel = viewModel
     }
 
-    private val userId: Long
-        get() = intent.getLongExtra(ARGS_USER_ID, -1)
+    private val user: TweetingUser
+        get() = intent.getSerializableExtra(ARGS_USER) as TweetingUser
 
     companion object {
-        private const val ARGS_USER_ID = "user_id"
+        private const val ARGS_USER = "user"
 
-        fun start(context: Context, userId: Long) {
+        fun start(context: Context, user: TweetingUser) {
             val intent = Intent(context, UserActivity::class.java)
-            intent.putExtra(ARGS_USER_ID, userId)
+            intent.putExtra(ARGS_USER, user)
             context.startActivity(intent)
         }
     }

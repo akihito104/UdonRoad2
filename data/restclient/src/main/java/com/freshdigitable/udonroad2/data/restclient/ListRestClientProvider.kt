@@ -15,7 +15,8 @@ class ListRestClientProvider @Inject constructor(
     fun <Q : ListQuery, T : ListRestClient<Q>> get(query: Q): T {
         val client = providers[query::class.java]?.get()
             ?: throw IllegalStateException(
-                "ListRestClient: ${query::class.java.simpleName} is not registered list client.")
+                "ListRestClient: ${query::class.java.simpleName} is not registered list client."
+            )
 
         @Suppress("UNCHECKED_CAST")
         return (client as T).also { it.query = query }
@@ -38,4 +39,9 @@ interface TweetTimelineClientModule {
     @IntoMap
     @ListRestClientKey(ListQuery.Fav::class)
     fun bindFavTimelineClient(client: FavTimelineClient): ListRestClient<out ListQuery>
+
+    @Binds
+    @IntoMap
+    @ListRestClientKey(ListQuery.Media::class)
+    fun bindMediaTimelineClient(client: MediaTimelineClient): ListRestClient<out ListQuery>
 }

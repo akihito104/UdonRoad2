@@ -1,6 +1,8 @@
 package com.freshdigitable.udonroad2.model
 
-interface TweetingUser {
+import java.io.Serializable
+
+interface TweetingUser : Serializable {
 
     val id: Long
 
