@@ -12,7 +12,7 @@ import com.freshdigitable.udonroad2.timeline.TimelineFragment
 class UserFragmentPagerAdapter(
     fragmentManager: FragmentManager,
     private val user: TweetingUser
-) : FragmentStatePagerAdapter(fragmentManager, RESUME_ONLY_CURRENT_FRAGMENT) {
+) : FragmentStatePagerAdapter(fragmentManager, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
 
     override fun getItem(position: Int): Fragment {
         return UserPage.values()[position].creator(user)
