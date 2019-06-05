@@ -118,6 +118,8 @@
             android:paddingEnd="4dp"
             android:text="@{item.location}"
             android:maxLines="1"
+            app:drawableStartCompat="@drawable/ic_place_black_24dp"
+            android:drawablePadding="4dp"
             app:visibility_goneIfNullOrEmpty="@{item.location}"
             tools:text="tokyo, jp"
             />
@@ -133,6 +135,8 @@
             android:paddingEnd="4dp"
             android:text="@{item.url}"
             android:maxLines="1"
+            app:drawableStartCompat="@drawable/ic_link_black_24dp"
+            android:drawablePadding="4dp"
             app:visibility_goneIfNullOrEmpty="@{item.url}"
             tools:text="http://"
             />
