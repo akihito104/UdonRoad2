@@ -2,7 +2,7 @@ package com.freshdigitable.udonroad2.data.repository
 
 import androidx.lifecycle.LiveData
 import androidx.paging.PagedList
-import com.freshdigitable.udonroad2.data.restclient.ListRestClient
+import com.freshdigitable.udonroad2.data.restclient.TweetListRestClient
 import com.freshdigitable.udonroad2.model.ListQuery
 import com.freshdigitable.udonroad2.model.TweetEntity
 import com.freshdigitable.udonroad2.model.TweetListItem
@@ -16,16 +16,16 @@ interface TimelineRepository {
 }
 
 interface TimelineFetcher<T> {
-    val fetchOnZeroItems: T.() -> List<TweetEntity>
-    val fetchOnBottom: (TweetListItem) -> (T.() -> List<TweetEntity>)
-    val fetchOnTop: (TweetListItem) -> (T.() -> List<TweetEntity>)
+    val fetchOnZeroItems: suspend T.() -> List<TweetEntity>
+    val fetchOnBottom: (TweetListItem) -> (suspend T.() -> List<TweetEntity>)
+    val fetchOnTop: (TweetListItem) -> (suspend T.() -> List<TweetEntity>)
 }
 
-class TweetTimelineFetcher: TimelineFetcher<ListRestClient<ListQuery>> {
-    override val fetchOnZeroItems: ListRestClient<ListQuery>.() -> List<TweetEntity>
+class TweetTimelineFetcher : TimelineFetcher<TweetListRestClient<ListQuery>> {
+    override val fetchOnZeroItems: suspend TweetListRestClient<ListQuery>.() -> List<TweetEntity>
         get() = { fetchInit() }
-    override val fetchOnBottom: (TweetListItem) -> ListRestClient<ListQuery>.() -> List<TweetEntity>
+    override val fetchOnBottom: (TweetListItem) -> suspend TweetListRestClient<ListQuery>.() -> List<TweetEntity>
         get() = { item -> { fetchAtBottom(item.originalId - 1) } }
-    override val fetchOnTop: (TweetListItem) -> ListRestClient<ListQuery>.() -> List<TweetEntity>
+    override val fetchOnTop: (TweetListItem) -> suspend TweetListRestClient<ListQuery>.() -> List<TweetEntity>
         get() = { item -> { fetchAtTop(item.originalId + 1) } }
 }

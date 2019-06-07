@@ -24,8 +24,8 @@ import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
 import com.freshdigitable.udonroad2.data.db.DaoModule
 import com.freshdigitable.udonroad2.data.db.dao.TweetDao
-import com.freshdigitable.udonroad2.data.restclient.ListRestClient
 import com.freshdigitable.udonroad2.data.restclient.ListRestClientProvider
+import com.freshdigitable.udonroad2.data.restclient.TweetListRestClient
 import com.freshdigitable.udonroad2.data.restclient.TwitterModule
 import com.freshdigitable.udonroad2.model.ListQuery
 import com.freshdigitable.udonroad2.model.RepositoryScope
@@ -33,17 +33,16 @@ import com.freshdigitable.udonroad2.model.TweetEntity
 import com.freshdigitable.udonroad2.model.TweetListItem
 import dagger.Module
 import dagger.Provides
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 @RepositoryScope
 class TweetTimelineRepository(
     private val tweetDao: TweetDao,
     private val clientProvider: ListRestClientProvider,
     private val executor: AppExecutor
-) : TimelineRepository, TimelineFetcher<ListRestClient<ListQuery>> by TweetTimelineFetcher() {
+) : TimelineRepository, TimelineFetcher<TweetListRestClient<ListQuery>> by TweetTimelineFetcher() {
 
     private val _loading = MutableLiveData<Boolean>()
     override val loading: LiveData<Boolean> = _loading
@@ -63,7 +62,7 @@ class TweetTimelineRepository(
         listTable.getOrPut(it) { getPagedList(it) }
     }
 
-    private lateinit var apiClient: ListRestClient<ListQuery>
+    private lateinit var apiClient: TweetListRestClient<ListQuery>
 
     override fun getTimeline(owner: String, query: ListQuery): LiveData<PagedList<TweetListItem>> {
         apiClient = clientProvider.get(query)
@@ -104,18 +103,16 @@ class TweetTimelineRepository(
 
     private fun fetchTimeline(
         owner: String,
-        block: ListRestClient<ListQuery>.() -> List<TweetEntity>
-    ) = GlobalScope.launch {
+        block: suspend TweetListRestClient<ListQuery>.() -> List<TweetEntity>
+    ) = GlobalScope.launch(Dispatchers.Default) {
         _loading.postValue(true)
-        try {
-            val timeline = networkAccess { block(apiClient) }
+        runCatching {
+            val timeline = block(apiClient)
             diskAccess { tweetDao.addTweets(timeline, owner) }
-        } catch (e: Exception) {
-            Log.e("HomeTimelineRepository", "fetchHomeTimeline: ", e)
-        } finally {
-            withContext(NonCancellable) {
-                _loading.postValue(false)
-            }
+        }.onSuccess {
+            _loading.postValue(false)
+        }.onFailure { e ->
+            Log.e("TweetTimelineRepository", "fetchTimeline: ", e)
         }
     }
 

@@ -10,24 +10,25 @@ import twitter4j.User
 
 private const val FETCH_COUNT = 50
 
-interface ListRestClient<T : ListQuery> {
-    var query: T
+interface ListRestClient<Q : ListQuery, R, E> {
+    var query: Q
 
-    fun fetchInit(): List<TweetEntity> {
-        return fetchTimeline().map { it.toEntity() }
+    suspend fun fetchInit(): List<E> {
+        return fetchTimeline().map(mapper)
     }
 
-    fun fetchAtTop(cursorId: Long): List<TweetEntity> {
+    suspend fun fetchAtTop(cursorId: Long): List<E> {
         val paging = Paging(1, FETCH_COUNT, cursorId)
-        return fetchTimeline(paging).map { it.toEntity() }
+        return fetchTimeline(paging).map(mapper)
     }
 
-    fun fetchAtBottom(cursorId: Long): List<TweetEntity> {
+    suspend fun fetchAtBottom(cursorId: Long): List<E> {
         val paging = Paging(1, FETCH_COUNT, 1, cursorId)
-        return fetchTimeline(paging).map { it.toEntity() }
+        return fetchTimeline(paging).map(mapper)
     }
 
-    fun fetchTimeline(paging: Paging? = null): List<Status>
+    suspend fun fetchTimeline(paging: Paging? = null): List<R>
+    val mapper: (R) -> E
 }
 
 internal fun Status.toEntity(): TweetEntity {

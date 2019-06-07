@@ -17,19 +17,25 @@
 package com.freshdigitable.udonroad2.data.restclient
 
 import com.freshdigitable.udonroad2.model.ListQuery
+import com.freshdigitable.udonroad2.model.TweetEntity
 import twitter4j.Paging
 import twitter4j.Query
 import twitter4j.Status
 import twitter4j.Twitter
 import javax.inject.Inject
 
+interface TweetListRestClient<Q : ListQuery> : ListRestClient<Q, Status, TweetEntity> {
+    override val mapper: (Status) -> TweetEntity
+        get() = Status::toEntity
+}
+
 class HomeTimelineClient @Inject constructor(
     private val twitter: Twitter
-) : ListRestClient<ListQuery.Timeline> {
+) : TweetListRestClient<ListQuery.Timeline> {
 
     override lateinit var query: ListQuery.Timeline
 
-    override fun fetchTimeline(paging: Paging?): List<Status> {
+    override suspend fun fetchTimeline(paging: Paging?): List<Status> {
         return query.userId?.let { id ->
             if (paging == null) {
                 twitter.getUserTimeline(id)
@@ -46,11 +52,11 @@ class HomeTimelineClient @Inject constructor(
 
 class FavTimelineClient @Inject constructor(
     private val twitter: Twitter
-) : ListRestClient<ListQuery.Fav> {
+) : TweetListRestClient<ListQuery.Fav> {
 
     override lateinit var query: ListQuery.Fav
 
-    override fun fetchTimeline(paging: Paging?): List<Status> {
+    override suspend fun fetchTimeline(paging: Paging?): List<Status> {
         return query.userId?.let { id ->
             if (paging == null) {
                 twitter.getFavorites(id)
@@ -67,10 +73,10 @@ class FavTimelineClient @Inject constructor(
 
 class MediaTimelineClient @Inject constructor(
     private val twitter: Twitter
-) : ListRestClient<ListQuery.Media> {
+) : TweetListRestClient<ListQuery.Media> {
     override lateinit var query: ListQuery.Media
 
-    override fun fetchTimeline(paging: Paging?): List<Status> {
+    override suspend fun fetchTimeline(paging: Paging?): List<Status> {
         val q = Query(query.query).apply {
             maxId = paging?.maxId ?: -1
             sinceId = paging?.sinceId ?: -1
