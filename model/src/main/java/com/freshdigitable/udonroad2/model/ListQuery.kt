@@ -20,4 +20,12 @@ sealed class ListQuery(
         val query: String
             get() = "from:$screenName filter:media exclude:retweets"
     }
+
+    data class Follower(
+        override val userId: Long
+    ) : ListQuery(userId)
+
+    data class Following(
+        override val userId: Long
+    ) : ListQuery(userId)
 }

@@ -13,17 +13,20 @@ interface TweetingUser : Serializable {
     val iconUrl: String
 }
 
-interface User : TweetingUser {
+interface UserListItem : TweetingUser {
     val description: String
-    val profileBannerImageUrl: String?
     val followerCount: Int
     val followingCount: Int
+    val verified: Boolean
+    val isProtected: Boolean
+}
+
+interface User : UserListItem {
+    val profileBannerImageUrl: String?
     val tweetCount: Int
     val favoriteCount: Int
     val listedCount: Int
     val profileLinkColor: Int
     val location: String
     val url: String?
-    val verified: Boolean
-    val isProtected: Boolean
 }

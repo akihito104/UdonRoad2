@@ -24,9 +24,11 @@ import com.freshdigitable.udonroad2.data.db.dao.StructuredTweetEntity
 import com.freshdigitable.udonroad2.data.db.dao.TweetDao
 import com.freshdigitable.udonroad2.data.db.dao.TweetListEntity
 import com.freshdigitable.udonroad2.data.db.dao.UserDao
+import com.freshdigitable.udonroad2.data.db.dao.UserListEntity
 import com.freshdigitable.udonroad2.data.db.dbview.Tweet
 import com.freshdigitable.udonroad2.data.db.dbview.TweetListItem
 import com.freshdigitable.udonroad2.data.db.dbview.TweetingUser
+import com.freshdigitable.udonroad2.data.db.dbview.UserListDbView
 import com.freshdigitable.udonroad2.data.db.entity.TweetEntityDb
 import com.freshdigitable.udonroad2.data.db.entity.UserEntity
 import org.threeten.bp.Instant
@@ -36,12 +38,14 @@ import org.threeten.bp.Instant
         TweetEntityDb::class,
         StructuredTweetEntity::class,
         TweetListEntity::class,
-        UserEntity::class
+        UserEntity::class,
+        UserListEntity::class
     ],
     views = [
         Tweet::class,
         TweetListItem::class,
-        TweetingUser::class
+        TweetingUser::class,
+        UserListDbView::class
     ],
     exportSchema = false,
     version = 1

@@ -19,6 +19,8 @@ package com.freshdigitable.udonroad2.data.repository
 import com.freshdigitable.udonroad2.data.db.DaoModule
 import com.freshdigitable.udonroad2.data.db.dao.ListDao
 import com.freshdigitable.udonroad2.data.db.dao.TweetListDao
+import com.freshdigitable.udonroad2.data.db.dao.UserListDao
+import com.freshdigitable.udonroad2.data.db.entity.UserEntity
 import com.freshdigitable.udonroad2.data.restclient.ListRestClient
 import com.freshdigitable.udonroad2.data.restclient.ListRestClientProvider
 import com.freshdigitable.udonroad2.data.restclient.TwitterModule
@@ -26,6 +28,7 @@ import com.freshdigitable.udonroad2.model.ListQuery
 import com.freshdigitable.udonroad2.model.RepositoryScope
 import com.freshdigitable.udonroad2.model.TweetEntity
 import com.freshdigitable.udonroad2.model.TweetListItem
+import com.freshdigitable.udonroad2.model.UserListItem
 import dagger.Module
 import dagger.Provides
 
@@ -36,6 +39,14 @@ class TweetTimelineRepository(
     clientProvider: ListRestClientProvider,
     executor: AppExecutor
 ) : ListRepositoryImpl<TweetEntity, TweetListItem>(tweetDao, fetcher, clientProvider, executor)
+
+@RepositoryScope
+class UserListRepository(
+    userDao: ListDao<UserEntity, UserListItem>,
+    fetcher: ListFetcher<ListQuery, UserEntity, ListRestClient<ListQuery, UserEntity>, UserListItem>,
+    clientProvider: ListRestClientProvider,
+    executor: AppExecutor
+) : ListRepositoryImpl<UserEntity, UserListItem>(userDao, fetcher, clientProvider, executor)
 
 @Module(
     includes = [
@@ -53,5 +64,16 @@ object TimelineRepositoryModule {
         executor: AppExecutor
     ): TweetTimelineRepository {
         return TweetTimelineRepository(dao, TweetTimelineFetcher(), clientProvider, executor)
+    }
+
+    @Provides
+    @JvmStatic
+    @RepositoryScope
+    fun provideUserListRepository(
+        dao: UserListDao,
+        clientProvider: ListRestClientProvider,
+        executor: AppExecutor
+    ): UserListRepository {
+        return UserListRepository(dao, UserListFetcher(), clientProvider, executor)
     }
 }

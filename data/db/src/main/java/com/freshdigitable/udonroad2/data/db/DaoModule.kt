@@ -21,6 +21,7 @@ import androidx.room.Room
 import com.freshdigitable.udonroad2.data.db.dao.TweetDao
 import com.freshdigitable.udonroad2.data.db.dao.TweetListDao
 import com.freshdigitable.udonroad2.data.db.dao.UserDao
+import com.freshdigitable.udonroad2.data.db.dao.UserListDao
 import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton
@@ -44,9 +45,13 @@ object DaoModule {
 
     @Provides
     @JvmStatic
+    fun providesUserDao(db: AppDatabase): UserDao = db.userDao()
+
+    @Provides
+    @JvmStatic
     fun provideTweetListDao(dao: TweetDao): TweetListDao = TweetListDao(dao)
 
     @Provides
     @JvmStatic
-    fun providesUserDao(db: AppDatabase): UserDao = db.userDao()
+    fun provideUserListDao(dao: UserDao): UserListDao = UserListDao(dao)
 }
