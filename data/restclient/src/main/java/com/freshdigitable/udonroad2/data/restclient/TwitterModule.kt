@@ -23,7 +23,7 @@ import twitter4j.TwitterFactory
 import twitter4j.auth.AccessToken
 import twitter4j.conf.ConfigurationBuilder
 
-@Module(includes = [TweetTimelineClientModule::class])
+@Module
 object TwitterModule {
     @Provides
     @JvmStatic

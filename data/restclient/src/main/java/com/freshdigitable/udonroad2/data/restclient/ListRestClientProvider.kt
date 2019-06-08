@@ -45,3 +45,16 @@ interface TweetTimelineClientModule {
     @ListRestClientKey(ListQuery.Media::class)
     fun bindMediaTimelineClient(client: MediaTimelineClient): ListRestClient<out ListQuery, *>
 }
+
+@Module
+interface UserListClientModule {
+    @Binds
+    @IntoMap
+    @ListRestClientKey(ListQuery.Follower::class)
+    fun bindFollowerListClient(client: FollowerListClient): ListRestClient<out ListQuery, *>
+
+    @Binds
+    @IntoMap
+    @ListRestClientKey(ListQuery.Following::class)
+    fun bindFollowingListClient(client: FollowingListClient): ListRestClient<out ListQuery, *>
+}

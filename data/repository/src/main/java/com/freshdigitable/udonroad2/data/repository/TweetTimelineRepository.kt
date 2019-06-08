@@ -23,7 +23,9 @@ import com.freshdigitable.udonroad2.data.db.dao.UserListDao
 import com.freshdigitable.udonroad2.data.db.entity.UserEntity
 import com.freshdigitable.udonroad2.data.restclient.ListRestClient
 import com.freshdigitable.udonroad2.data.restclient.ListRestClientProvider
+import com.freshdigitable.udonroad2.data.restclient.TweetTimelineClientModule
 import com.freshdigitable.udonroad2.data.restclient.TwitterModule
+import com.freshdigitable.udonroad2.data.restclient.UserListClientModule
 import com.freshdigitable.udonroad2.model.ListQuery
 import com.freshdigitable.udonroad2.model.RepositoryScope
 import com.freshdigitable.udonroad2.model.TweetEntity
@@ -51,7 +53,8 @@ class UserListRepository(
 @Module(
     includes = [
         DaoModule::class,
-        TwitterModule::class
+        TwitterModule::class,
+        TweetTimelineClientModule::class
     ]
 )
 object TimelineRepositoryModule {
@@ -65,7 +68,16 @@ object TimelineRepositoryModule {
     ): TweetTimelineRepository {
         return TweetTimelineRepository(dao, TweetTimelineFetcher(), clientProvider, executor)
     }
+}
 
+@Module(
+    includes = [
+        DaoModule::class,
+        TwitterModule::class,
+        UserListClientModule::class
+    ]
+)
+object UserListRepositoryModule {
     @Provides
     @JvmStatic
     @RepositoryScope
