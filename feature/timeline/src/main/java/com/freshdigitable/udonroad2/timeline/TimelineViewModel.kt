@@ -39,7 +39,7 @@ class TimelineViewModel(
     private val listOwner = MutableLiveData<ListOwner>()
 
     val timeline: LiveData<PagedList<TweetListItem>> = Transformations.switchMap(listOwner) {
-        homeRepository.getTimeline("${it.id}", it.query)
+        homeRepository.getList("${it.id}", it.query)
     }
 
     fun getTimeline(listOwner: ListOwner): LiveData<PagedList<TweetListItem>> {

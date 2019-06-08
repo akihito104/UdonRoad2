@@ -24,19 +24,14 @@ import twitter4j.Status
 import twitter4j.Twitter
 import javax.inject.Inject
 
-interface TweetListRestClient<Q : ListQuery> : ListRestClient<Q, Status, TweetEntity> {
-    override val mapper: (Status) -> TweetEntity
-        get() = Status::toEntity
-}
-
 class HomeTimelineClient @Inject constructor(
     private val twitter: Twitter
-) : TweetListRestClient<ListQuery.Timeline> {
+) : ListRestClient<ListQuery.Timeline, TweetEntity> {
 
     override lateinit var query: ListQuery.Timeline
 
-    override suspend fun fetchTimeline(paging: Paging?): List<Status> {
-        return query.userId?.let { id ->
+    override suspend fun fetchTimeline(paging: Paging?): List<TweetEntity> {
+        return (query.userId?.let { id ->
             if (paging == null) {
                 twitter.getUserTimeline(id)
             } else {
@@ -46,18 +41,18 @@ class HomeTimelineClient @Inject constructor(
             twitter.homeTimeline
         } else {
             twitter.getHomeTimeline(paging)
-        }
+        }).map(Status::toEntity)
     }
 }
 
 class FavTimelineClient @Inject constructor(
     private val twitter: Twitter
-) : TweetListRestClient<ListQuery.Fav> {
+) : ListRestClient<ListQuery.Fav, TweetEntity> {
 
     override lateinit var query: ListQuery.Fav
 
-    override suspend fun fetchTimeline(paging: Paging?): List<Status> {
-        return query.userId?.let { id ->
+    override suspend fun fetchTimeline(paging: Paging?): List<TweetEntity> {
+        return (query.userId?.let { id ->
             if (paging == null) {
                 twitter.getFavorites(id)
             } else {
@@ -67,22 +62,22 @@ class FavTimelineClient @Inject constructor(
             twitter.favorites
         } else {
             twitter.getFavorites(paging)
-        }
+        }).map(Status::toEntity)
     }
 }
 
 class MediaTimelineClient @Inject constructor(
     private val twitter: Twitter
-) : TweetListRestClient<ListQuery.Media> {
+) : ListRestClient<ListQuery.Media, TweetEntity> {
     override lateinit var query: ListQuery.Media
 
-    override suspend fun fetchTimeline(paging: Paging?): List<Status> {
+    override suspend fun fetchTimeline(paging: Paging?): List<TweetEntity> {
         val q = Query(query.query).apply {
             maxId = paging?.maxId ?: -1
             sinceId = paging?.sinceId ?: -1
             count = paging?.count ?: 100
             resultType = Query.ResultType.recent
         }
-        return twitter.search(q).tweets
+        return twitter.search(q).tweets.map(Status::toEntity)
     }
 }

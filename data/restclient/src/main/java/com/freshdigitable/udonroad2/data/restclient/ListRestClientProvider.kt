@@ -10,9 +10,9 @@ import javax.inject.Provider
 import kotlin.reflect.KClass
 
 class ListRestClientProvider @Inject constructor(
-    private val providers: Map<Class<out ListQuery>, @JvmSuppressWildcards Provider<TweetListRestClient<out ListQuery>>>
+    private val providers: Map<Class<out ListQuery>, @JvmSuppressWildcards Provider<ListRestClient<out ListQuery, *>>>
 ) {
-    fun <Q : ListQuery, T : TweetListRestClient<Q>> get(query: Q): T {
+    fun <Q : ListQuery, T : ListRestClient<Q, *>> get(query: Q): T {
         val client = providers[query::class.java]?.get()
             ?: throw IllegalStateException(
                 "ListRestClient: ${query::class.java.simpleName} is not registered list client."
@@ -33,15 +33,15 @@ interface TweetTimelineClientModule {
     @Binds
     @IntoMap
     @ListRestClientKey(ListQuery.Timeline::class)
-    fun bindHomeTimelineClient(client: HomeTimelineClient): TweetListRestClient<out ListQuery>
+    fun bindHomeTimelineClient(client: HomeTimelineClient): ListRestClient<out ListQuery, *>
 
     @Binds
     @IntoMap
     @ListRestClientKey(ListQuery.Fav::class)
-    fun bindFavTimelineClient(client: FavTimelineClient): TweetListRestClient<out ListQuery>
+    fun bindFavTimelineClient(client: FavTimelineClient): ListRestClient<out ListQuery, *>
 
     @Binds
     @IntoMap
     @ListRestClientKey(ListQuery.Media::class)
-    fun bindMediaTimelineClient(client: MediaTimelineClient): TweetListRestClient<out ListQuery>
+    fun bindMediaTimelineClient(client: MediaTimelineClient): ListRestClient<out ListQuery, *>
 }
