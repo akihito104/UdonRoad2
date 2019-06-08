@@ -55,12 +55,12 @@ abstract class TweetDao(
     @Query("SELECT * FROM tweet WHERE id = :id")
     abstract fun findTweet(id: Long): LiveData<Tweet?>
 
-    fun addTweet(tweet: TweetEntity, owner: String? = null) {
+    suspend fun addTweet(tweet: TweetEntity, owner: String? = null) {
         addTweets(listOf(tweet), owner)
     }
 
     @Transaction
-    open fun addTweets(tweet: List<TweetEntity>, owner: String? = null) {
+    open suspend fun addTweets(tweet: List<TweetEntity>, owner: String? = null) {
         val tweetEntities = tweet.asSequence()
             .map { arrayOf(it, it.retweetedTweet, it.retweetedTweet?.quotedTweet, it.quotedTweet).filterNotNull() }
             .flatMap { it.asSequence() }
@@ -82,16 +82,16 @@ abstract class TweetDao(
     }
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    abstract fun addTweetEntitiesInternal(tweet: List<TweetEntityDb>)
+    abstract suspend fun addTweetEntitiesInternal(tweet: List<TweetEntityDb>)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    abstract fun addStructuredTweetEntities(listEntities: List<StructuredTweetEntity>)
+    abstract suspend fun addStructuredTweetEntities(listEntities: List<StructuredTweetEntity>)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    abstract fun addTweetListEntities(listEntities: List<TweetListEntity>)
+    abstract suspend fun addTweetListEntities(listEntities: List<TweetListEntity>)
 
     @Query("DELETE FROM tweet_list WHERE owner = :owner")
-    abstract fun clear(owner: String)
+    abstract suspend fun clear(owner: String)
 }
 
 @Entity(

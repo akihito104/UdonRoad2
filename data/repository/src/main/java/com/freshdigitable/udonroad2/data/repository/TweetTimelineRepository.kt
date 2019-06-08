@@ -36,6 +36,7 @@ import dagger.Provides
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @RepositoryScope
 class TweetTimelineRepository(
@@ -108,7 +109,7 @@ class TweetTimelineRepository(
         _loading.postValue(true)
         runCatching {
             val timeline = block(apiClient)
-            diskAccess { tweetDao.addTweets(timeline, owner) }
+            withContext(Dispatchers.IO) { tweetDao.addTweets(timeline, owner) }
         }.onSuccess {
             _loading.postValue(false)
         }.onFailure { e ->

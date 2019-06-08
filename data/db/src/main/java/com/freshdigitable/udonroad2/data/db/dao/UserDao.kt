@@ -26,7 +26,7 @@ import com.freshdigitable.udonroad2.data.db.entity.UserEntity
 @Dao
 abstract class UserDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    abstract fun addUsers(users: List<UserEntity>)
+    abstract suspend fun addUsers(users: List<UserEntity>)
 
     @Query("SELECT * FROM UserEntity WHERE id = :id")
     abstract fun getUser(id: Long) : LiveData<UserEntity?>

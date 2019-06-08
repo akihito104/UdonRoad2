@@ -18,10 +18,10 @@ class AppExecutor {
         }
     }
 
-    fun diskIO(task: () -> Unit) = diskAccess(task)
+    fun diskIO(task: suspend () -> Unit) = diskAccess(task)
 }
 
-internal fun diskAccess(task: () -> Unit) = GlobalScope.launch(Dispatchers.IO) {
+internal fun diskAccess(task: suspend () -> Unit) = GlobalScope.launch(Dispatchers.IO) {
     task()
 }
 
