@@ -20,6 +20,9 @@ import com.freshdigitable.udonroad2.navigation.NavigationDispatcher
 import com.freshdigitable.udonroad2.timeline.TimelineFragment
 import com.freshdigitable.udonroad2.timeline.TimelineViewModel
 import com.freshdigitable.udonroad2.timeline.TimelineViewModelModule
+import com.freshdigitable.udonroad2.timeline.UserListFragment
+import com.freshdigitable.udonroad2.timeline.UserListViewModel
+import com.freshdigitable.udonroad2.timeline.UserListViewModelModule
 import com.google.android.material.appbar.AppBarLayout
 import dagger.Binds
 import dagger.Module
@@ -107,13 +110,18 @@ class UserActivity : HasSupportFragmentInjector, AppCompatActivity() {
 @Module(
     includes = [
         TimelineViewModelModule::class,
-        UserViewModelModule::class
+        UserViewModelModule::class,
+        UserListViewModelModule::class
     ]
 )
 abstract class UserActivityModule {
     @ContributesAndroidInjector
     @FragmentScope
     abstract fun contributeTimelineFragment(): TimelineFragment
+
+    @ContributesAndroidInjector
+    @FragmentScope
+    abstract fun contributeUserListFragment(): UserListFragment
 
     @Binds
     @IntoMap
@@ -124,6 +132,11 @@ abstract class UserActivityModule {
     @IntoMap
     @ViewModelKey(UserViewModel::class)
     abstract fun bindUserViewModel(viewModel: UserViewModel): ViewModel
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(UserListViewModel::class)
+    abstract fun bindUserListViewModel(viewModel: UserListViewModel): ViewModel
 
     @Module
     companion object {

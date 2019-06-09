@@ -9,6 +9,7 @@ import androidx.annotation.NonNull
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
@@ -83,6 +84,11 @@ class TimelineFragment : Fragment() {
             }
         }
     }
+}
+
+interface ListLoadable {
+    val loading: LiveData<Boolean>
+    fun onRefresh()
 }
 
 private class Adapter(

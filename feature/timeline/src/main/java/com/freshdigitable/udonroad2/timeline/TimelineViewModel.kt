@@ -34,7 +34,7 @@ import dagger.Provides
 class TimelineViewModel(
     private val navigator: NavigationDispatcher,
     private val homeRepository: TweetTimelineRepository
-) : TweetListItemClickListener, TweetListEventListener, ViewModel() {
+) : ListLoadable, TweetListItemClickListener, TweetListEventListener, ViewModel() {
 
     private val listOwner = MutableLiveData<ListOwner>()
 
@@ -47,10 +47,10 @@ class TimelineViewModel(
         return timeline
     }
 
-    val loading: LiveData<Boolean>
+    override val loading: LiveData<Boolean>
         get() = homeRepository.loading
 
-    fun onRefresh() {
+    override fun onRefresh() {
         homeRepository.loadAtFront()
     }
 

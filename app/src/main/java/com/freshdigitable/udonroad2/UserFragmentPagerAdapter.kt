@@ -8,6 +8,7 @@ import com.freshdigitable.udonroad2.model.ListQuery
 import com.freshdigitable.udonroad2.model.TweetingUser
 import com.freshdigitable.udonroad2.model.User
 import com.freshdigitable.udonroad2.timeline.TimelineFragment
+import com.freshdigitable.udonroad2.timeline.UserListFragment
 
 class UserFragmentPagerAdapter(
     fragmentManager: FragmentManager,
@@ -35,6 +36,16 @@ enum class UserPage(
         creator = { user -> TimelineFragment.newInstance(ListQuery.Timeline(user.id)) },
         titleRes = R.string.user_tab_tweet,
         count = { user -> user?.tweetCount }
+    ),
+    FOLLOWER(
+        creator = { user -> UserListFragment.newInstance(ListQuery.Follower(user.id)) },
+        titleRes = R.string.user_tab_follower,
+        count = { user -> user?.followerCount }
+    ),
+    FOLLOWING(
+        creator = { user -> UserListFragment.newInstance(ListQuery.Following(user.id)) },
+        titleRes = R.string.user_tab_following,
+        count = { user -> user?.followingCount }
     ),
     FAV(
         creator = { user -> TimelineFragment.newInstance(ListQuery.Fav(user.id)) },
