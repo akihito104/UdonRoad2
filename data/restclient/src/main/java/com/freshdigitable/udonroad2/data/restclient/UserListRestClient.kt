@@ -12,13 +12,13 @@ class FollowerListClient @Inject constructor(
 ) : ListRestClient<ListQuery.Follower, TweetingUser> {
 
     override lateinit var query: ListQuery.Follower
-    private var nextCursor: Long? = null
+    private var nextCursor: Long = -1
 
     override suspend fun fetchTimeline(paging: Paging?): List<TweetingUser> {
-        if (nextCursor != null && nextCursor == 0L) {
+        if (nextCursor == 0L) {
             return listOf()
         }
-        val list = twitter.getFollowersList(query.userId, nextCursor ?: 0)
+        val list = twitter.getFollowersList(query.userId, nextCursor)
         nextCursor = if (list.hasNext()) {
             list.nextCursor
         } else {
@@ -33,13 +33,13 @@ class FollowingListClient @Inject constructor(
 ) : ListRestClient<ListQuery.Following, TweetingUser> {
 
     override lateinit var query: ListQuery.Following
-    private var nextCursor: Long? = null
+    private var nextCursor: Long = -1
 
     override suspend fun fetchTimeline(paging: Paging?): List<TweetingUser> {
-        if (nextCursor != null && nextCursor == 0L) {
+        if (nextCursor == 0L) {
             return listOf()
         }
-        val list = twitter.getFriendsList(query.userId, nextCursor ?: 0)
+        val list = twitter.getFriendsList(query.userId, nextCursor)
         nextCursor = if (list.hasNext()) {
             list.nextCursor
         } else {

@@ -20,7 +20,6 @@ import com.freshdigitable.udonroad2.data.db.DaoModule
 import com.freshdigitable.udonroad2.data.db.dao.ListDao
 import com.freshdigitable.udonroad2.data.db.dao.TweetListDao
 import com.freshdigitable.udonroad2.data.db.dao.UserListDao
-import com.freshdigitable.udonroad2.data.db.entity.UserEntity
 import com.freshdigitable.udonroad2.data.restclient.ListRestClient
 import com.freshdigitable.udonroad2.data.restclient.ListRestClientProvider
 import com.freshdigitable.udonroad2.data.restclient.TweetTimelineClientModule
@@ -30,6 +29,7 @@ import com.freshdigitable.udonroad2.model.ListQuery
 import com.freshdigitable.udonroad2.model.RepositoryScope
 import com.freshdigitable.udonroad2.model.TweetEntity
 import com.freshdigitable.udonroad2.model.TweetListItem
+import com.freshdigitable.udonroad2.model.User
 import com.freshdigitable.udonroad2.model.UserListItem
 import dagger.Module
 import dagger.Provides
@@ -44,11 +44,11 @@ class TweetTimelineRepository(
 
 @RepositoryScope
 class UserListRepository(
-    userDao: ListDao<UserEntity, UserListItem>,
-    fetcher: ListFetcher<ListQuery, UserEntity, ListRestClient<ListQuery, UserEntity>, UserListItem>,
+    userDao: ListDao<User, UserListItem>,
+    fetcher: ListFetcher<ListQuery, User, ListRestClient<ListQuery, User>, UserListItem>,
     clientProvider: ListRestClientProvider,
     executor: AppExecutor
-) : ListRepositoryImpl<UserEntity, UserListItem>(userDao, fetcher, clientProvider, executor)
+) : ListRepositoryImpl<User, UserListItem>(userDao, fetcher, clientProvider, executor)
 
 @Module(
     includes = [

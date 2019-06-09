@@ -1,10 +1,10 @@
 package com.freshdigitable.udonroad2.data.repository
 
-import com.freshdigitable.udonroad2.data.db.entity.UserEntity
 import com.freshdigitable.udonroad2.data.restclient.ListRestClient
 import com.freshdigitable.udonroad2.model.ListQuery
 import com.freshdigitable.udonroad2.model.TweetEntity
 import com.freshdigitable.udonroad2.model.TweetListItem
+import com.freshdigitable.udonroad2.model.User
 import com.freshdigitable.udonroad2.model.UserListItem
 
 interface ListFetcher<Q : ListQuery, E, RC : ListRestClient<Q, E>, I> {
@@ -24,10 +24,10 @@ class TweetTimelineFetcher :
 }
 
 class UserListFetcher :
-    ListFetcher<ListQuery, UserEntity, ListRestClient<ListQuery, UserEntity>, UserListItem> {
+    ListFetcher<ListQuery, User, ListRestClient<ListQuery, User>, UserListItem> {
 
-    override val fetchOnBottom: (UserListItem) -> suspend ListRestClient<ListQuery, UserEntity>.() -> List<UserEntity>
-        get() = { _ -> { fetchAtBottom(0) } }
-    override val fetchOnTop: (UserListItem) -> suspend ListRestClient<ListQuery, UserEntity>.() -> List<UserEntity>
-        get() = { _ -> { fetchAtTop(0) } }
+    override val fetchOnBottom: (UserListItem) -> suspend ListRestClient<ListQuery, User>.() -> List<User>
+        get() = { _ -> { fetchAtBottom(1) } }
+    override val fetchOnTop: (UserListItem) -> suspend ListRestClient<ListQuery, User>.() -> List<User>
+        get() = { _ -> { fetchAtTop(1) } }
 }

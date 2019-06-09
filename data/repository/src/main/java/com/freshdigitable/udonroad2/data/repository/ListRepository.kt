@@ -95,10 +95,7 @@ abstract class ListRepositoryImpl<E, I>(
         runCatching {
             val timeline = block(apiClient)
             withContext(Dispatchers.IO) {
-                dao.addEntities(
-                    timeline,
-                    owner
-                )
+                dao.addEntities(timeline, owner)
             }
         }.onSuccess {
             _loading.postValue(false)
