@@ -28,4 +28,8 @@ sealed class ListQuery(
     data class Following(
         override val userId: Long
     ) : ListQuery(userId)
+
+    data class UserListMembership(
+        override val userId: Long
+    ) : ListQuery(userId)
 }

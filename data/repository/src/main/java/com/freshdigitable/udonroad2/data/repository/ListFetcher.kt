@@ -2,6 +2,8 @@ package com.freshdigitable.udonroad2.data.repository
 
 import com.freshdigitable.udonroad2.data.restclient.ListRestClient
 import com.freshdigitable.udonroad2.model.ListQuery
+import com.freshdigitable.udonroad2.model.MemberList
+import com.freshdigitable.udonroad2.model.MemberListItem
 import com.freshdigitable.udonroad2.model.TweetEntity
 import com.freshdigitable.udonroad2.model.TweetListItem
 import com.freshdigitable.udonroad2.model.User
@@ -29,5 +31,14 @@ class UserListFetcher :
     override val fetchOnBottom: (UserListItem) -> suspend ListRestClient<ListQuery, User>.() -> List<User>
         get() = { _ -> { fetchAtBottom(1) } }
     override val fetchOnTop: (UserListItem) -> suspend ListRestClient<ListQuery, User>.() -> List<User>
+        get() = { _ -> { fetchAtTop(1) } }
+}
+
+class MemberListListFetcher :
+    ListFetcher<ListQuery, MemberList, ListRestClient<ListQuery, MemberList>, MemberListItem> {
+
+    override val fetchOnBottom: (MemberListItem) -> suspend ListRestClient<ListQuery, MemberList>.() -> List<MemberList>
+        get() = { _ -> { fetchAtBottom(1) } }
+    override val fetchOnTop: (MemberListItem) -> suspend ListRestClient<ListQuery, MemberList>.() -> List<MemberList>
         get() = { _ -> { fetchAtTop(1) } }
 }

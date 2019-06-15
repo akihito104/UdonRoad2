@@ -20,15 +20,19 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverter
 import androidx.room.TypeConverters
+import com.freshdigitable.udonroad2.data.db.dao.MemberListDao
+import com.freshdigitable.udonroad2.data.db.dao.MemberListListEntity
 import com.freshdigitable.udonroad2.data.db.dao.StructuredTweetEntity
 import com.freshdigitable.udonroad2.data.db.dao.TweetDao
 import com.freshdigitable.udonroad2.data.db.dao.TweetListEntity
 import com.freshdigitable.udonroad2.data.db.dao.UserDao
 import com.freshdigitable.udonroad2.data.db.dao.UserListEntity
+import com.freshdigitable.udonroad2.data.db.dbview.MemberListDbView
 import com.freshdigitable.udonroad2.data.db.dbview.Tweet
 import com.freshdigitable.udonroad2.data.db.dbview.TweetListItem
 import com.freshdigitable.udonroad2.data.db.dbview.TweetingUser
 import com.freshdigitable.udonroad2.data.db.dbview.UserListDbView
+import com.freshdigitable.udonroad2.data.db.entity.MemberListEntity
 import com.freshdigitable.udonroad2.data.db.entity.TweetEntityDb
 import com.freshdigitable.udonroad2.data.db.entity.UserEntity
 import org.threeten.bp.Instant
@@ -39,13 +43,16 @@ import org.threeten.bp.Instant
         StructuredTweetEntity::class,
         TweetListEntity::class,
         UserEntity::class,
-        UserListEntity::class
+        UserListEntity::class,
+        MemberListEntity::class,
+        MemberListListEntity::class
     ],
     views = [
         Tweet::class,
         TweetListItem::class,
         TweetingUser::class,
-        UserListDbView::class
+        UserListDbView::class,
+        MemberListDbView::class
     ],
     exportSchema = false,
     version = 1
@@ -55,6 +62,8 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun tweetDao(): TweetDao
 
     abstract fun userDao(): UserDao
+
+    abstract fun memberListDao(): MemberListDao
 }
 
 class TimestampConverter {

@@ -58,3 +58,11 @@ interface UserListClientModule {
     @ListRestClientKey(ListQuery.Following::class)
     fun bindFollowingListClient(client: FollowingListClient): ListRestClient<out ListQuery, *>
 }
+
+@Module
+interface MemberListClientModule {
+    @Binds
+    @IntoMap
+    @ListRestClientKey(ListQuery.UserListMembership::class)
+    fun bindListMembershipListClient(client: ListMembershipListClient): ListRestClient<out ListQuery, *>
+}

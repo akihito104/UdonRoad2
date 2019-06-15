@@ -43,7 +43,7 @@ abstract class UserDao {
         addUsers(entities)
         if (owner != null) {
             val listEntities = entities.map {
-                UserListEntity(userId = it.id, owner = owner, id = 0)
+                UserListEntity(userId = it.id, owner = owner)
             }
             addUserListEntities(listEntities)
         }
@@ -79,7 +79,7 @@ abstract class UserDao {
 data class UserListEntity(
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "id")
-    val id: Int,
+    val id: Int = 0,
 
     @ColumnInfo(name = "user_id", index = true)
     val userId: Long,

@@ -18,14 +18,18 @@ package com.freshdigitable.udonroad2.data.repository
 
 import com.freshdigitable.udonroad2.data.db.DaoModule
 import com.freshdigitable.udonroad2.data.db.dao.ListDao
+import com.freshdigitable.udonroad2.data.db.dao.MemberListListDao
 import com.freshdigitable.udonroad2.data.db.dao.TweetListDao
 import com.freshdigitable.udonroad2.data.db.dao.UserListDao
 import com.freshdigitable.udonroad2.data.restclient.ListRestClient
 import com.freshdigitable.udonroad2.data.restclient.ListRestClientProvider
+import com.freshdigitable.udonroad2.data.restclient.MemberListClientModule
 import com.freshdigitable.udonroad2.data.restclient.TweetTimelineClientModule
 import com.freshdigitable.udonroad2.data.restclient.TwitterModule
 import com.freshdigitable.udonroad2.data.restclient.UserListClientModule
 import com.freshdigitable.udonroad2.model.ListQuery
+import com.freshdigitable.udonroad2.model.MemberList
+import com.freshdigitable.udonroad2.model.MemberListItem
 import com.freshdigitable.udonroad2.model.RepositoryScope
 import com.freshdigitable.udonroad2.model.TweetEntity
 import com.freshdigitable.udonroad2.model.TweetListItem
@@ -49,6 +53,14 @@ class UserListRepository(
     clientProvider: ListRestClientProvider,
     executor: AppExecutor
 ) : ListRepositoryImpl<User, UserListItem>(userDao, fetcher, clientProvider, executor)
+
+@RepositoryScope
+class MemberListListRepository(
+    memberListDao: ListDao<MemberList, MemberListItem>,
+    fetcher: ListFetcher<ListQuery, MemberList, ListRestClient<ListQuery, MemberList>, MemberListItem>,
+    clientProvider: ListRestClientProvider,
+    executor: AppExecutor
+) : ListRepositoryImpl<MemberList, MemberListItem>(memberListDao, fetcher, clientProvider, executor)
 
 @Module(
     includes = [
@@ -87,5 +99,25 @@ object UserListRepositoryModule {
         executor: AppExecutor
     ): UserListRepository {
         return UserListRepository(dao, UserListFetcher(), clientProvider, executor)
+    }
+}
+
+@Module(
+    includes = [
+        DaoModule::class,
+        TwitterModule::class,
+        MemberListClientModule::class
+    ]
+)
+object MemberListListRepositoryModule {
+    @Provides
+    @JvmStatic
+    @RepositoryScope
+    fun provideMemberListListRepository(
+        dao: MemberListListDao,
+        clientProvider: ListRestClientProvider,
+        executor: AppExecutor
+    ): MemberListListRepository {
+        return MemberListListRepository(dao, MemberListListFetcher(), clientProvider, executor)
     }
 }

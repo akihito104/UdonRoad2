@@ -1,7 +1,9 @@
 package com.freshdigitable.udonroad2.data.db.dao
 
 import androidx.paging.DataSource
-import com.freshdigitable.udonroad2.data.db.entity.UserEntity
+import com.freshdigitable.udonroad2.data.db.ext.toEntity
+import com.freshdigitable.udonroad2.model.MemberList
+import com.freshdigitable.udonroad2.model.MemberListItem
 import com.freshdigitable.udonroad2.model.TweetEntity
 import com.freshdigitable.udonroad2.model.TweetListItem
 import com.freshdigitable.udonroad2.model.User
@@ -43,29 +45,20 @@ class UserListDao(
     override suspend fun clean(owner: String) {
         dao.clear(owner)
     }
+}
 
-    private fun User.toEntity(): UserEntity {
-        return if (this is UserEntity) {
-            return this
-        } else {
-            UserEntity(
-                id,
-                name,
-                screenName,
-                iconUrl,
-                description,
-                profileBannerImageUrl,
-                followerCount,
-                followingCount,
-                tweetCount,
-                favoriteCount,
-                listedCount,
-                profileLinkColor,
-                location,
-                url,
-                verified,
-                isProtected
-            )
-        }
+class MemberListListDao(
+    private val dao: MemberListDao
+) : ListDao<MemberList, MemberListItem> {
+    override fun getList(owner: String): DataSource.Factory<Int, MemberListItem> {
+        return dao.getMemberList(owner).map { it as MemberListItem }
+    }
+
+    override suspend fun addEntities(entities: List<MemberList>, owner: String?) {
+        dao.addMemberList(entities, owner)
+    }
+
+    override suspend fun clean(owner: String) {
+        dao.clean(owner)
     }
 }

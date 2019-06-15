@@ -1,5 +1,6 @@
 package com.freshdigitable.udonroad2.data.restclient
 
+import com.freshdigitable.udonroad2.data.restclient.ext.toEntity
 import com.freshdigitable.udonroad2.model.TweetEntity
 import twitter4j.Twitter
 import javax.inject.Inject
