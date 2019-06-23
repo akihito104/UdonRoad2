@@ -17,6 +17,7 @@ import com.freshdigitable.udonroad2.model.TweetingUser
 import com.freshdigitable.udonroad2.model.ViewModelKey
 import com.freshdigitable.udonroad2.navigation.Navigation
 import com.freshdigitable.udonroad2.navigation.NavigationDispatcher
+import com.freshdigitable.udonroad2.timeline.MemberListListFragmentModule
 import com.freshdigitable.udonroad2.timeline.TimelineFragment
 import com.freshdigitable.udonroad2.timeline.TimelineViewModel
 import com.freshdigitable.udonroad2.timeline.TimelineViewModelModule
@@ -111,7 +112,8 @@ class UserActivity : HasSupportFragmentInjector, AppCompatActivity() {
     includes = [
         TimelineViewModelModule::class,
         UserViewModelModule::class,
-        UserListViewModelModule::class
+        UserListViewModelModule::class,
+        MemberListListFragmentModule::class
     ]
 )
 abstract class UserActivityModule {

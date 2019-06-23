@@ -8,6 +8,7 @@ import com.freshdigitable.udonroad2.model.ListQuery
 import com.freshdigitable.udonroad2.model.TweetingUser
 import com.freshdigitable.udonroad2.model.User
 import com.freshdigitable.udonroad2.timeline.ListItemFragment
+import com.freshdigitable.udonroad2.timeline.MemberListListFragment
 import com.freshdigitable.udonroad2.timeline.TimelineFragment
 import com.freshdigitable.udonroad2.timeline.UserListFragment
 
@@ -52,6 +53,15 @@ enum class UserPage(
         creator = { user -> ListItemFragment.newInstance<TimelineFragment>(ListQuery.Fav(user.id)) },
         titleRes = R.string.user_tab_fav,
         count = { user -> user?.favoriteCount }
+    ),
+    LISTED(
+        creator = { user ->
+            ListItemFragment.newInstance<MemberListListFragment>(
+                ListQuery.UserListMembership(user.id)
+            )
+        },
+        titleRes = R.string.user_tab_listed,
+        count = { user -> user?.listedCount }
     ),
     MEDIA(
         creator = { user -> ListItemFragment.newInstance<TimelineFragment>(ListQuery.Media(user.screenName)) },

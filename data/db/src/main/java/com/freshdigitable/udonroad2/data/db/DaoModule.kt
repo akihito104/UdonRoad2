@@ -47,11 +47,11 @@ object DaoModule {
 
     @Provides
     @JvmStatic
-    fun providesUserDao(db: AppDatabase): UserDao = db.userDao()
+    fun provideTweetListDao(dao: TweetDao): TweetListDao = TweetListDao(dao)
 
     @Provides
     @JvmStatic
-    fun provideTweetListDao(dao: TweetDao): TweetListDao = TweetListDao(dao)
+    fun providesUserDao(db: AppDatabase): UserDao = db.userDao()
 
     @Provides
     @JvmStatic
@@ -59,5 +59,9 @@ object DaoModule {
 
     @Provides
     @JvmStatic
-    fun provideMemberListDao(dao: MemberListDao): MemberListListDao = MemberListListDao(dao)
+    fun provideMemberListDao(db: AppDatabase): MemberListDao = db.memberListDao()
+
+    @Provides
+    @JvmStatic
+    fun provideMemberListListDao(dao: MemberListDao): MemberListListDao = MemberListListDao(dao)
 }

@@ -33,6 +33,7 @@ import com.freshdigitable.udonroad2.model.FragmentScope
 import com.freshdigitable.udonroad2.model.ViewModelKey
 import com.freshdigitable.udonroad2.navigation.Navigation
 import com.freshdigitable.udonroad2.navigation.NavigationDispatcher
+import com.freshdigitable.udonroad2.timeline.MemberListListFragmentModule
 import com.freshdigitable.udonroad2.timeline.SelectedItemId
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.TimelineFragment
@@ -125,7 +126,8 @@ class MainViewModel @Inject constructor(
 @Module(
     includes = [
         TimelineViewModelModule::class,
-        TweetDetailViewModelModule::class
+        TweetDetailViewModelModule::class,
+        MemberListListFragmentModule::class
     ]
 )
 abstract class MainActivityModule {

@@ -12,4 +12,7 @@ interface MemberListItem {
     val memberCount: Int
     val followerCount: Int
     val isPublic: Boolean
+
+    override fun equals(other: Any?): Boolean
+    override fun hashCode(): Int
 }
