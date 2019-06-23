@@ -36,9 +36,7 @@ import com.freshdigitable.udonroad2.navigation.NavigationDispatcher
 import com.freshdigitable.udonroad2.timeline.MemberListListFragmentModule
 import com.freshdigitable.udonroad2.timeline.SelectedItemId
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
-import com.freshdigitable.udonroad2.timeline.TimelineFragment
-import com.freshdigitable.udonroad2.timeline.TimelineViewModel
-import com.freshdigitable.udonroad2.timeline.TimelineViewModelModule
+import com.freshdigitable.udonroad2.timeline.TimelineFragmentModule
 import com.freshdigitable.udonroad2.timeline.TweetDetailFragment
 import com.freshdigitable.udonroad2.timeline.TweetDetailViewModel
 import com.freshdigitable.udonroad2.timeline.TweetDetailViewModelModule
@@ -125,16 +123,12 @@ class MainViewModel @Inject constructor(
 
 @Module(
     includes = [
-        TimelineViewModelModule::class,
+        TimelineFragmentModule::class,
         TweetDetailViewModelModule::class,
         MemberListListFragmentModule::class
     ]
 )
 abstract class MainActivityModule {
-    @FragmentScope
-    @ContributesAndroidInjector
-    abstract fun contributeTimelineFragment(): TimelineFragment
-
     @FragmentScope
     @ContributesAndroidInjector
     abstract fun contributeTweetDetailFragment(): TweetDetailFragment
@@ -143,11 +137,6 @@ abstract class MainActivityModule {
     @IntoMap
     @ViewModelKey(MainViewModel::class)
     abstract fun bindMainViewModel(viewModel: MainViewModel): ViewModel
-
-    @Binds
-    @IntoMap
-    @ViewModelKey(TimelineViewModel::class)
-    abstract fun bindTimelineViewModel(viewModel: TimelineViewModel): ViewModel
 
     @Binds
     @IntoMap

@@ -12,25 +12,19 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import androidx.viewpager.widget.ViewPager
 import com.freshdigitable.udonroad2.databinding.ActivityUserBinding
-import com.freshdigitable.udonroad2.model.FragmentScope
 import com.freshdigitable.udonroad2.model.TweetingUser
 import com.freshdigitable.udonroad2.model.ViewModelKey
 import com.freshdigitable.udonroad2.navigation.Navigation
 import com.freshdigitable.udonroad2.navigation.NavigationDispatcher
 import com.freshdigitable.udonroad2.timeline.MemberListListFragmentModule
-import com.freshdigitable.udonroad2.timeline.TimelineFragment
-import com.freshdigitable.udonroad2.timeline.TimelineViewModel
-import com.freshdigitable.udonroad2.timeline.TimelineViewModelModule
-import com.freshdigitable.udonroad2.timeline.UserListFragment
-import com.freshdigitable.udonroad2.timeline.UserListViewModel
-import com.freshdigitable.udonroad2.timeline.UserListViewModelModule
+import com.freshdigitable.udonroad2.timeline.TimelineFragmentModule
+import com.freshdigitable.udonroad2.timeline.UserListFragmentModule
 import com.google.android.material.appbar.AppBarLayout
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.android.AndroidInjection
 import dagger.android.AndroidInjector
-import dagger.android.ContributesAndroidInjector
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.support.HasSupportFragmentInjector
 import dagger.multibindings.IntoMap
@@ -110,35 +104,17 @@ class UserActivity : HasSupportFragmentInjector, AppCompatActivity() {
 
 @Module(
     includes = [
-        TimelineViewModelModule::class,
+        TimelineFragmentModule::class,
         UserViewModelModule::class,
-        UserListViewModelModule::class,
+        UserListFragmentModule::class,
         MemberListListFragmentModule::class
     ]
 )
 abstract class UserActivityModule {
-    @ContributesAndroidInjector
-    @FragmentScope
-    abstract fun contributeTimelineFragment(): TimelineFragment
-
-    @ContributesAndroidInjector
-    @FragmentScope
-    abstract fun contributeUserListFragment(): UserListFragment
-
-    @Binds
-    @IntoMap
-    @ViewModelKey(TimelineViewModel::class)
-    abstract fun bindTimelineFragment(viewModel: TimelineViewModel): ViewModel
-
     @Binds
     @IntoMap
     @ViewModelKey(UserViewModel::class)
     abstract fun bindUserViewModel(viewModel: UserViewModel): ViewModel
-
-    @Binds
-    @IntoMap
-    @ViewModelKey(UserListViewModel::class)
-    abstract fun bindUserListViewModel(viewModel: UserListViewModel): ViewModel
 
     @Module
     companion object {
