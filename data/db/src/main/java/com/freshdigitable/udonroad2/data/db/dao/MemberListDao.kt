@@ -22,7 +22,7 @@ abstract class MemberListDao(
 ) {
     @Query(
         """
-        SELECT * FROM member_list_list AS l
+        SELECT v.* FROM member_list_list AS l
         INNER JOIN view_member_list AS v ON l.member_list_id = v.id
         WHERE l.owner = :owner
         ORDER BY l.`order` ASC"""
@@ -76,7 +76,7 @@ internal fun MemberList.toEntity(): MemberListEntity {
         )]
 )
 data class MemberListListEntity(
-    @ColumnInfo(name = "member_list_id")
+    @ColumnInfo(name = "member_list_id", index = true)
     val memberListId: Long,
 
     @PrimaryKey(autoGenerate = true)
