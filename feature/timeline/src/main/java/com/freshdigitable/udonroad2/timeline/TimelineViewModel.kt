@@ -34,7 +34,7 @@ import dagger.Provides
 class TimelineViewModel(
     private val navigator: NavigationDispatcher,
     private val homeRepository: TweetTimelineRepository
-) : ListLoadable, TweetListItemClickListener, TweetListEventListener, ViewModel() {
+) : ListItemLoadable<TweetListItem>, TweetListItemClickListener, TweetListEventListener, ViewModel() {
 
     private val listOwner = MutableLiveData<ListOwner>()
 
@@ -42,7 +42,7 @@ class TimelineViewModel(
         homeRepository.getList("${it.id}", it.query)
     }
 
-    fun getTimeline(listOwner: ListOwner): LiveData<PagedList<TweetListItem>> {
+    override fun getList(listOwner: ListOwner): LiveData<PagedList<TweetListItem>> {
         this.listOwner.postValue(listOwner)
         return timeline
     }

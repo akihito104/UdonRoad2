@@ -16,7 +16,7 @@ import dagger.Provides
 class UserListViewModel(
     private val navigator: NavigationDispatcher,
     private val repository: UserListRepository
-) : ListLoadable, ViewModel() {
+) : ListItemLoadable<UserListItem>, ViewModel() {
 
     private val listOwner = MutableLiveData<ListOwner>()
 
@@ -24,7 +24,7 @@ class UserListViewModel(
         repository.getList("${it.id}", it.query)
     }
 
-    fun getTimeline(listOwner: ListOwner): LiveData<PagedList<UserListItem>> {
+    override fun getList(listOwner: ListOwner): LiveData<PagedList<UserListItem>> {
         this.listOwner.postValue(listOwner)
         return timeline
     }

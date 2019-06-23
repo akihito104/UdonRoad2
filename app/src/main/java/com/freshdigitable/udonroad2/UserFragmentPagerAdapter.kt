@@ -7,6 +7,7 @@ import androidx.fragment.app.FragmentStatePagerAdapter
 import com.freshdigitable.udonroad2.model.ListQuery
 import com.freshdigitable.udonroad2.model.TweetingUser
 import com.freshdigitable.udonroad2.model.User
+import com.freshdigitable.udonroad2.timeline.ListItemFragment
 import com.freshdigitable.udonroad2.timeline.TimelineFragment
 import com.freshdigitable.udonroad2.timeline.UserListFragment
 
@@ -33,27 +34,27 @@ enum class UserPage(
     val count: ((User?) -> Int?)? = null
 ) {
     TWEET(
-        creator = { user -> TimelineFragment.newInstance(ListQuery.Timeline(user.id)) },
+        creator = { user -> ListItemFragment.newInstance<TimelineFragment>(ListQuery.Timeline(user.id)) },
         titleRes = R.string.user_tab_tweet,
         count = { user -> user?.tweetCount }
     ),
     FOLLOWER(
-        creator = { user -> UserListFragment.newInstance(ListQuery.Follower(user.id)) },
+        creator = { user -> ListItemFragment.newInstance<UserListFragment>(ListQuery.Follower(user.id)) },
         titleRes = R.string.user_tab_follower,
         count = { user -> user?.followerCount }
     ),
     FOLLOWING(
-        creator = { user -> UserListFragment.newInstance(ListQuery.Following(user.id)) },
+        creator = { user -> ListItemFragment.newInstance<UserListFragment>(ListQuery.Following(user.id)) },
         titleRes = R.string.user_tab_following,
         count = { user -> user?.followingCount }
     ),
     FAV(
-        creator = { user -> TimelineFragment.newInstance(ListQuery.Fav(user.id)) },
+        creator = { user -> ListItemFragment.newInstance<TimelineFragment>(ListQuery.Fav(user.id)) },
         titleRes = R.string.user_tab_fav,
         count = { user -> user?.favoriteCount }
     ),
     MEDIA(
-        creator = { user -> TimelineFragment.newInstance(ListQuery.Media(user.screenName)) },
+        creator = { user -> ListItemFragment.newInstance<TimelineFragment>(ListQuery.Media(user.screenName)) },
         titleRes = R.string.user_tab_media
     )
 }
