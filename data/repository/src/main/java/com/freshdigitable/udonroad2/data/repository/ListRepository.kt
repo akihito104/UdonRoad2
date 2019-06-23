@@ -101,7 +101,7 @@ abstract class ListRepositoryImpl<E, I>(
             _loading.postValue(false)
         }.onFailure { e ->
             _loading.postValue(false)
-            Log.e("TweetTimelineRepository", "fetchTimeline: ", e)
+            Log.e("TweetTimelineRepository", "fetchTimeline: ${e.message}", e)
         }
     }
 

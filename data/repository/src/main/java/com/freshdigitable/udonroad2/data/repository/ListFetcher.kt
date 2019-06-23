@@ -29,16 +29,16 @@ class UserListFetcher :
     ListFetcher<ListQuery, User, ListRestClient<ListQuery, User>, UserListItem> {
 
     override val fetchOnBottom: (UserListItem) -> suspend ListRestClient<ListQuery, User>.() -> List<User>
-        get() = { _ -> { fetchAtBottom(1) } }
+        get() = { _ -> { fetchAtBottom() } }
     override val fetchOnTop: (UserListItem) -> suspend ListRestClient<ListQuery, User>.() -> List<User>
-        get() = { _ -> { fetchAtTop(1) } }
+        get() = { _ -> { fetchAtTop() } }
 }
 
 class MemberListListFetcher :
     ListFetcher<ListQuery, MemberList, ListRestClient<ListQuery, MemberList>, MemberListItem> {
 
     override val fetchOnBottom: (MemberListItem) -> suspend ListRestClient<ListQuery, MemberList>.() -> List<MemberList>
-        get() = { _ -> { fetchAtBottom(1) } }
+        get() = { _ -> { fetchAtBottom() } }
     override val fetchOnTop: (MemberListItem) -> suspend ListRestClient<ListQuery, MemberList>.() -> List<MemberList>
-        get() = { _ -> { fetchAtTop(1) } }
+        get() = { _ -> { fetchAtTop() } }
 }
