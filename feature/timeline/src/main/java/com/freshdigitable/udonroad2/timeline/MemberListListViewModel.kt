@@ -9,11 +9,13 @@ import com.freshdigitable.udonroad2.data.repository.MemberListListRepository
 import com.freshdigitable.udonroad2.data.repository.RepositoryComponent
 import com.freshdigitable.udonroad2.model.MemberListItem
 import com.freshdigitable.udonroad2.model.TweetingUser
+import com.freshdigitable.udonroad2.navigation.NavigationDispatcher
 import dagger.Module
 import dagger.Provides
 
 class MemberListListViewModel(
-    private val repository: MemberListListRepository
+    private val repository: MemberListListRepository,
+    private val navigator: NavigationDispatcher
 ) : ListItemLoadable<MemberListItem>, ViewModel() {
     override val loading: LiveData<Boolean>
         get() = repository.loading
@@ -38,8 +40,11 @@ class MemberListListViewModel(
     }
 
     fun onUserIconClicked(user: TweetingUser) {
+        navigator.postEvent(TimelineEvent.UserIconClicked(user))
     }
+
     fun onBodyItemClicked(memberList: MemberListItem) {
+        navigator.postEvent(TimelineEvent.MemberListClicked(memberList))
     }
 
     override fun onCleared() {
@@ -53,8 +58,12 @@ object MemberListListViewModelModule {
     @JvmStatic
     @Provides
     fun provideMemberListListViewModel(
-        repositoryComponent: RepositoryComponent.Builder
+        repositoryComponent: RepositoryComponent.Builder,
+        navigator: NavigationDispatcher
     ): MemberListListViewModel {
-        return MemberListListViewModel(repositoryComponent.build().memberListListRepository())
+        return MemberListListViewModel(
+            repositoryComponent.build().memberListListRepository(),
+            navigator
+        )
     }
 }
