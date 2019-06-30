@@ -22,6 +22,7 @@ import androidx.room.TypeConverter
 import androidx.room.TypeConverters
 import com.freshdigitable.udonroad2.data.db.dao.MemberListDao
 import com.freshdigitable.udonroad2.data.db.dao.MemberListListEntity
+import com.freshdigitable.udonroad2.data.db.dao.RelationshipDao
 import com.freshdigitable.udonroad2.data.db.dao.StructuredTweetEntity
 import com.freshdigitable.udonroad2.data.db.dao.TweetDao
 import com.freshdigitable.udonroad2.data.db.dao.TweetListEntity
@@ -33,6 +34,7 @@ import com.freshdigitable.udonroad2.data.db.dbview.TweetListItem
 import com.freshdigitable.udonroad2.data.db.dbview.TweetingUser
 import com.freshdigitable.udonroad2.data.db.dbview.UserListDbView
 import com.freshdigitable.udonroad2.data.db.entity.MemberListEntity
+import com.freshdigitable.udonroad2.data.db.entity.RelationshipEntity
 import com.freshdigitable.udonroad2.data.db.entity.TweetEntityDb
 import com.freshdigitable.udonroad2.data.db.entity.UserEntity
 import org.threeten.bp.Instant
@@ -45,7 +47,8 @@ import org.threeten.bp.Instant
         UserEntity::class,
         UserListEntity::class,
         MemberListEntity::class,
-        MemberListListEntity::class
+        MemberListListEntity::class,
+        RelationshipEntity::class
     ],
     views = [
         Tweet::class,
@@ -64,6 +67,8 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
 
     abstract fun memberListDao(): MemberListDao
+
+    abstract fun relationshipDao(): RelationshipDao
 }
 
 class TimestampConverter {

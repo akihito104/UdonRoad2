@@ -4,9 +4,14 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
+        <import type="android.view.View" />
         <variable
             name="item"
             type="com.freshdigitable.udonroad2.model.User"
+            />
+        <variable
+            name="relationship"
+            type="com.freshdigitable.udonroad2.model.Relationship"
             />
     </data>
 
@@ -53,6 +58,21 @@
             app:bindUserIcon="@{item.iconUrl}"
             tools:background="#8fff"
             tools:src="@tools:sample/avatars"
+            />
+        <TextView
+            android:id="@+id/userHeader_following"
+            android:layout_width="0dp"
+            android:layout_height="24dp"
+            android:layout_marginTop="@dimen/margin"
+            app:layout_constraintTop_toBottomOf="@id/userHeader_icon"
+            app:layout_constraintStart_toStartOf="@id/userHeader_icon"
+            app:layout_constraintEnd_toEndOf="@id/userHeader_icon"
+            android:background="#00f"
+            android:text="@string/following"
+            android:textSize="12sp"
+            android:textColor="#fff"
+            android:gravity="center"
+            android:visibility="@{safeUnbox(relationship.following) ? View.VISIBLE : View.GONE}"
             />
         <TextView
             android:id="@+id/userHeader_screenName"

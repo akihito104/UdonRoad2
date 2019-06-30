@@ -20,6 +20,7 @@ import android.app.Application
 import androidx.room.Room
 import com.freshdigitable.udonroad2.data.db.dao.MemberListDao
 import com.freshdigitable.udonroad2.data.db.dao.MemberListListDao
+import com.freshdigitable.udonroad2.data.db.dao.RelationshipDao
 import com.freshdigitable.udonroad2.data.db.dao.TweetDao
 import com.freshdigitable.udonroad2.data.db.dao.TweetListDao
 import com.freshdigitable.udonroad2.data.db.dao.UserDao
@@ -64,4 +65,8 @@ object DaoModule {
     @Provides
     @JvmStatic
     fun provideMemberListListDao(dao: MemberListDao): MemberListListDao = MemberListListDao(dao)
+
+    @Provides
+    @JvmStatic
+    fun provideRelationshipDao(db: AppDatabase): RelationshipDao = db.relationshipDao()
 }

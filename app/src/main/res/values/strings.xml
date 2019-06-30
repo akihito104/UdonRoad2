@@ -6,4 +6,5 @@
     <string name="user_tab_follower">follower\n%1$s</string>
     <string name="user_tab_following">following\n%1$s</string>
     <string name="user_tab_listed">listed\n%1$s</string>
+    <string name="following">following</string>
 </resources>

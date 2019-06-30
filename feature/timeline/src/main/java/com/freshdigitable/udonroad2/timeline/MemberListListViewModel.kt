@@ -24,13 +24,11 @@ class MemberListListViewModel(
         repository.loadAtFront()
     }
 
-    private val query =
-        MutableLiveData<ListOwner?>()
+    private val query = MutableLiveData<ListOwner?>()
     private val listItem = Transformations.switchMap(query) { q ->
-        if (q != null) {
-            repository.getList("${q.id}", q.query)
-        } else {
-            MutableLiveData()
+        when {
+            q != null -> repository.getList("${q.id}", q.query)
+            else -> MutableLiveData()
         }
     }
 

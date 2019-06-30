@@ -30,6 +30,7 @@
                 <include
                     layout="@layout/view_user_header"
                     app:item="@{viewModel.user}"
+                    app:relationship="@{viewModel.relationship}"
                     />
                 <androidx.appcompat.widget.Toolbar
                     android:layout_width="match_parent"
