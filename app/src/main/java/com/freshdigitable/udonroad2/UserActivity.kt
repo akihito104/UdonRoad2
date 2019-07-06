@@ -135,7 +135,7 @@ class UserActivity : HasSupportFragmentInjector, AppCompatActivity() {
             R.id.action_r4s -> viewModel.reportForSpam()
             else -> return super.onOptionsItemSelected(item)
         }
-        return false
+        return true
     }
 
     private val user: TweetingUser
