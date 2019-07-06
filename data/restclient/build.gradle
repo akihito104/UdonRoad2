@@ -47,6 +47,8 @@ dependencies {
     implementation "androidx.appcompat:appcompat:$appcompat_version"
 
     implementation "org.twitter4j:twitter4j-core:$t4j_version"
+    implementation "androidx.lifecycle:lifecycle-livedata:$lifecycle_version"
+
     implementation "org.twitter4j:twitter4j-http2-support:$t4j_version"
     implementation "com.jakewharton.threetenabp:threetenabp:$threetenbp_version"
 
