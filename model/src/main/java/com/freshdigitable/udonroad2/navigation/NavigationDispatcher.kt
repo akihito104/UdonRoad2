@@ -6,8 +6,8 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Observer
 import androidx.lifecycle.OnLifecycleEvent
+import androidx.lifecycle.observe
 import com.freshdigitable.udonroad2.model.ActivityScope
 import io.reactivex.disposables.Disposable
 import io.reactivex.subjects.PublishSubject
@@ -47,7 +47,7 @@ abstract class Navigation<T : FragmentContainerState>(
                 state.postValue(s)
             }
 
-        state.observe(activity, Observer { navigate(it) })
+        state.observe(activity) { navigate(it) }
     }
 
     abstract fun onEvent(event: NavigationEvent): T?

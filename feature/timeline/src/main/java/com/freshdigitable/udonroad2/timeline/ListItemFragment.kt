@@ -7,10 +7,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.observe
 import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -63,9 +63,9 @@ abstract class ListItemFragment<T, I> : Fragment()
         )
         val adapter = createListAdapter(viewModel)
         listView.adapter = adapter
-        viewModel.getList(ListOwner(ownerId, query)).observe(viewLifecycleOwner, Observer { list ->
-            adapter.submitList(list)
-        })
+        viewModel.getList(ListOwner(ownerId, query)).observe(viewLifecycleOwner) {
+            adapter.submitList(it)
+        }
     }
 
     private val ownerId: Int

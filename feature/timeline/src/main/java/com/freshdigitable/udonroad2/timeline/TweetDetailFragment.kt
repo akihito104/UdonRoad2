@@ -9,9 +9,9 @@ import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.LinearLayout
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.observe
 import com.freshdigitable.udonroad2.timeline.databinding.FragmentDetailBinding
 import dagger.android.support.AndroidSupportInjection
 import javax.inject.Inject
@@ -39,28 +39,34 @@ class TweetDetailFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.lifecycleOwner = viewLifecycleOwner
-        val viewModel = ViewModelProviders.of(requireActivity(), viewModelFactory).get(TweetDetailViewModel::class.java)
+        val viewModel = ViewModelProviders.of(requireActivity(), viewModelFactory)
+            .get(TweetDetailViewModel::class.java)
         binding.viewModel = viewModel
 
-        viewModel.tweetItem.observe(viewLifecycleOwner, Observer { item ->
+        viewModel.tweetItem.observe(viewLifecycleOwner) { item ->
             binding.detailReactionContainer.removeAllViews()
             item?.body?.retweetCount?.let {
                 AppCompatTextView(view.context).apply {
                     text = "RT: $it"
                 }
             }?.let {
-                binding.detailReactionContainer.addView(it, LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
-                    rightMargin = 10 // XXX
-                })
+                binding.detailReactionContainer.addView(
+                    it,
+                    LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
+                        rightMargin = 10 // XXX
+                    })
             }
             item?.body?.favoriteCount?.let {
                 AppCompatTextView(view.context).apply {
                     text = "fav: $it"
                 }
             }?.let {
-                binding.detailReactionContainer.addView(it, LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT))
+                binding.detailReactionContainer.addView(
+                    it,
+                    LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
+                )
             }
-        })
+        }
 
         viewModel.showTweetItem(getTweetId())
     }

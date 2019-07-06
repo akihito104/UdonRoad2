@@ -9,10 +9,10 @@ import androidx.annotation.IdRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil.setContentView
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.observe
 import androidx.viewpager.widget.ViewPager
 import com.freshdigitable.udonroad2.databinding.ActivityUserBinding
 import com.freshdigitable.udonroad2.model.TweetingUser
@@ -64,7 +64,7 @@ class UserActivity : HasSupportFragmentInjector, AppCompatActivity() {
             viewModel.setAppBarScrollRate(abs(offset).toFloat() / appBar.totalScrollRange.toFloat())
         })
 
-        viewModel.user.observe(this@UserActivity, Observer { u ->
+        viewModel.user.observe(this@UserActivity) { u ->
             adapter.apply {
                 titles.clear()
                 titles.addAll(UserPage.values().map { p ->
@@ -75,7 +75,7 @@ class UserActivity : HasSupportFragmentInjector, AppCompatActivity() {
                     }
                 })
             }.notifyDataSetChanged()
-        })
+        }
         userPager.apply {
             this.adapter = adapter
             addOnPageChangeListener(object : ViewPager.SimpleOnPageChangeListener() {
@@ -88,9 +88,9 @@ class UserActivity : HasSupportFragmentInjector, AppCompatActivity() {
         userTabContainer.setupWithViewPager(userPager)
 
         this.viewModel = viewModel
-        viewModel.relationship.observe(this@UserActivity, Observer {
+        viewModel.relationship.observe(this@UserActivity) {
             invalidateOptionsMenu()
-        })
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
