@@ -2,7 +2,8 @@ package com.freshdigitable.udonroad2.data.repository
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Transformations
+import androidx.lifecycle.map
+import androidx.lifecycle.switchMap
 import com.freshdigitable.udonroad2.data.db.DaoModule
 import com.freshdigitable.udonroad2.data.db.dao.TweetDao
 import com.freshdigitable.udonroad2.data.restclient.TweetApiClient
@@ -14,7 +15,6 @@ import dagger.Provides
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class TweetRepository @Inject constructor(
@@ -23,10 +23,10 @@ class TweetRepository @Inject constructor(
 ) {
     fun getTweetItem(id: Long): LiveData<TweetListItem?> {
         val liveData = MutableLiveData<TweetListItem?>()
-        return Transformations.switchMap(dao.findTweetItem(id)) { item ->
+        return dao.findTweetItem(id).switchMap { item ->
             if (item == null) {
                 fetchTweet(id)
-                Transformations.map(dao.findTweet(id)) { tweet ->
+                dao.findTweet(id).map { tweet ->
                     val t = tweet ?: return@map null
                     com.freshdigitable.udonroad2.data.db.dbview.TweetListItem(
                         originalId = t.id,
@@ -44,7 +44,7 @@ class TweetRepository @Inject constructor(
     private fun fetchTweet(id: Long) {
         GlobalScope.launch(Dispatchers.Default) {
             val tweet = restClient.fetchTweet(id)
-            withContext(Dispatchers.IO) { dao.addTweet(tweet) }
+            dao.addTweet(tweet)
         }
     }
 }

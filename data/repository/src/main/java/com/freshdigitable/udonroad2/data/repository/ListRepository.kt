@@ -3,7 +3,7 @@ package com.freshdigitable.udonroad2.data.repository
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Transformations
+import androidx.lifecycle.switchMap
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
 import com.freshdigitable.udonroad2.data.db.dao.ListDao
@@ -44,7 +44,7 @@ abstract class ListRepositoryImpl<E, I>(
     private val owner = MutableLiveData<String>()
     private val listTable: MutableMap<String, LiveData<PagedList<I>>> = mutableMapOf()
 
-    private val timeline: LiveData<PagedList<I>> = Transformations.switchMap(owner) {
+    private val timeline: LiveData<PagedList<I>> = owner.switchMap {
         listTable.getOrPut(it) { getPagedList(it) }
     }
 

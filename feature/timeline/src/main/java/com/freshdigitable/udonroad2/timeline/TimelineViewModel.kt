@@ -20,8 +20,8 @@ import android.util.Log
 import androidx.databinding.ObservableField
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.switchMap
 import androidx.paging.PagedList
 import com.freshdigitable.udonroad2.data.repository.RepositoryComponent
 import com.freshdigitable.udonroad2.data.repository.TweetTimelineRepository
@@ -38,7 +38,7 @@ class TimelineViewModel(
 
     private val listOwner = MutableLiveData<ListOwner>()
 
-    val timeline: LiveData<PagedList<TweetListItem>> = Transformations.switchMap(listOwner) {
+    val timeline: LiveData<PagedList<TweetListItem>> = listOwner.switchMap {
         homeRepository.getList("${it.id}", it.query)
     }
 

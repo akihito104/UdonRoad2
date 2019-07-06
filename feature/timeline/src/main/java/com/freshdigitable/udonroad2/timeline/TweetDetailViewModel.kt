@@ -2,8 +2,8 @@ package com.freshdigitable.udonroad2.timeline
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.switchMap
 import com.freshdigitable.udonroad2.data.repository.RepositoryComponent
 import com.freshdigitable.udonroad2.data.repository.TweetRepository
 import com.freshdigitable.udonroad2.model.TweetListItem
@@ -18,7 +18,7 @@ class TweetDetailViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val targetId: MutableLiveData<Long> = MutableLiveData()
-    val tweetItem: LiveData<TweetListItem?> = Transformations.switchMap(targetId) {
+    val tweetItem: LiveData<TweetListItem?> = targetId.switchMap {
         repository.getTweetItem(it)
     }
 

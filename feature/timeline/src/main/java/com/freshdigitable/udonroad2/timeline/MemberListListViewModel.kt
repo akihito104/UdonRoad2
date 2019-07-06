@@ -2,8 +2,8 @@ package com.freshdigitable.udonroad2.timeline
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.switchMap
 import androidx.paging.PagedList
 import com.freshdigitable.udonroad2.data.repository.MemberListListRepository
 import com.freshdigitable.udonroad2.data.repository.RepositoryComponent
@@ -25,7 +25,7 @@ class MemberListListViewModel(
     }
 
     private val query = MutableLiveData<ListOwner?>()
-    private val listItem = Transformations.switchMap(query) { q ->
+    private val listItem = query.switchMap { q ->
         when {
             q != null -> repository.getList("${q.id}", q.query)
             else -> MutableLiveData()

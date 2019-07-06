@@ -3,8 +3,8 @@ package com.freshdigitable.udonroad2.timeline
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.switchMap
 import androidx.paging.PagedList
 import com.freshdigitable.udonroad2.data.repository.RepositoryComponent
 import com.freshdigitable.udonroad2.data.repository.UserListRepository
@@ -20,7 +20,7 @@ class UserListViewModel(
 
     private val listOwner = MutableLiveData<ListOwner>()
 
-    val timeline: LiveData<PagedList<UserListItem>> = Transformations.switchMap(listOwner) {
+    val timeline: LiveData<PagedList<UserListItem>> = listOwner.switchMap {
         repository.getList("${it.id}", it.query)
     }
 
