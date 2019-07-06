@@ -13,7 +13,6 @@ android {
     buildTypes {
         debug {
             minifyEnabled true
-            useProguard false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
         release {
@@ -34,6 +33,7 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation project(':feature:timeline')
+    implementation project(':candysh')
     implementation project(':data:repository')
     implementation project(':data:db')
     implementation project(':data:restclient')
@@ -54,6 +54,7 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-reactivestreams:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-reactivestreams-ktx:$lifecycle_version"
     implementation "androidx.room:room-runtime:$room_version"
+    api "androidx.paging:paging-runtime:$paging_version"
 
     implementation "com.google.dagger:dagger-android:$dagger_version"
     implementation "com.google.dagger:dagger-android-support:$dagger_version"

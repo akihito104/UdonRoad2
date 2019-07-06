@@ -27,12 +27,12 @@ import twitter4j.conf.ConfigurationBuilder
 object TwitterModule {
     @Provides
     @JvmStatic
-    fun providesTwitter() : Twitter {
+    fun providesTwitter(): Twitter {
         val configuration = ConfigurationBuilder()
-                .setTweetModeExtended(true)
-                .setOAuthConsumerKey(BuildConfig.CONSUMER_KEY)
-                .setOAuthConsumerSecret(BuildConfig.CONSUMER_SECRET)
-                .build()
+            .setTweetModeExtended(true)
+            .setOAuthConsumerKey(BuildConfig.CONSUMER_KEY)
+            .setOAuthConsumerSecret(BuildConfig.CONSUMER_SECRET)
+            .build()
         val accessToken = AccessToken(BuildConfig.ACCESS_TOKEN, BuildConfig.ACCESS_SECRET)
         return TwitterFactory(configuration).getInstance(accessToken)
     }

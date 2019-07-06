@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="action_group_user">action for relationship</string>
+    <string name="action_follow">follow</string>
+    <string name="action_unfollow">unfollow</string>
+    <string name="action_block_retweet">block RT</string>
+    <string name="action_unblock_retweet">unblock RT</string>
+    <string name="action_mute">mute</string>
+    <string name="action_unmute">unmute</string>
+    <string name="action_block">block</string>
+    <string name="action_unblock">unblock</string>
+    <string name="action_r4s">report for spam</string>
+</resources>

@@ -7,7 +7,7 @@ interface TweetListItem {
 
     val originalId: Long
 
-    val originalUser: User
+    val originalUser: TweetingUser
 
     val body: Tweet
 
@@ -31,7 +31,7 @@ interface Tweet {
 
     val favoriteCount: Int
 
-    val user: User
+    val user: TweetingUser
 
     val source: String
 

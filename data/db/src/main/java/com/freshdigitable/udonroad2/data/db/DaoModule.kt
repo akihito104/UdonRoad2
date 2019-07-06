@@ -18,8 +18,13 @@ package com.freshdigitable.udonroad2.data.db
 
 import android.app.Application
 import androidx.room.Room
+import com.freshdigitable.udonroad2.data.db.dao.MemberListDao
+import com.freshdigitable.udonroad2.data.db.dao.MemberListListDao
+import com.freshdigitable.udonroad2.data.db.dao.RelationshipDao
 import com.freshdigitable.udonroad2.data.db.dao.TweetDao
+import com.freshdigitable.udonroad2.data.db.dao.TweetListDao
 import com.freshdigitable.udonroad2.data.db.dao.UserDao
+import com.freshdigitable.udonroad2.data.db.dao.UserListDao
 import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton
@@ -43,5 +48,25 @@ object DaoModule {
 
     @Provides
     @JvmStatic
+    fun provideTweetListDao(dao: TweetDao): TweetListDao = TweetListDao(dao)
+
+    @Provides
+    @JvmStatic
     fun providesUserDao(db: AppDatabase): UserDao = db.userDao()
+
+    @Provides
+    @JvmStatic
+    fun provideUserListDao(dao: UserDao): UserListDao = UserListDao(dao)
+
+    @Provides
+    @JvmStatic
+    fun provideMemberListDao(db: AppDatabase): MemberListDao = db.memberListDao()
+
+    @Provides
+    @JvmStatic
+    fun provideMemberListListDao(dao: MemberListDao): MemberListListDao = MemberListListDao(dao)
+
+    @Provides
+    @JvmStatic
+    fun provideRelationshipDao(db: AppDatabase): RelationshipDao = db.relationshipDao()
 }

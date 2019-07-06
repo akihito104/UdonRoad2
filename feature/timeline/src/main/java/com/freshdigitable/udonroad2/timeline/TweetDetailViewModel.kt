@@ -27,13 +27,13 @@ class TweetDetailViewModel @Inject constructor(
     }
 
     fun onOriginalUserClicked() {
-        val userId = tweetItem.value?.originalUser?.id ?: return
-        navigator.postEvent(TimelineEvent.RetweetUserClicked(userId))
+        val user = tweetItem.value?.originalUser ?: return
+        navigator.postEvent(TimelineEvent.RetweetUserClicked(user))
     }
 
     fun onBodyUserClicked() {
-        val userId = tweetItem.value?.body?.user?.id ?: return
-        navigator.postEvent(TimelineEvent.UserIconClicked(userId))
+        val user = tweetItem.value?.body?.user ?: return
+        navigator.postEvent(TimelineEvent.UserIconClicked(user))
     }
 }
 

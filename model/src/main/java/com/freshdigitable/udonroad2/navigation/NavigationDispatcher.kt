@@ -8,12 +8,12 @@ import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.OnLifecycleEvent
+import com.freshdigitable.udonroad2.model.ActivityScope
 import io.reactivex.disposables.Disposable
 import io.reactivex.subjects.PublishSubject
 import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
+@ActivityScope
 class NavigationDispatcher @Inject constructor() {
     internal val emitter = PublishSubject.create<NavigationEvent>()
 

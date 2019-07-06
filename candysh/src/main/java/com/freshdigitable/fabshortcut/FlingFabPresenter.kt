@@ -19,12 +19,14 @@ package com.freshdigitable.fabshortcut
 import android.util.AttributeSet
 import android.view.View
 import android.view.ViewGroup
+import android.widget.FrameLayout
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 
 internal class FlingFabPresenter(
-        private val fab: FlingFAB,
-        attrs: AttributeSet? = null,
-        defStyleAttr: Int = 0
+    private val fab: FlingFAB,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0
 ) {
     private val indicator = FlingActionIndicator(fab.context, attrs, defStyleAttr)
     private val menu = FfabMenu(fab.context)
@@ -32,8 +34,10 @@ internal class FlingFabPresenter(
     private val marginFromFab: Int
 
     init {
-        val a = fab.context.obtainStyledAttributes(attrs,
-                R.styleable.FlingFAB, defStyleAttr, R.style.Widget_FlingFAB)
+        val a = fab.context.obtainStyledAttributes(
+            attrs,
+            R.styleable.FlingFAB, defStyleAttr, R.style.Widget_FlingFAB
+        )
         if (a.hasValue(R.styleable.FlingFAB_menu)) {
             val menuRes = a.getResourceId(R.styleable.FlingFAB_menu, 0)
             FfabMenuItemInflater.inflate(fab.context, menu, menuRes)
@@ -101,17 +105,28 @@ internal class FlingFabPresenter(
         if (indicator.parent != null) {
             return
         }
-        val lp = when (fab.layoutParams) {
-            is ConstraintLayout.LayoutParams -> {
-                ConstraintLayout.LayoutParams(indicator.layoutParams).also {
-                    it.bottomToTop = fab.id
-                    it.startToStart = fab.id
-                    it.endToEnd = fab.id
-                    it.bottomMargin = marginFromFab
-               }
+        val lp = when (val fabLp = fab.layoutParams) {
+            is ConstraintLayout.LayoutParams -> ConstraintLayout.LayoutParams(indicator.layoutParams).apply {
+                bottomToTop = fab.id
+                startToStart = fab.id
+                endToEnd = fab.id
+                bottomMargin = marginFromFab
+            }
+            is FrameLayout.LayoutParams -> FrameLayout.LayoutParams(indicator.layoutParams).apply {
+                gravity = fabLp.gravity
+                setMarginFromEdge()
+            }
+            is CoordinatorLayout.LayoutParams -> CoordinatorLayout.LayoutParams(indicator.layoutParams).apply {
+                gravity = fabLp.gravity
+                setMarginFromEdge()
             }
             else -> unsupported()
         }
         (fab.parent as ViewGroup).addView(indicator, lp)
+    }
+
+    private fun ViewGroup.MarginLayoutParams.setMarginFromEdge() {
+        val fabLp = fab.layoutParams as ViewGroup.MarginLayoutParams
+        bottomMargin = marginFromFab + fab.height + fabLp.bottomMargin
     }
 }

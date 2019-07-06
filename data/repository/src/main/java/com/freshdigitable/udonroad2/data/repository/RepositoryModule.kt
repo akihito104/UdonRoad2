@@ -5,16 +5,34 @@ import dagger.Module
 import dagger.Subcomponent
 
 @RepositoryScope
-@Subcomponent(modules = [
-    HomeTimelineRepositoryModule::class,
-    TweetRepositoryModule::class
-])
+@Subcomponent(
+    modules = [
+        TimelineRepositoryModule::class,
+        UserListRepositoryModule::class,
+        TweetRepositoryModule::class,
+        UserRepositoryModule::class,
+        MemberListListRepositoryModule::class,
+        RelationshipRepositoryModule::class
+    ]
+)
 interface RepositoryComponent {
     @RepositoryScope
-    fun homeTimelineRepository(): HomeTimelineRepository
+    fun tweetTimelineRepository(): TweetTimelineRepository
+
+    @RepositoryScope
+    fun userListRepository(): UserListRepository
 
     @RepositoryScope
     fun tweetRepository(): TweetRepository
+
+    @RepositoryScope
+    fun userRepository(): UserRepository
+
+    @RepositoryScope
+    fun memberListListRepository(): MemberListListRepository
+
+    @RepositoryScope
+    fun relationshipRepository() : RelationshipRepository
 
     @Subcomponent.Builder
     interface Builder {

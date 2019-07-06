@@ -11,8 +11,10 @@ import com.freshdigitable.udonroad2.model.RepositoryScope
 import com.freshdigitable.udonroad2.model.TweetListItem
 import dagger.Module
 import dagger.Provides
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class TweetRepository @Inject constructor(
@@ -30,7 +32,8 @@ class TweetRepository @Inject constructor(
                         originalId = t.id,
                         originalUser = t.user,
                         body = t,
-                        quoted = null) as TweetListItem?
+                        quoted = null
+                    ) as TweetListItem?
                 }
             } else {
                 liveData.apply { value = item }
@@ -39,17 +42,19 @@ class TweetRepository @Inject constructor(
     }
 
     private fun fetchTweet(id: Long) {
-        GlobalScope.launch {
-            val tweet = networkAccess { restClient.fetchTweet(id) }
-            diskAccess { dao.addTweet(tweet) }
+        GlobalScope.launch(Dispatchers.Default) {
+            val tweet = restClient.fetchTweet(id)
+            withContext(Dispatchers.IO) { dao.addTweet(tweet) }
         }
     }
 }
 
-@Module(includes = [
-    DaoModule::class,
-    TwitterModule::class
-])
+@Module(
+    includes = [
+        DaoModule::class,
+        TwitterModule::class
+    ]
+)
 object TweetRepositoryModule {
     @Provides
     @RepositoryScope

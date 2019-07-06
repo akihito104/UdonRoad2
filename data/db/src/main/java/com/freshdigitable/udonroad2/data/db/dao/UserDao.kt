@@ -16,13 +16,74 @@
 
 package com.freshdigitable.udonroad2.data.db.dao
 
+import androidx.lifecycle.LiveData
+import androidx.paging.DataSource
+import androidx.room.ColumnInfo
 import androidx.room.Dao
+import androidx.room.Entity
+import androidx.room.ForeignKey
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
+import androidx.room.PrimaryKey
+import androidx.room.Query
+import androidx.room.Transaction
+import com.freshdigitable.udonroad2.data.db.dbview.UserListDbView
 import com.freshdigitable.udonroad2.data.db.entity.UserEntity
 
 @Dao
 abstract class UserDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    abstract fun addUsers(users: List<UserEntity>)
+    abstract suspend fun addUsers(users: List<UserEntity>)
+
+    @Query("SELECT * FROM UserEntity WHERE id = :id")
+    abstract fun getUser(id: Long): LiveData<UserEntity?>
+
+    @Transaction
+    open suspend fun addUsers(entities: List<UserEntity>, owner: String? = null) {
+        addUsers(entities)
+        if (owner != null) {
+            val listEntities = entities.map {
+                UserListEntity(userId = it.id, owner = owner)
+            }
+            addUserListEntities(listEntities)
+        }
+    }
+
+    @Query(
+        """
+        SELECT i.*
+        FROM user_list AS l
+        INNER JOIN user_list_item AS i ON l.user_id = i.id
+        WHERE owner = :owner
+        ORDER BY l.id"""
+    )
+    abstract fun getUserList(owner: String): DataSource.Factory<Int, UserListDbView>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    abstract suspend fun addUserListEntities(entities: List<UserListEntity>)
+
+    @Query("DELETE FROM user_list WHERE owner = :owner")
+    abstract suspend fun clear(owner: String)
 }
+
+@Entity(
+    tableName = "user_list",
+    foreignKeys = [
+        ForeignKey(
+            entity = UserEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["user_id"]
+        )
+    ]
+)
+data class UserListEntity(
+    @PrimaryKey(autoGenerate = true)
+    @ColumnInfo(name = "id")
+    val id: Int = 0,
+
+    @ColumnInfo(name = "user_id", index = true)
+    val userId: Long,
+
+    @ColumnInfo(name = "owner")
+    val owner: String
+)

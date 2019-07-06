@@ -1,0 +1,9 @@
+<resources>
+    <string name="user_tab_tweet">ツイート\n%1$s</string>
+    <string name="user_tab_fav">お気に入り\n%1$s</string>
+    <string name="user_tab_media">メディア</string>
+    <string name="user_tab_follower">フォロワー\n%1$s</string>
+    <string name="user_tab_following">フォロー中\n%1$s</string>
+    <string name="user_tab_listed">リスト\n%1$s</string>
+    <string name="following">フォロー中</string>
+</resources>
