@@ -33,6 +33,7 @@
                     app:relationship="@{viewModel.relationship}"
                     />
                 <androidx.appcompat.widget.Toolbar
+                    android:id="@+id/user_toolbar"
                     android:layout_width="match_parent"
                     android:layout_height="?attr/actionBarSize"
                     app:layout_collapseMode="pin"

@@ -34,9 +34,66 @@ class RelationshipRepository @Inject constructor(
     private fun fetchFriendship(targetUserId: Long) {
         GlobalScope.launch {
             val f = restClient.fetchFriendship(targetUserId)
-            withContext(Dispatchers.IO) {
-                dao.addRelationship(f)
+            dao.addRelationship(f)
+        }
+    }
+
+    fun updateFollowingStatus(targetUserId: Long, isFollowing: Boolean) {
+        GlobalScope.launch {
+            val user = if (isFollowing) {
+                restClient.createFriendship(targetUserId)
+            } else {
+                restClient.destroyFriendship(targetUserId)
             }
+            withContext(Dispatchers.IO) {
+                dao.updateFollowingStatus(user.id, isFollowing)
+            }
+        }
+    }
+
+    fun updateMutingStatus(targetUserId: Long, isMuting: Boolean) {
+        GlobalScope.launch {
+            val user = if (isMuting) {
+                restClient.createMute(targetUserId)
+            } else {
+                restClient.destroyMute(targetUserId)
+            }
+            withContext(Dispatchers.IO) {
+                dao.updateMutingStatus(user.id, isMuting)
+            }
+        }
+    }
+
+    fun updateBlockingStatus(targetUserId: Long, isBlocking: Boolean) {
+        GlobalScope.launch {
+            val user = if (isBlocking) {
+                restClient.createBlock(targetUserId)
+            } else {
+                restClient.destroyBlock(targetUserId)
+            }
+            withContext(Dispatchers.IO) {
+                dao.updateBlockingStatus(user.id, isBlocking)
+            }
+        }
+    }
+
+    fun updateWantRetweetStatus(currentRelation: Relationship, wantRetweets: Boolean) {
+        GlobalScope.launch {
+            val updated = restClient.updateFriendship(
+                currentRelation.userId,
+                currentRelation.notificationsEnabled,
+                wantRetweets
+            )
+            withContext(Dispatchers.IO) {
+                dao.updateWantRetweetsStatus(updated.userId, updated.wantRetweets)
+            }
+        }
+    }
+
+    fun reportSpam(userId: Long) {
+        GlobalScope.launch {
+            val user = restClient.reportSpam(userId)
+            dao.updateBlockingStatus(user.id, false)
         }
     }
 }

@@ -68,6 +68,26 @@ class UserViewModel(
         val curr = requireNotNull(currentPage.value)
         _fabVisible.value = map[curr] != null
     }
+
+    fun updateFollowingStatus(following: Boolean) {
+        relationshipRepository.updateFollowingStatus(userId.value!!, following)
+    }
+
+    fun updateBlockingStatus(blocking: Boolean) {
+        relationshipRepository.updateBlockingStatus(userId.value!!, blocking)
+    }
+
+    fun updateMutingStatus(muting: Boolean) {
+        relationshipRepository.updateMutingStatus(userId.value!!, muting)
+    }
+
+    fun updateWantRetweet(wantRetweet: Boolean) {
+        relationshipRepository.updateWantRetweetStatus(relationship.value!!, wantRetweet)
+    }
+
+    fun reportForSpam() {
+        relationshipRepository.reportSpam(userId.value!!)
+    }
 }
 
 @Module
