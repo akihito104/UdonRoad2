@@ -32,7 +32,7 @@ import org.threeten.bp.Instant
     FROM TweetEntityDb
     INNER JOIN view_user_in_tweet AS u ON TweetEntityDb.user_id = u.id
 """)
-data class Tweet(
+internal data class Tweet(
     @ColumnInfo(name = "id")
     override val id: Long,
 
@@ -88,7 +88,7 @@ data class Tweet(
     INNER JOIN original ON original.original_id = structured_tweet.original_id
     LEFT OUTER JOIN quoted ON quoted.qt_id = structured_tweet.quoted_item_id
 """)
-data class TweetListItem(
+internal data class TweetListItem(
     @ColumnInfo(name = "original_id")
     override val originalId: Long,
 

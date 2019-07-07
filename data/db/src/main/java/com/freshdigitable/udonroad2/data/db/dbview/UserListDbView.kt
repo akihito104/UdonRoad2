@@ -10,7 +10,7 @@ import com.freshdigitable.udonroad2.model.UserListItem
      follower_count, following_count, verified, is_protected
      FROM UserEntity"""
 )
-data class UserListDbView(
+internal data class UserListDbView(
     @ColumnInfo(name = "id")
     override val id: Long,
 

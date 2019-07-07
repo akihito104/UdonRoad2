@@ -15,6 +15,8 @@ import com.freshdigitable.udonroad2.data.db.dbview.MemberListDbView
 import com.freshdigitable.udonroad2.data.db.entity.MemberListEntity
 import com.freshdigitable.udonroad2.data.db.ext.toEntity
 import com.freshdigitable.udonroad2.model.MemberList
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @Dao
 abstract class MemberListDao(
@@ -27,10 +29,13 @@ abstract class MemberListDao(
         WHERE l.owner = :owner
         ORDER BY l.`order` ASC"""
     )
-    abstract fun getMemberList(owner: String): DataSource.Factory<Int, MemberListDbView>
+    internal abstract fun getMemberList(owner: String): DataSource.Factory<Int, MemberListDbView>
 
     @Transaction
-    open suspend fun addMemberList(entities: List<MemberList>, owner: String?) {
+    internal open suspend fun addMemberList(
+        entities: List<MemberList>,
+        owner: String?
+    ) = withContext(Dispatchers.IO) {
         val users = entities.map { it.user.toEntity() }
         val memberLists = entities.map { it.toEntity() }
         db.userDao().addUsers(users)
@@ -45,10 +50,10 @@ abstract class MemberListDao(
     }
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    abstract suspend fun addMemberListEntities(entities: List<MemberListEntity>)
+    internal abstract suspend fun addMemberListEntities(entities: List<MemberListEntity>)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    abstract suspend fun addMemberListListEntities(entities: List<MemberListListEntity>)
+    internal abstract suspend fun addMemberListListEntities(entities: List<MemberListListEntity>)
 
     @Query("DELETE FROM member_list_list WHERE owner = :owner")
     abstract suspend fun clean(owner: String)
@@ -75,7 +80,7 @@ internal fun MemberList.toEntity(): MemberListEntity {
             childColumns = ["member_list_id"]
         )]
 )
-data class MemberListListEntity(
+internal data class MemberListListEntity(
     @ColumnInfo(name = "member_list_id", index = true)
     val memberListId: Long,
 

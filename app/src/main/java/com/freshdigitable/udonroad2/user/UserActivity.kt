@@ -1,4 +1,4 @@
-package com.freshdigitable.udonroad2
+package com.freshdigitable.udonroad2.user
 
 import android.content.Context
 import android.content.Intent
@@ -9,19 +9,20 @@ import androidx.annotation.IdRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil.setContentView
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.observe
 import androidx.viewpager.widget.ViewPager
+import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.databinding.ActivityUserBinding
 import com.freshdigitable.udonroad2.model.TweetingUser
 import com.freshdigitable.udonroad2.model.ViewModelKey
 import com.freshdigitable.udonroad2.navigation.Navigation
 import com.freshdigitable.udonroad2.navigation.NavigationDispatcher
-import com.freshdigitable.udonroad2.timeline.MemberListListFragmentModule
-import com.freshdigitable.udonroad2.timeline.TimelineFragmentModule
-import com.freshdigitable.udonroad2.timeline.UserListFragmentModule
+import com.freshdigitable.udonroad2.timeline.fragment.MemberListListFragmentModule
+import com.freshdigitable.udonroad2.timeline.fragment.TimelineFragmentModule
+import com.freshdigitable.udonroad2.timeline.fragment.UserListFragmentModule
 import com.google.android.material.appbar.AppBarLayout
 import dagger.Binds
 import dagger.Module
@@ -44,9 +45,13 @@ class UserActivity : HasSupportFragmentInjector, AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
         super.onCreate(savedInstanceState)
-        val binding = setContentView<ActivityUserBinding>(this, R.layout.activity_user)
+        val binding = setContentView<ActivityUserBinding>(
+            this,
+            R.layout.activity_user
+        )
         viewModel = ViewModelProviders.of(this, viewModelFactory).get(UserViewModel::class.java)
-        val adapter = UserFragmentPagerAdapter(supportFragmentManager, user)
+        val adapter =
+            UserFragmentPagerAdapter(supportFragmentManager, user)
 
         binding.setup(viewModel, adapter)
         viewModel.setUserId(user.id)
@@ -64,7 +69,7 @@ class UserActivity : HasSupportFragmentInjector, AppCompatActivity() {
             viewModel.setAppBarScrollRate(abs(offset).toFloat() / appBar.totalScrollRange.toFloat())
         })
 
-        viewModel.user.observe(this@UserActivity, Observer { u ->
+        viewModel.user.observe(this@UserActivity) { u ->
             adapter.apply {
                 titles.clear()
                 titles.addAll(UserPage.values().map { p ->
@@ -75,7 +80,7 @@ class UserActivity : HasSupportFragmentInjector, AppCompatActivity() {
                     }
                 })
             }.notifyDataSetChanged()
-        })
+        }
         userPager.apply {
             this.adapter = adapter
             addOnPageChangeListener(object : ViewPager.SimpleOnPageChangeListener() {
@@ -88,9 +93,9 @@ class UserActivity : HasSupportFragmentInjector, AppCompatActivity() {
         userTabContainer.setupWithViewPager(userPager)
 
         this.viewModel = viewModel
-        viewModel.relationship.observe(this@UserActivity, Observer {
+        viewModel.relationship.observe(this@UserActivity) {
             invalidateOptionsMenu()
-        })
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -101,9 +106,18 @@ class UserActivity : HasSupportFragmentInjector, AppCompatActivity() {
     override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
         val r = viewModel.relationship.value ?: return false
         menu?.run {
-            switchVisibility(R.id.action_follow, R.id.action_unfollow, !r.following)
-            switchVisibility(R.id.action_block, R.id.action_unblock, !r.blocking)
-            switchVisibility(R.id.action_mute, R.id.action_unmute, !r.muting)
+            switchVisibility(
+                R.id.action_follow,
+                R.id.action_unfollow, !r.following
+            )
+            switchVisibility(
+                R.id.action_block,
+                R.id.action_unblock, !r.blocking
+            )
+            switchVisibility(
+                R.id.action_mute,
+                R.id.action_unmute, !r.muting
+            )
             switchVisibility(
                 R.id.action_block_retweet,
                 R.id.action_unblock_retweet,
@@ -180,7 +194,12 @@ abstract class UserActivityModule {
             activity: UserActivity,
             viewModelFactory: ViewModelProvider.Factory
         ): Navigation<UserActivityState> {
-            return UserActivityNavigation(navigator, activity, 0, viewModelFactory)
+            return UserActivityNavigation(
+                navigator,
+                activity,
+                0,
+                viewModelFactory
+            )
         }
     }
 }

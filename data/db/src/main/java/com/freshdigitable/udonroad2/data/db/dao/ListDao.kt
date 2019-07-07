@@ -8,6 +8,8 @@ import com.freshdigitable.udonroad2.model.TweetEntity
 import com.freshdigitable.udonroad2.model.TweetListItem
 import com.freshdigitable.udonroad2.model.User
 import com.freshdigitable.udonroad2.model.UserListItem
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 interface ListDao<E, I> {
     fun getList(owner: String): DataSource.Factory<Int, I>
@@ -22,11 +24,13 @@ class TweetListDao(
         return dao.getTimeline(owner).map { it as TweetListItem }
     }
 
-    override suspend fun addEntities(entities: List<TweetEntity>, owner: String?) {
+    override suspend fun addEntities(
+        entities: List<TweetEntity>, owner: String?
+    ) = withContext(Dispatchers.IO) {
         dao.addTweets(entities, owner)
     }
 
-    override suspend fun clean(owner: String) {
+    override suspend fun clean(owner: String) = withContext(Dispatchers.IO) {
         dao.clear(owner)
     }
 }
@@ -38,11 +42,13 @@ class UserListDao(
         return dao.getUserList(owner).map { it as UserListItem }
     }
 
-    override suspend fun addEntities(entities: List<User>, owner: String?) {
+    override suspend fun addEntities(
+        entities: List<User>, owner: String?
+    ) = withContext(Dispatchers.IO) {
         dao.addUsers(entities.map { it.toEntity() }, owner)
     }
 
-    override suspend fun clean(owner: String) {
+    override suspend fun clean(owner: String) = withContext(Dispatchers.IO) {
         dao.clear(owner)
     }
 }
@@ -54,11 +60,13 @@ class MemberListListDao(
         return dao.getMemberList(owner).map { it as MemberListItem }
     }
 
-    override suspend fun addEntities(entities: List<MemberList>, owner: String?) {
+    override suspend fun addEntities(
+        entities: List<MemberList>, owner: String?
+    ) = withContext(Dispatchers.IO) {
         dao.addMemberList(entities, owner)
     }
 
-    override suspend fun clean(owner: String) {
+    override suspend fun clean(owner: String) = withContext(Dispatchers.IO) {
         dao.clean(owner)
     }
 }

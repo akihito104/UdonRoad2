@@ -1,15 +1,17 @@
-package com.freshdigitable.udonroad2.timeline
+package com.freshdigitable.udonroad2.timeline.viewmodel
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.switchMap
 import androidx.paging.PagedList
 import com.freshdigitable.udonroad2.data.repository.MemberListListRepository
 import com.freshdigitable.udonroad2.data.repository.RepositoryComponent
 import com.freshdigitable.udonroad2.model.MemberListItem
 import com.freshdigitable.udonroad2.model.TweetingUser
 import com.freshdigitable.udonroad2.navigation.NavigationDispatcher
+import com.freshdigitable.udonroad2.timeline.ListItemLoadable
+import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import dagger.Module
 import dagger.Provides
 
@@ -25,7 +27,7 @@ class MemberListListViewModel(
     }
 
     private val query = MutableLiveData<ListOwner?>()
-    private val listItem = Transformations.switchMap(query) { q ->
+    private val listItem = query.switchMap { q ->
         when {
             q != null -> repository.getList("${q.id}", q.query)
             else -> MutableLiveData()
@@ -42,7 +44,9 @@ class MemberListListViewModel(
     }
 
     fun onBodyItemClicked(memberList: MemberListItem) {
-        navigator.postEvent(TimelineEvent.MemberListClicked(memberList))
+        navigator.postEvent(
+            TimelineEvent.MemberListClicked(memberList)
+        )
     }
 
     override fun onCleared() {

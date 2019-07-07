@@ -6,7 +6,7 @@
     <data>
         <variable
             name="viewModel"
-            type="com.freshdigitable.udonroad2.MainViewModel"
+            type="com.freshdigitable.udonroad2.main.MainViewModel"
             />
     </data>
 

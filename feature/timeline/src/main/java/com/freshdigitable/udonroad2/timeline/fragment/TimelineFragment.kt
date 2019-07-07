@@ -1,4 +1,4 @@
-package com.freshdigitable.udonroad2.timeline
+package com.freshdigitable.udonroad2.timeline.fragment
 
 import androidx.lifecycle.ViewModel
 import androidx.paging.PagedListAdapter
@@ -6,6 +6,8 @@ import com.freshdigitable.udonroad2.model.FragmentScope
 import com.freshdigitable.udonroad2.model.TweetListItem
 import com.freshdigitable.udonroad2.model.ViewModelKey
 import com.freshdigitable.udonroad2.timeline.listadapter.TimelineAdapter
+import com.freshdigitable.udonroad2.timeline.viewmodel.TimelineViewModel
+import com.freshdigitable.udonroad2.timeline.viewmodel.TimelineViewModelModule
 import dagger.Binds
 import dagger.Module
 import dagger.android.ContributesAndroidInjector

@@ -6,7 +6,7 @@ import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.freshdigitable.udonroad2.model.MemberListItem
-import com.freshdigitable.udonroad2.timeline.MemberListListViewModel
+import com.freshdigitable.udonroad2.timeline.viewmodel.MemberListListViewModel
 import com.freshdigitable.udonroad2.timeline.R
 import com.freshdigitable.udonroad2.timeline.databinding.ViewMemberListItemBinding
 

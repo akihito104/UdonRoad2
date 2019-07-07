@@ -16,7 +16,7 @@ import com.freshdigitable.udonroad2.model.Relationship
         )
     ]
 )
-data class RelationshipEntity(
+internal data class RelationshipEntity(
     @PrimaryKey
     @ColumnInfo(name = "user_id", index = true)
     override val userId: Long,

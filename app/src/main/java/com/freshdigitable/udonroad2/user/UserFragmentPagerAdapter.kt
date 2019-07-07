@@ -1,16 +1,17 @@
-package com.freshdigitable.udonroad2
+package com.freshdigitable.udonroad2.user
 
 import androidx.annotation.Keep
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentStatePagerAdapter
+import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.model.ListQuery
 import com.freshdigitable.udonroad2.model.TweetingUser
 import com.freshdigitable.udonroad2.model.User
-import com.freshdigitable.udonroad2.timeline.ListItemFragment
-import com.freshdigitable.udonroad2.timeline.MemberListListFragment
-import com.freshdigitable.udonroad2.timeline.TimelineFragment
-import com.freshdigitable.udonroad2.timeline.UserListFragment
+import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragment
+import com.freshdigitable.udonroad2.timeline.fragment.MemberListListFragment
+import com.freshdigitable.udonroad2.timeline.fragment.TimelineFragment
+import com.freshdigitable.udonroad2.timeline.fragment.UserListFragment
 
 class UserFragmentPagerAdapter(
     fragmentManager: FragmentManager,

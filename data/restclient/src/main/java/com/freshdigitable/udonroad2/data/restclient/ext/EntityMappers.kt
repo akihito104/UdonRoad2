@@ -2,8 +2,8 @@ package com.freshdigitable.udonroad2.data.restclient.ext
 
 import android.graphics.Color
 import com.freshdigitable.udonroad2.data.restclient.PagedResponseList
-import com.freshdigitable.udonroad2.data.restclient.TweetEntityRest
-import com.freshdigitable.udonroad2.data.restclient.UserEntityRest
+import com.freshdigitable.udonroad2.data.restclient.data.TweetEntityRest
+import com.freshdigitable.udonroad2.data.restclient.data.UserEntityRest
 import com.freshdigitable.udonroad2.model.MemberList
 import com.freshdigitable.udonroad2.model.TweetEntity
 import org.threeten.bp.Instant

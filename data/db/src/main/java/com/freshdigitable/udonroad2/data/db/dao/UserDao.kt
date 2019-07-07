@@ -17,6 +17,7 @@
 package com.freshdigitable.udonroad2.data.db.dao
 
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.map
 import androidx.paging.DataSource
 import androidx.room.ColumnInfo
 import androidx.room.Dao
@@ -29,17 +30,20 @@ import androidx.room.Query
 import androidx.room.Transaction
 import com.freshdigitable.udonroad2.data.db.dbview.UserListDbView
 import com.freshdigitable.udonroad2.data.db.entity.UserEntity
+import com.freshdigitable.udonroad2.model.User
 
 @Dao
 abstract class UserDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    abstract suspend fun addUsers(users: List<UserEntity>)
+    internal abstract suspend fun addUsers(users: List<UserEntity>)
 
     @Query("SELECT * FROM UserEntity WHERE id = :id")
-    abstract fun getUser(id: Long): LiveData<UserEntity?>
+    internal abstract fun getUser(id: Long): LiveData<UserEntity?>
+
+    open fun getUserById(id: Long): LiveData<User?> = getUser(id).map { it }
 
     @Transaction
-    open suspend fun addUsers(entities: List<UserEntity>, owner: String? = null) {
+    internal open suspend fun addUsers(entities: List<UserEntity>, owner: String? = null) {
         addUsers(entities)
         if (owner != null) {
             val listEntities = entities.map {
@@ -57,10 +61,10 @@ abstract class UserDao {
         WHERE owner = :owner
         ORDER BY l.id"""
     )
-    abstract fun getUserList(owner: String): DataSource.Factory<Int, UserListDbView>
+    internal abstract fun getUserList(owner: String): DataSource.Factory<Int, UserListDbView>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    abstract suspend fun addUserListEntities(entities: List<UserListEntity>)
+    internal abstract suspend fun addUserListEntities(entities: List<UserListEntity>)
 
     @Query("DELETE FROM user_list WHERE owner = :owner")
     abstract suspend fun clear(owner: String)
@@ -76,7 +80,7 @@ abstract class UserDao {
         )
     ]
 )
-data class UserListEntity(
+internal data class UserListEntity(
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "id")
     val id: Int = 0,

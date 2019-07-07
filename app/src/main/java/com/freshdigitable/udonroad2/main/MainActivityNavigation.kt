@@ -1,4 +1,4 @@
-package com.freshdigitable.udonroad2
+package com.freshdigitable.udonroad2.main
 
 import androidx.annotation.IdRes
 import androidx.appcompat.app.AppCompatActivity
@@ -9,10 +9,11 @@ import com.freshdigitable.udonroad2.navigation.FragmentContainerState
 import com.freshdigitable.udonroad2.navigation.Navigation
 import com.freshdigitable.udonroad2.navigation.NavigationDispatcher
 import com.freshdigitable.udonroad2.navigation.NavigationEvent
-import com.freshdigitable.udonroad2.timeline.ListItemFragment
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
-import com.freshdigitable.udonroad2.timeline.TimelineFragment
-import com.freshdigitable.udonroad2.timeline.TweetDetailFragment
+import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragment
+import com.freshdigitable.udonroad2.timeline.fragment.TimelineFragment
+import com.freshdigitable.udonroad2.timeline.fragment.TweetDetailFragment
+import com.freshdigitable.udonroad2.user.UserActivity
 
 class MainActivityNavigation(
     dispatcher: NavigationDispatcher,
@@ -68,7 +69,9 @@ class MainActivityNavigation(
             }
             is MainActivityState.TweetDetail -> {
                 viewModel.setFabVisible(false)
-                replace(TweetDetailFragment.newInstance(s.tweetId), BACK_STACK_TWEET_DETAIL)
+                replace(TweetDetailFragment.newInstance(s.tweetId),
+                    BACK_STACK_TWEET_DETAIL
+                )
             }
             MainActivityState.Halt -> activity.finish()
         }

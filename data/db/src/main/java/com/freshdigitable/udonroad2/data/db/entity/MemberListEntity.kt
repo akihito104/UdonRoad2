@@ -10,7 +10,7 @@ import androidx.room.PrimaryKey
         ForeignKey(entity = UserEntity::class, parentColumns = ["id"], childColumns = ["user_id"])
     ]
 )
-data class MemberListEntity(
+internal data class MemberListEntity(
     @PrimaryKey
     @ColumnInfo(name = "id")
     val id: Long,

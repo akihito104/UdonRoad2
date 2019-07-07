@@ -14,31 +14,38 @@
  * limitations under the License.
  */
 
-package com.freshdigitable.udonroad2.timeline
+package com.freshdigitable.udonroad2.timeline.viewmodel
 
 import android.util.Log
 import androidx.databinding.ObservableField
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.switchMap
 import androidx.paging.PagedList
 import com.freshdigitable.udonroad2.data.repository.RepositoryComponent
 import com.freshdigitable.udonroad2.data.repository.TweetTimelineRepository
 import com.freshdigitable.udonroad2.model.ListQuery
 import com.freshdigitable.udonroad2.model.TweetListItem
 import com.freshdigitable.udonroad2.navigation.NavigationDispatcher
+import com.freshdigitable.udonroad2.timeline.ListItemLoadable
+import com.freshdigitable.udonroad2.timeline.SelectedItemId
+import com.freshdigitable.udonroad2.timeline.TimelineEvent
+import com.freshdigitable.udonroad2.timeline.TweetListEventListener
+import com.freshdigitable.udonroad2.timeline.TweetListItemClickListener
 import dagger.Module
 import dagger.Provides
 
 class TimelineViewModel(
     private val navigator: NavigationDispatcher,
     private val homeRepository: TweetTimelineRepository
-) : ListItemLoadable<TweetListItem>, TweetListItemClickListener, TweetListEventListener, ViewModel() {
+) : ListItemLoadable<TweetListItem>,
+    TweetListItemClickListener,
+    TweetListEventListener, ViewModel() {
 
     private val listOwner = MutableLiveData<ListOwner>()
 
-    val timeline: LiveData<PagedList<TweetListItem>> = Transformations.switchMap(listOwner) {
+    val timeline: LiveData<PagedList<TweetListItem>> = listOwner.switchMap {
         homeRepository.getList("${it.id}", it.query)
     }
 
@@ -66,7 +73,9 @@ class TimelineViewModel(
             selectedItemId.get() -> selectedItemId.set(null)
             else -> selectedItemId.set(selected)
         }
-        navigator.postEvent(TimelineEvent.TweetItemSelected(selectedItemId.get()))
+        navigator.postEvent(
+            TimelineEvent.TweetItemSelected(selectedItemId.get())
+        )
     }
 
     override fun onBodyItemClicked(item: TweetListItem) {
@@ -76,7 +85,9 @@ class TimelineViewModel(
 
     override fun onQuoteItemClicked(item: TweetListItem) {
         Log.d("TimelineViewModel", "onQuoteItemClicked: ${item.quoted?.id}")
-        updateSelectedItem(SelectedItemId(item.originalId, item.quoted?.id))
+        updateSelectedItem(
+            SelectedItemId(item.originalId, item.quoted?.id)
+        )
     }
 
     override fun onUserIconClicked(item: TweetListItem) {
@@ -97,6 +108,9 @@ object TimelineViewModelModule {
         navigator: NavigationDispatcher,
         repositories: RepositoryComponent.Builder
     ): TimelineViewModel {
-        return TimelineViewModel(navigator, repositories.build().tweetTimelineRepository())
+        return TimelineViewModel(
+            navigator,
+            repositories.build().tweetTimelineRepository()
+        )
     }
 }

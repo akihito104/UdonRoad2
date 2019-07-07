@@ -1,7 +1,6 @@
 package com.freshdigitable.udonroad2.data.repository
 
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.Transformations
 import com.freshdigitable.udonroad2.data.db.DaoModule
 import com.freshdigitable.udonroad2.data.db.dao.UserDao
 import com.freshdigitable.udonroad2.model.RepositoryScope
@@ -12,14 +11,14 @@ import dagger.Provides
 class UserRepository(
     private val dao: UserDao
 ) {
-    fun getUser(
-        id: Long
-    ): LiveData<User?> = Transformations.map(dao.getUser(id)) { it as User? }
+    fun getUser(id: Long): LiveData<User?> = dao.getUserById(id)
 }
 
-@Module(includes = [
-    DaoModule::class
-])
+@Module(
+    includes = [
+        DaoModule::class
+    ]
+)
 object UserRepositoryModule {
     @Provides
     @RepositoryScope

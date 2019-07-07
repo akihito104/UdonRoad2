@@ -7,7 +7,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.freshdigitable.udonroad2.model.UserListItem
 import com.freshdigitable.udonroad2.timeline.R
-import com.freshdigitable.udonroad2.timeline.UserListViewModel
+import com.freshdigitable.udonroad2.timeline.viewmodel.UserListViewModel
 import com.freshdigitable.udonroad2.timeline.databinding.ViewUserListItemBinding
 
 class UserListAdapter(

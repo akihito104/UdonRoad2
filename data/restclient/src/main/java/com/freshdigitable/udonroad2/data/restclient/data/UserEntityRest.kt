@@ -1,8 +1,8 @@
-package com.freshdigitable.udonroad2.data.restclient
+package com.freshdigitable.udonroad2.data.restclient.data
 
 import com.freshdigitable.udonroad2.model.User
 
-data class UserEntityRest(
+internal data class UserEntityRest(
     override val id: Long,
     override val name: String,
     override val screenName: String,

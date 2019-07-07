@@ -27,7 +27,7 @@
             />
         <variable
             name="viewModel"
-            type="com.freshdigitable.udonroad2.timeline.MemberListListViewModel"
+            type="com.freshdigitable.udonroad2.timeline.viewmodel.MemberListListViewModel"
             />
     </data>
 

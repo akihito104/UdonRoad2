@@ -1,13 +1,14 @@
-package com.freshdigitable.udonroad2.timeline
+package com.freshdigitable.udonroad2.timeline.viewmodel
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.switchMap
 import com.freshdigitable.udonroad2.data.repository.RepositoryComponent
 import com.freshdigitable.udonroad2.data.repository.TweetRepository
 import com.freshdigitable.udonroad2.model.TweetListItem
 import com.freshdigitable.udonroad2.navigation.NavigationDispatcher
+import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import dagger.Module
 import dagger.Provides
 import javax.inject.Inject
@@ -18,7 +19,7 @@ class TweetDetailViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val targetId: MutableLiveData<Long> = MutableLiveData()
-    val tweetItem: LiveData<TweetListItem?> = Transformations.switchMap(targetId) {
+    val tweetItem: LiveData<TweetListItem?> = targetId.switchMap {
         repository.getTweetItem(it)
     }
 
@@ -28,7 +29,9 @@ class TweetDetailViewModel @Inject constructor(
 
     fun onOriginalUserClicked() {
         val user = tweetItem.value?.originalUser ?: return
-        navigator.postEvent(TimelineEvent.RetweetUserClicked(user))
+        navigator.postEvent(
+            TimelineEvent.RetweetUserClicked(user)
+        )
     }
 
     fun onBodyUserClicked() {
@@ -45,6 +48,9 @@ object TweetDetailViewModelModule {
         navigator: NavigationDispatcher,
         repositories: RepositoryComponent.Builder
     ): TweetDetailViewModel {
-        return TweetDetailViewModel(navigator, repositories.build().tweetRepository())
+        return TweetDetailViewModel(
+            navigator,
+            repositories.build().tweetRepository()
+        )
     }
 }
