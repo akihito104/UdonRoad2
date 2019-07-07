@@ -1,4 +1,4 @@
-package com.freshdigitable.udonroad2.timeline
+package com.freshdigitable.udonroad2.timeline.viewmodel
 
 import android.util.Log
 import androidx.lifecycle.LiveData
@@ -10,6 +10,8 @@ import com.freshdigitable.udonroad2.data.repository.RepositoryComponent
 import com.freshdigitable.udonroad2.data.repository.UserListRepository
 import com.freshdigitable.udonroad2.model.UserListItem
 import com.freshdigitable.udonroad2.navigation.NavigationDispatcher
+import com.freshdigitable.udonroad2.timeline.ListItemLoadable
+import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import dagger.Module
 import dagger.Provides
 
@@ -59,6 +61,9 @@ object UserListViewModelModule {
         navigator: NavigationDispatcher,
         repositories: RepositoryComponent.Builder
     ): UserListViewModel {
-        return UserListViewModel(navigator, repositories.build().userListRepository())
+        return UserListViewModel(
+            navigator,
+            repositories.build().userListRepository()
+        )
     }
 }

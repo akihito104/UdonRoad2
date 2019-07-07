@@ -1,4 +1,4 @@
-package com.freshdigitable.udonroad2.timeline
+package com.freshdigitable.udonroad2.timeline.fragment
 
 import android.content.Context
 import android.os.Bundle
@@ -13,6 +13,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import androidx.lifecycle.observe
 import com.freshdigitable.udonroad2.timeline.databinding.FragmentDetailBinding
+import com.freshdigitable.udonroad2.timeline.viewmodel.TweetDetailViewModel
 import dagger.android.support.AndroidSupportInjection
 import javax.inject.Inject
 

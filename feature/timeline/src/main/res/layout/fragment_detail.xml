@@ -10,7 +10,7 @@
 
         <variable
             name="viewModel"
-            type="com.freshdigitable.udonroad2.timeline.TweetDetailViewModel"
+            type="com.freshdigitable.udonroad2.timeline.viewmodel.TweetDetailViewModel"
             />
     </data>
 

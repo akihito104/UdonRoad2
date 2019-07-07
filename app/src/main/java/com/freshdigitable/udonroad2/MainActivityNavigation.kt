@@ -9,10 +9,10 @@ import com.freshdigitable.udonroad2.navigation.FragmentContainerState
 import com.freshdigitable.udonroad2.navigation.Navigation
 import com.freshdigitable.udonroad2.navigation.NavigationDispatcher
 import com.freshdigitable.udonroad2.navigation.NavigationEvent
-import com.freshdigitable.udonroad2.timeline.ListItemFragment
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
-import com.freshdigitable.udonroad2.timeline.TimelineFragment
-import com.freshdigitable.udonroad2.timeline.TweetDetailFragment
+import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragment
+import com.freshdigitable.udonroad2.timeline.fragment.TimelineFragment
+import com.freshdigitable.udonroad2.timeline.fragment.TweetDetailFragment
 
 class MainActivityNavigation(
     dispatcher: NavigationDispatcher,

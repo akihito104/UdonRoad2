@@ -1,4 +1,4 @@
-package com.freshdigitable.udonroad2.timeline
+package com.freshdigitable.udonroad2.timeline.fragment
 
 import android.content.Context
 import android.os.Bundle
@@ -15,7 +15,9 @@ import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.freshdigitable.udonroad2.model.ListQuery
+import com.freshdigitable.udonroad2.timeline.ListItemLoadable
 import com.freshdigitable.udonroad2.timeline.databinding.FragmentTimelineBinding
+import com.freshdigitable.udonroad2.timeline.viewmodel.ListOwner
 import dagger.android.support.AndroidSupportInjection
 import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
