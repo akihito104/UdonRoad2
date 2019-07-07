@@ -1,4 +1,4 @@
-package com.freshdigitable.udonroad2
+package com.freshdigitable.udonroad2.user
 
 import androidx.annotation.IdRes
 import androidx.lifecycle.ViewModelProvider
@@ -23,7 +23,10 @@ class UserActivityNavigation(
     override fun onEvent(event: NavigationEvent): UserActivityState? {
         when (event) {
             is TimelineEvent.TweetItemSelected -> viewModel.setSelectedItemId(event.selectedItemId)
-            is TimelineEvent.UserIconClicked -> UserActivity.start(activity, event.user)
+            is TimelineEvent.UserIconClicked -> UserActivity.start(
+                activity,
+                event.user
+            )
         }
         return null
     }

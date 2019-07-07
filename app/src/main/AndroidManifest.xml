@@ -19,12 +19,12 @@
         >
 
         <activity
-            android:name=".MainActivity"
+            android:name=".main.MainActivity"
             />
 
         <activity-alias
             android:name=".Launcher"
-            android:targetActivity=".MainActivity"
+            android:targetActivity=".main.MainActivity"
             >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
@@ -33,7 +33,7 @@
         </activity-alias>
 
         <activity
-            android:name=".UserActivity"
+            android:name=".user.UserActivity"
             android:theme="@style/AppTheme.NoActionBar"
             />
 

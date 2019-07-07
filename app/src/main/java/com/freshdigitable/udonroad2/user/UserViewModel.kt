@@ -1,4 +1,4 @@
-package com.freshdigitable.udonroad2
+package com.freshdigitable.udonroad2.user
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData

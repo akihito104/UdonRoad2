@@ -1,9 +1,10 @@
-package com.freshdigitable.udonroad2
+package com.freshdigitable.udonroad2.user
 
 import androidx.annotation.Keep
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentStatePagerAdapter
+import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.model.ListQuery
 import com.freshdigitable.udonroad2.model.TweetingUser
 import com.freshdigitable.udonroad2.model.User

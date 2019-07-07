@@ -7,7 +7,7 @@
     <data>
         <variable
             name="viewModel"
-            type="com.freshdigitable.udonroad2.UserViewModel"
+            type="com.freshdigitable.udonroad2.user.UserViewModel"
             />
     </data>
 

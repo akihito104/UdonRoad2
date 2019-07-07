@@ -1,4 +1,4 @@
-package com.freshdigitable.udonroad2
+package com.freshdigitable.udonroad2.user
 
 import android.content.Context
 import android.content.Intent
@@ -14,6 +14,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import androidx.lifecycle.observe
 import androidx.viewpager.widget.ViewPager
+import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.databinding.ActivityUserBinding
 import com.freshdigitable.udonroad2.model.TweetingUser
 import com.freshdigitable.udonroad2.model.ViewModelKey
@@ -44,9 +45,13 @@ class UserActivity : HasSupportFragmentInjector, AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
         super.onCreate(savedInstanceState)
-        val binding = setContentView<ActivityUserBinding>(this, R.layout.activity_user)
+        val binding = setContentView<ActivityUserBinding>(
+            this,
+            R.layout.activity_user
+        )
         viewModel = ViewModelProviders.of(this, viewModelFactory).get(UserViewModel::class.java)
-        val adapter = UserFragmentPagerAdapter(supportFragmentManager, user)
+        val adapter =
+            UserFragmentPagerAdapter(supportFragmentManager, user)
 
         binding.setup(viewModel, adapter)
         viewModel.setUserId(user.id)
@@ -101,9 +106,18 @@ class UserActivity : HasSupportFragmentInjector, AppCompatActivity() {
     override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
         val r = viewModel.relationship.value ?: return false
         menu?.run {
-            switchVisibility(R.id.action_follow, R.id.action_unfollow, !r.following)
-            switchVisibility(R.id.action_block, R.id.action_unblock, !r.blocking)
-            switchVisibility(R.id.action_mute, R.id.action_unmute, !r.muting)
+            switchVisibility(
+                R.id.action_follow,
+                R.id.action_unfollow, !r.following
+            )
+            switchVisibility(
+                R.id.action_block,
+                R.id.action_unblock, !r.blocking
+            )
+            switchVisibility(
+                R.id.action_mute,
+                R.id.action_unmute, !r.muting
+            )
             switchVisibility(
                 R.id.action_block_retweet,
                 R.id.action_unblock_retweet,
@@ -180,7 +194,12 @@ abstract class UserActivityModule {
             activity: UserActivity,
             viewModelFactory: ViewModelProvider.Factory
         ): Navigation<UserActivityState> {
-            return UserActivityNavigation(navigator, activity, 0, viewModelFactory)
+            return UserActivityNavigation(
+                navigator,
+                activity,
+                0,
+                viewModelFactory
+            )
         }
     }
 }

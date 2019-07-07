@@ -1,4 +1,4 @@
-package com.freshdigitable.udonroad2.data.restclient
+package com.freshdigitable.udonroad2.data.restclient.data
 
 import com.freshdigitable.udonroad2.model.TweetEntity
 import com.freshdigitable.udonroad2.model.User
