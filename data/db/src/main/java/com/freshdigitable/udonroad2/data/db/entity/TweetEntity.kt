@@ -43,7 +43,7 @@ import org.threeten.bp.Instant
         Index("retweeted_tweet_id")
     ]
 )
-class TweetEntityDb(
+internal class TweetEntityDb(
     @PrimaryKey
     @ColumnInfo(name = "id")
     val id: Long,

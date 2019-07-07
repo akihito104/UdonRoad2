@@ -22,7 +22,7 @@ import androidx.room.PrimaryKey
 import com.freshdigitable.udonroad2.model.User
 
 @Entity
-data class UserEntity(
+internal data class UserEntity(
     @PrimaryKey
     @ColumnInfo(name = "id")
     override val id: Long,

@@ -1,9 +1,7 @@
 package com.freshdigitable.udonroad2.data.repository
 
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.map
-import androidx.lifecycle.switchMap
+import androidx.lifecycle.MediatorLiveData
 import com.freshdigitable.udonroad2.data.db.DaoModule
 import com.freshdigitable.udonroad2.data.db.dao.TweetDao
 import com.freshdigitable.udonroad2.data.restclient.TweetApiClient
@@ -22,23 +20,13 @@ class TweetRepository @Inject constructor(
     private val restClient: TweetApiClient
 ) {
     fun getTweetItem(id: Long): LiveData<TweetListItem?> {
-        val liveData = MutableLiveData<TweetListItem?>()
-        return dao.findTweetItem(id).switchMap { item ->
-            if (item == null) {
+        val liveData = MediatorLiveData<TweetListItem?>()
+        liveData.addSource(dao.findTweetItemById(id)) {
+            if (it == null) {
                 fetchTweet(id)
-                dao.findTweet(id).map { tweet ->
-                    val t = tweet ?: return@map null
-                    com.freshdigitable.udonroad2.data.db.dbview.TweetListItem(
-                        originalId = t.id,
-                        originalUser = t.user,
-                        body = t,
-                        quoted = null
-                    ) as TweetListItem?
-                }
-            } else {
-                liveData.apply { value = item }
             }
         }
+        return liveData
     }
 
     private fun fetchTweet(id: Long) {

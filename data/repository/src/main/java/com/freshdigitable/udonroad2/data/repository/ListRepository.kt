@@ -10,10 +10,8 @@ import com.freshdigitable.udonroad2.data.db.dao.ListDao
 import com.freshdigitable.udonroad2.data.restclient.ListRestClient
 import com.freshdigitable.udonroad2.data.restclient.ListRestClientProvider
 import com.freshdigitable.udonroad2.model.ListQuery
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 interface ListRepository<I> {
     val loading: LiveData<Boolean>
@@ -90,13 +88,11 @@ abstract class ListRepositoryImpl<E, I>(
     private fun fetchTimeline(
         owner: String,
         block: suspend ListRestClient<ListQuery, E>.() -> List<E>
-    ) = GlobalScope.launch(Dispatchers.Default) {
+    ) = GlobalScope.launch {
         _loading.postValue(true)
         runCatching {
             val timeline = block(apiClient)
-            withContext(Dispatchers.IO) {
-                dao.addEntities(timeline, owner)
-            }
+            dao.addEntities(timeline, owner)
         }.onSuccess {
             _loading.postValue(false)
         }.onFailure { e ->

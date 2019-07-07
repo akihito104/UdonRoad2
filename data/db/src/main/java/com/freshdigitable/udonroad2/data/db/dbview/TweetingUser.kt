@@ -23,7 +23,7 @@ import com.freshdigitable.udonroad2.model.TweetingUser
 @DatabaseView(viewName = "view_user_in_tweet", value = """
     SELECT id, name, screen_name, icon_url FROM UserEntity
 """)
-data class TweetingUser(
+internal data class TweetingUser(
     @ColumnInfo(name = "id")
     override val id: Long,
 

@@ -14,7 +14,7 @@ import com.freshdigitable.udonroad2.model.MemberListItem
     FROM MemberListEntity AS m
     INNER JOIN view_user_in_tweet AS u ON m.user_id = u.id
 """, viewName = "view_member_list")
-data class MemberListDbView(
+internal data class MemberListDbView(
     @ColumnInfo(name = "id")
     override val id: Long,
 
