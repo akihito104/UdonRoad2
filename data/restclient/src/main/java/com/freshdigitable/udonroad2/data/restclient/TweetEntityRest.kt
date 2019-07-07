@@ -4,7 +4,7 @@ import com.freshdigitable.udonroad2.model.TweetEntity
 import com.freshdigitable.udonroad2.model.User
 import org.threeten.bp.Instant
 
-class TweetEntityRest(
+internal class TweetEntityRest(
     override val id: Long,
     override val text: String,
     override val retweetCount: Int,

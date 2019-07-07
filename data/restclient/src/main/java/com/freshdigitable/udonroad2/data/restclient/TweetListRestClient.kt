@@ -19,6 +19,8 @@ package com.freshdigitable.udonroad2.data.restclient
 import com.freshdigitable.udonroad2.data.restclient.ext.toEntity
 import com.freshdigitable.udonroad2.model.ListQuery
 import com.freshdigitable.udonroad2.model.TweetEntity
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import twitter4j.Paging
 import twitter4j.Query
 import twitter4j.Status
@@ -31,8 +33,10 @@ class HomeTimelineClient @Inject constructor(
 
     override lateinit var query: ListQuery.Timeline
 
-    override suspend fun fetchTimeline(paging: Paging?): List<TweetEntity> {
-        return (query.userId?.let { id ->
+    override suspend fun fetchTimeline(
+        paging: Paging?
+    ): List<TweetEntity> = withContext(Dispatchers.IO) {
+        (query.userId?.let { id ->
             if (paging == null) {
                 twitter.getUserTimeline(id)
             } else {
@@ -52,8 +56,10 @@ class FavTimelineClient @Inject constructor(
 
     override lateinit var query: ListQuery.Fav
 
-    override suspend fun fetchTimeline(paging: Paging?): List<TweetEntity> {
-        return (query.userId?.let { id ->
+    override suspend fun fetchTimeline(
+        paging: Paging?
+    ): List<TweetEntity> = withContext(Dispatchers.IO) {
+        (query.userId?.let { id ->
             if (paging == null) {
                 twitter.getFavorites(id)
             } else {
@@ -72,13 +78,15 @@ class MediaTimelineClient @Inject constructor(
 ) : ListRestClient<ListQuery.Media, TweetEntity> {
     override lateinit var query: ListQuery.Media
 
-    override suspend fun fetchTimeline(paging: Paging?): List<TweetEntity> {
+    override suspend fun fetchTimeline(
+        paging: Paging?
+    ): List<TweetEntity> = withContext(Dispatchers.IO) {
         val q = Query(query.query).apply {
             maxId = paging?.maxId ?: -1
             sinceId = paging?.sinceId ?: -1
             count = paging?.count ?: 100
             resultType = Query.ResultType.recent
         }
-        return twitter.search(q).tweets.map(Status::toEntity)
+        twitter.search(q).tweets.map(Status::toEntity)
     }
 }

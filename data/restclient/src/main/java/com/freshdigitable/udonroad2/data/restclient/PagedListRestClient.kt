@@ -5,6 +5,8 @@ import com.freshdigitable.udonroad2.data.restclient.ext.toUserPagedList
 import com.freshdigitable.udonroad2.model.ListQuery
 import com.freshdigitable.udonroad2.model.MemberList
 import com.freshdigitable.udonroad2.model.User
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import twitter4j.Paging
 import twitter4j.Twitter
 import javax.inject.Inject
@@ -19,13 +21,13 @@ abstract class PagedListRestClient<Q : ListQuery, E>(
 
     protected abstract val fetchBlock: suspend Twitter.(Q) -> PagedResponseList<E>
 
-    override suspend fun fetchTimeline(paging: Paging?): List<E> {
+    override suspend fun fetchTimeline(paging: Paging?): List<E> = withContext(Dispatchers.IO) {
         if (nextCursor == 0L) {
-            return listOf()
+            return@withContext listOf<E>()
         }
         val list = fetchBlock(twitter, query)
         nextCursor = list.nextCursor
-        return list
+        return@withContext list
     }
 }
 
