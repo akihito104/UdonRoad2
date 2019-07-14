@@ -8,7 +8,7 @@ import com.freshdigitable.udonroad2.model.UserListItem
     viewName = "user_list_item",
     value = """SELECT id, name, screen_name, icon_url, description,
      follower_count, following_count, verified, is_protected
-     FROM UserEntity"""
+     FROM user"""
 )
 internal data class UserListDbView(
     @ColumnInfo(name = "id")

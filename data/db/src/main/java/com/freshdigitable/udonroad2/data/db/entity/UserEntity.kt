@@ -21,7 +21,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.freshdigitable.udonroad2.model.User
 
-@Entity
+@Entity(tableName = "user")
 internal data class UserEntity(
     @PrimaryKey
     @ColumnInfo(name = "id")

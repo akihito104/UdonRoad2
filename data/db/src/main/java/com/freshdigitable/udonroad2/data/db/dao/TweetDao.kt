@@ -44,20 +44,23 @@ abstract class TweetDao(
     private val db: AppDatabase
 ) {
 
+    @Transaction
     @Query(
         """
-        SELECT tweet_list_item.*
-        FROM tweet_list
-        INNER JOIN tweet_list_item ON tweet_list_item.original_id = tweet_list.original_id
-        WHERE tweet_list.owner = :owner
-        ORDER BY tweet_list.`order` DESC"""
+        SELECT v.*
+        FROM tweet_list AS l
+        INNER JOIN tweet_list_item AS v ON v.original_id = l.original_id
+        WHERE l.owner = :owner
+        ORDER BY l.`order` DESC"""
     )
     internal abstract fun getTimeline(owner: String): DataSource.Factory<Int, TweetListItem>
 
+    @Transaction
     @Query("SELECT * FROM tweet_list_item WHERE original_id = :id")
     internal abstract fun findTweetItem(id: Long): LiveData<TweetListItem?>
 
-    @Query("SELECT * FROM tweet WHERE id = :id")
+    @Transaction
+    @Query("SELECT * FROM view_tweet WHERE id = :id")
     internal abstract fun findTweet(id: Long): LiveData<Tweet?>
 
     open fun findTweetItemById(

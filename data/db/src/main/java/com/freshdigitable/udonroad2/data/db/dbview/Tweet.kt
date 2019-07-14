@@ -19,53 +19,82 @@ package com.freshdigitable.udonroad2.data.db.dbview
 import androidx.room.ColumnInfo
 import androidx.room.DatabaseView
 import androidx.room.Embedded
+import androidx.room.Ignore
+import androidx.room.Relation
+import com.freshdigitable.udonroad2.model.Tweet
 import com.freshdigitable.udonroad2.model.TweetListItem
 import org.threeten.bp.Instant
 
-@DatabaseView(viewName = "tweet", value = """
+@DatabaseView(
+    viewName = "view_tweet", value = """
     SELECT
-     TweetEntityDb.id, text, created_at, retweet_count, favorite_count, source,
+     t.id, text, created_at, retweet_count, favorite_count, source,
      u.id AS user_id,
      u.name AS user_name,
      u.screen_name AS user_screen_name,
      u.icon_url AS user_icon_url
-    FROM TweetEntityDb
-    INNER JOIN view_user_in_tweet AS u ON TweetEntityDb.user_id = u.id
-""")
-internal data class Tweet(
+    FROM tweet AS t 
+    INNER JOIN view_user_in_tweet AS u ON t.user_id = u.id
+"""
+)
+internal data class TweetDbView(
     @ColumnInfo(name = "id")
-    override val id: Long,
+    val id: Long,
 
     @ColumnInfo(name = "text")
-    override val text: String,
+    val text: String,
 
     @ColumnInfo(name = "retweet_count")
-    override val retweetCount: Int,
+    val retweetCount: Int,
 
     @ColumnInfo(name = "favorite_count")
-    override val favoriteCount: Int,
+    val favoriteCount: Int,
 
     @Embedded(prefix = "user_")
-    override val user: TweetingUser,
+    val user: TweetingUser,
 
     @ColumnInfo(name = "source")
-    override val source: String,
+    val source: String,
 
     @ColumnInfo(name = "created_at")
-    override val createdAt: Instant
-) : com.freshdigitable.udonroad2.model.Tweet
+    val createdAt: Instant
+)
 
-@DatabaseView(viewName = "tweet_list_item", value = """
+internal data class Tweet(
+    @Embedded
+    val tweet: TweetDbView
+) : Tweet {
+    @Ignore
+    override val id: Long = tweet.id
+    @Ignore
+    override val text: String = tweet.text
+    @Ignore
+    override val retweetCount: Int = tweet.retweetCount
+    @Ignore
+    override val favoriteCount: Int = tweet.favoriteCount
+    @Ignore
+    override val user: com.freshdigitable.udonroad2.model.TweetingUser = tweet.user
+    @Ignore
+    override val source: String = tweet.source
+    @Ignore
+    override val createdAt: Instant = tweet.createdAt
+
+    @Relation(entity = MediaDbView::class, parentColumn = "id", entityColumn = "tweet_id")
+    override var mediaItems: List<MediaDbView> = listOf()
+}
+
+@DatabaseView(
+    viewName = "tweet_list_item", value = """
     WITH
     original AS (
     SELECT
-     TweetEntityDb.id AS original_id,
+     t.id AS original_id,
      u.id AS original_user_id,
      u.name AS original_user_name,
      u.screen_name AS original_user_screen_name,
      u.icon_url AS original_user_icon_url
-    FROM TweetEntityDb
-    INNER JOIN view_user_in_tweet AS u ON TweetEntityDb.user_id = u.id
+    FROM tweet AS t 
+    INNER JOIN view_user_in_tweet AS u ON t.user_id = u.id
     ),
     quoted AS (
     SELECT
@@ -82,22 +111,51 @@ internal data class Tweet(
     FROM tweet
     INNER JOIN view_user_in_tweet AS u ON tweet.user_id = u.id
     )
-    SELECT tweet.*, original.*, quoted.*
+    SELECT t.*, original.*, quoted.* 
     FROM structured_tweet
-    INNER JOIN tweet ON tweet.id = structured_tweet.body_item_id
+    INNER JOIN view_tweet AS t ON t.id = structured_tweet.body_item_id
+    INNER JOIN view_user_in_tweet AS vu ON t.user_id = vu.id
     INNER JOIN original ON original.original_id = structured_tweet.original_id
     LEFT OUTER JOIN quoted ON quoted.qt_id = structured_tweet.quoted_item_id
-""")
-internal data class TweetListItem(
+"""
+)
+internal data class TweetListItemDbView(
     @ColumnInfo(name = "original_id")
-    override val originalId: Long,
+    val originalId: Long,
 
     @Embedded(prefix = "original_user_")
-    override val originalUser: TweetingUser,
+    val originalUser: TweetingUser,
 
     @Embedded
-    override val body: Tweet,
+    val body: TweetDbView,
 
     @Embedded(prefix = "qt_")
+    val quoted: TweetDbView?
+)
+
+internal data class TweetListItem(
+    @Embedded
+    val tweetListItem: TweetListItemDbView
+) : TweetListItem {
+    @Ignore
+    override val originalId: Long = tweetListItem.originalId
+    @Ignore
+    override val originalUser: com.freshdigitable.udonroad2.model.TweetingUser =
+        tweetListItem.originalUser
+
+    @Relation(entity = MediaDbView::class, parentColumn = "id", entityColumn = "tweet_id")
+    var bodyMediaItems: List<MediaDbView> = listOf()
+
+    @Relation(entity = MediaDbView::class, parentColumn = "qt_id", entityColumn = "tweet_id")
+    var quoteMediaItems: List<MediaDbView> = listOf()
+
+    override val body: Tweet
+        @Ignore get() = Tweet(tweetListItem.body).apply { mediaItems = bodyMediaItems }
+
     override val quoted: Tweet?
-) : TweetListItem
+        @Ignore get() = if (tweetListItem.quoted != null) {
+            Tweet(tweetListItem.quoted).apply { mediaItems = quoteMediaItems }
+        } else {
+            null
+        }
+}

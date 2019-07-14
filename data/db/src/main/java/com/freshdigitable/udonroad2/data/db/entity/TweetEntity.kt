@@ -24,6 +24,7 @@ import androidx.room.PrimaryKey
 import org.threeten.bp.Instant
 
 @Entity(
+    tableName = "tweet",
     foreignKeys = [
         ForeignKey(
             entity = UserEntity::class,
