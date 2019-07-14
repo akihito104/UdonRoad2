@@ -16,42 +16,38 @@
 
 package com.freshdigitable.udonroad2.model
 
-import org.threeten.bp.Instant
+interface MediaItem {
+    val id: MediaId
 
+    val mediaUrl: String
 
-interface TweetListItem {
+    val url: UrlItem
 
-    val originalId: Long
+    val type: String
 
-    val originalUser: TweetingUser
+    val largeSize: Size
 
-    val body: Tweet
+    val mediumSize: Size
 
-    val quoted: Tweet?
+    val smallSize: Size
 
-    val isRetweet: Boolean
-        get() = originalId != body.id
+    val thumbSize: Size
 
-    override fun equals(other: Any?): Boolean
+    val videoAspectRatioWidth: Int?
 
-    override fun hashCode(): Int
+    val videoAspectRatioHeight: Int?
+
+    val videoDurationMillis: Long?
+
+    interface Size {
+        val type: Int
+
+        val width: Int
+
+        val height: Int
+
+        val resizeType: Int
+    }
 }
 
-interface Tweet {
-
-    val id: Long
-
-    val text: String
-
-    val retweetCount: Int
-
-    val favoriteCount: Int
-
-    val user: TweetingUser
-
-    val source: String
-
-    val createdAt: Instant
-
-    val mediaItems: List<MediaItem>
-}
+data class MediaId(val value: Long)
