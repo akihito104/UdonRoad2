@@ -106,7 +106,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             app:layout_constraintTop_toBottomOf="@id/tweetItem_names"
-            app:layout_constraintBottom_toTopOf="@id/tweetItem_via"
+            app:layout_constraintBottom_toTopOf="@id/tweetItem_mediaContainer"
             app:layout_constraintStart_toStartOf="@id/tweetItem_names"
             app:layout_constraintEnd_toEndOf="parent"
             android:text="@{tweet.body.text}"
@@ -143,6 +143,20 @@
             android:lines="1"
             tools:text="fav:100"
             />
+        <LinearLayout
+            android:id="@+id/tweetItem_mediaContainer"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="@dimen/margin_half"
+            app:layout_constraintTop_toBottomOf="@id/tweetItem_text"
+            app:layout_constraintStart_toStartOf="@id/tweetItem_text"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/tweetItem_via"
+            android:orientation="horizontal"
+            android:visibility="@{tweet.body.mediaItems.isEmpty() ? View.GONE : View.VISIBLE}"
+            app:bindMedia="@{tweet.body.mediaItems}"
+            tools:visibility="visible"
+            />
         <TextView
             android:id="@+id/tweetItem_via"
             android:layout_width="wrap_content"
@@ -150,7 +164,7 @@
             android:layout_marginTop="@dimen/margin_half"
             android:layout_marginStart="@dimen/margin_default"
             android:layout_marginLeft="@dimen/margin_default"
-            app:layout_constraintTop_toBottomOf="@id/tweetItem_text"
+            app:layout_constraintTop_toBottomOf="@id/tweetItem_mediaContainer"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="1"

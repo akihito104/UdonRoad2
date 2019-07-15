@@ -17,14 +17,21 @@
 package com.freshdigitable.udonroad2.timeline.bindingadapter
 
 import android.graphics.Typeface
+import android.os.Build
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.text.format.DateUtils
 import android.text.style.StyleSpan
+import android.view.View
+import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.appcompat.widget.AppCompatImageView
+import androidx.core.view.children
 import androidx.databinding.BindingAdapter
 import com.bumptech.glide.Glide
+import com.freshdigitable.udonroad2.model.MediaItem
 import com.freshdigitable.udonroad2.model.TweetingUser
 import com.freshdigitable.udonroad2.timeline.R
 import org.threeten.bp.Duration
@@ -66,8 +73,10 @@ fun bindCreatedAtAbsolute(v: TextView, createdAt: Instant?) {
     v.text = if (createdAt == null) {
         ""
     } else {
-        DateUtils.formatDateTime(v.context, createdAt.toEpochMilli(),
-            DateUtils.FORMAT_SHOW_YEAR.or(DateUtils.FORMAT_SHOW_DATE).or(DateUtils.FORMAT_SHOW_TIME))
+        DateUtils.formatDateTime(
+            v.context, createdAt.toEpochMilli(),
+            DateUtils.FORMAT_SHOW_YEAR.or(DateUtils.FORMAT_SHOW_DATE).or(DateUtils.FORMAT_SHOW_TIME)
+        )
     }
 }
 
@@ -93,10 +102,10 @@ fun bindCreatedAtRelative(v: TextView, createdAt: Instant?) {
         }
         delta.toDays() < 30 ->
             DateTimeFormatter.ofPattern(v.context.getString(R.string.created_date))
-                    .format(LocalDateTime.ofInstant(createdAt, ZoneId.systemDefault()))
+                .format(LocalDateTime.ofInstant(createdAt, ZoneId.systemDefault()))
         else ->
             DateTimeFormatter.ofPattern(v.context.getString(R.string.created_year_date))
-                    .format(LocalDateTime.ofInstant(createdAt, ZoneId.systemDefault()))
+                .format(LocalDateTime.ofInstant(createdAt, ZoneId.systemDefault()))
     }
 }
 
@@ -107,6 +116,39 @@ fun bindUserIcon(v: ImageView, url: String?) {
         return
     }
     Glide.with(v)
-            .load(url)
-            .into(v)
+        .load(url)
+        .into(v)
+}
+
+@BindingAdapter("bindMedia")
+fun LinearLayout.bindMedia(items: List<MediaItem>?) {
+    if (items.isNullOrEmpty()) {
+        return
+    }
+    val offset = childCount
+    val needed = items.size - offset
+    if (needed > 0) {
+        repeat(needed) {
+            val grid = if (offset + it == 0) 0
+            else context.resources.getDimensionPixelSize(R.dimen.margin_half)
+
+            val lp = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f).apply {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+                    marginStart = grid
+                } else {
+                    leftMargin = grid
+                }
+            }
+            addView(AppCompatImageView(context), lp)
+        }
+    }
+    children.forEachIndexed { i, v ->
+        val item = items.getOrNull(i)
+        if (item != null) {
+            v.visibility = View.VISIBLE
+            Glide.with(v).load(item.thumbMediaUrl).into(v as ImageView)
+        } else {
+            v.visibility = View.GONE
+        }
+    }
 }
