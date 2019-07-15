@@ -16,7 +16,9 @@
 
 package com.freshdigitable.udonroad2.timeline.bindingadapter
 
+import android.graphics.Color
 import android.graphics.Typeface
+import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.text.SpannableStringBuilder
 import android.text.Spanned
@@ -31,6 +33,7 @@ import androidx.appcompat.widget.AppCompatImageView
 import androidx.core.view.children
 import androidx.databinding.BindingAdapter
 import com.bumptech.glide.Glide
+import com.bumptech.glide.request.RequestOptions
 import com.freshdigitable.udonroad2.model.MediaItem
 import com.freshdigitable.udonroad2.model.TweetingUser
 import com.freshdigitable.udonroad2.timeline.R
@@ -127,10 +130,10 @@ fun LinearLayout.bindMedia(items: List<MediaItem>?) {
     }
     val offset = childCount
     val needed = items.size - offset
+    val marginHalf = context.resources.getDimensionPixelSize(R.dimen.margin_half)
     if (needed > 0) {
         repeat(needed) {
-            val grid = if (offset + it == 0) 0
-            else context.resources.getDimensionPixelSize(R.dimen.margin_half)
+            val grid = if (offset + it == 0) 0 else marginHalf
 
             val lp = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f).apply {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
@@ -142,11 +145,22 @@ fun LinearLayout.bindMedia(items: List<MediaItem>?) {
             addView(AppCompatImageView(context), lp)
         }
     }
+
+    val itemWidth = (width - marginHalf * (items.size - 1)) / items.size
     children.forEachIndexed { i, v ->
         val item = items.getOrNull(i)
         if (item != null) {
             v.visibility = View.VISIBLE
-            Glide.with(v).load(item.thumbMediaUrl).into(v as ImageView)
+            val option = RequestOptions.centerCropTransform()
+                .placeholder(ColorDrawable(Color.LTGRAY)).apply {
+                    if (itemWidth > 0) {
+                        override(itemWidth, height)
+                    }
+                }
+            Glide.with(v)
+                .load(item.thumbMediaUrl)
+                .apply(option)
+                .into(v as ImageView)
         } else {
             v.visibility = View.GONE
         }
