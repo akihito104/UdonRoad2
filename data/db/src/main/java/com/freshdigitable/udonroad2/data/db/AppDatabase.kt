@@ -21,12 +21,14 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.freshdigitable.udonroad2.data.db.converter.MediaIdConverter
 import com.freshdigitable.udonroad2.data.db.converter.TimestampConverter
+import com.freshdigitable.udonroad2.data.db.dao.MediaDao
 import com.freshdigitable.udonroad2.data.db.dao.MemberListDao
 import com.freshdigitable.udonroad2.data.db.dao.MemberListListEntity
 import com.freshdigitable.udonroad2.data.db.dao.RelationshipDao
 import com.freshdigitable.udonroad2.data.db.dao.StructuredTweetEntity
 import com.freshdigitable.udonroad2.data.db.dao.TweetDao
 import com.freshdigitable.udonroad2.data.db.dao.TweetListEntity
+import com.freshdigitable.udonroad2.data.db.dao.UrlDao
 import com.freshdigitable.udonroad2.data.db.dao.UserDao
 import com.freshdigitable.udonroad2.data.db.dao.UserListEntity
 import com.freshdigitable.udonroad2.data.db.dbview.MediaDbView
@@ -80,4 +82,8 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun memberListDao(): MemberListDao
 
     abstract fun relationshipDao(): RelationshipDao
+
+    abstract fun mediaDao(): MediaDao
+
+    abstract fun urlDao(): UrlDao
 }

@@ -14,22 +14,12 @@
  * limitations under the License.
  */
 
-package com.freshdigitable.udonroad2.data.db.entity
+package com.freshdigitable.udonroad2.data.restclient.data
 
-import androidx.room.ColumnInfo
-import androidx.room.Entity
-import androidx.room.PrimaryKey
 import com.freshdigitable.udonroad2.model.UrlItem
 
-@Entity(tableName = "url")
-internal data class UrlEntity(
-    @PrimaryKey
-    @ColumnInfo(name = "text", index = true)
+data class UrlEntityRest(
     override val text: String,
-
-    @ColumnInfo(name = "display")
     override val displayUrl: String,
-
-    @ColumnInfo(name = "expanded")
     override val expandedUrl: String
-) : UrlItem
+): UrlItem

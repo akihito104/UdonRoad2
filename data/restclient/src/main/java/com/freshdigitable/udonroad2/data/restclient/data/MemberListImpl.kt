@@ -14,22 +14,16 @@
  * limitations under the License.
  */
 
-package com.freshdigitable.udonroad2.data.db.entity
+package com.freshdigitable.udonroad2.data.restclient.data
 
-import androidx.room.ColumnInfo
-import androidx.room.Entity
-import androidx.room.PrimaryKey
-import com.freshdigitable.udonroad2.model.UrlItem
+import com.freshdigitable.udonroad2.model.MemberList
 
-@Entity(tableName = "url")
-internal data class UrlEntity(
-    @PrimaryKey
-    @ColumnInfo(name = "text", index = true)
-    override val text: String,
-
-    @ColumnInfo(name = "display")
-    override val displayUrl: String,
-
-    @ColumnInfo(name = "expanded")
-    override val expandedUrl: String
-) : UrlItem
+internal data class MemberListImpl(
+    override val user: com.freshdigitable.udonroad2.model.User,
+    override val id: Long,
+    override val name: String,
+    override val description: String,
+    override val memberCount: Int,
+    override val followerCount: Int,
+    override val isPublic: Boolean
+) : MemberList

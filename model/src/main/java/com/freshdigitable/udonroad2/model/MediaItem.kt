@@ -25,13 +25,13 @@ interface MediaItem {
 
     val type: String
 
-    val largeSize: Size
+    val largeSize: Size?
 
-    val mediumSize: Size
+    val mediumSize: Size?
 
-    val smallSize: Size
+    val smallSize: Size?
 
-    val thumbSize: Size
+    val thumbSize: Size?
 
     val videoAspectRatioWidth: Int?
 
@@ -39,9 +39,10 @@ interface MediaItem {
 
     val videoDurationMillis: Long?
 
-    interface Size {
-        val type: Int
+    val thumbMediaUrl: String
+        get() = "$mediaUrl:thumb"
 
+    interface Size {
         val width: Int
 
         val height: Int

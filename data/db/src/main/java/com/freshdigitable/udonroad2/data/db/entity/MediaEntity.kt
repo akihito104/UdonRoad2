@@ -49,16 +49,16 @@ internal data class MediaEntity(
     val type: String,
 
     @Embedded(prefix = "large_")
-    val largeSize: Size,
+    val largeSize: Size?,
 
     @Embedded(prefix = "medium_")
-    val mediumSize: Size,
+    val mediumSize: Size?,
 
     @Embedded(prefix = "small_")
-    val smallSize: Size,
+    val smallSize: Size?,
 
     @Embedded(prefix = "thumb_")
-    val thumbSize: Size,
+    val thumbSize: Size?,
 
     @ColumnInfo(name = "video_aspect_ratio_width")
     val videoAspectRatioWidth: Int?,
@@ -70,9 +70,6 @@ internal data class MediaEntity(
     val videoDurationMillis: Long?
 ) {
     data class Size(
-        @ColumnInfo(name = "type")
-        override val type: Int,
-
         @ColumnInfo(name = "width")
         override val width: Int,
 

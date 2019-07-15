@@ -21,5 +21,5 @@ interface UrlItem {
 
     val displayUrl: String
 
-    val expendedUrl: String
+    val expandedUrl: String
 }
