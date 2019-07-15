@@ -33,9 +33,12 @@ import com.freshdigitable.udonroad2.data.db.AppDatabase
 import com.freshdigitable.udonroad2.data.db.dbview.Tweet
 import com.freshdigitable.udonroad2.data.db.dbview.TweetListItem
 import com.freshdigitable.udonroad2.data.db.entity.TweetEntityDb
-import com.freshdigitable.udonroad2.data.db.entity.UserEntity
+import com.freshdigitable.udonroad2.data.db.entity.TweetMediaRelation
+import com.freshdigitable.udonroad2.data.db.ext.toDbEntity
+import com.freshdigitable.udonroad2.data.db.ext.toEntity
+import com.freshdigitable.udonroad2.data.db.ext.toListEntity
+import com.freshdigitable.udonroad2.data.db.ext.toStructuredTweet
 import com.freshdigitable.udonroad2.model.TweetEntity
-import com.freshdigitable.udonroad2.model.User
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -88,19 +91,31 @@ abstract class TweetDao(
             .flatMap { it.asSequence() }
             .distinctBy { it.id }
             .toList()
-        val userDao = db.userDao()
-        userDao.addUsers(
+
+        db.userDao().addUsers(
             tweetEntities.asSequence()
                 .map { it.user }
                 .filterNotNull()
                 .distinctBy { it.id }
-                .map { it.toDbEntity() }
+                .map { it.toEntity() }
                 .toList())
         addTweetEntitiesInternal(tweetEntities.map(TweetEntity::toDbEntity))
         addStructuredTweetEntities(tweet.map { it.toStructuredTweet() })
         if (owner != null) {
             addTweetListEntities(tweet.map { it.toListEntity(owner) })
         }
+
+        val mediaItems = tweetEntities.filter { it.media.isNotEmpty() }
+            .map { t -> t.media.map { t to it } }
+            .flatten()
+        db.urlDao().addUrlEntities(mediaItems.map { it.second.url.toEntity() })
+        db.mediaDao().addMediaEntities(mediaItems.map { it.second.toEntity() })
+        db.mediaDao().addTweetMediaRelations(mediaItems.map {
+            TweetMediaRelation(
+                it.first.id,
+                it.second.id
+            )
+        })
     }
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -176,41 +191,3 @@ internal class TweetListEntity(
     @ColumnInfo(name = "owner")
     val owner: String
 )
-
-private fun TweetEntity.toDbEntity(): TweetEntityDb {
-    return TweetEntityDb(
-        id = id,
-        createdAt = createdAt,
-        favoriteCount = favoriteCount,
-        inReplyToTweetId = inReplyToTweetId,
-        isFavorited = isFavorited,
-        isRetweeted = isRetweeted,
-        possiblySensitive = possiblySensitive,
-        quotedTweetId = quotedTweet?.id,
-        retweetCount = retweetCount,
-        retweetedTweetId = retweetedTweet?.id,
-        source = source,
-        text = text,
-        userId = user.id
-    )
-}
-
-private fun User.toDbEntity(): UserEntity {
-    return UserEntity(this)
-}
-
-private fun TweetEntity.toStructuredTweet(): StructuredTweetEntity {
-    return StructuredTweetEntity(
-        originalId = id,
-        bodyTweetId = retweetedTweet?.id ?: id,
-        quotedTweetId = retweetedTweet?.quotedTweet?.id ?: quotedTweet?.id
-    )
-}
-
-private fun TweetEntity.toListEntity(owner: String): TweetListEntity {
-    return TweetListEntity(
-        originalId = id,
-        order = id,
-        owner = owner
-    )
-}
