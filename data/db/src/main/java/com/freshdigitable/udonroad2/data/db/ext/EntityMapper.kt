@@ -59,7 +59,7 @@ internal fun MediaItem.toEntity(): MediaEntity {
     return MediaEntity(
         id = id,
         url = url.text,
-        type = type,
+        type = type.value,
         largeSize = largeSize?.toEntity(),
         mediumSize = mediumSize?.toEntity(),
         smallSize = smallSize?.toEntity(),

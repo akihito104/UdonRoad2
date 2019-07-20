@@ -17,7 +17,9 @@
 package com.freshdigitable.udonroad2.data.db.converter
 
 import androidx.room.TypeConverter
+import com.freshdigitable.udonroad2.data.db.AppTypeConverter
 import com.freshdigitable.udonroad2.model.MediaId
+import com.freshdigitable.udonroad2.model.MediaType
 
 internal class MediaIdConverter {
     @TypeConverter
@@ -26,4 +28,12 @@ internal class MediaIdConverter {
     @TypeConverter
     fun toObject(value: Long): MediaId =
         MediaId(value)
+}
+
+internal class MediaTypeConverter: AppTypeConverter<MediaType, String> {
+    @TypeConverter
+    override fun toItem(v: String): MediaType = MediaType.find(v)
+
+    @TypeConverter
+    override fun toEntity(v: MediaType): String = v.value
 }

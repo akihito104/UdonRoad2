@@ -23,6 +23,7 @@ import com.freshdigitable.udonroad2.data.db.entity.MediaEntity
 import com.freshdigitable.udonroad2.data.db.entity.UrlEntity
 import com.freshdigitable.udonroad2.model.MediaId
 import com.freshdigitable.udonroad2.model.MediaItem
+import com.freshdigitable.udonroad2.model.MediaType
 
 @DatabaseView("""
     SELECT m.*, 
@@ -43,7 +44,7 @@ internal data class MediaDbView(
     override val url: UrlEntity,
 
     @ColumnInfo(name = "type")
-    override val type: String,
+    override val type: MediaType,
 
     @Embedded(prefix = "large_")
     override val largeSize: MediaEntity.Size,

@@ -18,8 +18,10 @@ package com.freshdigitable.udonroad2.data.db
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverter
 import androidx.room.TypeConverters
 import com.freshdigitable.udonroad2.data.db.converter.MediaIdConverter
+import com.freshdigitable.udonroad2.data.db.converter.MediaTypeConverter
 import com.freshdigitable.udonroad2.data.db.converter.TimestampConverter
 import com.freshdigitable.udonroad2.data.db.dao.MediaDao
 import com.freshdigitable.udonroad2.data.db.dao.MemberListDao
@@ -72,7 +74,8 @@ import com.freshdigitable.udonroad2.data.db.entity.UserEntity
 )
 @TypeConverters(
     TimestampConverter::class,
-    MediaIdConverter::class
+    MediaIdConverter::class,
+    MediaTypeConverter::class
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun tweetDao(): TweetDao
@@ -86,4 +89,12 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun mediaDao(): MediaDao
 
     abstract fun urlDao(): UrlDao
+}
+
+interface AppTypeConverter<E, I> {
+    @TypeConverter
+    fun toItem(v: I): E
+
+    @TypeConverter
+    fun toEntity(v: E): I
 }

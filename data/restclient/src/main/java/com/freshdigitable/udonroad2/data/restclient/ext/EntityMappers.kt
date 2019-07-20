@@ -26,6 +26,7 @@ import com.freshdigitable.udonroad2.data.restclient.data.UrlEntityRest
 import com.freshdigitable.udonroad2.data.restclient.data.UserEntityRest
 import com.freshdigitable.udonroad2.model.MediaId
 import com.freshdigitable.udonroad2.model.MediaItem
+import com.freshdigitable.udonroad2.model.MediaType
 import com.freshdigitable.udonroad2.model.MemberList
 import com.freshdigitable.udonroad2.model.TweetEntity
 import org.threeten.bp.Instant
@@ -105,7 +106,7 @@ fun MediaEntity.toItem(): MediaItem {
     return MediaItemRest(
         id = MediaId(id),
         mediaUrl = mediaURLHttps,
-        type = type,
+        type = MediaType.find(type),
         largeSize = sizes[MediaEntity.Size.LARGE]?.toItem(),
         mediumSize = sizes[MediaEntity.Size.MEDIUM]?.toItem(),
         smallSize = sizes[MediaEntity.Size.SMALL]?.toItem(),

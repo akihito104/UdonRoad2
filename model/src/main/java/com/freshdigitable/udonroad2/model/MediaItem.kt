@@ -23,7 +23,7 @@ interface MediaItem {
 
     val url: UrlItem
 
-    val type: String
+    val type: MediaType
 
     val largeSize: Size?
 
@@ -52,3 +52,13 @@ interface MediaItem {
 }
 
 data class MediaId(val value: Long)
+
+enum class MediaType(val value: String) {
+    PHOTO("photo"),
+    VIDEO("video"),
+    ANIMATED_GIF("animated_gif");
+
+    companion object {
+        fun find(value: String): MediaType = values().first { it.value == value }
+    }
+}
