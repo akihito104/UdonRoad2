@@ -97,7 +97,7 @@
             android:text="@{tweet.quoted.text}"
             tools:text="tweet body"
             />
-        <com.freshdigitable.udonroad2.timeline.MediaThumbnailContainer
+        <com.freshdigitable.udonroad2.media.MediaThumbnailContainer
             android:id="@+id/quotedItem_mediaContainer"
             android:layout_width="0dp"
             android:layout_height="40dp"

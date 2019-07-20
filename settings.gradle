@@ -1,4 +1,5 @@
 include ':app',
+        ':feature:media',
         ':feature:timeline',
         ':candysh',
         ':data:db',

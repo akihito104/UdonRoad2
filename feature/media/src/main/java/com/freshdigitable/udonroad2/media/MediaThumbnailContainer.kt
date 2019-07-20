@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.freshdigitable.udonroad2.timeline
+package com.freshdigitable.udonroad2.media
 
 import android.content.Context
 import android.graphics.Canvas
@@ -36,12 +36,21 @@ class MediaThumbnailContainer @JvmOverloads constructor(
     defStyleAttr: Int = 0
 ) : LinearLayout(context, attr, defStyleAttr) {
 
+    private val margin: Int
+
     init {
         orientation = HORIZONTAL
+        val a = context.obtainStyledAttributes(
+            attr,
+            R.styleable.MediaThumbnailContainer,
+            defStyleAttr,
+            R.style.Widget_MediaThumbnailContainer
+        )
+        margin = a.getDimension(R.styleable.MediaThumbnailContainer_gapWidth, 0f).toInt()
+        a.recycle()
     }
 
-    private val margin = context.resources.getDimensionPixelSize(R.dimen.margin_half)
-    internal var mediaCount: Int = 0
+    var mediaCount: Int = 0
         set(value) {
             updateChildren(value)
             field = value
@@ -100,7 +109,6 @@ class MediaThumbnailView @JvmOverloads constructor(
                 translate(dx, dy)
                 movieIcon.draw(this)
             }
-
         }
     }
 }

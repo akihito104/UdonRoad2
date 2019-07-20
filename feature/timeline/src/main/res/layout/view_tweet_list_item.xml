@@ -143,7 +143,7 @@
             android:lines="1"
             tools:text="fav:100"
             />
-        <com.freshdigitable.udonroad2.timeline.MediaThumbnailContainer
+        <com.freshdigitable.udonroad2.media.MediaThumbnailContainer
             android:id="@+id/tweetItem_mediaContainer"
             android:layout_width="0dp"
             android:layout_height="40dp"

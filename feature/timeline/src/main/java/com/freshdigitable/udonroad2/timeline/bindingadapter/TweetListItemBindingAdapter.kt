@@ -28,12 +28,12 @@ import android.widget.TextView
 import androidx.databinding.BindingAdapter
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
+import com.freshdigitable.udonroad2.media.MediaThumbnailContainer
+import com.freshdigitable.udonroad2.media.mediaViews
 import com.freshdigitable.udonroad2.model.MediaItem
 import com.freshdigitable.udonroad2.model.MediaType
 import com.freshdigitable.udonroad2.model.TweetingUser
-import com.freshdigitable.udonroad2.timeline.MediaThumbnailContainer
 import com.freshdigitable.udonroad2.timeline.R
-import com.freshdigitable.udonroad2.timeline.mediaViews
 import org.threeten.bp.Duration
 import org.threeten.bp.Instant
 import org.threeten.bp.LocalDateTime
