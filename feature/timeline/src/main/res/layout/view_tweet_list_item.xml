@@ -143,7 +143,7 @@
             android:lines="1"
             tools:text="fav:100"
             />
-        <LinearLayout
+        <com.freshdigitable.udonroad2.timeline.MediaThumbnailContainer
             android:id="@+id/tweetItem_mediaContainer"
             android:layout_width="0dp"
             android:layout_height="40dp"
@@ -152,7 +152,6 @@
             app:layout_constraintStart_toStartOf="@id/tweetItem_text"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toTopOf="@id/tweetItem_via"
-            android:orientation="horizontal"
             android:visibility="@{tweet.body.mediaItems.isEmpty() ? View.GONE : View.VISIBLE}"
             app:bindMedia="@{tweet.body.mediaItems}"
             tools:visibility="visible"

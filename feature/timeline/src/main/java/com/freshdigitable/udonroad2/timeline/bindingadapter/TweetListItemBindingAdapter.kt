@@ -19,29 +19,27 @@ package com.freshdigitable.udonroad2.timeline.bindingadapter
 import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.drawable.ColorDrawable
-import android.os.Build
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.text.format.DateUtils
 import android.text.style.StyleSpan
-import android.view.View
-import android.view.ViewGroup
 import android.widget.ImageView
-import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.appcompat.widget.AppCompatImageView
-import androidx.core.view.children
 import androidx.databinding.BindingAdapter
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.freshdigitable.udonroad2.model.MediaItem
+import com.freshdigitable.udonroad2.model.MediaType
 import com.freshdigitable.udonroad2.model.TweetingUser
+import com.freshdigitable.udonroad2.timeline.MediaThumbnailContainer
 import com.freshdigitable.udonroad2.timeline.R
+import com.freshdigitable.udonroad2.timeline.mediaViews
 import org.threeten.bp.Duration
 import org.threeten.bp.Instant
 import org.threeten.bp.LocalDateTime
 import org.threeten.bp.ZoneId
 import org.threeten.bp.format.DateTimeFormatter
+import java.util.EnumSet
 import java.util.regex.Pattern
 
 private val SOURCE_PATTERN = Pattern.compile("<a href=\".*\".*>(.*)</a>")
@@ -123,46 +121,25 @@ fun bindUserIcon(v: ImageView, url: String?) {
         .into(v)
 }
 
+private val movieType: Set<MediaType> = EnumSet.of(MediaType.VIDEO, MediaType.ANIMATED_GIF)
+
 @BindingAdapter("bindMedia")
-fun LinearLayout.bindMedia(items: List<MediaItem>?) {
+fun MediaThumbnailContainer.bindMedia(items: List<MediaItem>?) {
     if (items.isNullOrEmpty()) {
         return
     }
-    val offset = childCount
-    val needed = items.size - offset
-    val marginHalf = context.resources.getDimensionPixelSize(R.dimen.margin_half)
-    if (needed > 0) {
-        repeat(needed) {
-            val grid = if (offset + it == 0) 0 else marginHalf
-
-            val lp = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f).apply {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                    marginStart = grid
-                } else {
-                    leftMargin = grid
+    mediaCount = items.size
+    items.zip(mediaViews) { item, view ->
+        val option = RequestOptions.centerCropTransform()
+            .placeholder(ColorDrawable(Color.LTGRAY)).apply {
+                if (itemWidth > 0) {
+                    override(itemWidth, height)
                 }
             }
-            addView(AppCompatImageView(context), lp)
-        }
-    }
-
-    val itemWidth = (width - marginHalf * (items.size - 1)) / items.size
-    children.forEachIndexed { i, v ->
-        val item = items.getOrNull(i)
-        if (item != null) {
-            v.visibility = View.VISIBLE
-            val option = RequestOptions.centerCropTransform()
-                .placeholder(ColorDrawable(Color.LTGRAY)).apply {
-                    if (itemWidth > 0) {
-                        override(itemWidth, height)
-                    }
-                }
-            Glide.with(v)
-                .load(item.thumbMediaUrl)
-                .apply(option)
-                .into(v as ImageView)
-        } else {
-            v.visibility = View.GONE
-        }
+        view.isMovie = movieType.contains(item.type)
+        Glide.with(view)
+            .load(item.thumbMediaUrl)
+            .apply(option)
+            .into(view)
     }
 }
