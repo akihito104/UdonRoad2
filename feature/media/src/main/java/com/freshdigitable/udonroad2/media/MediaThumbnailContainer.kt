@@ -22,6 +22,7 @@ import android.graphics.drawable.Drawable
 import android.os.Build
 import android.util.AttributeSet
 import android.view.View
+import android.view.View.OnClickListener
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import androidx.appcompat.content.res.AppCompatResources
@@ -58,6 +59,8 @@ class MediaThumbnailContainer @JvmOverloads constructor(
     val itemWidth
         get() = if (mediaCount > 0) (width - margin * (mediaCount - 1)) / mediaCount else 0
 
+    var itemClickListener: MediaItemClickListener? = null
+
     private fun updateChildren(count: Int) {
         val current = childCount
         val needed = count - current
@@ -75,9 +78,16 @@ class MediaThumbnailContainer @JvmOverloads constructor(
                 addView(MediaThumbnailView(context), lp)
             }
         }
-        children.forEachIndexed { i, v ->
-            v.visibility = if (i < count) View.VISIBLE else GONE
+        children.forEachIndexed { i, child ->
+            child.visibility = if (i < count) View.VISIBLE else GONE
+            child.setOnClickListener(
+                if (i < count) OnClickListener { v -> itemClickListener?.onMediaItemClicked(v, i) }
+                else null)
         }
+    }
+
+    interface MediaItemClickListener {
+        fun onMediaItemClicked(v: View, index: Int)
     }
 }
 

@@ -18,9 +18,11 @@ package com.freshdigitable.udonroad2.di
 
 import com.freshdigitable.udonroad2.main.MainActivity
 import com.freshdigitable.udonroad2.main.MainActivityModule
+import com.freshdigitable.udonroad2.media.MediaActivity
+import com.freshdigitable.udonroad2.media.MediaActivityModule
+import com.freshdigitable.udonroad2.model.ActivityScope
 import com.freshdigitable.udonroad2.user.UserActivity
 import com.freshdigitable.udonroad2.user.UserActivityModule
-import com.freshdigitable.udonroad2.model.ActivityScope
 import dagger.Module
 import dagger.android.ContributesAndroidInjector
 
@@ -35,4 +37,8 @@ abstract class ActivityBuilders {
     @ActivityScope
     @ContributesAndroidInjector(modules = [UserActivityModule::class])
     abstract fun contributeUserActivity(): UserActivity
+
+    @ActivityScope
+    @ContributesAndroidInjector(modules = [MediaActivityModule::class])
+    abstract fun contributeMediaActivity(): MediaActivity
 }

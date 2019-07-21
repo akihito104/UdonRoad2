@@ -37,6 +37,8 @@
             android:theme="@style/AppTheme.NoActionBar"
             />
 
+        <activity android:name=".media.MediaActivity" />
+
     </application>
 
 </manifest>

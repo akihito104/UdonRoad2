@@ -17,5 +17,7 @@ sealed class TimelineEvent : NavigationEvent {
 
     data class MemberListClicked(val memberList: MemberListItem) : TimelineEvent()
 
+    data class MediaItemClicked(val tweetId: Long, val index: Int = 0) : TimelineEvent()
+
     object Back : TimelineEvent()
 }

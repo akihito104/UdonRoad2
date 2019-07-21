@@ -26,6 +26,7 @@ import androidx.paging.PagedList
 import com.freshdigitable.udonroad2.data.repository.RepositoryComponent
 import com.freshdigitable.udonroad2.data.repository.TweetTimelineRepository
 import com.freshdigitable.udonroad2.model.ListQuery
+import com.freshdigitable.udonroad2.model.Tweet
 import com.freshdigitable.udonroad2.model.TweetListItem
 import com.freshdigitable.udonroad2.navigation.NavigationDispatcher
 import com.freshdigitable.udonroad2.timeline.ListItemLoadable
@@ -92,6 +93,10 @@ class TimelineViewModel(
 
     override fun onUserIconClicked(item: TweetListItem) {
         navigator.postEvent(TimelineEvent.UserIconClicked(item.body.user))
+    }
+
+    override fun onMediaItemClicked(item: Tweet, index: Int) {
+        navigator.postEvent(TimelineEvent.MediaItemClicked(item.id, index))
     }
 }
 

@@ -154,6 +154,7 @@
             app:layout_constraintBottom_toTopOf="@id/tweetItem_via"
             android:visibility="@{tweet.body.mediaItems.isEmpty() ? View.GONE : View.VISIBLE}"
             app:bindMedia="@{tweet.body.mediaItems}"
+            app:itemClickListener="@{(v, i) -> clickListener.onMediaItemClicked(tweet.body, i)}"
             tools:visibility="visible"
             />
         <TextView

@@ -4,6 +4,7 @@ import androidx.annotation.IdRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
+import com.freshdigitable.udonroad2.media.MediaActivity
 import com.freshdigitable.udonroad2.model.ListQuery
 import com.freshdigitable.udonroad2.navigation.FragmentContainerState
 import com.freshdigitable.udonroad2.navigation.Navigation
@@ -42,6 +43,10 @@ class MainActivityNavigation(
                 viewModel.setSelectedItemId(event.selectedItemId)
                 null
             }
+            is TimelineEvent.MediaItemClicked -> {
+                MediaActivity.start(activity, event.tweetId, event.index)
+                null
+            }
             TimelineEvent.Back -> {
                 if (currentState is MainActivityState.TweetDetail) {
                     MainActivityState.MainTimeline
@@ -69,7 +74,8 @@ class MainActivityNavigation(
             }
             is MainActivityState.TweetDetail -> {
                 viewModel.setFabVisible(false)
-                replace(TweetDetailFragment.newInstance(s.tweetId),
+                replace(
+                    TweetDetailFragment.newInstance(s.tweetId),
                     BACK_STACK_TWEET_DETAIL
                 )
             }

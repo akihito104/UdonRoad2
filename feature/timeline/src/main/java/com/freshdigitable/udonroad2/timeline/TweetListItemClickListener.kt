@@ -1,6 +1,7 @@
 package com.freshdigitable.udonroad2.timeline
 
 import androidx.databinding.ObservableField
+import com.freshdigitable.udonroad2.model.Tweet
 import com.freshdigitable.udonroad2.model.TweetListItem
 
 interface TweetListItemClickListener {
@@ -9,6 +10,8 @@ interface TweetListItemClickListener {
     fun onQuoteItemClicked(item: TweetListItem)
 
     fun onUserIconClicked(item: TweetListItem)
+
+    fun onMediaItemClicked(item: Tweet, index: Int)
 }
 
 interface TweetListEventListener {
