@@ -21,6 +21,7 @@ import android.widget.ImageView
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.request.RequestOptions
 import com.freshdigitable.udonroad2.model.MediaItem
 
 internal class MediaAdapter : RecyclerView.Adapter<MediaViewHolder>() {
@@ -36,13 +37,19 @@ internal class MediaAdapter : RecyclerView.Adapter<MediaViewHolder>() {
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MediaViewHolder {
-        return MediaViewHolder(AppCompatImageView(parent.context))
+        val view = AppCompatImageView(parent.context)
+        view.layoutParams = ViewGroup.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT
+        )
+        return MediaViewHolder(view)
     }
 
     override fun onBindViewHolder(holder: MediaViewHolder, position: Int) {
         val item = items[position]
         Glide.with(holder.itemView)
             .load(item.mediaUrl)
+            .apply(RequestOptions().centerInside())
             .into(holder.view)
     }
 

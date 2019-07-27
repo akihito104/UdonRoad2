@@ -25,6 +25,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import androidx.lifecycle.observe
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.PagerSnapHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.freshdigitable.udonroad2.model.ViewModelKey
 import dagger.Binds
@@ -38,6 +39,7 @@ import kotlin.math.min
 class MediaActivity : AppCompatActivity() {
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
+    private val snapHelper = PagerSnapHelper()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
@@ -46,6 +48,7 @@ class MediaActivity : AppCompatActivity() {
 
         val layoutManager = LinearLayoutManager(this, RecyclerView.HORIZONTAL, false)
         val adapter = MediaAdapter()
+        snapHelper.attachToRecyclerView(media_pager)
         media_pager.apply {
             this.layoutManager = layoutManager
             this.adapter = adapter
