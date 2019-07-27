@@ -40,7 +40,7 @@ class MediaViewModel(
         it?.body?.mediaItems ?: listOf()
     }
 
-    internal fun setId(id: Long) {
+    internal fun setTweetId(id: Long) {
         this.id.value = id
     }
 }

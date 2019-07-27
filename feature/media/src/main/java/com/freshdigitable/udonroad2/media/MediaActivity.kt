@@ -52,13 +52,12 @@ class MediaActivity : AppCompatActivity() {
         }
 
         val viewModel = ViewModelProviders.of(this, viewModelFactory)[MediaViewModel::class.java]
-        viewModel.tweet.observe(this) {
-            val items = it?.body?.mediaItems ?: listOf()
+        viewModel.mediaItems.observe(this) { items ->
             adapter.setItems(items)
             val pos = min(items.size - 1, index)
             media_pager.scrollToPosition(pos)
         }
-        viewModel.setId(this.tweetId)
+        viewModel.setTweetId(this.tweetId)
     }
 
     private val tweetId: Long
