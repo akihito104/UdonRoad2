@@ -108,6 +108,7 @@
             app:layout_constraintBottom_toTopOf="@id/quotedItem_via"
             android:visibility="@{tweet.quoted.mediaItems.isEmpty() ? View.GONE : View.VISIBLE}"
             app:bindMedia="@{tweet.quoted.mediaItems}"
+            app:itemClickListener="@{(v, i) -> clickListener.onMediaItemClicked(tweet.originalId, tweet.quoted, i)}"
             tools:visibility="visible"
             />
 

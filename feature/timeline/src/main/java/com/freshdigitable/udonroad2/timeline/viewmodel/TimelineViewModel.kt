@@ -95,7 +95,8 @@ class TimelineViewModel(
         navigator.postEvent(TimelineEvent.UserIconClicked(item.body.user))
     }
 
-    override fun onMediaItemClicked(item: Tweet, index: Int) {
+    override fun onMediaItemClicked(originalId: Long, item: Tweet, index: Int) {
+        updateSelectedItem(SelectedItemId(originalId, item.id))
         navigator.postEvent(TimelineEvent.MediaItemClicked(item.id, index))
     }
 }

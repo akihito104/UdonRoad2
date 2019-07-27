@@ -6,9 +6,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.switchMap
 import com.freshdigitable.udonroad2.data.repository.RepositoryComponent
 import com.freshdigitable.udonroad2.data.repository.TweetRepository
+import com.freshdigitable.udonroad2.model.Tweet
 import com.freshdigitable.udonroad2.model.TweetListItem
 import com.freshdigitable.udonroad2.navigation.NavigationDispatcher
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
+import com.freshdigitable.udonroad2.timeline.TweetListItemClickListener
 import dagger.Module
 import dagger.Provides
 import javax.inject.Inject
@@ -16,7 +18,7 @@ import javax.inject.Inject
 class TweetDetailViewModel @Inject constructor(
     private val navigator: NavigationDispatcher,
     private val repository: TweetRepository
-) : ViewModel() {
+) : TweetListItemClickListener, ViewModel() {
 
     private val targetId: MutableLiveData<Long> = MutableLiveData()
     val tweetItem: LiveData<TweetListItem?> = targetId.switchMap {
@@ -37,6 +39,10 @@ class TweetDetailViewModel @Inject constructor(
     fun onBodyUserClicked() {
         val user = tweetItem.value?.body?.user ?: return
         navigator.postEvent(TimelineEvent.UserIconClicked(user))
+    }
+
+    override fun onMediaItemClicked(originalId: Long, item: Tweet, index: Int) {
+        navigator.postEvent(TimelineEvent.MediaItemClicked(item.id, index))
     }
 }
 

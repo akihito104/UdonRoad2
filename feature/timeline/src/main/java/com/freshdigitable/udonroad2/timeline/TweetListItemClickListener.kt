@@ -5,13 +5,13 @@ import com.freshdigitable.udonroad2.model.Tweet
 import com.freshdigitable.udonroad2.model.TweetListItem
 
 interface TweetListItemClickListener {
-    fun onBodyItemClicked(item: TweetListItem)
+    fun onBodyItemClicked(item: TweetListItem) {}
 
-    fun onQuoteItemClicked(item: TweetListItem)
+    fun onQuoteItemClicked(item: TweetListItem) {}
 
-    fun onUserIconClicked(item: TweetListItem)
+    fun onUserIconClicked(item: TweetListItem) {}
 
-    fun onMediaItemClicked(item: Tweet, index: Int)
+    fun onMediaItemClicked(originalId: Long, item: Tweet, index: Int)
 }
 
 interface TweetListEventListener {
