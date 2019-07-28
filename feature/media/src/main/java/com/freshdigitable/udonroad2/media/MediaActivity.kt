@@ -20,6 +20,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
@@ -27,14 +28,14 @@ import androidx.lifecycle.observe
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.PagerSnapHelper
 import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView.SCROLL_STATE_IDLE
+import com.freshdigitable.udonroad2.media.databinding.ActivityMediaBinding
 import com.freshdigitable.udonroad2.model.ViewModelKey
 import dagger.Binds
 import dagger.Module
 import dagger.android.AndroidInjection
 import dagger.multibindings.IntoMap
-import kotlinx.android.synthetic.main.activity_media.media_pager
 import javax.inject.Inject
-import kotlin.math.min
 
 class MediaActivity : AppCompatActivity() {
     @Inject
@@ -44,23 +45,57 @@ class MediaActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_media)
-
-        val layoutManager = LinearLayoutManager(this, RecyclerView.HORIZONTAL, false)
-        val adapter = MediaAdapter()
-        snapHelper.attachToRecyclerView(media_pager)
-        media_pager.apply {
-            this.layoutManager = layoutManager
-            this.adapter = adapter
-        }
-
+        val binding =
+            DataBindingUtil.setContentView<ActivityMediaBinding>(this, R.layout.activity_media)
         val viewModel = ViewModelProviders.of(this, viewModelFactory)[MediaViewModel::class.java]
-        viewModel.mediaItems.observe(this) { items ->
-            adapter.setItems(items)
-            val pos = min(items.size - 1, index)
-            media_pager.scrollToPosition(pos)
+        binding.lifecycleOwner = this
+        binding.viewModel = viewModel
+
+        title = ""
+        setSupportActionBar(binding.mediaToolbar)
+        viewModel.isInImmersive.observe(this) {
+            if (it) {
+                supportActionBar?.hide()
+            } else {
+                supportActionBar?.show()
+            }
         }
+
+        window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
+            viewModel.onSystemUiVisibilityChange(visibility)
+        }
+        viewModel.systemUiVisibility.observe(this) {
+            window.decorView.systemUiVisibility = it
+        }
+
+        binding.mediaPager.setupPager(viewModel)
         viewModel.setTweetId(this.tweetId)
+    }
+
+    private fun RecyclerView.setupPager(viewModel: MediaViewModel) {
+        snapHelper.attachToRecyclerView(this)
+        val lm = LinearLayoutManager(this@MediaActivity, RecyclerView.HORIZONTAL, false)
+        val adapter = MediaAdapter(viewModel)
+        this.layoutManager = lm
+        this.adapter = adapter
+        this.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                if (newState == SCROLL_STATE_IDLE) {
+                    val pos = lm.findFirstCompletelyVisibleItemPosition()
+                    viewModel.setCurrentPosition(pos)
+                }
+            }
+        })
+
+        viewModel.mediaItems.observe(this@MediaActivity) { items ->
+            adapter.setItems(items)
+        }
+        viewModel.currentPosition.observe(this@MediaActivity) {
+            if (it != null) {
+                this.scrollToPosition(it)
+            }
+        }
+        viewModel.setCurrentPosition(index)
     }
 
     private val tweetId: Long

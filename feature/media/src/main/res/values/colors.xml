@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <!--
   ~ Copyright (c) 2019. Matsuda, Akihit (akihito104)
   ~
@@ -15,6 +16,6 @@
   -->
 
 <resources>
-    <string name="app_name">media</string>
-    <string name="media_current_position">%1$d / %2$d</string>
+    <color name="layer_black_immersive">#33000000</color>
+    <color name="media_background_black">#000000</color>
 </resources>

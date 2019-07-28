@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <!--
   ~ Copyright (c) 2019. Matsuda, Akihit (akihito104)
   ~
@@ -15,6 +16,9 @@
   -->
 
 <resources>
-    <string name="app_name">media</string>
-    <string name="media_current_position">%1$d / %2$d</string>
+    <style name="Theme.AppTheme.TranslucentStatusBar" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:statusBarColor">@color/layer_black_immersive</item>
+        <item name="android:navigationBarColor">@color/layer_black_immersive</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
 </resources>

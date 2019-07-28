@@ -15,14 +15,40 @@
   ~ limitations under the License.
   -->
 
-<FrameLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     >
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/media_pager"
+    <data>
+        <variable
+            name="viewModel"
+            type="com.freshdigitable.udonroad2.media.MediaViewModel"
+            />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        />
-</FrameLayout>
+        android:background="@color/media_background_black"
+        android:fitsSystemWindows="true"
+        >
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/media_pager"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:onClick="@{v -> viewModel.toggleUiVisibility()}"
+            />
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/media_toolbar"
+            android:layout_width="0dp"
+            android:layout_height="?android:attr/actionBarSize"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:background="@color/layer_black_immersive"
+            app:titleTextColor="#fff"
+            app:title="@{viewModel.titleText}"
+            tools:title="1 / 4"
+            />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

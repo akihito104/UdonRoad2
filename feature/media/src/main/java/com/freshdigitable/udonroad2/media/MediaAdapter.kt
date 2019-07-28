@@ -24,7 +24,9 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.freshdigitable.udonroad2.model.MediaItem
 
-internal class MediaAdapter : RecyclerView.Adapter<MediaViewHolder>() {
+internal class MediaAdapter(
+    private val viewModel: MediaViewModel
+) : RecyclerView.Adapter<MediaViewHolder>() {
 
     private val items: MutableList<MediaItem> = mutableListOf()
 
@@ -51,6 +53,16 @@ internal class MediaAdapter : RecyclerView.Adapter<MediaViewHolder>() {
             .load(item.mediaUrl)
             .apply(RequestOptions().centerInside())
             .into(holder.view)
+    }
+
+    override fun onViewAttachedToWindow(holder: MediaViewHolder) {
+        super.onViewAttachedToWindow(holder)
+        holder.itemView.setOnClickListener { viewModel.toggleUiVisibility() }
+    }
+
+    override fun onViewDetachedFromWindow(holder: MediaViewHolder) {
+        super.onViewDetachedFromWindow(holder)
+        holder.itemView.setOnClickListener(null)
     }
 
     override fun getItemCount(): Int = items.size
