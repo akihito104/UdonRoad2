@@ -19,55 +19,93 @@ package com.freshdigitable.udonroad2.data.db.dbview
 import androidx.room.ColumnInfo
 import androidx.room.DatabaseView
 import androidx.room.Embedded
+import androidx.room.Ignore
+import androidx.room.Relation
 import com.freshdigitable.udonroad2.data.db.entity.MediaEntity
 import com.freshdigitable.udonroad2.data.db.entity.UrlEntity
+import com.freshdigitable.udonroad2.data.db.entity.VideoValiantEntity
 import com.freshdigitable.udonroad2.model.MediaId
 import com.freshdigitable.udonroad2.model.MediaItem
 import com.freshdigitable.udonroad2.model.MediaType
+import com.freshdigitable.udonroad2.model.UrlItem
 
-@DatabaseView("""
+@DatabaseView(
+    """
     SELECT m.*, 
      r.tweet_id, 
      u.text AS url_text, u.display AS url_display, u.expanded AS url_expanded 
     FROM relation_tweet_media AS r 
     INNER JOIN media AS m ON r.media_id = m.id
     INNER JOIN url AS u ON m.url = u.text
-""", viewName = "view_media")
+""", viewName = "view_media"
+)
 internal data class MediaDbView(
     @ColumnInfo(name = "id")
-    override val id: MediaId,
+    val id: MediaId,
 
     @ColumnInfo(name = "media_url")
-    override val mediaUrl: String,
+    val mediaUrl: String,
 
     @Embedded(prefix = "url_")
-    override val url: UrlEntity,
+    val url: UrlEntity,
 
     @ColumnInfo(name = "type")
-    override val type: MediaType,
+    val type: MediaType,
 
     @Embedded(prefix = "large_")
-    override val largeSize: MediaEntity.Size,
+    val largeSize: MediaEntity.Size,
 
     @Embedded(prefix = "medium_")
-    override val mediumSize: MediaEntity.Size,
+    val mediumSize: MediaEntity.Size,
 
     @Embedded(prefix = "small_")
-    override val smallSize: MediaEntity.Size,
+    val smallSize: MediaEntity.Size,
 
     @Embedded(prefix = "thumb_")
-    override val thumbSize: MediaEntity.Size,
+    val thumbSize: MediaEntity.Size,
 
     @ColumnInfo(name = "video_aspect_ratio_width")
-    override val videoAspectRatioWidth: Int?,
+    val videoAspectRatioWidth: Int?,
 
     @ColumnInfo(name = "video_aspect_ratio_height")
-    override val videoAspectRatioHeight: Int?,
+    val videoAspectRatioHeight: Int?,
 
     @ColumnInfo(name = "video_duration_millis")
-    override val videoDurationMillis: Long?,
+    val videoDurationMillis: Long?,
 
     @ColumnInfo(name = "tweet_id")
     val tweetId: Long
+)
 
-): MediaItem
+internal data class MediaItemDb(
+    @Embedded
+    val mediaDbView: MediaDbView
+) : MediaItem {
+    @Ignore
+    override val id: MediaId = mediaDbView.id
+    @Ignore
+    override val mediaUrl: String = mediaDbView.mediaUrl
+    @Ignore
+    override val url: UrlItem = mediaDbView.url
+    @Ignore
+    override val type: MediaType = mediaDbView.type
+    @Ignore
+    override val largeSize: MediaItem.Size? = mediaDbView.largeSize
+    @Ignore
+    override val mediumSize: MediaItem.Size? = mediaDbView.mediumSize
+    @Ignore
+    override val smallSize: MediaItem.Size? = mediaDbView.smallSize
+    @Ignore
+    override val thumbSize: MediaItem.Size? = mediaDbView.thumbSize
+    @Ignore
+    override val videoAspectRatioWidth: Int? = mediaDbView.videoAspectRatioWidth
+    @Ignore
+    override val videoAspectRatioHeight: Int? = mediaDbView.videoAspectRatioHeight
+    @Ignore
+    override val videoDurationMillis: Long? = mediaDbView.videoDurationMillis
+
+    @Relation(
+        entity = VideoValiantEntity::class, entityColumn = "media_id", parentColumn = "id"
+    )
+    override var videoValiantItems: List<VideoValiantEntity> = listOf()
+}

@@ -81,6 +81,29 @@ internal data class MediaEntity(
     ) : MediaItem.Size
 }
 
+@Entity(
+    tableName = "video_valiant",
+    primaryKeys = ["media_id", "url"],
+    foreignKeys = [
+        ForeignKey(
+            entity = com.freshdigitable.udonroad2.data.db.entity.MediaEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["media_id"]
+        )]
+)
+internal data class VideoValiantEntity(
+    @ColumnInfo(name = "media_id")
+    val mediaId: MediaId,
+
+    @ColumnInfo(name = "url")
+    override val url: String,
+
+    @ColumnInfo(name = "bitrate")
+    override val bitrate: Int,
+
+    @ColumnInfo(name = "content_type")
+    override val contentType: String
+) : MediaItem.VideoValiant
 
 @Entity(
     tableName = "relation_tweet_media",

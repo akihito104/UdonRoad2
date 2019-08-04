@@ -21,6 +21,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import com.freshdigitable.udonroad2.data.db.entity.MediaEntity
 import com.freshdigitable.udonroad2.data.db.entity.TweetMediaRelation
+import com.freshdigitable.udonroad2.data.db.entity.VideoValiantEntity
 
 @Dao
 abstract class MediaDao {
@@ -28,5 +29,11 @@ abstract class MediaDao {
     internal abstract suspend fun addMediaEntities(entities: Iterable<MediaEntity>)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    internal abstract suspend fun addTweetMediaRelations(rels : Iterable<TweetMediaRelation>)
+    internal abstract suspend fun addTweetMediaRelations(rels: Iterable<TweetMediaRelation>)
+}
+
+@Dao
+abstract class VideoValiantDao {
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    internal abstract suspend fun addVideoValiantEntities(entities: Iterable<VideoValiantEntity>)
 }

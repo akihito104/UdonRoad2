@@ -21,6 +21,7 @@ import androidx.room.DatabaseView
 import androidx.room.Embedded
 import androidx.room.Ignore
 import androidx.room.Relation
+import com.freshdigitable.udonroad2.model.MediaItem
 import com.freshdigitable.udonroad2.model.Tweet
 import com.freshdigitable.udonroad2.model.TweetListItem
 import org.threeten.bp.Instant
@@ -79,8 +80,10 @@ internal data class Tweet(
     @Ignore
     override val createdAt: Instant = tweet.createdAt
 
-    @Relation(entity = MediaDbView::class, parentColumn = "id", entityColumn = "tweet_id")
-    override var mediaItems: List<MediaDbView> = listOf()
+    @Relation(
+        entity = MediaDbView::class, parentColumn = "id", entityColumn = "tweet_id"
+    )
+    override var mediaItems: List<MediaItem> = listOf()
 }
 
 @DatabaseView(
@@ -144,10 +147,10 @@ internal data class TweetListItem(
         tweetListItem.originalUser
 
     @Relation(entity = MediaDbView::class, parentColumn = "id", entityColumn = "tweet_id")
-    var bodyMediaItems: List<MediaDbView> = listOf()
+    var bodyMediaItems: List<MediaItemDb> = listOf()
 
     @Relation(entity = MediaDbView::class, parentColumn = "qt_id", entityColumn = "tweet_id")
-    var quoteMediaItems: List<MediaDbView> = listOf()
+    var quoteMediaItems: List<MediaItemDb> = listOf()
 
     override val body: Tweet
         @Ignore get() = Tweet(tweetListItem.body).apply { mediaItems = bodyMediaItems }

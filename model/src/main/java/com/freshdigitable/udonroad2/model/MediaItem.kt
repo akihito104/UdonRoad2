@@ -39,6 +39,8 @@ interface MediaItem {
 
     val videoDurationMillis: Long?
 
+    val videoValiantItems: List<VideoValiant>
+
     val thumbMediaUrl: String
         get() = "$mediaUrl:thumb"
 
@@ -48,6 +50,14 @@ interface MediaItem {
         val height: Int
 
         val resizeType: Int
+    }
+
+    interface VideoValiant {
+        val bitrate: Int
+
+        val contentType: String
+
+        val url: String
     }
 }
 

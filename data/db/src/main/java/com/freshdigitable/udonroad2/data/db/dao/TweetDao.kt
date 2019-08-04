@@ -30,17 +30,15 @@ import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.Transaction
 import com.freshdigitable.udonroad2.data.db.AppDatabase
-import com.freshdigitable.udonroad2.data.db.dbview.Tweet
 import com.freshdigitable.udonroad2.data.db.dbview.TweetListItem
 import com.freshdigitable.udonroad2.data.db.entity.TweetEntityDb
 import com.freshdigitable.udonroad2.data.db.entity.TweetMediaRelation
+import com.freshdigitable.udonroad2.data.db.entity.VideoValiantEntity
 import com.freshdigitable.udonroad2.data.db.ext.toDbEntity
 import com.freshdigitable.udonroad2.data.db.ext.toEntity
 import com.freshdigitable.udonroad2.data.db.ext.toListEntity
 import com.freshdigitable.udonroad2.data.db.ext.toStructuredTweet
 import com.freshdigitable.udonroad2.model.TweetEntity
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 @Dao
 abstract class TweetDao(
@@ -62,15 +60,11 @@ abstract class TweetDao(
     @Query("SELECT * FROM tweet_list_item WHERE original_id = :id")
     internal abstract fun findTweetItem(id: Long): LiveData<TweetListItem?>
 
-    @Transaction
-    @Query("SELECT * FROM view_tweet WHERE id = :id")
-    internal abstract fun findTweet(id: Long): LiveData<Tweet?>
-
     open fun findTweetItemById(
         id: Long
     ): LiveData<com.freshdigitable.udonroad2.model.TweetListItem?> = findTweetItem(id).map { it }
 
-    suspend fun addTweet(tweet: TweetEntity, owner: String? = null) = withContext(Dispatchers.IO) {
+    suspend fun addTweet(tweet: TweetEntity, owner: String? = null) {
         addTweets(listOf(tweet), owner)
     }
 
@@ -78,7 +72,7 @@ abstract class TweetDao(
     internal open suspend fun addTweets(
         tweet: List<TweetEntity>,
         owner: String? = null
-    ) = withContext(Dispatchers.IO) {
+    ) {
         val tweetEntities = tweet.asSequence()
             .map {
                 arrayOf(
@@ -116,6 +110,18 @@ abstract class TweetDao(
                 it.second.id
             )
         })
+        val videoVariantEntities = mediaItems.map { it.second }
+            .filter { it.videoValiantItems.isNotEmpty() }
+            .flatMap { media -> media.videoValiantItems.map { media to it } }
+            .map { (media, video) ->
+                VideoValiantEntity(
+                    mediaId = media.id,
+                    url = video.url,
+                    bitrate = video.bitrate,
+                    contentType = video.contentType
+                )
+            }
+        db.videoValiantDao().addVideoValiantEntities(videoVariantEntities)
     }
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

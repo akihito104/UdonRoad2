@@ -24,6 +24,7 @@ import com.freshdigitable.udonroad2.data.restclient.data.SizeRest
 import com.freshdigitable.udonroad2.data.restclient.data.TweetEntityRest
 import com.freshdigitable.udonroad2.data.restclient.data.UrlEntityRest
 import com.freshdigitable.udonroad2.data.restclient.data.UserEntityRest
+import com.freshdigitable.udonroad2.data.restclient.data.VideoValiantRest
 import com.freshdigitable.udonroad2.model.MediaId
 import com.freshdigitable.udonroad2.model.MediaItem
 import com.freshdigitable.udonroad2.model.MediaType
@@ -116,14 +117,23 @@ fun MediaEntity.toItem(): MediaItem {
         videoDurationMillis = videoDurationMillis,
         url = UrlEntityRest(
             text = text, displayUrl = displayURL, expandedUrl = expandedURL
-        )
+        ),
+        videoValiantItems = videoVariants.map(MediaEntity.Variant::toItem)
     )
 }
 
-fun MediaEntity.Size.toItem(): MediaItem.Size {
+internal fun MediaEntity.Size.toItem(): MediaItem.Size {
     return SizeRest(
         resizeType = this.resize,
         height = height,
         width = width
+    )
+}
+
+internal fun MediaEntity.Variant.toItem(): VideoValiantRest {
+    return VideoValiantRest(
+        bitrate = bitrate,
+        contentType = contentType,
+        url = url
     )
 }

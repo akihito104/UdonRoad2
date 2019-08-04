@@ -33,6 +33,7 @@ import com.freshdigitable.udonroad2.data.db.dao.TweetListEntity
 import com.freshdigitable.udonroad2.data.db.dao.UrlDao
 import com.freshdigitable.udonroad2.data.db.dao.UserDao
 import com.freshdigitable.udonroad2.data.db.dao.UserListEntity
+import com.freshdigitable.udonroad2.data.db.dao.VideoValiantDao
 import com.freshdigitable.udonroad2.data.db.dbview.MediaDbView
 import com.freshdigitable.udonroad2.data.db.dbview.MemberListDbView
 import com.freshdigitable.udonroad2.data.db.dbview.TweetDbView
@@ -46,6 +47,7 @@ import com.freshdigitable.udonroad2.data.db.entity.TweetEntityDb
 import com.freshdigitable.udonroad2.data.db.entity.TweetMediaRelation
 import com.freshdigitable.udonroad2.data.db.entity.UrlEntity
 import com.freshdigitable.udonroad2.data.db.entity.UserEntity
+import com.freshdigitable.udonroad2.data.db.entity.VideoValiantEntity
 
 @Database(
     entities = [
@@ -59,6 +61,7 @@ import com.freshdigitable.udonroad2.data.db.entity.UserEntity
         RelationshipEntity::class,
         UrlEntity::class,
         MediaEntity::class,
+        VideoValiantEntity::class,
         TweetMediaRelation::class
     ],
     views = [
@@ -87,6 +90,8 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun relationshipDao(): RelationshipDao
 
     abstract fun mediaDao(): MediaDao
+
+    abstract fun videoValiantDao(): VideoValiantDao
 
     abstract fun urlDao(): UrlDao
 }
