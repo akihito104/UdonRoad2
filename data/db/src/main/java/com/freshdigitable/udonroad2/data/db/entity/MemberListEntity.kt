@@ -6,6 +6,7 @@ import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 
 @Entity(
+    tableName = "member_list",
     foreignKeys = [
         ForeignKey(entity = UserEntity::class, parentColumns = ["id"], childColumns = ["user_id"])
     ]

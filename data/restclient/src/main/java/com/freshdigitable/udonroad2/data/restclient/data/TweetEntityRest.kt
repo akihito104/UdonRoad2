@@ -1,5 +1,6 @@
 package com.freshdigitable.udonroad2.data.restclient.data
 
+import com.freshdigitable.udonroad2.model.MediaItem
 import com.freshdigitable.udonroad2.model.TweetEntity
 import com.freshdigitable.udonroad2.model.User
 import org.threeten.bp.Instant
@@ -17,5 +18,6 @@ internal class TweetEntityRest(
     override val isFavorited: Boolean,
     override val possiblySensitive: Boolean,
     override val source: String,
-    override val createdAt: Instant
+    override val createdAt: Instant,
+    override val media: List<MediaItem>
 ) : TweetEntity

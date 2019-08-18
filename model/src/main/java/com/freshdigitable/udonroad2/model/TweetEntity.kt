@@ -28,4 +28,6 @@ interface TweetEntity {
     val source: String
 
     val createdAt: Instant
+
+    val media: List<MediaItem>
 }

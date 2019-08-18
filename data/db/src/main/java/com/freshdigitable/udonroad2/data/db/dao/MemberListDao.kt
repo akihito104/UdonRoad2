@@ -59,18 +59,6 @@ abstract class MemberListDao(
     abstract suspend fun clean(owner: String)
 }
 
-internal fun MemberList.toEntity(): MemberListEntity {
-    return MemberListEntity(
-        id = id,
-        name = name,
-        description = description,
-        isPublic = isPublic,
-        followerCount = followerCount,
-        memberCount = memberCount,
-        userId = user.id
-    )
-}
-
 @Entity(
     tableName = "member_list_list",
     foreignKeys = [

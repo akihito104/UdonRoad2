@@ -21,7 +21,7 @@ import androidx.room.DatabaseView
 import com.freshdigitable.udonroad2.model.TweetingUser
 
 @DatabaseView(viewName = "view_user_in_tweet", value = """
-    SELECT id, name, screen_name, icon_url FROM UserEntity
+    SELECT id, name, screen_name, icon_url FROM user
 """)
 internal data class TweetingUser(
     @ColumnInfo(name = "id")

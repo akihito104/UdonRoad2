@@ -11,7 +11,7 @@ import com.freshdigitable.udonroad2.model.MemberListItem
      u.name AS user_name,
      u.screen_name AS user_screen_name,
      u.icon_url AS user_icon_url
-    FROM MemberListEntity AS m
+    FROM member_list AS m
     INNER JOIN view_user_in_tweet AS u ON m.user_id = u.id
 """, viewName = "view_member_list")
 internal data class MemberListDbView(

@@ -37,7 +37,7 @@ abstract class UserDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     internal abstract suspend fun addUsers(users: List<UserEntity>)
 
-    @Query("SELECT * FROM UserEntity WHERE id = :id")
+    @Query("SELECT * FROM user WHERE id = :id")
     internal abstract fun getUser(id: Long): LiveData<UserEntity?>
 
     open fun getUserById(id: Long): LiveData<User?> = getUser(id).map { it }

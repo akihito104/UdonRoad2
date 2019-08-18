@@ -30,41 +30,41 @@ import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.Transaction
 import com.freshdigitable.udonroad2.data.db.AppDatabase
-import com.freshdigitable.udonroad2.data.db.dbview.Tweet
 import com.freshdigitable.udonroad2.data.db.dbview.TweetListItem
 import com.freshdigitable.udonroad2.data.db.entity.TweetEntityDb
-import com.freshdigitable.udonroad2.data.db.entity.UserEntity
+import com.freshdigitable.udonroad2.data.db.entity.TweetMediaRelation
+import com.freshdigitable.udonroad2.data.db.entity.VideoValiantEntity
+import com.freshdigitable.udonroad2.data.db.ext.toDbEntity
+import com.freshdigitable.udonroad2.data.db.ext.toEntity
+import com.freshdigitable.udonroad2.data.db.ext.toListEntity
+import com.freshdigitable.udonroad2.data.db.ext.toStructuredTweet
 import com.freshdigitable.udonroad2.model.TweetEntity
-import com.freshdigitable.udonroad2.model.User
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 @Dao
 abstract class TweetDao(
     private val db: AppDatabase
 ) {
 
+    @Transaction
     @Query(
         """
-        SELECT tweet_list_item.*
-        FROM tweet_list
-        INNER JOIN tweet_list_item ON tweet_list_item.original_id = tweet_list.original_id
-        WHERE tweet_list.owner = :owner
-        ORDER BY tweet_list.`order` DESC"""
+        SELECT v.*
+        FROM tweet_list AS l
+        INNER JOIN tweet_list_item AS v ON v.original_id = l.original_id
+        WHERE l.owner = :owner
+        ORDER BY l.`order` DESC"""
     )
     internal abstract fun getTimeline(owner: String): DataSource.Factory<Int, TweetListItem>
 
+    @Transaction
     @Query("SELECT * FROM tweet_list_item WHERE original_id = :id")
     internal abstract fun findTweetItem(id: Long): LiveData<TweetListItem?>
-
-    @Query("SELECT * FROM tweet WHERE id = :id")
-    internal abstract fun findTweet(id: Long): LiveData<Tweet?>
 
     open fun findTweetItemById(
         id: Long
     ): LiveData<com.freshdigitable.udonroad2.model.TweetListItem?> = findTweetItem(id).map { it }
 
-    suspend fun addTweet(tweet: TweetEntity, owner: String? = null) = withContext(Dispatchers.IO) {
+    suspend fun addTweet(tweet: TweetEntity, owner: String? = null) {
         addTweets(listOf(tweet), owner)
     }
 
@@ -72,7 +72,7 @@ abstract class TweetDao(
     internal open suspend fun addTweets(
         tweet: List<TweetEntity>,
         owner: String? = null
-    ) = withContext(Dispatchers.IO) {
+    ) {
         val tweetEntities = tweet.asSequence()
             .map {
                 arrayOf(
@@ -85,19 +85,43 @@ abstract class TweetDao(
             .flatMap { it.asSequence() }
             .distinctBy { it.id }
             .toList()
-        val userDao = db.userDao()
-        userDao.addUsers(
+
+        db.userDao().addUsers(
             tweetEntities.asSequence()
                 .map { it.user }
                 .filterNotNull()
                 .distinctBy { it.id }
-                .map { it.toDbEntity() }
+                .map { it.toEntity() }
                 .toList())
         addTweetEntitiesInternal(tweetEntities.map(TweetEntity::toDbEntity))
         addStructuredTweetEntities(tweet.map { it.toStructuredTweet() })
         if (owner != null) {
             addTweetListEntities(tweet.map { it.toListEntity(owner) })
         }
+
+        val mediaItems = tweetEntities.filter { it.media.isNotEmpty() }
+            .map { t -> t.media.map { t to it } }
+            .flatten()
+        db.urlDao().addUrlEntities(mediaItems.map { it.second.url.toEntity() })
+        db.mediaDao().addMediaEntities(mediaItems.map { it.second.toEntity() })
+        db.mediaDao().addTweetMediaRelations(mediaItems.map {
+            TweetMediaRelation(
+                it.first.id,
+                it.second.id
+            )
+        })
+        val videoVariantEntities = mediaItems.map { it.second }
+            .filter { it.videoValiantItems.isNotEmpty() }
+            .flatMap { media -> media.videoValiantItems.map { media to it } }
+            .map { (media, video) ->
+                VideoValiantEntity(
+                    mediaId = media.id,
+                    url = video.url,
+                    bitrate = video.bitrate,
+                    contentType = video.contentType
+                )
+            }
+        db.videoValiantDao().addVideoValiantEntities(videoVariantEntities)
     }
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -173,41 +197,3 @@ internal class TweetListEntity(
     @ColumnInfo(name = "owner")
     val owner: String
 )
-
-private fun TweetEntity.toDbEntity(): TweetEntityDb {
-    return TweetEntityDb(
-        id = id,
-        createdAt = createdAt,
-        favoriteCount = favoriteCount,
-        inReplyToTweetId = inReplyToTweetId,
-        isFavorited = isFavorited,
-        isRetweeted = isRetweeted,
-        possiblySensitive = possiblySensitive,
-        quotedTweetId = quotedTweet?.id,
-        retweetCount = retweetCount,
-        retweetedTweetId = retweetedTweet?.id,
-        source = source,
-        text = text,
-        userId = user.id
-    )
-}
-
-private fun User.toDbEntity(): UserEntity {
-    return UserEntity(this)
-}
-
-private fun TweetEntity.toStructuredTweet(): StructuredTweetEntity {
-    return StructuredTweetEntity(
-        originalId = id,
-        bodyTweetId = retweetedTweet?.id ?: id,
-        quotedTweetId = retweetedTweet?.quotedTweet?.id ?: quotedTweet?.id
-    )
-}
-
-private fun TweetEntity.toListEntity(owner: String): TweetListEntity {
-    return TweetListEntity(
-        originalId = id,
-        order = id,
-        owner = owner
-    )
-}

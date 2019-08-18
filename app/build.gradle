@@ -33,6 +33,7 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation project(':feature:timeline')
+    implementation project(':feature:media')
     implementation project(':candysh')
     implementation project(':data:repository')
     implementation project(':data:db')
@@ -47,6 +48,7 @@ dependencies {
     implementation "androidx.core:core-ktx:$coreKtx_version"
     implementation "androidx.constraintlayout:constraintlayout:$constraintLayout_version"
     implementation "com.google.android.material:material:$material_version"
+    implementation "androidx.viewpager2:viewpager2:$viewpager2_version"
 
     implementation "androidx.lifecycle:lifecycle-extensions:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version"

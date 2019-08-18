@@ -20,24 +20,34 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverter
 import androidx.room.TypeConverters
+import com.freshdigitable.udonroad2.data.db.converter.MediaIdConverter
+import com.freshdigitable.udonroad2.data.db.converter.MediaTypeConverter
+import com.freshdigitable.udonroad2.data.db.converter.TimestampConverter
+import com.freshdigitable.udonroad2.data.db.dao.MediaDao
 import com.freshdigitable.udonroad2.data.db.dao.MemberListDao
 import com.freshdigitable.udonroad2.data.db.dao.MemberListListEntity
 import com.freshdigitable.udonroad2.data.db.dao.RelationshipDao
 import com.freshdigitable.udonroad2.data.db.dao.StructuredTweetEntity
 import com.freshdigitable.udonroad2.data.db.dao.TweetDao
 import com.freshdigitable.udonroad2.data.db.dao.TweetListEntity
+import com.freshdigitable.udonroad2.data.db.dao.UrlDao
 import com.freshdigitable.udonroad2.data.db.dao.UserDao
 import com.freshdigitable.udonroad2.data.db.dao.UserListEntity
+import com.freshdigitable.udonroad2.data.db.dao.VideoValiantDao
+import com.freshdigitable.udonroad2.data.db.dbview.MediaDbView
 import com.freshdigitable.udonroad2.data.db.dbview.MemberListDbView
-import com.freshdigitable.udonroad2.data.db.dbview.Tweet
-import com.freshdigitable.udonroad2.data.db.dbview.TweetListItem
+import com.freshdigitable.udonroad2.data.db.dbview.TweetDbView
+import com.freshdigitable.udonroad2.data.db.dbview.TweetListItemDbView
 import com.freshdigitable.udonroad2.data.db.dbview.TweetingUser
 import com.freshdigitable.udonroad2.data.db.dbview.UserListDbView
+import com.freshdigitable.udonroad2.data.db.entity.MediaEntity
 import com.freshdigitable.udonroad2.data.db.entity.MemberListEntity
 import com.freshdigitable.udonroad2.data.db.entity.RelationshipEntity
 import com.freshdigitable.udonroad2.data.db.entity.TweetEntityDb
+import com.freshdigitable.udonroad2.data.db.entity.TweetMediaRelation
+import com.freshdigitable.udonroad2.data.db.entity.UrlEntity
 import com.freshdigitable.udonroad2.data.db.entity.UserEntity
-import org.threeten.bp.Instant
+import com.freshdigitable.udonroad2.data.db.entity.VideoValiantEntity
 
 @Database(
     entities = [
@@ -48,19 +58,28 @@ import org.threeten.bp.Instant
         UserListEntity::class,
         MemberListEntity::class,
         MemberListListEntity::class,
-        RelationshipEntity::class
+        RelationshipEntity::class,
+        UrlEntity::class,
+        MediaEntity::class,
+        VideoValiantEntity::class,
+        TweetMediaRelation::class
     ],
     views = [
-        Tweet::class,
-        TweetListItem::class,
+        TweetDbView::class,
+        TweetListItemDbView::class,
         TweetingUser::class,
         UserListDbView::class,
-        MemberListDbView::class
+        MemberListDbView::class,
+        MediaDbView::class
     ],
     exportSchema = false,
     version = 1
 )
-@TypeConverters(TimestampConverter::class)
+@TypeConverters(
+    TimestampConverter::class,
+    MediaIdConverter::class,
+    MediaTypeConverter::class
+)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun tweetDao(): TweetDao
 
@@ -69,12 +88,18 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun memberListDao(): MemberListDao
 
     abstract fun relationshipDao(): RelationshipDao
+
+    abstract fun mediaDao(): MediaDao
+
+    abstract fun videoValiantDao(): VideoValiantDao
+
+    abstract fun urlDao(): UrlDao
 }
 
-class TimestampConverter {
+interface AppTypeConverter<E, I> {
     @TypeConverter
-    fun serialize(time: Instant) = time.toEpochMilli()
+    fun toItem(v: I): E
 
     @TypeConverter
-    fun deserialize(time: Long): Instant = Instant.ofEpochMilli(time)
+    fun toEntity(v: E): I
 }

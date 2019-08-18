@@ -20,6 +20,7 @@
         xmlns:tools="http://schemas.android.com/tools">
 
     <data>
+        <import type="android.view.View" />
         <variable
             name="tweet"
             type="com.freshdigitable.udonroad2.model.TweetListItem"
@@ -90,11 +91,25 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/margin_half"
             app:layout_constraintTop_toBottomOf="@id/quotedItem_icon"
-            app:layout_constraintBottom_toTopOf="@id/quotedItem_via"
+            app:layout_constraintBottom_toTopOf="@id/quotedItem_mediaContainer"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:text="@{tweet.quoted.text}"
             tools:text="tweet body"
+            />
+        <com.freshdigitable.udonroad2.media.MediaThumbnailContainer
+            android:id="@+id/quotedItem_mediaContainer"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="@dimen/margin_half"
+            app:layout_constraintTop_toBottomOf="@id/quotedItem_text"
+            app:layout_constraintStart_toStartOf="@id/quotedItem_text"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/quotedItem_via"
+            android:visibility="@{tweet.quoted.mediaItems.isEmpty() ? View.GONE : View.VISIBLE}"
+            app:bindMedia="@{tweet.quoted.mediaItems}"
+            app:itemClickListener="@{(v, i) -> clickListener.onMediaItemClicked(tweet.originalId, tweet.quoted, i)}"
+            tools:visibility="visible"
             />
 
         <TextView
@@ -134,7 +149,7 @@
             android:layout_marginTop="@dimen/margin_half"
             android:layout_marginStart="@dimen/margin_default"
             android:layout_marginLeft="@dimen/margin_default"
-            app:layout_constraintTop_toBottomOf="@id/quotedItem_text"
+            app:layout_constraintTop_toBottomOf="@id/quotedItem_mediaContainer"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"

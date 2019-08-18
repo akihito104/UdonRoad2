@@ -16,7 +16,9 @@
 
 package com.freshdigitable.udonroad2.timeline.bindingadapter
 
+import android.graphics.Color
 import android.graphics.Typeface
+import android.graphics.drawable.ColorDrawable
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.text.format.DateUtils
@@ -25,6 +27,11 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.databinding.BindingAdapter
 import com.bumptech.glide.Glide
+import com.bumptech.glide.request.RequestOptions
+import com.freshdigitable.udonroad2.media.MediaThumbnailContainer
+import com.freshdigitable.udonroad2.media.mediaViews
+import com.freshdigitable.udonroad2.model.MediaItem
+import com.freshdigitable.udonroad2.model.MediaType
 import com.freshdigitable.udonroad2.model.TweetingUser
 import com.freshdigitable.udonroad2.timeline.R
 import org.threeten.bp.Duration
@@ -32,6 +39,7 @@ import org.threeten.bp.Instant
 import org.threeten.bp.LocalDateTime
 import org.threeten.bp.ZoneId
 import org.threeten.bp.format.DateTimeFormatter
+import java.util.EnumSet
 import java.util.regex.Pattern
 
 private val SOURCE_PATTERN = Pattern.compile("<a href=\".*\".*>(.*)</a>")
@@ -66,8 +74,10 @@ fun bindCreatedAtAbsolute(v: TextView, createdAt: Instant?) {
     v.text = if (createdAt == null) {
         ""
     } else {
-        DateUtils.formatDateTime(v.context, createdAt.toEpochMilli(),
-            DateUtils.FORMAT_SHOW_YEAR.or(DateUtils.FORMAT_SHOW_DATE).or(DateUtils.FORMAT_SHOW_TIME))
+        DateUtils.formatDateTime(
+            v.context, createdAt.toEpochMilli(),
+            DateUtils.FORMAT_SHOW_YEAR.or(DateUtils.FORMAT_SHOW_DATE).or(DateUtils.FORMAT_SHOW_TIME)
+        )
     }
 }
 
@@ -93,10 +103,10 @@ fun bindCreatedAtRelative(v: TextView, createdAt: Instant?) {
         }
         delta.toDays() < 30 ->
             DateTimeFormatter.ofPattern(v.context.getString(R.string.created_date))
-                    .format(LocalDateTime.ofInstant(createdAt, ZoneId.systemDefault()))
+                .format(LocalDateTime.ofInstant(createdAt, ZoneId.systemDefault()))
         else ->
             DateTimeFormatter.ofPattern(v.context.getString(R.string.created_year_date))
-                    .format(LocalDateTime.ofInstant(createdAt, ZoneId.systemDefault()))
+                .format(LocalDateTime.ofInstant(createdAt, ZoneId.systemDefault()))
     }
 }
 
@@ -107,6 +117,29 @@ fun bindUserIcon(v: ImageView, url: String?) {
         return
     }
     Glide.with(v)
-            .load(url)
-            .into(v)
+        .load(url)
+        .into(v)
+}
+
+private val movieType: Set<MediaType> = EnumSet.of(MediaType.VIDEO, MediaType.ANIMATED_GIF)
+
+@BindingAdapter("bindMedia")
+fun MediaThumbnailContainer.bindMedia(items: List<MediaItem>?) {
+    if (items.isNullOrEmpty()) {
+        return
+    }
+    mediaCount = items.size
+    items.zip(mediaViews) { item, view ->
+        val option = RequestOptions.centerCropTransform()
+            .placeholder(ColorDrawable(Color.LTGRAY)).apply {
+                if (itemWidth > 0) {
+                    override(itemWidth, height)
+                }
+            }
+        view.isMovie = movieType.contains(item.type)
+        Glide.with(view)
+            .load(item.thumbMediaUrl)
+            .apply(option)
+            .into(view)
+    }
 }
