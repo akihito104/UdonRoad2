@@ -16,17 +16,14 @@
 
 package com.freshdigitable.udonroad2.media
 
-import android.view.ViewGroup
-import android.widget.ImageView
-import androidx.appcompat.widget.AppCompatImageView
-import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
-import com.bumptech.glide.request.RequestOptions
+import androidx.fragment.app.Fragment
+import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.freshdigitable.udonroad2.model.MediaItem
+import com.freshdigitable.udonroad2.model.MediaType
 
 internal class MediaAdapter(
-    private val viewModel: MediaViewModel
-) : RecyclerView.Adapter<MediaViewHolder>() {
+    activity: MediaActivity
+) : FragmentStateAdapter(activity) {
 
     private val items: MutableList<MediaItem> = mutableListOf()
 
@@ -38,36 +35,20 @@ internal class MediaAdapter(
         notifyDataSetChanged()
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MediaViewHolder {
-        val view = AppCompatImageView(parent.context)
-        view.layoutParams = ViewGroup.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.MATCH_PARENT
-        )
-        return MediaViewHolder(view)
+    override fun getItemViewType(position: Int): Int {
+        return when (items[position].type) {
+            MediaType.PHOTO -> R.layout.view_media_image
+            MediaType.VIDEO, MediaType.ANIMATED_GIF -> R.layout.view_media_movie
+        }
     }
 
-    override fun onBindViewHolder(holder: MediaViewHolder, position: Int) {
-        val item = items[position]
-        Glide.with(holder.itemView)
-            .load(item.mediaUrl)
-            .apply(RequestOptions().centerInside())
-            .into(holder.view)
-    }
-
-    override fun onViewAttachedToWindow(holder: MediaViewHolder) {
-        super.onViewAttachedToWindow(holder)
-        holder.itemView.setOnClickListener { viewModel.toggleUiVisibility() }
-    }
-
-    override fun onViewDetachedFromWindow(holder: MediaViewHolder) {
-        super.onViewDetachedFromWindow(holder)
-        holder.itemView.setOnClickListener(null)
+    override fun createFragment(position: Int): Fragment {
+        return when (getItemViewType(position)) {
+            R.layout.view_media_image -> PhotoMediaFragment.create(items[position])
+            R.layout.view_media_movie -> MovieMediaFragment.create(items[position])
+            else -> throw IllegalStateException()
+        }
     }
 
     override fun getItemCount(): Int = items.size
 }
-
-internal class MediaViewHolder(
-    internal val view: ImageView
-) : RecyclerView.ViewHolder(view)

@@ -17,4 +17,5 @@
 <resources>
     <string name="app_name">media</string>
     <string name="media_current_position">%1$d / %2$d</string>
+    <string name="media_remain_time" translatable="false">%1$d:%2$02d</string>
 </resources>

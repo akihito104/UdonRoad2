@@ -21,26 +21,28 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import androidx.lifecycle.observe
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.PagerSnapHelper
-import androidx.recyclerview.widget.RecyclerView
-import androidx.recyclerview.widget.RecyclerView.SCROLL_STATE_IDLE
+import androidx.viewpager2.widget.ViewPager2
 import com.freshdigitable.udonroad2.media.databinding.ActivityMediaBinding
 import com.freshdigitable.udonroad2.model.ViewModelKey
 import dagger.Binds
 import dagger.Module
 import dagger.android.AndroidInjection
+import dagger.android.AndroidInjector
+import dagger.android.ContributesAndroidInjector
+import dagger.android.DispatchingAndroidInjector
+import dagger.android.support.HasSupportFragmentInjector
 import dagger.multibindings.IntoMap
 import javax.inject.Inject
 
-class MediaActivity : AppCompatActivity() {
+class MediaActivity : AppCompatActivity(), HasSupportFragmentInjector {
+
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
-    private val snapHelper = PagerSnapHelper()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
@@ -72,18 +74,13 @@ class MediaActivity : AppCompatActivity() {
         viewModel.setTweetId(this.tweetId)
     }
 
-    private fun RecyclerView.setupPager(viewModel: MediaViewModel) {
-        snapHelper.attachToRecyclerView(this)
-        val lm = LinearLayoutManager(this@MediaActivity, RecyclerView.HORIZONTAL, false)
-        val adapter = MediaAdapter(viewModel)
-        this.layoutManager = lm
+    private fun ViewPager2.setupPager(viewModel: MediaViewModel) {
+        val adapter = MediaAdapter(this@MediaActivity)
         this.adapter = adapter
-        this.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
-                if (newState == SCROLL_STATE_IDLE) {
-                    val pos = lm.findFirstCompletelyVisibleItemPosition()
-                    viewModel.setCurrentPosition(pos)
-                }
+        this.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+            override fun onPageSelected(position: Int) {
+                super.onPageSelected(position)
+                viewModel.setCurrentPosition(position)
             }
         })
 
@@ -92,7 +89,7 @@ class MediaActivity : AppCompatActivity() {
         }
         viewModel.currentPosition.observe(this@MediaActivity) {
             if (it != null) {
-                this.scrollToPosition(it)
+                this.currentItem = it
             }
         }
         viewModel.setCurrentPosition(index)
@@ -115,10 +112,21 @@ class MediaActivity : AppCompatActivity() {
             context.startActivity(intent)
         }
     }
+
+    @Inject
+    lateinit var injector: DispatchingAndroidInjector<Fragment>
+
+    override fun supportFragmentInjector(): AndroidInjector<Fragment> = injector
 }
 
 @Module(includes = [MediaViewModelModule::class])
 interface MediaActivityModule {
+    @ContributesAndroidInjector
+    fun contributePhotoMediaFragment(): PhotoMediaFragment
+
+    @ContributesAndroidInjector
+    fun contributeMovieMediaFragment(): MovieMediaFragment
+
     @Binds
     @IntoMap
     @ViewModelKey(MediaViewModel::class)

@@ -32,7 +32,7 @@
         android:background="@color/media_background_black"
         android:fitsSystemWindows="true"
         >
-        <androidx.recyclerview.widget.RecyclerView
+        <androidx.viewpager2.widget.ViewPager2
             android:id="@+id/media_pager"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
