@@ -16,6 +16,8 @@
 
 package com.freshdigitable.udonroad2.di
 
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelStoreOwner
 import com.freshdigitable.udonroad2.main.MainActivity
 import com.freshdigitable.udonroad2.main.MainActivityModule
 import com.freshdigitable.udonroad2.media.MediaActivity
@@ -24,21 +26,30 @@ import com.freshdigitable.udonroad2.model.ActivityScope
 import com.freshdigitable.udonroad2.user.UserActivity
 import com.freshdigitable.udonroad2.user.UserActivityModule
 import dagger.Module
+import dagger.Provides
 import dagger.android.ContributesAndroidInjector
 
 @Module
-abstract class ActivityBuilders {
+interface ActivityBuilders {
     @ActivityScope
-    @ContributesAndroidInjector(modules = [
-        MainActivityModule::class
-    ])
-    abstract fun contributesMainActivity(): MainActivity
+    @ContributesAndroidInjector(modules = [MainActivityModule::class])
+    fun contributesMainActivity(): MainActivity
 
     @ActivityScope
     @ContributesAndroidInjector(modules = [UserActivityModule::class])
-    abstract fun contributeUserActivity(): UserActivity
+    fun contributeUserActivity(): UserActivity
 
     @ActivityScope
     @ContributesAndroidInjector(modules = [MediaActivityModule::class])
-    abstract fun contributeMediaActivity(): MediaActivity
+    fun contributeMediaActivity(): MediaActivity
+
+    @Module
+    companion object {
+        @Provides
+        @JvmStatic
+        fun provideViewModelProvider(
+            viewModelStoreOwner: ViewModelStoreOwner,
+            viewModelFactory: ViewModelProvider.Factory
+        ): ViewModelProvider = ViewModelProvider(viewModelStoreOwner, viewModelFactory)
+    }
 }

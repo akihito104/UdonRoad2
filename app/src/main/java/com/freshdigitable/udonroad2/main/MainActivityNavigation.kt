@@ -3,7 +3,6 @@ package com.freshdigitable.udonroad2.main
 import androidx.annotation.IdRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import com.freshdigitable.udonroad2.media.MediaActivity
 import com.freshdigitable.udonroad2.model.ListQuery
 import com.freshdigitable.udonroad2.navigation.FragmentContainerState
@@ -19,11 +18,11 @@ import com.freshdigitable.udonroad2.user.UserActivity
 class MainActivityNavigation(
     dispatcher: NavigationDispatcher,
     activity: AppCompatActivity,
-    viewModelFactory: ViewModelProvider.Factory,
+    viewModelProvider: ViewModelProvider,
     @IdRes containerId: Int
 ) : Navigation<MainActivityState>(dispatcher, activity, containerId) {
 
-    val viewModel = ViewModelProviders.of(activity, viewModelFactory).get(MainViewModel::class.java)
+    val viewModel = viewModelProvider[MainViewModel::class.java]
 
     override fun onEvent(event: NavigationEvent): MainActivityState? {
         return when (event) {

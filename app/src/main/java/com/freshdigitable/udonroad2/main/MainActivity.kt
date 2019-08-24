@@ -26,7 +26,7 @@ import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelStoreOwner
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.databinding.ActivityMainBinding
 import com.freshdigitable.udonroad2.model.FragmentScope
@@ -55,19 +55,20 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
     @Inject
     lateinit var navigation: Navigation<MainActivityState>
     @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
+    lateinit var viewModelProvider: ViewModelProvider
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
         super.onCreate(savedInstanceState)
         val binding =
-            DataBindingUtil.setContentView<ActivityMainBinding>(this,
+            DataBindingUtil.setContentView<ActivityMainBinding>(
+                this,
                 R.layout.activity_main
             )
 
         navigation.navigator.postEvent(TimelineEvent.Init)
 
-        val viewModel = ViewModelProviders.of(this, viewModelFactory).get(MainViewModel::class.java)
+        val viewModel = viewModelProvider[MainViewModel::class.java]
         binding.lifecycleOwner = this
         binding.viewModel = viewModel
     }
@@ -145,6 +146,9 @@ abstract class MainActivityModule {
     @ViewModelKey(TweetDetailViewModel::class)
     abstract fun bindTweetDetailViewModel(viewModel: TweetDetailViewModel): ViewModel
 
+    @Binds
+    abstract fun bindViewModelStoreOwner(activity: MainActivity): ViewModelStoreOwner
+
     @Module
     companion object {
         @Provides
@@ -152,12 +156,12 @@ abstract class MainActivityModule {
         fun provideNavigation(
             navigator: NavigationDispatcher,
             activity: MainActivity,
-            viewModelFactory: ViewModelProvider.Factory
+            viewModelProvider: ViewModelProvider
         ): Navigation<MainActivityState> {
             return MainActivityNavigation(
                 navigator,
                 activity,
-                viewModelFactory,
+                viewModelProvider,
                 R.id.main_container
             )
         }

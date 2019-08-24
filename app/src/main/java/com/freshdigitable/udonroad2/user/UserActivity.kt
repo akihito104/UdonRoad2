@@ -10,7 +10,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil.setContentView
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.observe
 import androidx.viewpager.widget.ViewPager
 import com.freshdigitable.udonroad2.R
@@ -36,7 +36,7 @@ import kotlin.math.abs
 
 class UserActivity : HasAndroidInjector, AppCompatActivity() {
     @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
+    lateinit var viewModelProvider: ViewModelProvider
     @Inject
     lateinit var navigation: Navigation<UserActivityState>
     private lateinit var viewModel: UserViewModel
@@ -48,7 +48,7 @@ class UserActivity : HasAndroidInjector, AppCompatActivity() {
             this,
             R.layout.activity_user
         )
-        viewModel = ViewModelProviders.of(this, viewModelFactory).get(UserViewModel::class.java)
+        viewModel = viewModelProvider[UserViewModel::class.java]
         val adapter =
             UserFragmentPagerAdapter(supportFragmentManager, user)
 
@@ -184,6 +184,9 @@ abstract class UserActivityModule {
     @ViewModelKey(UserViewModel::class)
     abstract fun bindUserViewModel(viewModel: UserViewModel): ViewModel
 
+    @Binds
+    abstract fun bindViewModelStoreOwner(activity: UserActivity): ViewModelStoreOwner
+
     @Module
     companion object {
         @JvmStatic
@@ -191,13 +194,13 @@ abstract class UserActivityModule {
         fun provideUserActivityNavigation(
             navigator: NavigationDispatcher,
             activity: UserActivity,
-            viewModelFactory: ViewModelProvider.Factory
+            viewModelProvider: ViewModelProvider
         ): Navigation<UserActivityState> {
             return UserActivityNavigation(
                 navigator,
                 activity,
                 0,
-                viewModelFactory
+                viewModelProvider
             )
         }
     }
