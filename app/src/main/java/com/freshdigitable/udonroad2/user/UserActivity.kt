@@ -8,7 +8,6 @@ import android.view.MenuItem
 import androidx.annotation.IdRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil.setContentView
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
@@ -30,12 +29,12 @@ import dagger.Provides
 import dagger.android.AndroidInjection
 import dagger.android.AndroidInjector
 import dagger.android.DispatchingAndroidInjector
-import dagger.android.support.HasSupportFragmentInjector
+import dagger.android.HasAndroidInjector
 import dagger.multibindings.IntoMap
 import javax.inject.Inject
 import kotlin.math.abs
 
-class UserActivity : HasSupportFragmentInjector, AppCompatActivity() {
+class UserActivity : HasAndroidInjector, AppCompatActivity() {
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
     @Inject
@@ -166,9 +165,9 @@ class UserActivity : HasSupportFragmentInjector, AppCompatActivity() {
     }
 
     @Inject
-    lateinit var injector: DispatchingAndroidInjector<Fragment>
+    lateinit var injector: DispatchingAndroidInjector<Any>
 
-    override fun supportFragmentInjector(): AndroidInjector<Fragment> = injector
+    override fun androidInjector(): AndroidInjector<Any> = injector
 }
 
 @Module(
