@@ -2,7 +2,6 @@ package com.freshdigitable.udonroad2.user
 
 import androidx.annotation.IdRes
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import com.freshdigitable.udonroad2.navigation.FragmentContainerState
 import com.freshdigitable.udonroad2.navigation.Navigation
 import com.freshdigitable.udonroad2.navigation.NavigationDispatcher
@@ -13,12 +12,10 @@ class UserActivityNavigation(
     navigator: NavigationDispatcher,
     activity: UserActivity,
     @IdRes containerId: Int,
-    viewModelFactory: ViewModelProvider.Factory
+    viewModelProvider: ViewModelProvider
 ) : Navigation<UserActivityState>(navigator, activity, containerId) {
 
-    private val viewModel =
-        ViewModelProviders.of(activity, viewModelFactory)
-            .get(UserViewModel::class.java)
+    private val viewModel = viewModelProvider[UserViewModel::class.java]
 
     override fun onEvent(event: NavigationEvent): UserActivityState? {
         when (event) {

@@ -16,25 +16,24 @@
 
 package com.freshdigitable.udonroad2
 
-import android.app.Activity
 import android.app.Application
 import com.freshdigitable.udonroad2.di.DaggerAppComponent
 import com.jakewharton.threetenabp.AndroidThreeTen
 import com.squareup.leakcanary.LeakCanary
 import dagger.android.AndroidInjector
 import dagger.android.DispatchingAndroidInjector
-import dagger.android.HasActivityInjector
+import dagger.android.HasAndroidInjector
 import javax.inject.Inject
 
-class AppApplication : HasActivityInjector, Application() {
+class AppApplication : HasAndroidInjector, Application() {
 
     override fun onCreate() {
         super.onCreate()
         setupLeakCanary()
         AndroidThreeTen.init(this)
         val component = DaggerAppComponent.builder()
-                .application(this)
-                .build()
+            .application(this)
+            .build()
         component.inject(this)
     }
 
@@ -48,8 +47,7 @@ class AppApplication : HasActivityInjector, Application() {
     }
 
     @Inject
-    lateinit var androidInjector: DispatchingAndroidInjector<Activity>
-    override fun activityInjector(): AndroidInjector<Activity> {
-        return androidInjector
-    }
+    lateinit var androidInjector: DispatchingAndroidInjector<Any>
+
+    override fun androidInjector(): AndroidInjector<Any> = androidInjector
 }

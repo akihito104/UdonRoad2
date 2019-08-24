@@ -8,10 +8,9 @@ import android.view.MenuItem
 import androidx.annotation.IdRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil.setContentView
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.observe
 import androidx.viewpager.widget.ViewPager
 import com.freshdigitable.udonroad2.R
@@ -30,14 +29,14 @@ import dagger.Provides
 import dagger.android.AndroidInjection
 import dagger.android.AndroidInjector
 import dagger.android.DispatchingAndroidInjector
-import dagger.android.support.HasSupportFragmentInjector
+import dagger.android.HasAndroidInjector
 import dagger.multibindings.IntoMap
 import javax.inject.Inject
 import kotlin.math.abs
 
-class UserActivity : HasSupportFragmentInjector, AppCompatActivity() {
+class UserActivity : HasAndroidInjector, AppCompatActivity() {
     @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
+    lateinit var viewModelProvider: ViewModelProvider
     @Inject
     lateinit var navigation: Navigation<UserActivityState>
     private lateinit var viewModel: UserViewModel
@@ -49,7 +48,7 @@ class UserActivity : HasSupportFragmentInjector, AppCompatActivity() {
             this,
             R.layout.activity_user
         )
-        viewModel = ViewModelProviders.of(this, viewModelFactory).get(UserViewModel::class.java)
+        viewModel = viewModelProvider[UserViewModel::class.java]
         val adapter =
             UserFragmentPagerAdapter(supportFragmentManager, user)
 
@@ -166,9 +165,9 @@ class UserActivity : HasSupportFragmentInjector, AppCompatActivity() {
     }
 
     @Inject
-    lateinit var injector: DispatchingAndroidInjector<Fragment>
+    lateinit var injector: DispatchingAndroidInjector<Any>
 
-    override fun supportFragmentInjector(): AndroidInjector<Fragment> = injector
+    override fun androidInjector(): AndroidInjector<Any> = injector
 }
 
 @Module(
@@ -185,6 +184,9 @@ abstract class UserActivityModule {
     @ViewModelKey(UserViewModel::class)
     abstract fun bindUserViewModel(viewModel: UserViewModel): ViewModel
 
+    @Binds
+    abstract fun bindViewModelStoreOwner(activity: UserActivity): ViewModelStoreOwner
+
     @Module
     companion object {
         @JvmStatic
@@ -192,13 +194,13 @@ abstract class UserActivityModule {
         fun provideUserActivityNavigation(
             navigator: NavigationDispatcher,
             activity: UserActivity,
-            viewModelFactory: ViewModelProvider.Factory
+            viewModelProvider: ViewModelProvider
         ): Navigation<UserActivityState> {
             return UserActivityNavigation(
                 navigator,
                 activity,
                 0,
-                viewModelFactory
+                viewModelProvider
             )
         }
     }
