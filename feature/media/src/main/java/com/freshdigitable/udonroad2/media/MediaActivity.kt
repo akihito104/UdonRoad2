@@ -23,7 +23,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.observe
 import androidx.viewpager2.widget.ViewPager2
 import com.freshdigitable.udonroad2.media.databinding.ActivityMediaBinding
@@ -41,14 +41,14 @@ import javax.inject.Inject
 class MediaActivity : AppCompatActivity(), HasAndroidInjector {
 
     @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
+    lateinit var viewModelProvider: ViewModelProvider
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
         super.onCreate(savedInstanceState)
         val binding =
             DataBindingUtil.setContentView<ActivityMediaBinding>(this, R.layout.activity_media)
-        val viewModel = ViewModelProviders.of(this, viewModelFactory)[MediaViewModel::class.java]
+        val viewModel = viewModelProvider[MediaViewModel::class.java]
         binding.lifecycleOwner = this
         binding.viewModel = viewModel
 
@@ -130,4 +130,7 @@ interface MediaActivityModule {
     @IntoMap
     @ViewModelKey(MediaViewModel::class)
     fun bindMediaViewModel(viewModel: MediaViewModel): ViewModel
+
+    @Binds
+    fun bindViewModelStoreOwner(activity: MediaActivity): ViewModelStoreOwner
 }
