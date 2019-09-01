@@ -15,5 +15,25 @@
   -->
 
 <resources>
-    <string name="app_name">oauth</string>
+    <string name="title_oauth">welcome</string>
+
+    <string name="oauth_login">Login Twitter</string>
+
+    <string name="msg_oauth_fav">you can like the tweet.</string>
+    <string name="msg_oauth_rt">you can retweet the tweet.</string>
+    <string name="msg_oauth_favRt">you can like and RT with one fling!</string>
+    <string name="msg_oauth_detail">you can see detail of the tweet.</string>
+    <string name="msg_oauth_conv">you can read replied tweets.</string>
+    <string name="msg_oauth_reply">you can reply to the tweet.</string>
+    <string name="msg_oauth_quote">you can quote the tweets.</string>
+    <string name="msg_oauth_user_icon">you can see the user information.</string>
+    <string name="msg_oauth_success">authentication is success!</string>
+    <string name="msg_oauth_failed">authentication is failed…</string>
+
+    <string name="oauth_hint_input_pin">input PIN code</string>
+    <string name="oauth_send_pin">Send pin</string>
+    <string name="oauth_demo_tweet">welcome to aoeliyakei! this is dummy tweet. you can select me and do action with circle button appearing below.</string>
+    <string name="oauth_demo_quoted">you can select only quoted tweet.</string>
+    <string name="oauth_explain">login Twitter via below button and activate \'aoeliyakei\'. And then, copy PIN code and return to this app.</string>
+    <string name="oauth_pin_direction">input PIN code and send it.</string>
 </resources>
