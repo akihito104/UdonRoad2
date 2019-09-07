@@ -19,8 +19,9 @@ package com.freshdigitable.udonroad2.data.repository
 import android.content.SharedPreferences
 import androidx.core.content.edit
 import com.freshdigitable.udonroad2.model.AccessTokenEntity
+import javax.inject.Inject
 
-class SharedPreferenceDataSource(
+class SharedPreferenceDataSource @Inject constructor(
     private val prefs: SharedPreferences
 ) {
     fun storeAccessToken(token: AccessTokenEntity) {
