@@ -17,17 +17,30 @@
 package com.freshdigitable.udonroad2.oauth
 
 import android.content.Context
+import android.os.Bundle
+import androidx.databinding.ObservableField
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.map
+import androidx.lifecycle.viewModelScope
+import androidx.paging.DataSource
 import androidx.paging.PagedList
+import com.freshdigitable.udonroad2.data.repository.OAuthTokenRepository
+import com.freshdigitable.udonroad2.data.repository.RepositoryComponent
+import com.freshdigitable.udonroad2.model.RequestTokenItem
+import com.freshdigitable.udonroad2.navigation.NavigationDispatcher
+import com.freshdigitable.udonroad2.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.timeline.ListItemLoadable
 import com.freshdigitable.udonroad2.timeline.viewmodel.ListOwner
 import dagger.Module
 import dagger.Provides
+import kotlinx.coroutines.launch
 
 class OauthViewModel(
-    dataSource: OauthDataSource
+    dataSource: DataSource<Int, OauthItem>,
+    private val repository: OAuthTokenRepository,
+    private val navigator: NavigationDispatcher
 ) : ViewModel(), ListItemLoadable<OauthItem> {
 
     override val loading: LiveData<Boolean> = MutableLiveData<Boolean>(false)
@@ -36,6 +49,51 @@ class OauthViewModel(
     override fun getList(listOwner: ListOwner): LiveData<PagedList<OauthItem>> = livePagedList
 
     override fun onRefresh() {}
+
+    private val requestToken: MutableLiveData<RequestTokenItem?> = MutableLiveData()
+
+    fun onLoginClicked() {
+        viewModelScope.launch {
+            repository.getRequestTokenItem().also {
+                navigator.postEvent(OauthEvent.OauthRequested(it.authorizationUrl))
+                requestToken.value = it
+            }
+        }
+    }
+
+    val pin: ObservableField<CharSequence> = ObservableField("")
+    fun onAfterPinTextChanged(pin: CharSequence) {
+        this.pin.set(pin)
+    }
+
+    val sendPinButtonEnabled: LiveData<Boolean> = requestToken.map { it != null }
+    fun onSendPinClicked() {
+        viewModelScope.launch {
+            val t = repository.getAccessToken(requestToken.value!!, pin.get().toString())
+            repository.setCurrentUserId(t.userId)
+            navigator.postEvent(OauthEvent.OauthSucceeded)
+            requestToken.value = null
+        }
+    }
+
+    internal fun onSaveInstanceState(outState: Bundle) {
+        outState.putSerializable(SAVED_STATE_REQUEST_TOKEN, requestToken.value)
+    }
+
+    internal fun onViewStateRestore(savedInstanceState: Bundle?) {
+        val requestToken = savedInstanceState?.getSerializable(SAVED_STATE_REQUEST_TOKEN)
+        this.requestToken.value = requestToken as RequestTokenItem?
+    }
+
+    companion object {
+        private const val SAVED_STATE_REQUEST_TOKEN = "saveState_requestToken"
+    }
+}
+
+sealed class OauthEvent : NavigationEvent {
+    object Init : OauthEvent()
+    data class OauthRequested(val authUrl: String) : OauthEvent()
+    object OauthSucceeded : OauthEvent()
 }
 
 @Module
@@ -44,14 +102,22 @@ interface OauthViewModelModule {
     companion object {
         @JvmStatic
         @Provides
-        fun provideOauthDataSource(context: Context): OauthDataSource {
+        fun provideOauthDataSource(context: Context): DataSource<Int, OauthItem> {
             return OauthDataSource(context)
         }
 
         @JvmStatic
         @Provides
-        fun provideOauthViewModel(dataSource: OauthDataSource): OauthViewModel {
-            return OauthViewModel(dataSource)
+        fun provideOauthViewModel(
+            dataSource: DataSource<Int, OauthItem>,
+            repositoryComponent: RepositoryComponent.Builder,
+            navigator: NavigationDispatcher
+        ): OauthViewModel {
+            return OauthViewModel(
+                dataSource,
+                repositoryComponent.build().oauthTokenRepository(),
+                navigator
+            )
         }
     }
 }

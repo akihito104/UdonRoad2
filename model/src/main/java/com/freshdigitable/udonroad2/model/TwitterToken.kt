@@ -20,6 +20,7 @@ import java.io.Serializable
 
 interface RequestTokenItem : Serializable {
     val token: Serializable
+    val authorizationUrl: String
 }
 
 interface AccessTokenEntity {

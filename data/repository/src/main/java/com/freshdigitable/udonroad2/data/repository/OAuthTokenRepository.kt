@@ -22,8 +22,6 @@ import com.freshdigitable.udonroad2.model.RepositoryScope
 import com.freshdigitable.udonroad2.model.RequestTokenItem
 import dagger.Module
 import dagger.Provides
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 
 class OAuthTokenRepository(
     private val apiClient: OAuthApiClient,
@@ -34,13 +32,12 @@ class OAuthTokenRepository(
         return apiClient.getRequestToken()
     }
 
-    fun getAccessToken(
+    suspend fun getAccessToken(
         requestToken: RequestTokenItem,
         verifier: String
-    ) {
-        GlobalScope.launch {
-            val accessToken = apiClient.getOauthAccessToken(requestToken, verifier)
-            storeAccessToken(accessToken)
+    ): AccessTokenEntity {
+        return apiClient.getOauthAccessToken(requestToken, verifier).also {
+            storeAccessToken(it)
         }
     }
 

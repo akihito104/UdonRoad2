@@ -45,4 +45,6 @@ class OAuthApiClient @Inject constructor(
         AccessTokenEntity.create(userId, token, tokenSecret)
 }
 
-private data class RequestTokenItemImpl(override val token: RequestToken) : RequestTokenItem
+private data class RequestTokenItemImpl(override val token: RequestToken) : RequestTokenItem {
+    override val authorizationUrl: String = token.authorizationURL
+}

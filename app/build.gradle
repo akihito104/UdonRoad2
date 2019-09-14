@@ -34,6 +34,7 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation project(':feature:timeline')
     implementation project(':feature:media')
+    implementation project(':feature:oauth')
     implementation project(':candysh')
     implementation project(':data:repository')
     implementation project(':data:db')

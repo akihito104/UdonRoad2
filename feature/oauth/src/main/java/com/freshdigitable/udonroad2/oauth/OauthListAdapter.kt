@@ -25,7 +25,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.freshdigitable.udonroad2.oauth.databinding.ViewOauthInputBinding
 import com.freshdigitable.udonroad2.timeline.databinding.ViewTweetListItemBinding
 
-class OauthListAdapter : PagedListAdapter<OauthItem, OauthViewHolder>(diffUtil) {
+internal class OauthListAdapter internal constructor(
+    private val viewModel: OauthViewModel
+) : PagedListAdapter<OauthItem, OauthViewHolder>(diffUtil) {
 
     override fun getItemId(position: Int): Long {
         return getItem(position)?.originalId ?: throw IllegalStateException()
@@ -54,18 +56,21 @@ class OauthListAdapter : PagedListAdapter<OauthItem, OauthViewHolder>(diffUtil) 
     }
 
     override fun onBindViewHolder(holder: OauthViewHolder, position: Int) {
-        val item = getItem(position)
         when (holder) {
             is OauthViewHolder.SampleTweetViewHolder -> {
+                val item = getItem(position)
                 holder.binding.tweet = item
+            }
+            is OauthViewHolder.PinInputViewHolder -> {
+                holder.binding.viewModel = viewModel
             }
         }
     }
 }
 
-sealed class OauthViewHolder(binding: ViewDataBinding) : RecyclerView.ViewHolder(binding.root) {
+internal sealed class OauthViewHolder(binding: ViewDataBinding) : RecyclerView.ViewHolder(binding.root) {
     class SampleTweetViewHolder(val binding: ViewTweetListItemBinding) : OauthViewHolder(binding)
-    class PinInputViewHolder(binding: ViewOauthInputBinding) : OauthViewHolder(binding)
+    class PinInputViewHolder(val binding: ViewOauthInputBinding) : OauthViewHolder(binding)
 }
 
 private val diffUtil = object : DiffUtil.ItemCallback<OauthItem>() {

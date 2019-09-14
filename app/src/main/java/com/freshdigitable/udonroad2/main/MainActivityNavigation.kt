@@ -1,5 +1,8 @@
 package com.freshdigitable.udonroad2.main
 
+import android.content.Intent
+import android.content.Intent.ACTION_VIEW
+import android.net.Uri
 import androidx.annotation.IdRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
@@ -9,6 +12,8 @@ import com.freshdigitable.udonroad2.navigation.FragmentContainerState
 import com.freshdigitable.udonroad2.navigation.Navigation
 import com.freshdigitable.udonroad2.navigation.NavigationDispatcher
 import com.freshdigitable.udonroad2.navigation.NavigationEvent
+import com.freshdigitable.udonroad2.oauth.OauthEvent
+import com.freshdigitable.udonroad2.oauth.OauthFragment
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragment
 import com.freshdigitable.udonroad2.timeline.fragment.TimelineFragment
@@ -46,9 +51,21 @@ class MainActivityNavigation(
                 MediaActivity.start(activity, event.tweetId, event.index)
                 null
             }
+            is OauthEvent.Init -> MainActivityState.Oauth
+            is OauthEvent.OauthRequested -> {
+                val intent = Intent(ACTION_VIEW, Uri.parse(event.authUrl))
+                activity.startActivity(intent)
+                null
+            }
+            is OauthEvent.OauthSucceeded -> MainActivityState.MainTimeline
             TimelineEvent.Back -> {
                 if (currentState is MainActivityState.TweetDetail) {
                     MainActivityState.MainTimeline
+                } else if (currentState is MainActivityState.MainTimeline
+                    && viewModel.isFabVisible.value == true
+                ) {
+                    viewModel.setFabVisible(false)
+                    null
                 } else {
                     MainActivityState.Halt
                 }
@@ -78,6 +95,10 @@ class MainActivityNavigation(
                     BACK_STACK_TWEET_DETAIL
                 )
             }
+            is MainActivityState.Oauth -> {
+                viewModel.setFabVisible(false)
+                replace(ListItemFragment.newInstance<OauthFragment>(ListQuery.Oauth))
+            }
             MainActivityState.Halt -> activity.finish()
         }
     }
@@ -87,6 +108,8 @@ sealed class MainActivityState : FragmentContainerState {
     object MainTimeline : MainActivityState()
 
     data class TweetDetail(val tweetId: Long) : MainActivityState()
+
+    object Oauth : MainActivityState()
 
     object Halt : MainActivityState()
 }
