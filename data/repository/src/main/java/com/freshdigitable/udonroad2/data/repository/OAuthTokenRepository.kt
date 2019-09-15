@@ -27,8 +27,14 @@ class OAuthTokenRepository(
     private val apiClient: OAuthApiClient,
     private val prefs: SharedPreferenceDataSource
 ) {
+    fun login(userId: Long) {
+        setCurrentUserId(userId)
+        val oauthAccessToken = getCurrentUserAccessToken() ?: throw IllegalStateException()
+        apiClient.login(oauthAccessToken)
+    }
 
     suspend fun getRequestTokenItem(): RequestTokenItem {
+        apiClient.logout()
         return apiClient.getRequestToken()
     }
 
@@ -45,7 +51,7 @@ class OAuthTokenRepository(
         prefs.storeAccessToken(token)
     }
 
-    fun getCurrentUserAccessToken(): AccessTokenEntity? {
+    private fun getCurrentUserAccessToken(): AccessTokenEntity? {
         val currentUserId = prefs.getCurrentUserId()
         if (currentUserId < 0) {
             return null
@@ -57,7 +63,7 @@ class OAuthTokenRepository(
         return prefs.getCurrentUserId()
     }
 
-    fun setCurrentUserId(userId: Long) {
+    private fun setCurrentUserId(userId: Long) {
         require(prefs.isAuthenticatedUser(userId)) { "unregistered userId: $userId" }
         prefs.setCurrentUserId(userId)
     }

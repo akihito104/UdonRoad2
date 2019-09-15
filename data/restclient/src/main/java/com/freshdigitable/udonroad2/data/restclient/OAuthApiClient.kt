@@ -28,6 +28,14 @@ import javax.inject.Inject
 class OAuthApiClient @Inject constructor(
     private val twitter: Twitter
 ) {
+    fun login(oauthAccessToken: AccessTokenEntity) {
+        twitter.oAuthAccessToken = AccessToken(oauthAccessToken.token, oauthAccessToken.tokenSecret)
+    }
+
+    fun logout() {
+        twitter.oAuthAccessToken = null
+    }
+
     suspend fun getRequestToken(): RequestTokenItem = withContext(Dispatchers.IO) {
         twitter.getOAuthRequestToken("oob").toItem()
     }

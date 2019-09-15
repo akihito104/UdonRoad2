@@ -10,21 +10,35 @@
             />
     </data>
 
-    <FrameLayout
-        android:id="@+id/main_container"
+    <androidx.drawerlayout.widget.DrawerLayout
+        android:id="@+id/main_drawer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         >
-        <com.freshdigitable.fabshortcut.FlingFAB
-            android:id="@+id/main_fab"
+        <FrameLayout
+            android:id="@+id/main_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            >
+            <com.freshdigitable.fabshortcut.FlingFAB
+                android:id="@+id/main_fab"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="56dp"
+                android:layout_gravity="center_horizontal|bottom"
+                app:menu="@menu/iffab_main"
+                style="@style/Widget.FlingFAB"
+                app:menuListener="@{viewModel::onFabMenuSelected}"
+                app:isVisible="@{viewModel.fabVisible}"
+                />
+        </FrameLayout>
+
+        <com.google.android.material.navigation.NavigationView
+            android:id="@+id/main_globalMenu"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="56dp"
-            android:layout_gravity="center_horizontal|bottom"
-            app:menu="@menu/iffab_main"
-            style="@style/Widget.FlingFAB"
-            app:menuListener="@{viewModel::onFabMenuSelected}"
-            app:isVisible="@{viewModel.fabVisible}"
+            android:layout_height="match_parent"
+            android:layout_gravity="start"
+            app:menu="@menu/nav_menu"
             />
-    </FrameLayout>
+    </androidx.drawerlayout.widget.DrawerLayout>
 </layout>

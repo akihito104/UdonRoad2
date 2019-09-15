@@ -19,6 +19,7 @@ package com.freshdigitable.udonroad2.oauth
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.databinding.ViewDataBinding
+import androidx.lifecycle.LifecycleOwner
 import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
@@ -26,7 +27,8 @@ import com.freshdigitable.udonroad2.oauth.databinding.ViewOauthInputBinding
 import com.freshdigitable.udonroad2.timeline.databinding.ViewTweetListItemBinding
 
 internal class OauthListAdapter internal constructor(
-    private val viewModel: OauthViewModel
+    private val viewModel: OauthViewModel,
+    private val viewLifecycleOwner: LifecycleOwner
 ) : PagedListAdapter<OauthItem, OauthViewHolder>(diffUtil) {
 
     override fun getItemId(position: Int): Long {
@@ -63,12 +65,15 @@ internal class OauthListAdapter internal constructor(
             }
             is OauthViewHolder.PinInputViewHolder -> {
                 holder.binding.viewModel = viewModel
+                holder.binding.lifecycleOwner = viewLifecycleOwner
             }
         }
     }
 }
 
-internal sealed class OauthViewHolder(binding: ViewDataBinding) : RecyclerView.ViewHolder(binding.root) {
+internal sealed class OauthViewHolder(
+    binding: ViewDataBinding
+) : RecyclerView.ViewHolder(binding.root) {
     class SampleTweetViewHolder(val binding: ViewTweetListItemBinding) : OauthViewHolder(binding)
     class PinInputViewHolder(val binding: ViewOauthInputBinding) : OauthViewHolder(binding)
 }

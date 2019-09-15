@@ -16,7 +16,7 @@
 
 package com.freshdigitable.udonroad2.oauth
 
-import android.content.Context
+import android.app.Application
 import android.os.Bundle
 import androidx.databinding.ObservableField
 import androidx.lifecycle.LiveData
@@ -44,7 +44,23 @@ class OauthViewModel(
 ) : ViewModel(), ListItemLoadable<OauthItem> {
 
     override val loading: LiveData<Boolean> = MutableLiveData<Boolean>(false)
-    private val livePagedList = MutableLiveData(PagedList.Builder(dataSource, 10).build())
+    private val livePagedList: MutableLiveData<PagedList<OauthItem>>
+
+    init {
+        val config = PagedList.Config.Builder()
+            .setMaxSize(100)
+            .setPageSize(10)
+            .setPrefetchDistance(10)
+            .setEnablePlaceholders(false)
+            .setInitialLoadSizeHint(10)
+            .build()
+        livePagedList = MutableLiveData(
+            PagedList.Builder(dataSource, config)
+                .setNotifyExecutor {}
+                .setFetchExecutor {}
+                .build()
+        )
+    }
 
     override fun getList(listOwner: ListOwner): LiveData<PagedList<OauthItem>> = livePagedList
 
@@ -63,14 +79,14 @@ class OauthViewModel(
 
     val pin: ObservableField<CharSequence> = ObservableField("")
     fun onAfterPinTextChanged(pin: CharSequence) {
-        this.pin.set(pin)
+        this.pin.set(pin.toString())
     }
 
     val sendPinButtonEnabled: LiveData<Boolean> = requestToken.map { it != null }
     fun onSendPinClicked() {
         viewModelScope.launch {
             val t = repository.getAccessToken(requestToken.value!!, pin.get().toString())
-            repository.setCurrentUserId(t.userId)
+            repository.login(t.userId)
             navigator.postEvent(OauthEvent.OauthSucceeded)
             requestToken.value = null
         }
@@ -81,8 +97,9 @@ class OauthViewModel(
     }
 
     internal fun onViewStateRestore(savedInstanceState: Bundle?) {
-        val requestToken = savedInstanceState?.getSerializable(SAVED_STATE_REQUEST_TOKEN)
-        this.requestToken.value = requestToken as RequestTokenItem?
+        (savedInstanceState?.getSerializable(SAVED_STATE_REQUEST_TOKEN) as? RequestTokenItem)?.let {
+            this.requestToken.value = it
+        }
     }
 
     companion object {
@@ -102,7 +119,7 @@ interface OauthViewModelModule {
     companion object {
         @JvmStatic
         @Provides
-        fun provideOauthDataSource(context: Context): DataSource<Int, OauthItem> {
+        fun provideOauthDataSource(context: Application): DataSource<Int, OauthItem> {
             return OauthDataSource(context)
         }
 

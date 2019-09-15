@@ -19,6 +19,7 @@ package com.freshdigitable.udonroad2.main
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
+import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.LiveData
@@ -33,6 +34,8 @@ import com.freshdigitable.udonroad2.model.FragmentScope
 import com.freshdigitable.udonroad2.model.ViewModelKey
 import com.freshdigitable.udonroad2.navigation.Navigation
 import com.freshdigitable.udonroad2.navigation.NavigationDispatcher
+import com.freshdigitable.udonroad2.oauth.OauthEvent
+import com.freshdigitable.udonroad2.oauth.OauthFragmentModule
 import com.freshdigitable.udonroad2.timeline.SelectedItemId
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.fragment.MemberListListFragmentModule
@@ -56,6 +59,7 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
     lateinit var navigation: Navigation<MainActivityState>
     @Inject
     lateinit var viewModelProvider: ViewModelProvider
+    private var actionBarDrawerToggle: ActionBarDrawerToggle? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
@@ -71,10 +75,45 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
         val viewModel = viewModelProvider[MainViewModel::class.java]
         binding.lifecycleOwner = this
         binding.viewModel = viewModel
+
+        supportActionBar?.apply {
+            setDisplayHomeAsUpEnabled(true)
+            setHomeButtonEnabled(true)
+        }
+
+        actionBarDrawerToggle = ActionBarDrawerToggle(this, binding.mainDrawer, 0, 0).apply {
+            isDrawerIndicatorEnabled = true
+            syncState()
+
+            binding.mainDrawer.addDrawerListener(this)
+        }
+        binding.mainGlobalMenu.setNavigationItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.drawer_menu_home -> {
+                    navigation.navigator.postEvent(TimelineEvent.Init)
+                    true
+                }
+                R.id.drawer_menu_add_account -> {
+                    navigation.navigator.postEvent(OauthEvent.Init)
+                    true
+                }
+                else -> false
+            }
+        }
     }
 
     override fun onBackPressed() {
         navigation.navigator.postEvent(TimelineEvent.Back)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        return actionBarDrawerToggle?.onOptionsItemSelected(item)
+            ?: super.onOptionsItemSelected(item)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        actionBarDrawerToggle = null
     }
 
     @Inject
@@ -128,7 +167,8 @@ class MainViewModel @Inject constructor(
     includes = [
         TimelineFragmentModule::class,
         TweetDetailViewModelModule::class,
-        MemberListListFragmentModule::class
+        MemberListListFragmentModule::class,
+        OauthFragmentModule::class
     ]
 )
 abstract class MainActivityModule {

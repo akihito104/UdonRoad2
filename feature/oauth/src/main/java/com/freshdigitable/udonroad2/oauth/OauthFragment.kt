@@ -34,7 +34,7 @@ class OauthFragment : ListItemFragment<OauthViewModel, OauthItem>() {
 
     override fun createListAdapter(viewModel: OauthViewModel): PagedListAdapter<OauthItem, *> {
         this.viewModel = viewModel
-        return OauthListAdapter(viewModel)
+        return OauthListAdapter(viewModel, viewLifecycleOwner)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -45,6 +45,11 @@ class OauthFragment : ListItemFragment<OauthViewModel, OauthItem>() {
     override fun onViewStateRestored(savedInstanceState: Bundle?) {
         super.onViewStateRestored(savedInstanceState)
         viewModel?.onViewStateRestore(savedInstanceState)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        viewModel = null
     }
 }
 
