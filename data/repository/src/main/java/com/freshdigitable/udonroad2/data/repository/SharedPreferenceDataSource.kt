@@ -20,7 +20,9 @@ import android.content.SharedPreferences
 import androidx.core.content.edit
 import com.freshdigitable.udonroad2.model.AccessTokenEntity
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class SharedPreferenceDataSource @Inject constructor(
     private val prefs: SharedPreferences
 ) {
@@ -49,12 +51,13 @@ class SharedPreferenceDataSource @Inject constructor(
         return prefs.getLong(TWITTER_API_CONFIG_DATE, -1)
     }
 
-    fun getCurrentUserId(): Long {
-        return prefs.getLong(CURRENT_USER_ID, -1)
+    fun getCurrentUserId(): Long? {
+        val userId = prefs.getLong(CURRENT_USER_ID, -1)
+        return if (userId != -1L) userId else null
     }
 
     fun getCurrentUserAccessToken(): AccessTokenEntity? {
-        val currentUserId = getCurrentUserId()
+        val currentUserId = getCurrentUserId() ?: return null
         val token = prefs.getString("$ACCESS_TOKEN_PREFIX$currentUserId", null)
         val secret = prefs.getString("$TOKEN_SECRET_PREFIX$currentUserId", null)
         return if (token == null || secret == null) {

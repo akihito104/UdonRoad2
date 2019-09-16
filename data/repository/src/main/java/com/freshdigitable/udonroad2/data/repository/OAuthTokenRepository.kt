@@ -27,7 +27,7 @@ class OAuthTokenRepository(
     private val apiClient: OAuthApiClient,
     private val prefs: SharedPreferenceDataSource
 ) {
-    fun login(userId: Long) {
+    fun login(userId: Long = requireNotNull(getCurrentUserId())) {
         setCurrentUserId(userId)
         val oauthAccessToken = getCurrentUserAccessToken() ?: throw IllegalStateException()
         apiClient.login(oauthAccessToken)
@@ -52,14 +52,14 @@ class OAuthTokenRepository(
     }
 
     private fun getCurrentUserAccessToken(): AccessTokenEntity? {
-        val currentUserId = prefs.getCurrentUserId()
+        val currentUserId = prefs.getCurrentUserId() ?: return null
         if (currentUserId < 0) {
             return null
         }
         return prefs.getCurrentUserAccessToken()
     }
 
-    fun getCurrentUserId(): Long {
+    fun getCurrentUserId(): Long? {
         return prefs.getCurrentUserId()
     }
 

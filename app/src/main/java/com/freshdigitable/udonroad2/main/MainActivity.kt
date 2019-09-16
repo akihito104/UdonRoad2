@@ -29,6 +29,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import com.freshdigitable.udonroad2.R
+import com.freshdigitable.udonroad2.data.repository.OAuthTokenRepository
+import com.freshdigitable.udonroad2.data.repository.RepositoryComponent
 import com.freshdigitable.udonroad2.databinding.ActivityMainBinding
 import com.freshdigitable.udonroad2.model.FragmentScope
 import com.freshdigitable.udonroad2.model.ViewModelKey
@@ -64,17 +66,15 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
         super.onCreate(savedInstanceState)
-        val binding =
-            DataBindingUtil.setContentView<ActivityMainBinding>(
-                this,
-                R.layout.activity_main
-            )
-
-        navigation.navigator.postEvent(TimelineEvent.Init)
+        val binding = DataBindingUtil.setContentView<ActivityMainBinding>(
+            this, R.layout.activity_main
+        )
 
         val viewModel = viewModelProvider[MainViewModel::class.java]
         binding.lifecycleOwner = this
         binding.viewModel = viewModel
+
+        viewModel.initialEvent()
 
         supportActionBar?.apply {
             setDisplayHomeAsUpEnabled(true)
@@ -88,17 +88,16 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
             binding.mainDrawer.addDrawerListener(this)
         }
         binding.mainGlobalMenu.setNavigationItemSelectedListener { item ->
-            when (item.itemId) {
-                R.id.drawer_menu_home -> {
-                    navigation.navigator.postEvent(TimelineEvent.Init)
-                    true
-                }
-                R.id.drawer_menu_add_account -> {
-                    navigation.navigator.postEvent(OauthEvent.Init)
-                    true
-                }
-                else -> false
+            val event = when (item.itemId) {
+                R.id.drawer_menu_home -> TimelineEvent.Init
+                R.id.drawer_menu_add_account -> OauthEvent.Init
+                else -> null
             }
+            if (event != null) {
+                navigation.navigator.postEvent(event)
+                binding.mainDrawer.closeDrawer(binding.mainGlobalMenu)
+            }
+            return@setNavigationItemSelectedListener event != null
         }
     }
 
@@ -122,8 +121,9 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
     override fun androidInjector(): AndroidInjector<Any> = androidInjector
 }
 
-class MainViewModel @Inject constructor(
-    private val navigator: NavigationDispatcher
+class MainViewModel(
+    private val navigator: NavigationDispatcher,
+    private val oauthTokenRepository: OAuthTokenRepository
 ) : ViewModel() {
 
     private val selectedItemId = MutableLiveData<SelectedItemId?>()
@@ -134,6 +134,17 @@ class MainViewModel @Inject constructor(
     init {
         _isFabVisible.addSource(selectedItemId) { updateFabVisible() }
         _isFabVisible.addSource(fabVisible) { updateFabVisible() }
+    }
+
+    internal fun initialEvent() {
+        val event = when {
+            oauthTokenRepository.getCurrentUserId() != null -> {
+                oauthTokenRepository.login()
+                TimelineEvent.Init
+            }
+            else -> OauthEvent.Init
+        }
+        navigator.postEvent(event)
     }
 
     private fun updateFabVisible() {
@@ -204,6 +215,15 @@ abstract class MainActivityModule {
                 viewModelProvider,
                 R.id.main_container
             )
+        }
+
+        @Provides
+        @JvmStatic
+        fun provideMainViewModel(
+            navigator: NavigationDispatcher,
+            repositoryBuilder: RepositoryComponent.Builder
+        ): MainViewModel {
+            return MainViewModel(navigator, repositoryBuilder.build().oauthTokenRepository())
         }
     }
 }

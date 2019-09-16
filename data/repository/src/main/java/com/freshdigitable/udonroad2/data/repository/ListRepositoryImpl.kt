@@ -25,7 +25,6 @@ import com.freshdigitable.udonroad2.data.restclient.ListRestClient
 import com.freshdigitable.udonroad2.data.restclient.ListRestClientProvider
 import com.freshdigitable.udonroad2.data.restclient.MemberListClientModule
 import com.freshdigitable.udonroad2.data.restclient.TweetTimelineClientModule
-import com.freshdigitable.udonroad2.data.restclient.TwitterModule
 import com.freshdigitable.udonroad2.data.restclient.UserListClientModule
 import com.freshdigitable.udonroad2.model.ListQuery
 import com.freshdigitable.udonroad2.model.MemberList
@@ -65,7 +64,6 @@ class MemberListListRepository(
 @Module(
     includes = [
         DaoModule::class,
-        TwitterModule::class,
         TweetTimelineClientModule::class
     ]
 )
@@ -85,7 +83,6 @@ object TimelineRepositoryModule {
 @Module(
     includes = [
         DaoModule::class,
-        TwitterModule::class,
         UserListClientModule::class
     ]
 )
@@ -105,7 +102,6 @@ object UserListRepositoryModule {
 @Module(
     includes = [
         DaoModule::class,
-        TwitterModule::class,
         MemberListClientModule::class
     ]
 )

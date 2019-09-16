@@ -18,11 +18,11 @@ package com.freshdigitable.udonroad2.oauth
 
 import android.app.Application
 import android.os.Bundle
-import androidx.databinding.ObservableField
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.map
+import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.viewModelScope
 import androidx.paging.DataSource
 import androidx.paging.PagedList
@@ -77,15 +77,20 @@ class OauthViewModel(
         }
     }
 
-    val pin: ObservableField<CharSequence> = ObservableField("")
-    fun onAfterPinTextChanged(pin: CharSequence) {
-        this.pin.set(pin.toString())
+    private val _pin = MutableLiveData<String>("")
+    val pin: LiveData<String> = _pin.distinctUntilChanged()
+
+    val sendPinButtonEnabled: LiveData<Boolean> = merge(requestToken, pin) { token, p ->
+        token != null && !p.isNullOrEmpty()
     }
 
-    val sendPinButtonEnabled: LiveData<Boolean> = requestToken.map { it != null }
+    fun onAfterPinTextChanged(pin: CharSequence) {
+        _pin.value = pin.toString()
+    }
+
     fun onSendPinClicked() {
         viewModelScope.launch {
-            val t = repository.getAccessToken(requestToken.value!!, pin.get().toString())
+            val t = repository.getAccessToken(requestToken.value!!, pin.value.toString())
             repository.login(t.userId)
             navigator.postEvent(OauthEvent.OauthSucceeded)
             requestToken.value = null
@@ -137,4 +142,11 @@ interface OauthViewModelModule {
             )
         }
     }
+}
+
+fun <T1, T2, E> merge(t1: LiveData<T1>, t2: LiveData<T2>, block: (T1?, T2?) -> E?): LiveData<E> {
+    val res = MediatorLiveData<E>()
+    res.addSource(t1) { res.value = block(it, t2.value) }
+    res.addSource(t2) { res.value = block(t1.value, it) }
+    return res
 }
