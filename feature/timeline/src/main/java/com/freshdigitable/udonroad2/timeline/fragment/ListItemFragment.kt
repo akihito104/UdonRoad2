@@ -9,7 +9,6 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import androidx.lifecycle.observe
 import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DividerItemDecoration
@@ -27,9 +26,9 @@ abstract class ListItemFragment<T, I> : Fragment()
     where T : ViewModel,
           T : ListItemLoadable<I> {
     @Inject
-    lateinit var factory: ViewModelProvider.Factory
+    lateinit var viewModelProvider: ViewModelProvider
     protected abstract val viewModelClass: KClass<T>
-    protected abstract fun createListAdapter(viewModel: T): PagedListAdapter<I,*>
+    protected abstract fun createListAdapter(viewModel: T): PagedListAdapter<I, *>
 
     override fun onAttach(context: Context) {
         AndroidSupportInjection.inject(this)
@@ -50,8 +49,7 @@ abstract class ListItemFragment<T, I> : Fragment()
         val binding = DataBindingUtil.findBinding<FragmentTimelineBinding>(view) ?: return
         binding.lifecycleOwner = viewLifecycleOwner
 
-        val viewModel = ViewModelProviders.of(requireActivity(), factory)
-            .get("_$ownerId", viewModelClass.java)
+        val viewModel = viewModelProvider.get("_$ownerId", viewModelClass.java)
         binding.viewModel = viewModel
 
         val listView = binding.mainList

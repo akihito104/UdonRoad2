@@ -5,7 +5,6 @@ import androidx.lifecycle.MediatorLiveData
 import com.freshdigitable.udonroad2.data.db.DaoModule
 import com.freshdigitable.udonroad2.data.db.dao.RelationshipDao
 import com.freshdigitable.udonroad2.data.restclient.FriendshipRestClient
-import com.freshdigitable.udonroad2.data.restclient.TwitterModule
 import com.freshdigitable.udonroad2.model.Relationship
 import com.freshdigitable.udonroad2.model.RepositoryScope
 import dagger.Module
@@ -98,7 +97,11 @@ class RelationshipRepository @Inject constructor(
     }
 }
 
-@Module(includes = [DaoModule::class, TwitterModule::class])
+@Module(
+    includes = [
+        DaoModule::class
+    ]
+)
 object RelationshipRepositoryModule {
     @JvmStatic
     @RepositoryScope

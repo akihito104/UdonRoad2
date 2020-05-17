@@ -32,4 +32,6 @@ sealed class ListQuery(
     data class UserListMembership(
         override val userId: Long
     ) : ListQuery(userId)
+
+    object Oauth : ListQuery(null)
 }

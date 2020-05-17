@@ -12,7 +12,8 @@ import dagger.Subcomponent
         TweetRepositoryModule::class,
         UserRepositoryModule::class,
         MemberListListRepositoryModule::class,
-        RelationshipRepositoryModule::class
+        RelationshipRepositoryModule::class,
+        OAuthTokenRepositoryModule::class
     ]
 )
 interface RepositoryComponent {
@@ -32,7 +33,10 @@ interface RepositoryComponent {
     fun memberListListRepository(): MemberListListRepository
 
     @RepositoryScope
-    fun relationshipRepository() : RelationshipRepository
+    fun relationshipRepository(): RelationshipRepository
+
+    @RepositoryScope
+    fun oauthTokenRepository(): OAuthTokenRepository
 
     @Subcomponent.Builder
     interface Builder {

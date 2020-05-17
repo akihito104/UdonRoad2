@@ -21,20 +21,24 @@ import com.freshdigitable.udonroad2.AppApplication
 import com.freshdigitable.udonroad2.data.db.DatabaseModule
 import com.freshdigitable.udonroad2.data.repository.RepositoryComponent
 import com.freshdigitable.udonroad2.data.repository.RepositoryModule
+import com.freshdigitable.udonroad2.data.restclient.TwitterModule
 import dagger.BindsInstance
 import dagger.Component
 import dagger.android.support.AndroidSupportInjectionModule
 import javax.inject.Singleton
 
 @Singleton
-@Component(modules = [
-    AndroidSupportInjectionModule::class,
-    ActivityBuilders::class,
-    ViewModelModule::class,
-    ExecutorModule::class,
-    RepositoryModule::class,
-    DatabaseModule::class
-])
+@Component(
+    modules = [
+        AndroidSupportInjectionModule::class,
+        ActivityBuilders::class,
+        ViewModelModule::class,
+        ExecutorModule::class,
+        RepositoryModule::class,
+        DatabaseModule::class,
+        TwitterModule::class
+    ]
+)
 interface AppComponent {
 
     @Component.Builder

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2019. Matsuda, Akihit (akihito104)
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<resources>
+    <string name="oauth_login">Twitterへログイン</string>
+    <string name="oauth_hint_input_pin">PINコードを入力してください</string>
+    <string name="oauth_send_pin">送信</string>
+    <string name="title_oauth">ようこそ</string>
+    <string name="msg_oauth_fav">これはふぁぼです</string>
+    <string name="msg_oauth_rt">これはRTです</string>
+    <string name="msg_oauth_favRt">ふぁぼとRTが一度にできます</string>
+    <string name="msg_oauth_detail">ツイートの詳細を表示します</string>
+    <string name="msg_oauth_conv">ツイートの返信元を表示します</string>
+    <string name="msg_oauth_reply">このツイートに返信します</string>
+    <string name="msg_oauth_quote">このツイートを引用します</string>
+    <string name="msg_oauth_success">認証に成功しました！</string>
+    <string name="msg_oauth_failed">認証に失敗しました…</string>
+    <string name="oauth_demo_tweet">aoeliyakeiへようこそ!これはデモ用のダミーツイートです。タップして選択状態にしたり、丸いボタンをフリックしてツイートにリアクションをしてみましょう。</string>
+    <string name="oauth_demo_quoted">引用ツイートだけを選択してリアクションすることもできます。</string>
+    <string name="oauth_explain">下のボタンからTwitterへログインし、\'aoeliyakei\'でツイートできるように権限を付与してください。そうすると数桁の数字(PINコード)が表示されるので、それをコピーしてこのアプリに戻ってきてください。</string>
+    <string name="oauth_pin_direction">表示されたPINコードを入力して送信してください。</string>
+    <string name="msg_oauth_user_icon">ユーザーの情報をみることができます</string>
+</resources>

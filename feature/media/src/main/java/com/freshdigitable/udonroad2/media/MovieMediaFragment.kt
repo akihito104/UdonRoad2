@@ -32,7 +32,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import com.freshdigitable.udonroad2.model.MediaItem
 import dagger.android.support.AndroidSupportInjection
 import kotlinx.android.synthetic.main.view_media_movie.view.media_progressBar
@@ -70,7 +69,7 @@ class MovieMediaFragment(
     }
 
     @Inject
-    lateinit var viewModelProvider: ViewModelProvider.Factory
+    lateinit var viewModelProvider: ViewModelProvider
 
     private val url: String
         get() = requireNotNull(arguments?.getString(ARGS_URL)) {
@@ -97,8 +96,7 @@ class MovieMediaFragment(
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val mediaViewModel =
-            ViewModelProviders.of(requireActivity(), viewModelProvider)[MediaViewModel::class.java]
+        val mediaViewModel = viewModelProvider[MediaViewModel::class.java]
         view.setOnClickListener { mediaViewModel.toggleUiVisibility() }
 
         val surfaceView: SurfaceView = view.media_video

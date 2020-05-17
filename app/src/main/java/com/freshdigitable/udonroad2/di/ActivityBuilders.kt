@@ -16,6 +16,9 @@
 
 package com.freshdigitable.udonroad2.di
 
+import android.app.Application
+import android.content.Context
+import android.content.SharedPreferences
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import com.freshdigitable.udonroad2.main.MainActivity
@@ -28,6 +31,7 @@ import com.freshdigitable.udonroad2.user.UserActivityModule
 import dagger.Module
 import dagger.Provides
 import dagger.android.ContributesAndroidInjector
+import javax.inject.Singleton
 
 @Module
 interface ActivityBuilders {
@@ -51,5 +55,12 @@ interface ActivityBuilders {
             viewModelStoreOwner: ViewModelStoreOwner,
             viewModelFactory: ViewModelProvider.Factory
         ): ViewModelProvider = ViewModelProvider(viewModelStoreOwner, viewModelFactory)
+
+        @Provides
+        @JvmStatic
+        @Singleton
+        fun Application.provideSharedPreferences(): SharedPreferences {
+            return getSharedPreferences("udonroad_prefs", Context.MODE_PRIVATE)
+        }
     }
 }

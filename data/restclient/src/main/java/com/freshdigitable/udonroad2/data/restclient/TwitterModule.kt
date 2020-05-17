@@ -20,20 +20,20 @@ import dagger.Module
 import dagger.Provides
 import twitter4j.Twitter
 import twitter4j.TwitterFactory
-import twitter4j.auth.AccessToken
 import twitter4j.conf.ConfigurationBuilder
+import javax.inject.Singleton
 
 @Module
 object TwitterModule {
     @Provides
     @JvmStatic
+    @Singleton
     fun providesTwitter(): Twitter {
         val configuration = ConfigurationBuilder()
             .setTweetModeExtended(true)
             .setOAuthConsumerKey(BuildConfig.CONSUMER_KEY)
             .setOAuthConsumerSecret(BuildConfig.CONSUMER_SECRET)
             .build()
-        val accessToken = AccessToken(BuildConfig.ACCESS_TOKEN, BuildConfig.ACCESS_SECRET)
-        return TwitterFactory(configuration).getInstance(accessToken)
+        return TwitterFactory(configuration).instance
     }
 }
