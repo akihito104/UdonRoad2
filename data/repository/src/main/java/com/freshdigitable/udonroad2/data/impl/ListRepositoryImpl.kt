@@ -23,8 +23,8 @@ import androidx.lifecycle.switchMap
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
 import com.freshdigitable.udonroad2.data.ListRepository
+import com.freshdigitable.udonroad2.data.LocalListDataSource
 import com.freshdigitable.udonroad2.data.db.DaoModule
-import com.freshdigitable.udonroad2.data.db.dao.ListDao
 import com.freshdigitable.udonroad2.data.db.dao.MemberListListDao
 import com.freshdigitable.udonroad2.data.db.dao.TweetListDao
 import com.freshdigitable.udonroad2.data.db.dao.UserListDao
@@ -47,7 +47,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
 abstract class ListRepositoryImpl<E, I>(
-    private val dao: ListDao<E, I>,
+    private val localDataSource: LocalListDataSource<E, I>,
     private val fetcher: ListFetcher<ListQuery, E, ListRestClient<ListQuery, E>, I>,
     private val clientProvider: ListRestClientProvider,
     private val executor: AppExecutor
@@ -80,7 +80,7 @@ abstract class ListRepositoryImpl<E, I>(
     }
 
     private fun getPagedList(owner: String): LiveData<PagedList<I>> {
-        val timeline = dao.getList(owner)
+        val timeline = localDataSource.getDataSourceFactory(owner)
         return LivePagedListBuilder(timeline, config)
             .setFetchExecutor(executor.disk)
             .setBoundaryCallback(object : PagedList.BoundaryCallback<I>() {
@@ -117,7 +117,7 @@ abstract class ListRepositoryImpl<E, I>(
         _loading.postValue(true)
         runCatching {
             val timeline = block(apiClient)
-            dao.addEntities(timeline, owner)
+            localDataSource.putList(timeline, owner)
         }.onSuccess {
             _loading.postValue(false)
         }.onFailure { e ->
@@ -128,14 +128,14 @@ abstract class ListRepositoryImpl<E, I>(
 
     override fun clear() {
         diskAccess {
-            listTable.keys.forEach { dao.clean(it) }
+            listTable.keys.forEach { localDataSource.clean(it) }
         }
     }
 }
 
 @RepositoryScope
 class TweetTimelineRepository(
-    tweetDao: ListDao<TweetEntity, TweetListItem>,
+    tweetDao: LocalListDataSource<TweetEntity, TweetListItem>,
     fetcher: ListFetcher<ListQuery, TweetEntity, ListRestClient<ListQuery, TweetEntity>, TweetListItem>,
     clientProvider: ListRestClientProvider,
     executor: AppExecutor
@@ -143,7 +143,7 @@ class TweetTimelineRepository(
 
 @RepositoryScope
 class UserListRepository(
-    userDao: ListDao<User, UserListItem>,
+    userDao: LocalListDataSource<User, UserListItem>,
     fetcher: ListFetcher<ListQuery, User, ListRestClient<ListQuery, User>, UserListItem>,
     clientProvider: ListRestClientProvider,
     executor: AppExecutor
@@ -151,7 +151,7 @@ class UserListRepository(
 
 @RepositoryScope
 class MemberListListRepository(
-    memberListDao: ListDao<MemberList, MemberListItem>,
+    memberListDao: LocalListDataSource<MemberList, MemberListItem>,
     fetcher: ListFetcher<ListQuery, MemberList, ListRestClient<ListQuery, MemberList>, MemberListItem>,
     clientProvider: ListRestClientProvider,
     executor: AppExecutor
