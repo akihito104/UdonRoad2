@@ -6,4 +6,5 @@ include ':app',
         ':data:db',
         ':data:restclient',
         ':data:repository',
+        ':data:repository-api',
         ':model'

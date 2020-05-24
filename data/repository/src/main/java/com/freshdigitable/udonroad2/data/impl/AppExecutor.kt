@@ -1,4 +1,4 @@
-package com.freshdigitable.udonroad2.data.repository
+package com.freshdigitable.udonroad2.data.impl
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope

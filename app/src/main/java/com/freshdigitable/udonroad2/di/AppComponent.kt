@@ -19,8 +19,8 @@ package com.freshdigitable.udonroad2.di
 import android.app.Application
 import com.freshdigitable.udonroad2.AppApplication
 import com.freshdigitable.udonroad2.data.db.DatabaseModule
-import com.freshdigitable.udonroad2.data.repository.RepositoryComponent
-import com.freshdigitable.udonroad2.data.repository.RepositoryModule
+import com.freshdigitable.udonroad2.data.impl.RepositoryComponent
+import com.freshdigitable.udonroad2.data.impl.RepositoryModule
 import com.freshdigitable.udonroad2.data.restclient.TwitterModule
 import dagger.BindsInstance
 import dagger.Component

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.freshdigitable.udonroad2.data.repository
+package com.freshdigitable.udonroad2.data.impl
 
 import com.freshdigitable.udonroad2.data.restclient.OAuthApiClient
 import com.freshdigitable.udonroad2.model.AccessTokenEntity

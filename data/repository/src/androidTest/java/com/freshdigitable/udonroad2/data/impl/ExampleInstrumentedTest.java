@@ -1,4 +1,4 @@
-package com.freshdigitable.udonroad2.data.repository;
+package com.freshdigitable.udonroad2.data.impl;
 
 import android.content.Context;
 
@@ -22,6 +22,6 @@ public class ExampleInstrumentedTest {
     // Context of the app under test.
     Context appContext = InstrumentationRegistry.getTargetContext();
 
-    assertEquals("com.freshdigitable.udonroad2.data.repository.test", appContext.getPackageName());
+    assertEquals("com.freshdigitable.udonroad2.data.impl.test", appContext.getPackageName());
   }
 }

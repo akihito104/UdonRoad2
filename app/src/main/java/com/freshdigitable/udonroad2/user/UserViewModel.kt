@@ -6,9 +6,9 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
 import androidx.lifecycle.switchMap
-import com.freshdigitable.udonroad2.data.repository.RelationshipRepository
-import com.freshdigitable.udonroad2.data.repository.RepositoryComponent
-import com.freshdigitable.udonroad2.data.repository.UserRepository
+import com.freshdigitable.udonroad2.data.impl.RelationshipRepository
+import com.freshdigitable.udonroad2.data.impl.RepositoryComponent
+import com.freshdigitable.udonroad2.data.impl.UserRepository
 import com.freshdigitable.udonroad2.model.Relationship
 import com.freshdigitable.udonroad2.model.User
 import com.freshdigitable.udonroad2.timeline.SelectedItemId

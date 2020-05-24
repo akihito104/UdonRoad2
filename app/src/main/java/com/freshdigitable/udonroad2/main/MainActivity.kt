@@ -29,8 +29,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import com.freshdigitable.udonroad2.R
-import com.freshdigitable.udonroad2.data.repository.OAuthTokenRepository
-import com.freshdigitable.udonroad2.data.repository.RepositoryComponent
+import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
+import com.freshdigitable.udonroad2.data.impl.RepositoryComponent
 import com.freshdigitable.udonroad2.databinding.ActivityMainBinding
 import com.freshdigitable.udonroad2.model.FragmentScope
 import com.freshdigitable.udonroad2.model.ViewModelKey

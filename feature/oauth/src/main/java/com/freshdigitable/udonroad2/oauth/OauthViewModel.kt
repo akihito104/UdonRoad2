@@ -26,8 +26,8 @@ import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.viewModelScope
 import androidx.paging.DataSource
 import androidx.paging.PagedList
-import com.freshdigitable.udonroad2.data.repository.OAuthTokenRepository
-import com.freshdigitable.udonroad2.data.repository.RepositoryComponent
+import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
+import com.freshdigitable.udonroad2.data.impl.RepositoryComponent
 import com.freshdigitable.udonroad2.model.RequestTokenItem
 import com.freshdigitable.udonroad2.navigation.NavigationDispatcher
 import com.freshdigitable.udonroad2.navigation.NavigationEvent

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.freshdigitable.udonroad2.data.repository
+package com.freshdigitable.udonroad2.data.impl
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData

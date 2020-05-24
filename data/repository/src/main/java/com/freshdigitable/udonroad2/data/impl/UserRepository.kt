@@ -1,4 +1,4 @@
-package com.freshdigitable.udonroad2.data.repository
+package com.freshdigitable.udonroad2.data.impl
 
 import androidx.lifecycle.LiveData
 import com.freshdigitable.udonroad2.data.db.DaoModule

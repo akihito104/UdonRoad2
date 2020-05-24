@@ -4,8 +4,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.switchMap
-import com.freshdigitable.udonroad2.data.repository.RepositoryComponent
-import com.freshdigitable.udonroad2.data.repository.TweetRepository
+import com.freshdigitable.udonroad2.data.impl.RepositoryComponent
+import com.freshdigitable.udonroad2.data.impl.TweetRepository
 import com.freshdigitable.udonroad2.model.Tweet
 import com.freshdigitable.udonroad2.model.TweetListItem
 import com.freshdigitable.udonroad2.navigation.NavigationDispatcher

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018. Matsuda, Akihit (akihito104)
+ * Copyright (c) 2020. Matsuda, Akihit (akihito104)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-package com.freshdigitable.udonroad2.di
+package com.freshdigitable.udonroad2.data
 
-import com.freshdigitable.udonroad2.data.impl.AppExecutor
-import dagger.Module
-import dagger.Provides
-import javax.inject.Singleton
+import androidx.lifecycle.LiveData
+import androidx.paging.PagedList
+import com.freshdigitable.udonroad2.model.ListQuery
 
-@Module
-class ExecutorModule {
-    @Provides
-    @Singleton
-    fun provideAppExecutor(): AppExecutor = AppExecutor()
+interface ListRepository<I> {
+    val loading: LiveData<Boolean>
+
+    fun getList(owner: String, query: ListQuery): LiveData<PagedList<I>>
+    fun loadAtFront()
+    fun clear()
 }

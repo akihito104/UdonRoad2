@@ -1,4 +1,4 @@
-package com.freshdigitable.udonroad2.data.repository
+package com.freshdigitable.udonroad2.data.impl
 
 import com.freshdigitable.udonroad2.data.restclient.ListRestClient
 import com.freshdigitable.udonroad2.model.ListQuery

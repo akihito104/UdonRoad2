@@ -6,8 +6,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.switchMap
 import androidx.paging.PagedList
-import com.freshdigitable.udonroad2.data.repository.RepositoryComponent
-import com.freshdigitable.udonroad2.data.repository.UserListRepository
+import com.freshdigitable.udonroad2.data.impl.RepositoryComponent
+import com.freshdigitable.udonroad2.data.impl.UserListRepository
 import com.freshdigitable.udonroad2.model.UserListItem
 import com.freshdigitable.udonroad2.navigation.NavigationDispatcher
 import com.freshdigitable.udonroad2.timeline.ListItemLoadable

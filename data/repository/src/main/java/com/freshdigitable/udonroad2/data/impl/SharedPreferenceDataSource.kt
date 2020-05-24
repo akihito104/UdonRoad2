@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.freshdigitable.udonroad2.data.repository
+package com.freshdigitable.udonroad2.data.impl
 
 import android.content.SharedPreferences
 import androidx.core.content.edit

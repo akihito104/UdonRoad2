@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018. Matsuda, Akihit (akihito104)
+ * Copyright (c) 2020. Matsuda, Akihit (akihito104)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,19 @@
  * limitations under the License.
  */
 
-package com.freshdigitable.udonroad2.di
+package com.freshdigitable.udonroad2.data
 
-import com.freshdigitable.udonroad2.data.impl.AppExecutor
-import dagger.Module
-import dagger.Provides
-import javax.inject.Singleton
+import org.junit.Assert.assertEquals
+import org.junit.Test
 
-@Module
-class ExecutorModule {
-    @Provides
-    @Singleton
-    fun provideAppExecutor(): AppExecutor = AppExecutor()
+/**
+ * Example local unit test, which will execute on the development machine (host).
+ *
+ * See [testing documentation](http://d.android.com/tools/testing).
+ */
+class ExampleUnitTest {
+    @Test
+    fun addition_isCorrect() {
+        assertEquals(4, 2 + 2)
+    }
 }

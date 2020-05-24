@@ -23,8 +23,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.switchMap
 import androidx.paging.PagedList
-import com.freshdigitable.udonroad2.data.repository.RepositoryComponent
-import com.freshdigitable.udonroad2.data.repository.TweetTimelineRepository
+import com.freshdigitable.udonroad2.data.impl.RepositoryComponent
+import com.freshdigitable.udonroad2.data.impl.TweetTimelineRepository
 import com.freshdigitable.udonroad2.model.ListQuery
 import com.freshdigitable.udonroad2.model.Tweet
 import com.freshdigitable.udonroad2.model.TweetListItem
