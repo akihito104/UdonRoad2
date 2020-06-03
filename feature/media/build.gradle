@@ -23,16 +23,13 @@ apply from: rootProject.file("android_build.gradle")
 
 android {
     compileSdkVersion 29
-    buildToolsVersion "29.0.0"
-
 
     defaultConfig {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles 'consumer-rules.pro'
     }
-    dataBinding {
-        enabled = true
-    }
+
+    buildFeatures.dataBinding = true
 
     buildTypes {
         release {
