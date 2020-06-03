@@ -52,7 +52,7 @@ internal fun Status.toEntity(): TweetEntity {
         possiblySensitive = isPossiblySensitive,
         source = source,
         createdAt = Instant.ofEpochMilli(createdAt.time),
-        media = mediaEntities.map { it.toItem() }
+        mediaItems = mediaEntities.map { it.toItem() }
     )
 }
 
