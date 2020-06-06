@@ -37,6 +37,7 @@ import kotlin.math.abs
 class UserActivity : HasAndroidInjector, AppCompatActivity() {
     @Inject
     lateinit var viewModelProvider: ViewModelProvider
+
     @Inject
     lateinit var navigation: Navigation<UserActivityState>
     private lateinit var viewModel: UserViewModel
@@ -135,8 +136,8 @@ class UserActivity : HasAndroidInjector, AppCompatActivity() {
         findItem(negativeId).isVisible = positiveItemVisible?.not() ?: false
     }
 
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        when (item?.itemId) {
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
             R.id.action_follow -> viewModel.updateFollowingStatus(true)
             R.id.action_unfollow -> viewModel.updateFollowingStatus(false)
             R.id.action_block -> viewModel.updateBlockingStatus(true)

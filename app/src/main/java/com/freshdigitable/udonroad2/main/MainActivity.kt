@@ -59,6 +59,7 @@ import javax.inject.Inject
 class MainActivity : AppCompatActivity(), HasAndroidInjector {
     @Inject
     lateinit var navigation: Navigation<MainActivityState>
+
     @Inject
     lateinit var viewModelProvider: ViewModelProvider
     private var actionBarDrawerToggle: ActionBarDrawerToggle? = null
@@ -105,7 +106,7 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
         navigation.navigator.postEvent(TimelineEvent.Back)
     }
 
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return actionBarDrawerToggle?.onOptionsItemSelected(item)
             ?: super.onOptionsItemSelected(item)
     }
