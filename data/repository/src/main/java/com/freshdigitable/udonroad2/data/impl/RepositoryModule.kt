@@ -1,5 +1,9 @@
 package com.freshdigitable.udonroad2.data.impl
 
+import com.freshdigitable.udonroad2.data.db.LocalListDataSourceModule
+import com.freshdigitable.udonroad2.data.db.PagedListDataSourceFactoryModule
+import com.freshdigitable.udonroad2.data.restclient.MemberListDataSourceModule
+import com.freshdigitable.udonroad2.data.restclient.TweetTimelineDataSourceModule
 import com.freshdigitable.udonroad2.model.RepositoryScope
 import dagger.Module
 import dagger.Subcomponent
@@ -7,30 +11,19 @@ import dagger.Subcomponent
 @RepositoryScope
 @Subcomponent(
     modules = [
-        TimelineRepositoryModule::class,
-        UserListRepositoryModule::class,
         TweetRepositoryModule::class,
         UserRepositoryModule::class,
-        MemberListListRepositoryModule::class,
         RelationshipRepositoryModule::class,
         OAuthTokenRepositoryModule::class
     ]
 )
 interface RepositoryComponent {
-    @RepositoryScope
-    fun tweetTimelineRepository(): TweetTimelineRepository
-
-    @RepositoryScope
-    fun userListRepository(): UserListRepository
 
     @RepositoryScope
     fun tweetRepository(): TweetRepository
 
     @RepositoryScope
     fun userRepository(): UserRepository
-
-    @RepositoryScope
-    fun memberListListRepository(): MemberListListRepository
 
     @RepositoryScope
     fun relationshipRepository(): RelationshipRepository
@@ -46,3 +39,13 @@ interface RepositoryComponent {
 
 @Module(subcomponents = [RepositoryComponent::class])
 interface RepositoryModule
+
+@Module(
+    includes = [
+        LocalListDataSourceModule::class,
+        TweetTimelineDataSourceModule::class,
+        MemberListDataSourceModule::class,
+        PagedListDataSourceFactoryModule::class
+    ]
+)
+interface ListRepositoryModule
