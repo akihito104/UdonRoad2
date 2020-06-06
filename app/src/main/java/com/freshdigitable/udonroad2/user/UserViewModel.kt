@@ -93,7 +93,6 @@ class UserViewModel(
 @Module
 object UserViewModelModule {
     @Provides
-    @JvmStatic
     fun provideUserViewModel(repository: RepositoryComponent.Builder): UserViewModel {
         val repositoryComponent = repository.build()
         return UserViewModel(

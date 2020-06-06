@@ -189,7 +189,6 @@ abstract class UserActivityModule {
 
     @Module
     companion object {
-        @JvmStatic
         @Provides
         fun provideUserActivityNavigation(
             navigator: NavigationDispatcher,

@@ -103,7 +103,6 @@ class RelationshipRepository @Inject constructor(
     ]
 )
 object RelationshipRepositoryModule {
-    @JvmStatic
     @RepositoryScope
     @Provides
     fun provideRelationshipRepository(

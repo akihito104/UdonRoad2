@@ -203,7 +203,6 @@ abstract class MainActivityModule {
     @Module
     companion object {
         @Provides
-        @JvmStatic
         fun provideNavigation(
             navigator: NavigationDispatcher,
             activity: MainActivity,
@@ -218,7 +217,6 @@ abstract class MainActivityModule {
         }
 
         @Provides
-        @JvmStatic
         fun provideMainViewModel(
             navigator: NavigationDispatcher,
             repositoryBuilder: RepositoryComponent.Builder

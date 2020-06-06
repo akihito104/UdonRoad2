@@ -49,7 +49,6 @@ class TweetDetailViewModel @Inject constructor(
 @Module
 object TweetDetailViewModelModule {
     @Provides
-    @JvmStatic
     fun provideTweetDetailViewModel(
         navigator: NavigationDispatcher,
         repositories: RepositoryComponent.Builder

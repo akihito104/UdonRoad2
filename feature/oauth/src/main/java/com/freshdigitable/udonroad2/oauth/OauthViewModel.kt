@@ -122,13 +122,11 @@ sealed class OauthEvent : NavigationEvent {
 interface OauthViewModelModule {
     @Module
     companion object {
-        @JvmStatic
         @Provides
         fun provideOauthDataSource(context: Application): DataSource<Int, OauthItem> {
             return OauthDataSource(context)
         }
 
-        @JvmStatic
         @Provides
         fun provideOauthViewModel(
             dataSource: DataSource<Int, OauthItem>,

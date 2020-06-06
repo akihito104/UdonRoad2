@@ -22,7 +22,6 @@ class UserRepository(
 object UserRepositoryModule {
     @Provides
     @RepositoryScope
-    @JvmStatic
     fun provideUserRepository(dao: UserDao): UserRepository {
         return UserRepository(dao)
     }

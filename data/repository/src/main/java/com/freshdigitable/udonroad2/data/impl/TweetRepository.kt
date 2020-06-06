@@ -45,7 +45,6 @@ class TweetRepository @Inject constructor(
 object TweetRepositoryModule {
     @Provides
     @RepositoryScope
-    @JvmStatic
     fun provideTweetRepository(dao: TweetDao, apiClient: TweetApiClient): TweetRepository {
         return TweetRepository(dao, apiClient)
     }

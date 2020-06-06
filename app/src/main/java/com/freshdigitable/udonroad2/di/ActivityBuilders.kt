@@ -50,14 +50,12 @@ interface ActivityBuilders {
     @Module
     companion object {
         @Provides
-        @JvmStatic
         fun provideViewModelProvider(
             viewModelStoreOwner: ViewModelStoreOwner,
             viewModelFactory: ViewModelProvider.Factory
         ): ViewModelProvider = ViewModelProvider(viewModelStoreOwner, viewModelFactory)
 
         @Provides
-        @JvmStatic
         @Singleton
         fun Application.provideSharedPreferences(): SharedPreferences {
             return getSharedPreferences("udonroad_prefs", Context.MODE_PRIVATE)

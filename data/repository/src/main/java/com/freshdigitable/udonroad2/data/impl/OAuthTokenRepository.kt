@@ -78,7 +78,6 @@ interface OAuthTokenRepositoryModule {
     @Module
     companion object {
         @Provides
-        @JvmStatic
         @RepositoryScope
         fun provideOAuthTokenRepository(
             apiClient: OAuthApiClient,

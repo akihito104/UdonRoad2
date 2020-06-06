@@ -140,7 +140,6 @@ class MediaViewModel(
 @Module
 object MediaViewModelModule {
     @Provides
-    @JvmStatic
     fun provideMediaViewModel(
         repositoryComponent: RepositoryComponent.Builder,
         application: Application
