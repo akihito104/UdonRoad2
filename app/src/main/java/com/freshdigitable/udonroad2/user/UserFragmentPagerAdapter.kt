@@ -6,6 +6,8 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentStatePagerAdapter
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.model.ListQuery
+import com.freshdigitable.udonroad2.model.ListQuery.TweetListQuery
+import com.freshdigitable.udonroad2.model.ListQuery.UserListQuery
 import com.freshdigitable.udonroad2.model.TweetingUser
 import com.freshdigitable.udonroad2.model.User
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragment
@@ -36,22 +38,34 @@ enum class UserPage(
     val count: ((User?) -> Int?)? = null
 ) {
     TWEET(
-        creator = { user -> ListItemFragment.newInstance<TimelineFragment>(ListQuery.Timeline(user.id)) },
+        creator = { user ->
+            ListItemFragment.newInstance<TimelineFragment>(
+                TweetListQuery.Timeline(user.id)
+            )
+        },
         titleRes = R.string.user_tab_tweet,
         count = { user -> user?.tweetCount }
     ),
     FOLLOWER(
-        creator = { user -> ListItemFragment.newInstance<UserListFragment>(ListQuery.Follower(user.id)) },
+        creator = { user ->
+            ListItemFragment.newInstance<UserListFragment>(
+                UserListQuery.Follower(user.id)
+            )
+        },
         titleRes = R.string.user_tab_follower,
         count = { user -> user?.followerCount }
     ),
     FOLLOWING(
-        creator = { user -> ListItemFragment.newInstance<UserListFragment>(ListQuery.Following(user.id)) },
+        creator = { user ->
+            ListItemFragment.newInstance<UserListFragment>(
+                UserListQuery.Following(user.id)
+            )
+        },
         titleRes = R.string.user_tab_following,
         count = { user -> user?.followingCount }
     ),
     FAV(
-        creator = { user -> ListItemFragment.newInstance<TimelineFragment>(ListQuery.Fav(user.id)) },
+        creator = { user -> ListItemFragment.newInstance<TimelineFragment>(TweetListQuery.Fav(user.id)) },
         titleRes = R.string.user_tab_fav,
         count = { user -> user?.favoriteCount }
     ),
