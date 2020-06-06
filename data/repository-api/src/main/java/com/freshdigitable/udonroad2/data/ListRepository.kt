@@ -17,13 +17,34 @@
 package com.freshdigitable.udonroad2.data
 
 import androidx.lifecycle.LiveData
+import androidx.paging.DataSource
 import androidx.paging.PagedList
 import com.freshdigitable.udonroad2.model.ListQuery
 
-interface ListRepository<I> {
+interface ListRepository<Q : ListQuery> {
     val loading: LiveData<Boolean>
 
-    fun getList(owner: String, query: ListQuery): LiveData<PagedList<I>>
-    fun loadAtFront()
-    fun clear()
+    fun loadList(query: Q, owner: String)
+    fun clear(owner: String)
+
+    companion object Factory
+}
+
+interface PagedListProvider<Q : ListQuery, I> {
+    fun getList(query: Q, owner: String): LiveData<PagedList<I>>
+
+    interface DataSourceFactory<I> {
+        fun getDataSourceFactory(owner: String): DataSource.Factory<Int, I>
+    }
+
+    companion object Factory
+}
+
+interface LocalListDataSource<Q : ListQuery, E> {
+    suspend fun putList(entities: List<E>, query: Q? = null, owner: String? = null)
+    suspend fun clean(owner: String)
+}
+
+interface RemoteListDataSource<Q : ListQuery, E> {
+    suspend fun getList(query: Q): List<E>
 }
