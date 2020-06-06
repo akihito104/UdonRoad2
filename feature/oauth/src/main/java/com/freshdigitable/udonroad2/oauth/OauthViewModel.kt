@@ -28,11 +28,12 @@ import androidx.paging.DataSource
 import androidx.paging.PagedList
 import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
 import com.freshdigitable.udonroad2.data.impl.RepositoryComponent
+import com.freshdigitable.udonroad2.model.ListQuery
 import com.freshdigitable.udonroad2.model.RequestTokenItem
 import com.freshdigitable.udonroad2.navigation.NavigationDispatcher
 import com.freshdigitable.udonroad2.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.timeline.ListItemLoadable
-import com.freshdigitable.udonroad2.timeline.viewmodel.ListOwner
+import com.freshdigitable.udonroad2.timeline.ListOwner
 import dagger.Module
 import dagger.Provides
 import kotlinx.coroutines.launch
@@ -41,7 +42,7 @@ class OauthViewModel(
     dataSource: DataSource<Int, OauthItem>,
     private val repository: OAuthTokenRepository,
     private val navigator: NavigationDispatcher
-) : ViewModel(), ListItemLoadable<OauthItem> {
+) : ViewModel(), ListItemLoadable<ListQuery.Oauth, OauthItem> {
 
     override val loading: LiveData<Boolean> = MutableLiveData<Boolean>(false)
     private val livePagedList: MutableLiveData<PagedList<OauthItem>>
@@ -62,7 +63,7 @@ class OauthViewModel(
         )
     }
 
-    override fun getList(listOwner: ListOwner): LiveData<PagedList<OauthItem>> = livePagedList
+    override fun getList(listOwner: ListOwner<ListQuery.Oauth>): LiveData<PagedList<OauthItem>> = livePagedList
 
     override fun onRefresh() {}
 

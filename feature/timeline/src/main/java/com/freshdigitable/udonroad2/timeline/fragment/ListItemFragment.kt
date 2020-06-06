@@ -16,15 +16,15 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.freshdigitable.udonroad2.model.ListQuery
 import com.freshdigitable.udonroad2.timeline.ListItemLoadable
 import com.freshdigitable.udonroad2.timeline.databinding.FragmentTimelineBinding
-import com.freshdigitable.udonroad2.timeline.viewmodel.ListOwner
+import com.freshdigitable.udonroad2.timeline.ListOwner
 import dagger.android.support.AndroidSupportInjection
 import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
 import kotlin.reflect.KClass
 
-abstract class ListItemFragment<T, I> : Fragment()
+abstract class ListItemFragment<T, Q: ListQuery, I> : Fragment()
     where T : ViewModel,
-          T : ListItemLoadable<I> {
+          T : ListItemLoadable<Q, I> {
     @Inject
     lateinit var viewModelProvider: ViewModelProvider
     protected abstract val viewModelClass: KClass<T>
@@ -63,7 +63,12 @@ abstract class ListItemFragment<T, I> : Fragment()
         )
         val adapter = createListAdapter(viewModel)
         listView.adapter = adapter
-        viewModel.getList(ListOwner(ownerId, query)).observe(viewLifecycleOwner) {
+        viewModel.getList(
+            ListOwner(
+                ownerId,
+                query
+            )
+        ).observe(viewLifecycleOwner) {
             adapter.submitList(it)
         }
     }
@@ -71,15 +76,15 @@ abstract class ListItemFragment<T, I> : Fragment()
     private val ownerId: Int
         get() = requireArguments().getInt(ARGS_OWNER_ID)
 
-    private val query: ListQuery
-        get() = requireArguments().getSerializable(ARGS_QUERY) as ListQuery
+    private val query: Q
+        get() = requireArguments().getSerializable(ARGS_QUERY) as Q
 
     companion object {
         val ownerIdGen = AtomicInteger(0)
         const val ARGS_OWNER_ID = "owner_id"
         const val ARGS_QUERY = "query"
 
-        inline fun <reified T : ListItemFragment<*, *>> newInstance(query: ListQuery): T {
+        inline fun <reified T : ListItemFragment<*, *, *>> newInstance(query: ListQuery): T {
             return T::class.java.newInstance().apply {
                 (this as Fragment).arguments = Bundle().apply {
                     putSerializable(ARGS_QUERY, query)

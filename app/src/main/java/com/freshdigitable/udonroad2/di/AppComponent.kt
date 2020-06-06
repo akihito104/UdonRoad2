@@ -22,6 +22,8 @@ import com.freshdigitable.udonroad2.data.db.DatabaseModule
 import com.freshdigitable.udonroad2.data.impl.RepositoryComponent
 import com.freshdigitable.udonroad2.data.impl.RepositoryModule
 import com.freshdigitable.udonroad2.data.restclient.TwitterModule
+import com.freshdigitable.udonroad2.timeline.ListItemViewModelComponent
+import com.freshdigitable.udonroad2.timeline.ListItemViewModelModule
 import dagger.BindsInstance
 import dagger.Component
 import dagger.android.support.AndroidSupportInjectionModule
@@ -33,6 +35,7 @@ import javax.inject.Singleton
         AndroidSupportInjectionModule::class,
         ActivityBuilders::class,
         ViewModelModule::class,
+        ListItemViewModelModule::class,
         ExecutorModule::class,
         RepositoryModule::class,
         DatabaseModule::class,
@@ -51,6 +54,8 @@ interface AppComponent {
     }
 
     fun repositoryModule(): RepositoryComponent.Builder
+
+    fun listItemViewModelComponent(): ListItemViewModelComponent.Builder
 
     fun inject(instance: AppApplication)
 }

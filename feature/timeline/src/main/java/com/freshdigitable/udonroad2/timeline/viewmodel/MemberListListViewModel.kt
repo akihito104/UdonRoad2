@@ -5,36 +5,48 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.switchMap
 import androidx.paging.PagedList
-import com.freshdigitable.udonroad2.data.impl.MemberListListRepository
-import com.freshdigitable.udonroad2.data.impl.RepositoryComponent
+import com.freshdigitable.udonroad2.data.ListRepository
+import com.freshdigitable.udonroad2.data.PagedListProvider
+import com.freshdigitable.udonroad2.data.db.LocalListDataSourceProvider
+import com.freshdigitable.udonroad2.data.db.PagedListDataSourceFactoryProvider
+import com.freshdigitable.udonroad2.data.impl.AppExecutor
+import com.freshdigitable.udonroad2.data.impl.create
+import com.freshdigitable.udonroad2.data.restclient.RemoteListDataSourceProvider
+import com.freshdigitable.udonroad2.model.ListQuery
 import com.freshdigitable.udonroad2.model.MemberListItem
 import com.freshdigitable.udonroad2.model.TweetingUser
+import com.freshdigitable.udonroad2.model.ViewModelKey
 import com.freshdigitable.udonroad2.navigation.NavigationDispatcher
 import com.freshdigitable.udonroad2.timeline.ListItemLoadable
+import com.freshdigitable.udonroad2.timeline.ListOwner
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
+import dagger.Binds
 import dagger.Module
 import dagger.Provides
+import dagger.multibindings.IntoMap
 
 class MemberListListViewModel(
-    private val repository: MemberListListRepository,
-    private val navigator: NavigationDispatcher
-) : ListItemLoadable<MemberListItem>, ViewModel() {
+    private val repository: ListRepository<ListQuery.UserListMembership>,
+    private val navigator: NavigationDispatcher,
+    private val pagedListProvider: PagedListProvider<ListQuery.UserListMembership, MemberListItem>
+) : ListItemLoadable<ListQuery.UserListMembership, MemberListItem>, ViewModel() {
     override val loading: LiveData<Boolean>
         get() = repository.loading
 
     override fun onRefresh() {
-        repository.loadAtFront()
+        val value = query.value ?: return
+        repository.loadList(value.query, value.owner)
     }
 
-    private val query = MutableLiveData<ListOwner?>()
-    private val listItem = query.switchMap { q ->
+    private val query = MutableLiveData<ListOwner<ListQuery.UserListMembership>?>()
+    private val listItem: LiveData<PagedList<MemberListItem>> = query.switchMap { q ->
         when {
-            q != null -> repository.getList("${q.id}", q.query)
+            q != null -> pagedListProvider.getList(q.query, q.owner)
             else -> MutableLiveData()
         }
     }
 
-    override fun getList(listOwner: ListOwner): LiveData<PagedList<MemberListItem>> {
+    override fun getList(listOwner: ListOwner<ListQuery.UserListMembership>): LiveData<PagedList<MemberListItem>> {
         query.value = listOwner
         return listItem
     }
@@ -51,21 +63,43 @@ class MemberListListViewModel(
 
     override fun onCleared() {
         super.onCleared()
-        repository.clear()
+        repository.clear(query.value?.owner ?: return)
     }
 }
 
 @Module
-object MemberListListViewModelModule {
-    @JvmStatic
-    @Provides
-    fun provideMemberListListViewModel(
-        repositoryComponent: RepositoryComponent.Builder,
-        navigator: NavigationDispatcher
-    ): MemberListListViewModel {
-        return MemberListListViewModel(
-            repositoryComponent.build().memberListListRepository(),
-            navigator
-        )
+interface MemberListListViewModelModule {
+    companion object {
+        @Provides
+        fun provideMemberListListViewModel(
+            query: ListQuery,
+            owner: String,
+            navigator: NavigationDispatcher,
+            localListDataSourceProvider: LocalListDataSourceProvider,
+            remoteListDataSourceProvider: RemoteListDataSourceProvider,
+            pagedListDataSourceFactoryProvider: PagedListDataSourceFactoryProvider,
+            executor: AppExecutor
+        ): MemberListListViewModel {
+            val q = query as ListQuery.UserListMembership
+            val repository = ListRepository.create(
+                q,
+                owner,
+                localListDataSourceProvider,
+                remoteListDataSourceProvider,
+                executor
+            )
+            val pagedListProvider: PagedListProvider<ListQuery.UserListMembership, MemberListItem> =
+                PagedListProvider.create(
+                    pagedListDataSourceFactoryProvider.get(q),
+                    repository,
+                    executor
+                )
+            return MemberListListViewModel(repository, navigator, pagedListProvider)
+        }
     }
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(MemberListListViewModel::class)
+    fun bindMemberListListViewModel(viewModel: MemberListListViewModel): ViewModel
 }

@@ -23,34 +23,45 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.switchMap
 import androidx.paging.PagedList
-import com.freshdigitable.udonroad2.data.impl.RepositoryComponent
-import com.freshdigitable.udonroad2.data.impl.TweetTimelineRepository
+import com.freshdigitable.udonroad2.data.ListRepository
+import com.freshdigitable.udonroad2.data.PagedListProvider
+import com.freshdigitable.udonroad2.data.db.LocalListDataSourceProvider
+import com.freshdigitable.udonroad2.data.db.PagedListDataSourceFactoryProvider
+import com.freshdigitable.udonroad2.data.impl.AppExecutor
+import com.freshdigitable.udonroad2.data.impl.create
+import com.freshdigitable.udonroad2.data.restclient.RemoteListDataSourceProvider
 import com.freshdigitable.udonroad2.model.ListQuery
+import com.freshdigitable.udonroad2.model.ListQuery.TweetListQuery
 import com.freshdigitable.udonroad2.model.Tweet
 import com.freshdigitable.udonroad2.model.TweetListItem
+import com.freshdigitable.udonroad2.model.ViewModelKey
 import com.freshdigitable.udonroad2.navigation.NavigationDispatcher
 import com.freshdigitable.udonroad2.timeline.ListItemLoadable
+import com.freshdigitable.udonroad2.timeline.ListOwner
 import com.freshdigitable.udonroad2.timeline.SelectedItemId
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.TweetListEventListener
 import com.freshdigitable.udonroad2.timeline.TweetListItemClickListener
+import dagger.Binds
 import dagger.Module
 import dagger.Provides
+import dagger.multibindings.IntoMap
 
 class TimelineViewModel(
     private val navigator: NavigationDispatcher,
-    private val homeRepository: TweetTimelineRepository
-) : ListItemLoadable<TweetListItem>,
+    private val homeRepository: ListRepository<TweetListQuery>,
+    private val pagedListProvider: PagedListProvider<TweetListQuery, TweetListItem>
+) : ListItemLoadable<TweetListQuery, TweetListItem>,
     TweetListItemClickListener,
     TweetListEventListener, ViewModel() {
 
-    private val listOwner = MutableLiveData<ListOwner>()
+    private val listOwner = MutableLiveData<ListOwner<TweetListQuery>>()
 
     val timeline: LiveData<PagedList<TweetListItem>> = listOwner.switchMap {
-        homeRepository.getList("${it.id}", it.query)
+        pagedListProvider.getList(it.query, it.owner)
     }
 
-    override fun getList(listOwner: ListOwner): LiveData<PagedList<TweetListItem>> {
+    override fun getList(listOwner: ListOwner<TweetListQuery>): LiveData<PagedList<TweetListItem>> {
         this.listOwner.postValue(listOwner)
         return timeline
     }
@@ -59,12 +70,13 @@ class TimelineViewModel(
         get() = homeRepository.loading
 
     override fun onRefresh() {
-        homeRepository.loadAtFront()
+        val value = listOwner.value ?: return
+        homeRepository.loadList(value.query, value.owner)
     }
 
     override fun onCleared() {
         super.onCleared()
-        homeRepository.clear()
+        homeRepository.clear(listOwner.value?.owner ?: return)
     }
 
     override val selectedItemId: ObservableField<SelectedItemId?> = ObservableField()
@@ -101,22 +113,39 @@ class TimelineViewModel(
     }
 }
 
-data class ListOwner(
-    val id: Int,
-    val query: ListQuery
-)
-
 @Module
-object TimelineViewModelModule {
-    @Provides
-    @JvmStatic
-    fun provideTimelineViewModel(
-        navigator: NavigationDispatcher,
-        repositories: RepositoryComponent.Builder
-    ): TimelineViewModel {
-        return TimelineViewModel(
-            navigator,
-            repositories.build().tweetTimelineRepository()
-        )
+interface TimelineViewModelModule {
+    companion object {
+        @Provides
+        fun provideTimelineViewModel(
+            query: ListQuery,
+            owner: String,
+            navigator: NavigationDispatcher,
+            localListDataSourceProvider: LocalListDataSourceProvider,
+            remoteListDataSourceProvider: RemoteListDataSourceProvider,
+            pagedListDataSourceFactoryProvider: PagedListDataSourceFactoryProvider,
+            executor: AppExecutor
+        ): TimelineViewModel {
+            val q = query as TweetListQuery
+            val repository = ListRepository.create(
+                q,
+                owner,
+                localListDataSourceProvider,
+                remoteListDataSourceProvider,
+                executor
+            )
+            val pagedListProvider: PagedListProvider<TweetListQuery, TweetListItem> =
+                PagedListProvider.create(
+                    pagedListDataSourceFactoryProvider.get(q),
+                    repository,
+                    executor
+                )
+            return TimelineViewModel(navigator, repository, pagedListProvider)
+        }
     }
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(TimelineViewModel::class)
+    fun bindTimelineViewModel(viewModel: TimelineViewModel): ViewModel
 }
