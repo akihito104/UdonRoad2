@@ -16,11 +16,6 @@
 
 package com.freshdigitable.udonroad2.di
 
-import android.app.Application
-import android.content.Context
-import android.content.SharedPreferences
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelStoreOwner
 import com.freshdigitable.udonroad2.main.MainActivity
 import com.freshdigitable.udonroad2.main.MainActivityModule
 import com.freshdigitable.udonroad2.media.MediaActivity
@@ -29,9 +24,7 @@ import com.freshdigitable.udonroad2.model.ActivityScope
 import com.freshdigitable.udonroad2.user.UserActivity
 import com.freshdigitable.udonroad2.user.UserActivityModule
 import dagger.Module
-import dagger.Provides
 import dagger.android.ContributesAndroidInjector
-import javax.inject.Singleton
 
 @Module
 interface ActivityBuilders {
@@ -46,19 +39,4 @@ interface ActivityBuilders {
     @ActivityScope
     @ContributesAndroidInjector(modules = [MediaActivityModule::class])
     fun contributeMediaActivity(): MediaActivity
-
-    @Module
-    companion object {
-        @Provides
-        fun provideViewModelProvider(
-            viewModelStoreOwner: ViewModelStoreOwner,
-            viewModelFactory: ViewModelProvider.Factory
-        ): ViewModelProvider = ViewModelProvider(viewModelStoreOwner, viewModelFactory)
-
-        @Provides
-        @Singleton
-        fun Application.provideSharedPreferences(): SharedPreferences {
-            return getSharedPreferences("udonroad_prefs", Context.MODE_PRIVATE)
-        }
-    }
 }

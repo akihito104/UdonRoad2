@@ -183,25 +183,24 @@ class MainViewModel(
         OauthFragmentModule::class
     ]
 )
-abstract class MainActivityModule {
+interface MainActivityModule {
     @FragmentScope
     @ContributesAndroidInjector
-    abstract fun contributeTweetDetailFragment(): TweetDetailFragment
+    fun contributeTweetDetailFragment(): TweetDetailFragment
 
     @Binds
     @IntoMap
     @ViewModelKey(MainViewModel::class)
-    abstract fun bindMainViewModel(viewModel: MainViewModel): ViewModel
+    fun bindMainViewModel(viewModel: MainViewModel): ViewModel
 
     @Binds
     @IntoMap
     @ViewModelKey(TweetDetailViewModel::class)
-    abstract fun bindTweetDetailViewModel(viewModel: TweetDetailViewModel): ViewModel
+    fun bindTweetDetailViewModel(viewModel: TweetDetailViewModel): ViewModel
 
     @Binds
-    abstract fun bindViewModelStoreOwner(activity: MainActivity): ViewModelStoreOwner
+    fun bindViewModelStoreOwner(activity: MainActivity): ViewModelStoreOwner
 
-    @Module
     companion object {
         @Provides
         fun provideNavigation(
