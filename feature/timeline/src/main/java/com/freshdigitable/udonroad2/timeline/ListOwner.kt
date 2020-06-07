@@ -22,5 +22,5 @@ data class ListOwner<Q : ListQuery>(
     val id: Int,
     val query: Q
 ) {
-    val owner: String = "$id"
+    val value: String = "$id"
 }

@@ -16,6 +16,7 @@ import com.freshdigitable.udonroad2.model.TweetingUser
 import com.freshdigitable.udonroad2.model.ViewModelKey
 import com.freshdigitable.udonroad2.navigation.NavigationDispatcher
 import com.freshdigitable.udonroad2.timeline.ListItemLoadable
+import com.freshdigitable.udonroad2.timeline.ListOwner
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import dagger.Binds
 import dagger.Module
@@ -23,8 +24,7 @@ import dagger.Provides
 import dagger.multibindings.IntoMap
 
 class MemberListListViewModel(
-    private val query: ListQuery.UserListMembership,
-    private val owner: String,
+    private val owner: ListOwner<ListQuery.UserListMembership>,
     private val repository: ListRepository<ListQuery.UserListMembership>,
     private val navigator: NavigationDispatcher,
     pagedListProvider: PagedListProvider<ListQuery.UserListMembership, MemberListItem>
@@ -33,11 +33,11 @@ class MemberListListViewModel(
         get() = repository.loading
 
     override fun onRefresh() {
-        repository.loadList(query, owner)
+        repository.loadList(owner.query, owner.value)
     }
 
     override val timeline: LiveData<PagedList<MemberListItem>> =
-        pagedListProvider.getList(query, owner)
+        pagedListProvider.getList(owner.query, owner.value)
 
     fun onUserIconClicked(user: TweetingUser) {
         navigator.postEvent(TimelineEvent.UserIconClicked(user))
@@ -51,7 +51,7 @@ class MemberListListViewModel(
 
     override fun onCleared() {
         super.onCleared()
-        repository.clear(owner)
+        repository.clear(owner.value)
     }
 }
 
@@ -60,28 +60,27 @@ interface MemberListListViewModelModule {
     companion object {
         @Provides
         fun provideMemberListListViewModel(
-            query: ListQuery,
-            owner: String,
+            owner: ListOwner<*>,
             navigator: NavigationDispatcher,
             localListDataSourceProvider: LocalListDataSourceProvider,
             remoteListDataSourceProvider: RemoteListDataSourceProvider,
             pagedListDataSourceFactoryProvider: PagedListDataSourceFactoryProvider,
             executor: AppExecutor
         ): MemberListListViewModel {
-            val q = query as ListQuery.UserListMembership
+            val o = owner as ListOwner<ListQuery.UserListMembership>
             val repository = ListRepository.create(
-                q,
+                o.query,
                 localListDataSourceProvider,
                 remoteListDataSourceProvider,
                 executor
             )
             val pagedListProvider: PagedListProvider<ListQuery.UserListMembership, MemberListItem> =
                 PagedListProvider.create(
-                    pagedListDataSourceFactoryProvider.get(q),
+                    pagedListDataSourceFactoryProvider.get(o.query),
                     repository,
                     executor
                 )
-            return MemberListListViewModel(query, owner, repository, navigator, pagedListProvider)
+            return MemberListListViewModel(o, repository, navigator, pagedListProvider)
         }
     }
 

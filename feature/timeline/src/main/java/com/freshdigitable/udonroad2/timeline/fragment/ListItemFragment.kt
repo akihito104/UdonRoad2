@@ -52,8 +52,7 @@ abstract class ListItemFragment<T, Q : ListQuery, I> : Fragment()
 
         val listOwner = ListOwner(ownerId, query)
         val viewModelProviderFactory = listItemViewModelBuilder
-            .query(listOwner.query)
-            .owner(listOwner.owner)
+            .owner(listOwner)
             .build()
             .viewModelProviderFactory()
         val viewModel = ViewModelProvider(requireActivity(), viewModelProviderFactory).get(

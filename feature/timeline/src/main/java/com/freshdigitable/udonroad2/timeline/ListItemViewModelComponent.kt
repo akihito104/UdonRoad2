@@ -44,10 +44,7 @@ interface ListItemViewModelComponent {
     @Subcomponent.Builder
     interface Builder {
         @BindsInstance
-        fun query(query: ListQuery): Builder
-
-        @BindsInstance
-        fun owner(owner: String): Builder
+        fun owner(owner: ListOwner<*>): Builder
 
         fun build(): ListItemViewModelComponent
     }
