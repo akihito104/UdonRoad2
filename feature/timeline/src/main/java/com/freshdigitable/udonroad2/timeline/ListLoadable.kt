@@ -10,5 +10,5 @@ interface ListLoadable {
 }
 
 interface ListItemLoadable<Q : ListQuery, T> : ListLoadable {
-    fun getList(listOwner: ListOwner<Q>): LiveData<PagedList<T>>
+    val timeline: LiveData<PagedList<T>>
 }

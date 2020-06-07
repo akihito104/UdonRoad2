@@ -33,8 +33,6 @@ import kotlinx.coroutines.launch
 import java.io.IOException
 
 internal class ListRepositoryImpl<Q : ListQuery, E>(
-    private val query: Q,
-    private val owner: String,
     private val localDataSource: LocalListDataSource<Q, E>,
     private val remoteDataSource: RemoteListDataSource<Q, E>,
     private val executor: AppExecutor
@@ -66,13 +64,12 @@ internal class ListRepositoryImpl<Q : ListQuery, E>(
 
 fun <Q : ListQuery> ListRepository.Factory.create(
     query: Q,
-    owner: String,
     localListDataSourceProvider: LocalListDataSourceProvider,
     remoteListDataSourceProvider: RemoteListDataSourceProvider,
     executor: AppExecutor
 ): ListRepository<Q> {
     return ListRepositoryImpl<Q, Any>(
-        query, owner, localListDataSourceProvider.get(query),
+        localListDataSourceProvider.get(query),
         remoteListDataSourceProvider.get(query), executor
     )
 }

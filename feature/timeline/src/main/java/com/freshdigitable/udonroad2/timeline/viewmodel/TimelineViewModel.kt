@@ -19,9 +19,7 @@ package com.freshdigitable.udonroad2.timeline.viewmodel
 import android.util.Log
 import androidx.databinding.ObservableField
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.switchMap
 import androidx.paging.PagedList
 import com.freshdigitable.udonroad2.data.ListRepository
 import com.freshdigitable.udonroad2.data.PagedListProvider
@@ -37,7 +35,6 @@ import com.freshdigitable.udonroad2.model.TweetListItem
 import com.freshdigitable.udonroad2.model.ViewModelKey
 import com.freshdigitable.udonroad2.navigation.NavigationDispatcher
 import com.freshdigitable.udonroad2.timeline.ListItemLoadable
-import com.freshdigitable.udonroad2.timeline.ListOwner
 import com.freshdigitable.udonroad2.timeline.SelectedItemId
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.TweetListEventListener
@@ -48,35 +45,28 @@ import dagger.Provides
 import dagger.multibindings.IntoMap
 
 class TimelineViewModel(
+    private val query: TweetListQuery,
+    private val owner: String,
     private val navigator: NavigationDispatcher,
     private val homeRepository: ListRepository<TweetListQuery>,
-    private val pagedListProvider: PagedListProvider<TweetListQuery, TweetListItem>
+    pagedListProvider: PagedListProvider<TweetListQuery, TweetListItem>
 ) : ListItemLoadable<TweetListQuery, TweetListItem>,
     TweetListItemClickListener,
     TweetListEventListener, ViewModel() {
 
-    private val listOwner = MutableLiveData<ListOwner<TweetListQuery>>()
-
-    val timeline: LiveData<PagedList<TweetListItem>> = listOwner.switchMap {
-        pagedListProvider.getList(it.query, it.owner)
-    }
-
-    override fun getList(listOwner: ListOwner<TweetListQuery>): LiveData<PagedList<TweetListItem>> {
-        this.listOwner.postValue(listOwner)
-        return timeline
-    }
+    override val timeline: LiveData<PagedList<TweetListItem>> =
+        pagedListProvider.getList(query, owner)
 
     override val loading: LiveData<Boolean>
         get() = homeRepository.loading
 
     override fun onRefresh() {
-        val value = listOwner.value ?: return
-        homeRepository.loadList(value.query, value.owner)
+        homeRepository.loadList(query, owner)
     }
 
     override fun onCleared() {
         super.onCleared()
-        homeRepository.clear(listOwner.value?.owner ?: return)
+        homeRepository.clear(owner)
     }
 
     override val selectedItemId: ObservableField<SelectedItemId?> = ObservableField()
@@ -129,7 +119,6 @@ interface TimelineViewModelModule {
             val q = query as TweetListQuery
             val repository = ListRepository.create(
                 q,
-                owner,
                 localListDataSourceProvider,
                 remoteListDataSourceProvider,
                 executor
@@ -140,7 +129,7 @@ interface TimelineViewModelModule {
                     repository,
                     executor
                 )
-            return TimelineViewModel(navigator, repository, pagedListProvider)
+            return TimelineViewModel(q, owner, navigator, repository, pagedListProvider)
         }
     }
 

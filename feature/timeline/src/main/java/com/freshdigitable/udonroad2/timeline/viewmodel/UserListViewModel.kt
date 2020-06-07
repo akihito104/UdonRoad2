@@ -2,9 +2,7 @@ package com.freshdigitable.udonroad2.timeline.viewmodel
 
 import android.util.Log
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.switchMap
 import androidx.paging.PagedList
 import com.freshdigitable.udonroad2.data.ListRepository
 import com.freshdigitable.udonroad2.data.PagedListProvider
@@ -18,7 +16,6 @@ import com.freshdigitable.udonroad2.model.UserListItem
 import com.freshdigitable.udonroad2.model.ViewModelKey
 import com.freshdigitable.udonroad2.navigation.NavigationDispatcher
 import com.freshdigitable.udonroad2.timeline.ListItemLoadable
-import com.freshdigitable.udonroad2.timeline.ListOwner
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import dagger.Binds
 import dagger.Module
@@ -26,33 +23,26 @@ import dagger.Provides
 import dagger.multibindings.IntoMap
 
 class UserListViewModel(
+    private val query: ListQuery.UserListQuery,
+    private val owner: String,
     private val navigator: NavigationDispatcher,
     private val repository: ListRepository<ListQuery.UserListQuery>,
-    private val pagedListProvider: PagedListProvider<ListQuery.UserListQuery, UserListItem>
+    pagedListProvider: PagedListProvider<ListQuery.UserListQuery, UserListItem>
 ) : ListItemLoadable<ListQuery.UserListQuery, UserListItem>, ViewModel() {
 
-    private val listOwner = MutableLiveData<ListOwner<ListQuery.UserListQuery>>()
-
-    val timeline: LiveData<PagedList<UserListItem>> = listOwner.switchMap {
-        pagedListProvider.getList(it.query, it.owner)
-    }
-
-    override fun getList(listOwner: ListOwner<ListQuery.UserListQuery>): LiveData<PagedList<UserListItem>> {
-        this.listOwner.postValue(listOwner)
-        return timeline
-    }
+    override val timeline: LiveData<PagedList<UserListItem>> =
+        pagedListProvider.getList(query, owner)
 
     override val loading: LiveData<Boolean>
         get() = repository.loading
 
     override fun onRefresh() {
-        val owner = this.listOwner.value ?: return
-        repository.loadList(owner.query, owner.owner)
+        repository.loadList(query, owner)
     }
 
     override fun onCleared() {
         super.onCleared()
-        repository.clear(listOwner.value?.owner ?: return)
+        repository.clear(owner)
     }
 
     fun onBodyItemClicked(item: UserListItem) {
@@ -81,7 +71,6 @@ interface UserListViewModelModule {
             val q = query as ListQuery.UserListQuery
             val repository = ListRepository.create(
                 q,
-                owner,
                 localListDataSourceProvider,
                 remoteListDataSourceProvider,
                 executor
@@ -92,7 +81,7 @@ interface UserListViewModelModule {
                     repository,
                     executor
                 )
-            return UserListViewModel(navigator, repository, pagedListProvider)
+            return UserListViewModel(query, owner, navigator, repository, pagedListProvider)
         }
     }
 

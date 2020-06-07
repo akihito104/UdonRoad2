@@ -15,18 +15,19 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.freshdigitable.udonroad2.model.ListQuery
 import com.freshdigitable.udonroad2.timeline.ListItemLoadable
-import com.freshdigitable.udonroad2.timeline.databinding.FragmentTimelineBinding
+import com.freshdigitable.udonroad2.timeline.ListItemViewModelComponent
 import com.freshdigitable.udonroad2.timeline.ListOwner
+import com.freshdigitable.udonroad2.timeline.databinding.FragmentTimelineBinding
 import dagger.android.support.AndroidSupportInjection
 import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
 import kotlin.reflect.KClass
 
-abstract class ListItemFragment<T, Q: ListQuery, I> : Fragment()
+abstract class ListItemFragment<T, Q : ListQuery, I> : Fragment()
     where T : ViewModel,
           T : ListItemLoadable<Q, I> {
     @Inject
-    lateinit var viewModelProvider: ViewModelProvider
+    lateinit var listItemViewModelBuilder: ListItemViewModelComponent.Builder
     protected abstract val viewModelClass: KClass<T>
     protected abstract fun createListAdapter(viewModel: T): PagedListAdapter<I, *>
 
@@ -49,7 +50,16 @@ abstract class ListItemFragment<T, Q: ListQuery, I> : Fragment()
         val binding = DataBindingUtil.findBinding<FragmentTimelineBinding>(view) ?: return
         binding.lifecycleOwner = viewLifecycleOwner
 
-        val viewModel = viewModelProvider.get("_$ownerId", viewModelClass.java)
+        val listOwner = ListOwner(ownerId, query)
+        val viewModelProviderFactory = listItemViewModelBuilder
+            .query(listOwner.query)
+            .owner(listOwner.owner)
+            .build()
+            .viewModelProviderFactory()
+        val viewModel = ViewModelProvider(requireActivity(), viewModelProviderFactory).get(
+            "_$ownerId",
+            viewModelClass.java
+        )
         binding.viewModel = viewModel
 
         val listView = binding.mainList
@@ -63,12 +73,7 @@ abstract class ListItemFragment<T, Q: ListQuery, I> : Fragment()
         )
         val adapter = createListAdapter(viewModel)
         listView.adapter = adapter
-        viewModel.getList(
-            ListOwner(
-                ownerId,
-                query
-            )
-        ).observe(viewLifecycleOwner) {
+        viewModel.timeline.observe(viewLifecycleOwner) {
             adapter.submitList(it)
         }
     }

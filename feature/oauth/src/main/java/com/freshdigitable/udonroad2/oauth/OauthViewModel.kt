@@ -33,7 +33,6 @@ import com.freshdigitable.udonroad2.model.RequestTokenItem
 import com.freshdigitable.udonroad2.navigation.NavigationDispatcher
 import com.freshdigitable.udonroad2.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.timeline.ListItemLoadable
-import com.freshdigitable.udonroad2.timeline.ListOwner
 import dagger.Module
 import dagger.Provides
 import kotlinx.coroutines.launch
@@ -63,7 +62,7 @@ class OauthViewModel(
         )
     }
 
-    override fun getList(listOwner: ListOwner<ListQuery.Oauth>): LiveData<PagedList<OauthItem>> = livePagedList
+    override val timeline: LiveData<PagedList<OauthItem>> = livePagedList
 
     override fun onRefresh() {}
 
