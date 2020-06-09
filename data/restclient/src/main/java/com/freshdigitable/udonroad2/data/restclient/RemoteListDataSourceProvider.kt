@@ -49,7 +49,7 @@ interface TweetTimelineDataSourceModule {
 
     @Binds
     @IntoMap
-    @RemoteListDataSourceKey(ListQuery.Media::class)
+    @RemoteListDataSourceKey(TweetListQuery.Media::class)
     fun bindMediaTimelineDataSource(
         dataSource: MediaTimelineDataSource
     ): RemoteListDataSource<out ListQuery, *>

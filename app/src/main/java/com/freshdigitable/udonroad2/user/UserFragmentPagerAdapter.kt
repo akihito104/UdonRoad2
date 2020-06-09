@@ -79,7 +79,9 @@ enum class UserPage(
         count = { user -> user?.listedCount }
     ),
     MEDIA(
-        creator = { user -> ListItemFragment.newInstance<TimelineFragment>(ListQuery.Media(user.screenName)) },
+        creator = { user ->
+            ListItemFragment.newInstance<TimelineFragment>(TweetListQuery.Media(user.screenName))
+        },
         titleRes = R.string.user_tab_media
     )
 }

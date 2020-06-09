@@ -20,13 +20,14 @@ sealed class ListQuery(
             override val userId: Long? = null,
             override val pageOption: PageOption = PageOption.OnInit
         ) : TweetListQuery(userId, pageOption)
-    }
 
-    data class Media(
-        private val screenName: String
-    ) : ListQuery(null) {
-        val query: String
-            get() = "from:$screenName filter:media exclude:retweets"
+        data class Media(
+            private val screenName: String,
+            override val pageOption: PageOption = PageOption.OnInit
+        ) : TweetListQuery(null, pageOption) {
+            val query: String
+                get() = "from:$screenName filter:media exclude:retweets"
+        }
     }
 
     sealed class UserListQuery(

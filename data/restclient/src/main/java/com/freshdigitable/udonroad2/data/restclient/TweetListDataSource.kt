@@ -69,9 +69,9 @@ class FavTimelineDataSource @Inject constructor(
 
 class MediaTimelineDataSource @Inject constructor(
     private val twitter: Twitter
-) : RemoteListDataSource<ListQuery.Media, TweetEntity> {
+) : RemoteListDataSource<ListQuery.TweetListQuery.Media, TweetEntity> {
     override suspend fun getList(
-        query: ListQuery.Media
+        query: ListQuery.TweetListQuery.Media
     ): List<TweetEntity> = withContext(Dispatchers.IO) {
         val q = Query(query.query).apply {
             maxId = query.pageOption.maxId
