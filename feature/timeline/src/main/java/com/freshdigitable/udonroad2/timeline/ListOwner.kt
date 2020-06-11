@@ -16,9 +16,9 @@
 
 package com.freshdigitable.udonroad2.timeline
 
-import com.freshdigitable.udonroad2.model.ListQuery
+import com.freshdigitable.udonroad2.model.QueryType
 
-data class ListOwner<Q : ListQuery>(
+data class ListOwner<Q : QueryType>(
     val id: Int,
     val query: Q
 ) {

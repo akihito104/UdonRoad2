@@ -13,7 +13,7 @@ import androidx.lifecycle.observe
 import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.freshdigitable.udonroad2.model.ListQuery
+import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.timeline.ListItemLoadable
 import com.freshdigitable.udonroad2.timeline.ListItemViewModelComponent
 import com.freshdigitable.udonroad2.timeline.ListOwner
@@ -23,7 +23,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
 import kotlin.reflect.KClass
 
-abstract class ListItemFragment<T, Q : ListQuery, I> : Fragment()
+abstract class ListItemFragment<T, Q : QueryType, I> : Fragment()
     where T : ViewModel,
           T : ListItemLoadable<Q, I> {
     @Inject
@@ -88,7 +88,7 @@ abstract class ListItemFragment<T, Q : ListQuery, I> : Fragment()
         const val ARGS_OWNER_ID = "owner_id"
         const val ARGS_QUERY = "query"
 
-        inline fun <reified T : ListItemFragment<*, *, *>> newInstance(query: ListQuery): T {
+        inline fun <reified T : ListItemFragment<*, *, *>> newInstance(query: QueryType): T {
             return T::class.java.newInstance().apply {
                 (this as Fragment).arguments = Bundle().apply {
                     putSerializable(ARGS_QUERY, query)

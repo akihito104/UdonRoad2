@@ -20,6 +20,7 @@ import com.freshdigitable.udonroad2.data.RemoteListDataSource
 import com.freshdigitable.udonroad2.data.restclient.ext.toEntity
 import com.freshdigitable.udonroad2.model.ListQuery
 import com.freshdigitable.udonroad2.model.PageOption
+import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.TweetEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -31,12 +32,12 @@ import javax.inject.Inject
 
 class HomeTimelineDataSource @Inject constructor(
     private val twitter: Twitter
-) : RemoteListDataSource<ListQuery.TweetListQuery.Timeline, TweetEntity> {
+) : RemoteListDataSource<QueryType.TweetQueryType.Timeline, TweetEntity> {
 
     override suspend fun getList(
-        query: ListQuery.TweetListQuery.Timeline
+        query: ListQuery<QueryType.TweetQueryType.Timeline>
     ): List<TweetEntity> = withContext(Dispatchers.IO) {
-        (query.userId?.let { id ->
+        (query.type.userId?.let { id ->
             when (query.pageOption) {
                 PageOption.OnInit -> twitter.getUserTimeline(id)
                 else -> twitter.getUserTimeline(id, query.pageOption.toPaging())
@@ -50,12 +51,12 @@ class HomeTimelineDataSource @Inject constructor(
 
 class FavTimelineDataSource @Inject constructor(
     private val twitter: Twitter
-) : RemoteListDataSource<ListQuery.TweetListQuery.Fav, TweetEntity> {
+) : RemoteListDataSource<QueryType.TweetQueryType.Fav, TweetEntity> {
 
     override suspend fun getList(
-        query: ListQuery.TweetListQuery.Fav
+        query: ListQuery<QueryType.TweetQueryType.Fav>
     ): List<TweetEntity> = withContext(Dispatchers.IO) {
-        (query.userId?.let { id ->
+        (query.type.userId?.let { id ->
             when (query.pageOption) {
                 PageOption.OnInit -> twitter.getFavorites(id)
                 else -> twitter.getFavorites(id, query.pageOption.toPaging())
@@ -69,11 +70,11 @@ class FavTimelineDataSource @Inject constructor(
 
 class MediaTimelineDataSource @Inject constructor(
     private val twitter: Twitter
-) : RemoteListDataSource<ListQuery.TweetListQuery.Media, TweetEntity> {
+) : RemoteListDataSource<QueryType.TweetQueryType.Media, TweetEntity> {
     override suspend fun getList(
-        query: ListQuery.TweetListQuery.Media
+        query: ListQuery<QueryType.TweetQueryType.Media>
     ): List<TweetEntity> = withContext(Dispatchers.IO) {
-        val q = Query(query.query).apply {
+        val q = Query(query.type.query).apply {
             maxId = query.pageOption.maxId
             sinceId = query.pageOption.sinceId
             count = query.pageOption.count

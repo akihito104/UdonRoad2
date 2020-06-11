@@ -28,7 +28,9 @@ import com.freshdigitable.udonroad2.data.db.PagedListDataSourceFactoryProvider
 import com.freshdigitable.udonroad2.data.impl.AppExecutor
 import com.freshdigitable.udonroad2.data.impl.create
 import com.freshdigitable.udonroad2.data.restclient.RemoteListDataSourceProvider
-import com.freshdigitable.udonroad2.model.ListQuery.TweetListQuery
+import com.freshdigitable.udonroad2.model.ListQuery
+import com.freshdigitable.udonroad2.model.PageOption
+import com.freshdigitable.udonroad2.model.QueryType.TweetQueryType
 import com.freshdigitable.udonroad2.model.Tweet
 import com.freshdigitable.udonroad2.model.TweetListItem
 import com.freshdigitable.udonroad2.model.ViewModelKey
@@ -45,22 +47,30 @@ import dagger.Provides
 import dagger.multibindings.IntoMap
 
 class TimelineViewModel(
-    private val owner: ListOwner<TweetListQuery>,
+    private val owner: ListOwner<TweetQueryType>,
     private val navigator: NavigationDispatcher,
-    private val homeRepository: ListRepository<TweetListQuery>,
-    pagedListProvider: PagedListProvider<TweetListQuery, TweetListItem>
-) : ListItemLoadable<TweetListQuery, TweetListItem>,
+    private val homeRepository: ListRepository<TweetQueryType>,
+    pagedListProvider: PagedListProvider<TweetQueryType, TweetListItem>
+) : ListItemLoadable<TweetQueryType, TweetListItem>,
     TweetListItemClickListener,
     TweetListEventListener, ViewModel() {
 
     override val timeline: LiveData<PagedList<TweetListItem>> =
-        pagedListProvider.getList(owner.query, owner.value)
+        pagedListProvider.getList(owner.query, owner.value) { i ->
+            PageOption.OnTail(i.originalId - 1)
+        }
 
     override val loading: LiveData<Boolean>
         get() = homeRepository.loading
 
     override fun onRefresh() {
-        homeRepository.loadList(owner.query, owner.value)
+        val items = timeline.value
+        val query = if (items?.isNotEmpty() == true) {
+            ListQuery(owner.query, PageOption.OnHead(items.first().originalId + 1))
+        } else {
+            ListQuery(owner.query, PageOption.OnInit)
+        }
+        homeRepository.loadList(query, owner.value)
     }
 
     override fun onCleared() {
@@ -114,14 +124,14 @@ interface TimelineViewModelModule {
             pagedListDataSourceFactoryProvider: PagedListDataSourceFactoryProvider,
             executor: AppExecutor
         ): TimelineViewModel {
-            val o = owner as ListOwner<TweetListQuery>
+            val o = owner as ListOwner<TweetQueryType>
             val repository = ListRepository.create(
                 o.query,
                 localListDataSourceProvider,
                 remoteListDataSourceProvider,
                 executor
             )
-            val pagedListProvider: PagedListProvider<TweetListQuery, TweetListItem> =
+            val pagedListProvider: PagedListProvider<TweetQueryType, TweetListItem> =
                 PagedListProvider.create(
                     pagedListDataSourceFactoryProvider.get(o.query),
                     repository,

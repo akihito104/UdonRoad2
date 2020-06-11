@@ -20,7 +20,7 @@ import com.freshdigitable.udonroad2.data.PagedListProvider
 import com.freshdigitable.udonroad2.data.db.dao.MemberListListDao
 import com.freshdigitable.udonroad2.data.db.dao.TweetListDao
 import com.freshdigitable.udonroad2.data.db.dao.UserListDao
-import com.freshdigitable.udonroad2.model.ListQuery
+import com.freshdigitable.udonroad2.model.QueryType
 import dagger.Binds
 import dagger.MapKey
 import dagger.Module
@@ -30,9 +30,9 @@ import javax.inject.Provider
 import kotlin.reflect.KClass
 
 class PagedListDataSourceFactoryProvider @Inject constructor(
-    private val providers: Map<Class<out ListQuery>, @JvmSuppressWildcards Provider<PagedListProvider.DataSourceFactory<*>>>
+    private val providers: Map<Class<out QueryType>, @JvmSuppressWildcards Provider<PagedListProvider.DataSourceFactory<*>>>
 ) {
-    fun <Q : ListQuery, F : PagedListProvider.DataSourceFactory<*>> get(query: Q): F {
+    fun <Q : QueryType, F : PagedListProvider.DataSourceFactory<*>> get(query: Q): F {
         val factory = providers[query::class.java]?.get()
             ?: providers.toList().firstOrNull { (clazz, _) ->
                 clazz.isAssignableFrom(query::class.java)
@@ -47,22 +47,22 @@ class PagedListDataSourceFactoryProvider @Inject constructor(
 @MustBeDocumented
 @MapKey
 @Retention
-annotation class PagedListDataSourceFactoryProviderKey(val clazz: KClass<out ListQuery>)
+annotation class PagedListDataSourceFactoryProviderKey(val clazz: KClass<out QueryType>)
 
 @Module(includes = [DaoModule::class])
 interface PagedListDataSourceFactoryModule {
     @Binds
     @IntoMap
-    @PagedListDataSourceFactoryProviderKey(ListQuery.TweetListQuery::class)
+    @PagedListDataSourceFactoryProviderKey(QueryType.TweetQueryType::class)
     fun bindTweetListDao(dao: TweetListDao): PagedListProvider.DataSourceFactory<*>
 
     @Binds
     @IntoMap
-    @PagedListDataSourceFactoryProviderKey(ListQuery.UserListQuery::class)
+    @PagedListDataSourceFactoryProviderKey(QueryType.UserQueryType::class)
     fun bindUserListDao(dao: UserListDao): PagedListProvider.DataSourceFactory<*>
 
     @Binds
     @IntoMap
-    @PagedListDataSourceFactoryProviderKey(ListQuery.UserListMembership::class)
+    @PagedListDataSourceFactoryProviderKey(QueryType.UserListMembership::class)
     fun bindMemberListListDao(dao: MemberListListDao): PagedListProvider.DataSourceFactory<*>
 }

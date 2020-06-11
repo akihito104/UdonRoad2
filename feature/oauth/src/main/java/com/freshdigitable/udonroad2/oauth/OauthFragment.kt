@@ -20,8 +20,7 @@ import android.os.Bundle
 import androidx.lifecycle.ViewModel
 import androidx.paging.PagedListAdapter
 import com.freshdigitable.udonroad2.model.FragmentScope
-import com.freshdigitable.udonroad2.model.ListQuery
-import com.freshdigitable.udonroad2.model.ViewModelKey
+import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragment
 import dagger.Binds
 import dagger.Module
@@ -29,7 +28,7 @@ import dagger.android.ContributesAndroidInjector
 import dagger.multibindings.IntoMap
 import kotlin.reflect.KClass
 
-class OauthFragment : ListItemFragment<OauthViewModel, ListQuery.Oauth, OauthItem>() {
+class OauthFragment : ListItemFragment<OauthViewModel, QueryType.Oauth, OauthItem>() {
     override val viewModelClass: KClass<OauthViewModel> = OauthViewModel::class
     private var viewModel: OauthViewModel? = null
 

@@ -28,7 +28,7 @@ import androidx.paging.DataSource
 import androidx.paging.PagedList
 import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
 import com.freshdigitable.udonroad2.data.impl.RepositoryComponent
-import com.freshdigitable.udonroad2.model.ListQuery
+import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.RequestTokenItem
 import com.freshdigitable.udonroad2.navigation.NavigationDispatcher
 import com.freshdigitable.udonroad2.navigation.NavigationEvent
@@ -41,7 +41,7 @@ class OauthViewModel(
     dataSource: DataSource<Int, OauthItem>,
     private val repository: OAuthTokenRepository,
     private val navigator: NavigationDispatcher
-) : ViewModel(), ListItemLoadable<ListQuery.Oauth, OauthItem> {
+) : ViewModel(), ListItemLoadable<QueryType.Oauth, OauthItem> {
 
     override val loading: LiveData<Boolean> = MutableLiveData<Boolean>(false)
     private val livePagedList: MutableLiveData<PagedList<OauthItem>>

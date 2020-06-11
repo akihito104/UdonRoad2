@@ -12,6 +12,8 @@ import com.freshdigitable.udonroad2.data.impl.AppExecutor
 import com.freshdigitable.udonroad2.data.impl.create
 import com.freshdigitable.udonroad2.data.restclient.RemoteListDataSourceProvider
 import com.freshdigitable.udonroad2.model.ListQuery
+import com.freshdigitable.udonroad2.model.PageOption
+import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.UserListItem
 import com.freshdigitable.udonroad2.model.ViewModelKey
 import com.freshdigitable.udonroad2.navigation.NavigationDispatcher
@@ -24,11 +26,11 @@ import dagger.Provides
 import dagger.multibindings.IntoMap
 
 class UserListViewModel(
-    private val owner: ListOwner<ListQuery.UserListQuery>,
+    private val owner: ListOwner<QueryType.UserQueryType>,
     private val navigator: NavigationDispatcher,
-    private val repository: ListRepository<ListQuery.UserListQuery>,
-    pagedListProvider: PagedListProvider<ListQuery.UserListQuery, UserListItem>
-) : ListItemLoadable<ListQuery.UserListQuery, UserListItem>, ViewModel() {
+    private val repository: ListRepository<QueryType.UserQueryType>,
+    pagedListProvider: PagedListProvider<QueryType.UserQueryType, UserListItem>
+) : ListItemLoadable<QueryType.UserQueryType, UserListItem>, ViewModel() {
 
     override val timeline: LiveData<PagedList<UserListItem>> =
         pagedListProvider.getList(owner.query, owner.value)
@@ -37,7 +39,12 @@ class UserListViewModel(
         get() = repository.loading
 
     override fun onRefresh() {
-        repository.loadList(owner.query, owner.value)
+        val q = if (timeline.value?.isNotEmpty() == true) {
+            ListQuery(owner.query, PageOption.OnHead())
+        } else {
+            ListQuery(owner.query, PageOption.OnInit)
+        }
+        repository.loadList(q, owner.value)
     }
 
     override fun onCleared() {
@@ -67,14 +74,14 @@ interface UserListViewModelModule {
             pagedListDataSourceFactoryProvider: PagedListDataSourceFactoryProvider,
             executor: AppExecutor
         ): UserListViewModel {
-            val o = owner as ListOwner<ListQuery.UserListQuery>
+            val o = owner as ListOwner<QueryType.UserQueryType>
             val repository = ListRepository.create(
                 o.query,
                 localListDataSourceProvider,
                 remoteListDataSourceProvider,
                 executor
             )
-            val pagedListProvider: PagedListProvider<ListQuery.UserListQuery, UserListItem> =
+            val pagedListProvider: PagedListProvider<QueryType.UserQueryType, UserListItem> =
                 PagedListProvider.create(
                     pagedListDataSourceFactoryProvider.get(o.query),
                     repository,

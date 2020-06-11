@@ -1,9 +1,9 @@
 package com.freshdigitable.udonroad2.data.restclient
 
 import com.freshdigitable.udonroad2.data.RemoteListDataSource
-import com.freshdigitable.udonroad2.model.ListQuery
-import com.freshdigitable.udonroad2.model.ListQuery.TweetListQuery
-import com.freshdigitable.udonroad2.model.ListQuery.UserListQuery
+import com.freshdigitable.udonroad2.model.QueryType
+import com.freshdigitable.udonroad2.model.QueryType.TweetQueryType
+import com.freshdigitable.udonroad2.model.QueryType.UserQueryType
 import dagger.Binds
 import dagger.MapKey
 import dagger.Module
@@ -13,9 +13,9 @@ import javax.inject.Provider
 import kotlin.reflect.KClass
 
 class RemoteListDataSourceProvider @Inject constructor(
-    private val providers: Map<Class<out ListQuery>, @JvmSuppressWildcards Provider<RemoteListDataSource<out ListQuery, *>>>
+    private val providers: Map<Class<out QueryType>, @JvmSuppressWildcards Provider<RemoteListDataSource<out QueryType, *>>>
 ) {
-    fun <Q : ListQuery, T : RemoteListDataSource<Q, *>> get(query: Q): T {
+    fun <Q : QueryType, T : RemoteListDataSource<Q, *>> get(query: Q): T {
         val dataSource = providers[query::class.java]?.get()
             ?: throw IllegalStateException(
                 "ListRestClient: ${query::class.java.simpleName} is not registered list client."
@@ -29,55 +29,55 @@ class RemoteListDataSourceProvider @Inject constructor(
 @MustBeDocumented
 @MapKey
 @Retention
-annotation class RemoteListDataSourceKey(val clazz: KClass<out ListQuery>)
+annotation class RemoteListDataSourceKey(val clazz: KClass<out QueryType>)
 
 @Module
 interface TweetTimelineDataSourceModule {
     @Binds
     @IntoMap
-    @RemoteListDataSourceKey(TweetListQuery.Timeline::class)
+    @RemoteListDataSourceKey(TweetQueryType.Timeline::class)
     fun bindHomeTimelineDataSource(
         dataSource: HomeTimelineDataSource
-    ): RemoteListDataSource<out ListQuery, *>
+    ): RemoteListDataSource<out QueryType, *>
 
     @Binds
     @IntoMap
-    @RemoteListDataSourceKey(TweetListQuery.Fav::class)
+    @RemoteListDataSourceKey(TweetQueryType.Fav::class)
     fun bindFavTimelineDataSource(
         dataSource: FavTimelineDataSource
-    ): RemoteListDataSource<out ListQuery, *>
+    ): RemoteListDataSource<out QueryType, *>
 
     @Binds
     @IntoMap
-    @RemoteListDataSourceKey(TweetListQuery.Media::class)
+    @RemoteListDataSourceKey(TweetQueryType.Media::class)
     fun bindMediaTimelineDataSource(
         dataSource: MediaTimelineDataSource
-    ): RemoteListDataSource<out ListQuery, *>
+    ): RemoteListDataSource<out QueryType, *>
 }
 
 @Module
 interface UserListDataSourceModule {
     @Binds
     @IntoMap
-    @RemoteListDataSourceKey(UserListQuery.Follower::class)
+    @RemoteListDataSourceKey(UserQueryType.Follower::class)
     fun bindFollowerListDataSource(
         dataSource: FollowerListDataSource
-    ): RemoteListDataSource<out ListQuery, *>
+    ): RemoteListDataSource<out QueryType, *>
 
     @Binds
     @IntoMap
-    @RemoteListDataSourceKey(UserListQuery.Following::class)
+    @RemoteListDataSourceKey(UserQueryType.Following::class)
     fun bindFollowingListDataSource(
         dataSource: FollowingListDataSource
-    ): RemoteListDataSource<out ListQuery, *>
+    ): RemoteListDataSource<out QueryType, *>
 }
 
 @Module
 interface MemberListDataSourceModule {
     @Binds
     @IntoMap
-    @RemoteListDataSourceKey(ListQuery.UserListMembership::class)
+    @RemoteListDataSourceKey(QueryType.UserListMembership::class)
     fun bindListMembershipListDataSource(
         dataSource: ListMembershipListDataSource
-    ): RemoteListDataSource<out ListQuery, *>
+    ): RemoteListDataSource<out QueryType, *>
 }

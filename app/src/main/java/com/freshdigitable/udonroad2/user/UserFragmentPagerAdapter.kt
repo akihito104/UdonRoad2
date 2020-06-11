@@ -5,9 +5,9 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentStatePagerAdapter
 import com.freshdigitable.udonroad2.R
-import com.freshdigitable.udonroad2.model.ListQuery
-import com.freshdigitable.udonroad2.model.ListQuery.TweetListQuery
-import com.freshdigitable.udonroad2.model.ListQuery.UserListQuery
+import com.freshdigitable.udonroad2.model.QueryType
+import com.freshdigitable.udonroad2.model.QueryType.TweetQueryType
+import com.freshdigitable.udonroad2.model.QueryType.UserQueryType
 import com.freshdigitable.udonroad2.model.TweetingUser
 import com.freshdigitable.udonroad2.model.User
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragment
@@ -40,7 +40,7 @@ enum class UserPage(
     TWEET(
         creator = { user ->
             ListItemFragment.newInstance<TimelineFragment>(
-                TweetListQuery.Timeline(user.id)
+                TweetQueryType.Timeline(user.id)
             )
         },
         titleRes = R.string.user_tab_tweet,
@@ -49,7 +49,7 @@ enum class UserPage(
     FOLLOWER(
         creator = { user ->
             ListItemFragment.newInstance<UserListFragment>(
-                UserListQuery.Follower(user.id)
+                UserQueryType.Follower(user.id)
             )
         },
         titleRes = R.string.user_tab_follower,
@@ -58,21 +58,21 @@ enum class UserPage(
     FOLLOWING(
         creator = { user ->
             ListItemFragment.newInstance<UserListFragment>(
-                UserListQuery.Following(user.id)
+                UserQueryType.Following(user.id)
             )
         },
         titleRes = R.string.user_tab_following,
         count = { user -> user?.followingCount }
     ),
     FAV(
-        creator = { user -> ListItemFragment.newInstance<TimelineFragment>(TweetListQuery.Fav(user.id)) },
+        creator = { user -> ListItemFragment.newInstance<TimelineFragment>(TweetQueryType.Fav(user.id)) },
         titleRes = R.string.user_tab_fav,
         count = { user -> user?.favoriteCount }
     ),
     LISTED(
         creator = { user ->
             ListItemFragment.newInstance<MemberListListFragment>(
-                ListQuery.UserListMembership(user.id)
+                QueryType.UserListMembership(user.id)
             )
         },
         titleRes = R.string.user_tab_listed,
@@ -80,7 +80,7 @@ enum class UserPage(
     ),
     MEDIA(
         creator = { user ->
-            ListItemFragment.newInstance<TimelineFragment>(TweetListQuery.Media(user.screenName))
+            ListItemFragment.newInstance<TimelineFragment>(TweetQueryType.Media(user.screenName))
         },
         titleRes = R.string.user_tab_media
     )

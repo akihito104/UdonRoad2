@@ -12,6 +12,8 @@ import com.freshdigitable.udonroad2.data.impl.create
 import com.freshdigitable.udonroad2.data.restclient.RemoteListDataSourceProvider
 import com.freshdigitable.udonroad2.model.ListQuery
 import com.freshdigitable.udonroad2.model.MemberListItem
+import com.freshdigitable.udonroad2.model.PageOption
+import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.TweetingUser
 import com.freshdigitable.udonroad2.model.ViewModelKey
 import com.freshdigitable.udonroad2.navigation.NavigationDispatcher
@@ -24,16 +26,21 @@ import dagger.Provides
 import dagger.multibindings.IntoMap
 
 class MemberListListViewModel(
-    private val owner: ListOwner<ListQuery.UserListMembership>,
-    private val repository: ListRepository<ListQuery.UserListMembership>,
+    private val owner: ListOwner<QueryType.UserListMembership>,
+    private val repository: ListRepository<QueryType.UserListMembership>,
     private val navigator: NavigationDispatcher,
-    pagedListProvider: PagedListProvider<ListQuery.UserListMembership, MemberListItem>
-) : ListItemLoadable<ListQuery.UserListMembership, MemberListItem>, ViewModel() {
+    pagedListProvider: PagedListProvider<QueryType.UserListMembership, MemberListItem>
+) : ListItemLoadable<QueryType.UserListMembership, MemberListItem>, ViewModel() {
     override val loading: LiveData<Boolean>
         get() = repository.loading
 
     override fun onRefresh() {
-        repository.loadList(owner.query, owner.value)
+        val q = if (timeline.value?.isNotEmpty() == true) {
+            ListQuery(owner.query, PageOption.OnHead())
+        } else {
+            ListQuery(owner.query, PageOption.OnInit)
+        }
+        repository.loadList(q, owner.value)
     }
 
     override val timeline: LiveData<PagedList<MemberListItem>> =
@@ -67,14 +74,14 @@ interface MemberListListViewModelModule {
             pagedListDataSourceFactoryProvider: PagedListDataSourceFactoryProvider,
             executor: AppExecutor
         ): MemberListListViewModel {
-            val o = owner as ListOwner<ListQuery.UserListMembership>
+            val o = owner as ListOwner<QueryType.UserListMembership>
             val repository = ListRepository.create(
                 o.query,
                 localListDataSourceProvider,
                 remoteListDataSourceProvider,
                 executor
             )
-            val pagedListProvider: PagedListProvider<ListQuery.UserListMembership, MemberListItem> =
+            val pagedListProvider: PagedListProvider<QueryType.UserListMembership, MemberListItem> =
                 PagedListProvider.create(
                     pagedListDataSourceFactoryProvider.get(o.query),
                     repository,

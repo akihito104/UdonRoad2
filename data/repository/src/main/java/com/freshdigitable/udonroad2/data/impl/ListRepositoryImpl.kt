@@ -28,11 +28,13 @@ import com.freshdigitable.udonroad2.data.RemoteListDataSource
 import com.freshdigitable.udonroad2.data.db.LocalListDataSourceProvider
 import com.freshdigitable.udonroad2.data.restclient.RemoteListDataSourceProvider
 import com.freshdigitable.udonroad2.model.ListQuery
+import com.freshdigitable.udonroad2.model.PageOption
+import com.freshdigitable.udonroad2.model.QueryType
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.io.IOException
 
-internal class ListRepositoryImpl<Q : ListQuery, E>(
+internal class ListRepositoryImpl<Q : QueryType, E>(
     private val localDataSource: LocalListDataSource<Q, E>,
     private val remoteDataSource: RemoteListDataSource<Q, E>,
     private val executor: AppExecutor
@@ -41,7 +43,7 @@ internal class ListRepositoryImpl<Q : ListQuery, E>(
     private val _loading = MutableLiveData<Boolean>()
     override val loading: LiveData<Boolean> = _loading
 
-    override fun loadList(query: Q, owner: String) {
+    override fun loadList(query: ListQuery<Q>, owner: String) {
         GlobalScope.launch {
             _loading.postValue(true)
             try {
@@ -62,7 +64,7 @@ internal class ListRepositoryImpl<Q : ListQuery, E>(
     }
 }
 
-fun <Q : ListQuery> ListRepository.Factory.create(
+fun <Q : QueryType> ListRepository.Factory.create(
     query: Q,
     localListDataSourceProvider: LocalListDataSourceProvider,
     remoteListDataSourceProvider: RemoteListDataSourceProvider,
@@ -74,7 +76,7 @@ fun <Q : ListQuery> ListRepository.Factory.create(
     )
 }
 
-internal class PagedListProviderImpl<Q : ListQuery, I>(
+internal class PagedListProviderImpl<Q : QueryType, I>(
     private val pagedListDataSourceFactory: PagedListProvider.DataSourceFactory<I>,
     private val repository: ListRepository<Q>,
     private val executor: AppExecutor
@@ -88,26 +90,30 @@ internal class PagedListProviderImpl<Q : ListQuery, I>(
             .build()
     }
 
-    override fun getList(query: Q, owner: String): LiveData<PagedList<I>> {
+    override fun getList(
+        queryType: Q,
+        owner: String,
+        onEndPageOption: (I) -> PageOption
+    ): LiveData<PagedList<I>> {
         val timeline = pagedListDataSourceFactory.getDataSourceFactory(owner)
         return LivePagedListBuilder(timeline, config)
             .setFetchExecutor(executor.disk)
             .setBoundaryCallback(object : PagedList.BoundaryCallback<I>() {
                 override fun onZeroItemsLoaded() {
                     super.onZeroItemsLoaded()
-                    repository.loadList(query, owner)
+                    repository.loadList(ListQuery(queryType), owner)
                 }
 
                 override fun onItemAtEndLoaded(itemAtEnd: I) {
                     super.onItemAtEndLoaded(itemAtEnd)
-                    repository.loadList(query, owner)
+                    repository.loadList(ListQuery(queryType, onEndPageOption(itemAtEnd)), owner)
                 }
             })
             .build()
     }
 }
 
-fun <Q : ListQuery, I> PagedListProvider.Factory.create(
+fun <Q : QueryType, I> PagedListProvider.Factory.create(
     pagedListDataSourceFactory: PagedListProvider.DataSourceFactory<I>,
     repository: ListRepository<Q>,
     executor: AppExecutor

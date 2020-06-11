@@ -20,7 +20,7 @@ import com.freshdigitable.udonroad2.data.LocalListDataSource
 import com.freshdigitable.udonroad2.data.db.dao.MemberListListDao
 import com.freshdigitable.udonroad2.data.db.dao.TweetListDao
 import com.freshdigitable.udonroad2.data.db.dao.UserListDao
-import com.freshdigitable.udonroad2.model.ListQuery
+import com.freshdigitable.udonroad2.model.QueryType
 import dagger.Binds
 import dagger.MapKey
 import dagger.Module
@@ -30,9 +30,9 @@ import javax.inject.Provider
 import kotlin.reflect.KClass
 
 class LocalListDataSourceProvider @Inject constructor(
-    private val providers: Map<Class<out ListQuery>, @JvmSuppressWildcards Provider<LocalListDataSource<out ListQuery, *>>>
+    private val providers: Map<Class<out QueryType>, @JvmSuppressWildcards Provider<LocalListDataSource<out QueryType, *>>>
 ) {
-    fun <Q : ListQuery, DS : LocalListDataSource<Q, *>> get(query: Q): DS {
+    fun <Q : QueryType, DS : LocalListDataSource<Q, *>> get(query: Q): DS {
         val qClass = query::class.java
         val provider = providers[qClass]
             ?: providers.toList().firstOrNull { (clazz, _) ->
@@ -48,24 +48,24 @@ class LocalListDataSourceProvider @Inject constructor(
 @MustBeDocumented
 @MapKey
 @Retention
-annotation class LocalListDataSourceKey(val clazz: KClass<out ListQuery>)
+annotation class LocalListDataSourceKey(val clazz: KClass<out QueryType>)
 
 @Module(includes = [DaoModule::class])
 interface LocalListDataSourceModule {
     @Binds
     @IntoMap
-    @LocalListDataSourceKey(ListQuery.TweetListQuery::class)
-    fun bindTweetListDao(dao: TweetListDao): LocalListDataSource<out ListQuery, *>
+    @LocalListDataSourceKey(QueryType.TweetQueryType::class)
+    fun bindTweetListDao(dao: TweetListDao): LocalListDataSource<out QueryType, *>
 
     @Binds
     @IntoMap
-    @LocalListDataSourceKey(ListQuery.UserListQuery::class)
-    fun bindUserListDao(dao: UserListDao): LocalListDataSource<out ListQuery, *>
+    @LocalListDataSourceKey(QueryType.UserQueryType::class)
+    fun bindUserListDao(dao: UserListDao): LocalListDataSource<out QueryType, *>
 
     @Binds
     @IntoMap
-    @LocalListDataSourceKey(ListQuery.UserListMembership::class)
+    @LocalListDataSourceKey(QueryType.UserListMembership::class)
     fun bindMemberListListDao(
         dao: MemberListListDao
-    ): LocalListDataSource<out ListQuery, *>
+    ): LocalListDataSource<out QueryType, *>
 }

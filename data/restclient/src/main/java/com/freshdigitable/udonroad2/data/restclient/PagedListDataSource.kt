@@ -4,23 +4,24 @@ import com.freshdigitable.udonroad2.data.RemoteListDataSource
 import com.freshdigitable.udonroad2.data.restclient.ext.toUserListPagedList
 import com.freshdigitable.udonroad2.data.restclient.ext.toUserPagedList
 import com.freshdigitable.udonroad2.model.ListQuery
-import com.freshdigitable.udonroad2.model.ListQuery.UserListQuery
 import com.freshdigitable.udonroad2.model.MemberList
+import com.freshdigitable.udonroad2.model.QueryType
+import com.freshdigitable.udonroad2.model.QueryType.UserQueryType
 import com.freshdigitable.udonroad2.model.User
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import twitter4j.Twitter
 import javax.inject.Inject
 
-abstract class PagedListDataSource<Q : ListQuery, E>(
+abstract class PagedListDataSource<Q : QueryType, E>(
     private val twitter: Twitter
 ) : RemoteListDataSource<Q, E> {
 
     protected var nextCursor: Long = -1
 
-    protected abstract val fetchBlock: suspend Twitter.(Q) -> PagedResponseList<E>
+    protected abstract val fetchBlock: suspend Twitter.(ListQuery<Q>) -> PagedResponseList<E>
 
-    override suspend fun getList(query: Q): List<E> = withContext(Dispatchers.IO) {
+    override suspend fun getList(query: ListQuery<Q>): List<E> = withContext(Dispatchers.IO) {
         if (nextCursor == 0L) {
             return@withContext emptyList<E>()
         }
@@ -37,28 +38,28 @@ class PagedResponseList<E>(
 
 class FollowerListDataSource @Inject constructor(
     twitter: Twitter
-) : PagedListDataSource<UserListQuery.Follower, User>(twitter) {
+) : PagedListDataSource<UserQueryType.Follower, User>(twitter) {
 
-    override val fetchBlock: suspend Twitter.(UserListQuery.Follower) -> PagedResponseList<User>
-        get() = { query -> getFollowersList(query.userId, nextCursor).toUserPagedList() }
+    override val fetchBlock: suspend Twitter.(ListQuery<UserQueryType.Follower>) -> PagedResponseList<User>
+        get() = { query -> getFollowersList(query.type.userId, nextCursor).toUserPagedList() }
 }
 
 class FollowingListDataSource @Inject constructor(
     twitter: Twitter
-) : PagedListDataSource<UserListQuery.Following, User>(twitter) {
+) : PagedListDataSource<UserQueryType.Following, User>(twitter) {
 
-    override val fetchBlock: suspend Twitter.(UserListQuery.Following) -> PagedResponseList<User>
-        get() = { query -> getFriendsList(query.userId, nextCursor).toUserPagedList() }
+    override val fetchBlock: suspend Twitter.(ListQuery<UserQueryType.Following>) -> PagedResponseList<User>
+        get() = { query -> getFriendsList(query.type.userId, nextCursor).toUserPagedList() }
 }
 
 class ListMembershipListDataSource @Inject constructor(
     twitter: Twitter
-) : PagedListDataSource<ListQuery.UserListMembership, MemberList>(twitter) {
+) : PagedListDataSource<QueryType.UserListMembership, MemberList>(twitter) {
 
-    override val fetchBlock: suspend Twitter.(ListQuery.UserListMembership) -> PagedResponseList<MemberList>
+    override val fetchBlock: suspend Twitter.(ListQuery<QueryType.UserListMembership>) -> PagedResponseList<MemberList>
         get() = { query ->
             getUserListMemberships(
-                query.userId,
+                query.type.userId,
                 50,
                 nextCursor
             ).toUserListPagedList()
