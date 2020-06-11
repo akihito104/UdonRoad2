@@ -17,33 +17,10 @@
 package com.freshdigitable.udonroad2.timeline
 
 import androidx.lifecycle.ViewModelProvider
-import com.freshdigitable.udonroad2.data.impl.ListRepositoryModule
-import com.freshdigitable.udonroad2.model.ActivityScope
-import com.freshdigitable.udonroad2.model.ListQuery
-import com.freshdigitable.udonroad2.timeline.viewmodel.MemberListListViewModelModule
-import com.freshdigitable.udonroad2.timeline.viewmodel.TimelineViewModelModule
-import com.freshdigitable.udonroad2.timeline.viewmodel.UserListViewModelModule
-import dagger.BindsInstance
-import dagger.Module
-import dagger.Subcomponent
 
-@Module(subcomponents = [ListItemViewModelComponent::class])
-interface ListItemViewModelModule
-
-@ActivityScope
-@Subcomponent(
-    modules = [
-        TimelineViewModelModule::class,
-        MemberListListViewModelModule::class,
-        UserListViewModelModule::class,
-        ListRepositoryModule::class
-    ]
-)
 interface ListItemViewModelComponent {
 
-    @Subcomponent.Builder
     interface Builder {
-        @BindsInstance
         fun owner(owner: ListOwner<*>): Builder
 
         fun build(): ListItemViewModelComponent

@@ -16,18 +16,15 @@
 
 package com.freshdigitable.udonroad2.di
 
-import android.app.Application
-import android.content.Context
-import android.content.SharedPreferences
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
+import com.freshdigitable.udonroad2.model.ActivityScope
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import javax.inject.Inject
 import javax.inject.Provider
-import javax.inject.Singleton
 
 class ViewModelProviderFactory @Inject constructor(
     private val providers: Map<Class<out ViewModel>, @JvmSuppressWildcards Provider<ViewModel>>
@@ -36,7 +33,7 @@ class ViewModelProviderFactory @Inject constructor(
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         val provider: Provider<out ViewModel> = providers[modelClass]
             ?: find(modelClass)
-            ?: throw IllegalStateException("unregistered class: $modelClass")
+            ?: throw IllegalStateException("unregistered class: $modelClass. all classes:(${providers.keys})")
         @Suppress("UNCHECKED_CAST")
         return provider.get() as T
     }
@@ -55,16 +52,11 @@ interface ViewModelModule {
     fun bindViewModelFactory(factory: ViewModelProviderFactory): ViewModelProvider.Factory
 
     companion object {
+        @ActivityScope
         @Provides
         fun provideViewModelProvider(
             viewModelStoreOwner: ViewModelStoreOwner,
             viewModelFactory: ViewModelProvider.Factory
         ): ViewModelProvider = ViewModelProvider(viewModelStoreOwner, viewModelFactory)
-
-        @Provides
-        @Singleton
-        fun Application.provideSharedPreferences(): SharedPreferences {
-            return getSharedPreferences("udonroad_prefs", Context.MODE_PRIVATE)
-        }
     }
 }

@@ -4,6 +4,7 @@ import com.freshdigitable.udonroad2.data.db.LocalListDataSourceModule
 import com.freshdigitable.udonroad2.data.db.PagedListDataSourceFactoryModule
 import com.freshdigitable.udonroad2.data.restclient.MemberListDataSourceModule
 import com.freshdigitable.udonroad2.data.restclient.TweetTimelineDataSourceModule
+import com.freshdigitable.udonroad2.data.restclient.UserListDataSourceModule
 import com.freshdigitable.udonroad2.model.RepositoryScope
 import dagger.Module
 import dagger.Subcomponent
@@ -44,6 +45,7 @@ interface RepositoryModule
     includes = [
         LocalListDataSourceModule::class,
         TweetTimelineDataSourceModule::class,
+        UserListDataSourceModule::class,
         MemberListDataSourceModule::class,
         PagedListDataSourceFactoryModule::class
     ]

@@ -16,6 +16,9 @@
 
 package com.freshdigitable.udonroad2.di
 
+import android.app.Application
+import android.content.Context
+import android.content.SharedPreferences
 import com.freshdigitable.udonroad2.main.MainActivity
 import com.freshdigitable.udonroad2.main.MainActivityModule
 import com.freshdigitable.udonroad2.media.MediaActivity
@@ -24,19 +27,47 @@ import com.freshdigitable.udonroad2.model.ActivityScope
 import com.freshdigitable.udonroad2.user.UserActivity
 import com.freshdigitable.udonroad2.user.UserActivityModule
 import dagger.Module
+import dagger.Provides
 import dagger.android.ContributesAndroidInjector
+import javax.inject.Singleton
 
 @Module
 interface ActivityBuilders {
     @ActivityScope
-    @ContributesAndroidInjector(modules = [MainActivityModule::class])
+    @ContributesAndroidInjector(
+        modules = [
+            MainActivityModule::class,
+            ViewModelModule::class,
+            ListItemViewModelModule::class
+        ]
+    )
     fun contributesMainActivity(): MainActivity
 
     @ActivityScope
-    @ContributesAndroidInjector(modules = [UserActivityModule::class])
+    @ContributesAndroidInjector(
+        modules = [
+            UserActivityModule::class,
+            ViewModelModule::class,
+            ListItemViewModelModule::class
+        ]
+    )
     fun contributeUserActivity(): UserActivity
 
     @ActivityScope
-    @ContributesAndroidInjector(modules = [MediaActivityModule::class])
+    @ContributesAndroidInjector(
+        modules = [
+            MediaActivityModule::class,
+            ViewModelModule::class,
+            ListItemViewModelModule::class
+        ]
+    )
     fun contributeMediaActivity(): MediaActivity
+
+    companion object {
+        @Provides
+        @Singleton
+        fun Application.provideSharedPreferences(): SharedPreferences {
+            return getSharedPreferences("udonroad_prefs", Context.MODE_PRIVATE)
+        }
+    }
 }

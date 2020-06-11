@@ -36,9 +36,12 @@ class LocalListDataSourceProvider @Inject constructor(
         val qClass = query::class.java
         val provider = providers[qClass]
             ?: providers.toList().firstOrNull { (clazz, _) ->
-                qClass.isAssignableFrom(clazz)
+                clazz.isAssignableFrom(qClass)
             }?.second
-            ?: throw IllegalStateException()
+            ?: throw IllegalStateException(
+                "unregistered: ${query::class.java.simpleName}, " +
+                    "all classes: ${providers.keys.map { it::class.java.simpleName }}"
+            )
 
         @Suppress("UNCHECKED_CAST")
         return provider.get() as DS
