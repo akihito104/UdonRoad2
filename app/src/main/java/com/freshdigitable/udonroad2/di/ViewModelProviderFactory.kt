@@ -52,7 +52,6 @@ interface ViewModelModule {
     fun bindViewModelFactory(factory: ViewModelProviderFactory): ViewModelProvider.Factory
 
     companion object {
-        @ActivityScope
         @Provides
         fun provideViewModelProvider(
             viewModelStoreOwner: ViewModelStoreOwner,

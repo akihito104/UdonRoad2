@@ -8,7 +8,6 @@ import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.observe
 import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DividerItemDecoration
@@ -51,14 +50,11 @@ abstract class ListItemFragment<T, Q : QueryType, I> : Fragment()
         binding.lifecycleOwner = viewLifecycleOwner
 
         val listOwner = ListOwner(ownerId, query)
-        val viewModelProviderFactory = listItemViewModelBuilder
+        val viewModelProvider = listItemViewModelBuilder
             .owner(listOwner)
             .build()
-            .viewModelProviderFactory()
-        val viewModel = ViewModelProvider(requireActivity(), viewModelProviderFactory).get(
-            "_$ownerId",
-            viewModelClass.java
-        )
+            .viewModelProvider()
+        val viewModel = viewModelProvider.get("_$ownerId", viewModelClass.java)
         binding.viewModel = viewModel
 
         val listView = binding.mainList

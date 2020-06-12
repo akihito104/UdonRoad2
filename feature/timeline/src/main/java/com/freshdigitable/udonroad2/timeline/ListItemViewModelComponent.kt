@@ -26,5 +26,5 @@ interface ListItemViewModelComponent {
         fun build(): ListItemViewModelComponent
     }
 
-    fun viewModelProviderFactory(): ViewModelProvider.Factory
+    fun viewModelProvider(): ViewModelProvider
 }
