@@ -75,8 +75,8 @@ class MediaTimelineDataSource @Inject constructor(
         query: ListQuery<QueryType.TweetQueryType.Media>
     ): List<TweetEntity> = withContext(Dispatchers.IO) {
         val q = Query(query.type.query).apply {
-            maxId = query.pageOption.maxId
-            sinceId = query.pageOption.sinceId
+            maxId = query.pageOption.maxId ?: -1
+            sinceId = query.pageOption.sinceId ?: -1
             count = query.pageOption.count
             resultType = Query.ResultType.recent
         }
@@ -84,4 +84,9 @@ class MediaTimelineDataSource @Inject constructor(
     }
 }
 
-fun PageOption.toPaging(): Paging = Paging(page, count, sinceId, maxId)
+fun PageOption.toPaging(): Paging {
+    val paging = Paging(page, count)
+    sinceId?.let { paging.sinceId = it }
+    maxId?.let { paging.maxId = it }
+    return paging
+}

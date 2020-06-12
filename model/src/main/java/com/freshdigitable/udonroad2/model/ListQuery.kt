@@ -52,20 +52,20 @@ sealed class QueryType(
 private const val FETCH_COUNT = 50
 
 sealed class PageOption(
-    open val page: Int = -1,
+    open val page: Int = 1,
     open val count: Int = FETCH_COUNT,
-    open val sinceId: Long = -1,
-    open val maxId: Long = -1
+    open val sinceId: Long? = null,
+    open val maxId: Long? = null
 ) {
     object OnInit : PageOption()
 
     data class OnHead(
-        override val sinceId: Long = -1,
+        override val sinceId: Long? = null,
         override val count: Int = FETCH_COUNT
     ) : PageOption(page = 1, count = count, sinceId = sinceId)
 
     data class OnTail(
-        override val maxId: Long = -1,
+        override val maxId: Long? = null,
         override val count: Int = FETCH_COUNT
     ) : PageOption(page = 1, count = count, sinceId = 1, maxId = maxId)
 }
