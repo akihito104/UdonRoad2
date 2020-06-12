@@ -32,9 +32,9 @@ import dagger.Subcomponent
 interface ListItemViewModelModule {
     companion object {
         @Provides
-        fun provideListItemViewModelComponentBuilder(builder: ListItemViewModelComponentImpl.Builder): ListItemViewModelComponent.Builder {
-            return builder
-        }
+        fun provideListItemViewModelComponentBuilder(
+            builder: ListItemViewModelComponentImpl.Builder
+        ): ListItemViewModelComponent.Builder = builder
     }
 }
 
