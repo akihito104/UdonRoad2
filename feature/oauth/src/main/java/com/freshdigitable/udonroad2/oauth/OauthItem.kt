@@ -45,4 +45,4 @@ data class OauthTweet(
     override val source: String,
     override val createdAt: Instant = Instant.now(),
     override val mediaItems: List<MediaItem> = listOf()
-): Tweet
+) : Tweet

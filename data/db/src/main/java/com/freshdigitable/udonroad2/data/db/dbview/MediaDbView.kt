@@ -37,7 +37,8 @@ import com.freshdigitable.udonroad2.model.UrlItem
     FROM relation_tweet_media AS r 
     INNER JOIN media AS m ON r.media_id = m.id
     INNER JOIN url AS u ON m.url = u.text
-""", viewName = "view_media"
+""",
+    viewName = "view_media"
 )
 internal data class MediaDbView(
     @ColumnInfo(name = "id")

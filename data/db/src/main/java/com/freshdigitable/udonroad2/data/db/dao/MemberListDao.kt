@@ -66,7 +66,8 @@ abstract class MemberListDao(
             entity = MemberListEntity::class,
             parentColumns = ["id"],
             childColumns = ["member_list_id"]
-        )]
+        )
+    ]
 )
 internal data class MemberListListEntity(
     @ColumnInfo(name = "member_list_id", index = true)

@@ -30,7 +30,7 @@ internal class MediaIdConverter {
         MediaId(value)
 }
 
-internal class MediaTypeConverter: AppTypeConverter<MediaType, String> {
+internal class MediaTypeConverter : AppTypeConverter<MediaType, String> {
     @TypeConverter
     override fun toItem(v: String): MediaType = MediaType.find(v)
 

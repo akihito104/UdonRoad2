@@ -41,7 +41,8 @@ class OAuthApiClient @Inject constructor(
     }
 
     suspend fun getOauthAccessToken(
-        requestToken: RequestTokenItem, verifier: String
+        requestToken: RequestTokenItem,
+        verifier: String
     ): AccessTokenEntity = withContext(Dispatchers.IO) {
         val token: RequestToken = requireNotNull(requestToken as? RequestTokenItemImpl).token
         twitter.getOAuthAccessToken(token, verifier).toEntity()

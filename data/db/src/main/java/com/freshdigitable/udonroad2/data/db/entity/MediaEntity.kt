@@ -86,10 +86,11 @@ internal data class MediaEntity(
     primaryKeys = ["media_id", "url"],
     foreignKeys = [
         ForeignKey(
-            entity = com.freshdigitable.udonroad2.data.db.entity.MediaEntity::class,
+            entity = MediaEntity::class,
             parentColumns = ["id"],
             childColumns = ["media_id"]
-        )]
+        )
+    ]
 )
 internal data class VideoValiantEntity(
     @ColumnInfo(name = "media_id")

@@ -27,7 +27,9 @@ import com.freshdigitable.udonroad2.model.TweetListItem
 import org.threeten.bp.Instant
 
 @DatabaseView(
-    viewName = "view_tweet", value = """
+    viewName = "view_tweet",
+    value =
+        """
     SELECT
      t.id, text, created_at, retweet_count, favorite_count, source,
      u.id AS user_id,
@@ -87,7 +89,9 @@ internal data class Tweet(
 }
 
 @DatabaseView(
-    viewName = "tweet_list_item", value = """
+    viewName = "tweet_list_item",
+    value =
+        """
     WITH
     original AS (
     SELECT

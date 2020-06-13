@@ -34,7 +34,7 @@ internal data class MediaItemRest(
     override val videoAspectRatioHeight: Int?,
     override val videoDurationMillis: Long?,
     override val videoValiantItems: List<MediaItem.VideoValiant>
-): MediaItem
+) : MediaItem
 
 internal data class SizeRest(
     override val width: Int,
@@ -46,4 +46,4 @@ internal data class VideoValiantRest(
     override val bitrate: Int,
     override val contentType: String,
     override val url: String
-): MediaItem.VideoValiant
+) : MediaItem.VideoValiant

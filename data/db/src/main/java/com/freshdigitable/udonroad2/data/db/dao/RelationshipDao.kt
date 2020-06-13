@@ -41,7 +41,9 @@ abstract class RelationshipDao {
     abstract suspend fun updateWantRetweetsStatus(userId: Long, wantRetweets: Boolean)
 
     @Query("SELECT * FROM relationship WHERE user_id = :userId")
-    internal abstract fun findRelationshipByTargetUserId(userId: Long): LiveData<RelationshipEntity?>
+    internal abstract fun findRelationshipByTargetUserId(
+        userId: Long
+    ): LiveData<RelationshipEntity?>
 
     private fun Relationship.toEntity(): RelationshipEntity {
         return RelationshipEntity(

@@ -82,7 +82,8 @@ class MediaThumbnailContainer @JvmOverloads constructor(
             child.visibility = if (i < count) View.VISIBLE else GONE
             child.setOnClickListener(
                 if (i < count) OnClickListener { v -> itemClickListener?.onMediaItemClicked(v, i) }
-                else null)
+                else null
+            )
         }
     }
 
