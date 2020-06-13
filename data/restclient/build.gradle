@@ -10,15 +10,18 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
         def properties = new Properties()
-        properties.load(project.rootProject.file('local.properties').newDataInputStream())
-        def CONSUMER_KEY = properties.getProperty('consumer_key')
-        buildConfigField "String", "CONSUMER_KEY", "\"${CONSUMER_KEY}\""
-        def CONSUMER_SECRET = properties.getProperty('consumer_secret')
-        buildConfigField "String", "CONSUMER_SECRET", "\"${CONSUMER_SECRET}\""
-        def ACCESS_TOKEN = properties.getProperty('access_token')
-        buildConfigField "String", "ACCESS_TOKEN", "\"${ACCESS_TOKEN}\""
-        def ACCESS_SECRET = properties.getProperty('access_secret')
-        buildConfigField "String", "ACCESS_SECRET", "\"${ACCESS_SECRET}\""
+        def file = project.rootProject.file('local.properties')
+        if (file.exists()) {
+            properties.load(file.newDataInputStream())
+            def CONSUMER_KEY = properties.getProperty('consumer_key')
+            buildConfigField "String", "CONSUMER_KEY", "\"${CONSUMER_KEY}\""
+            def CONSUMER_SECRET = properties.getProperty('consumer_secret')
+            buildConfigField "String", "CONSUMER_SECRET", "\"${CONSUMER_SECRET}\""
+            def ACCESS_TOKEN = properties.getProperty('access_token')
+            buildConfigField "String", "ACCESS_TOKEN", "\"${ACCESS_TOKEN}\""
+            def ACCESS_SECRET = properties.getProperty('access_secret')
+            buildConfigField "String", "ACCESS_SECRET", "\"${ACCESS_SECRET}\""
+        }
     }
 
     buildTypes {
