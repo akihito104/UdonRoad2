@@ -9,9 +9,9 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - name: android lint
-          run: ./gradlew lintDebug
+        run: ./gradlew lintDebug
       - name: ktlint
-          run: ./gradlew ktlintCheck
+        run: ./gradlew ktlintCheck
       - name: Danger
         uses: danger/kotlin@0.5.1
         env:
