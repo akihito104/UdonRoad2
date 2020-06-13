@@ -21,6 +21,11 @@ android {
             buildConfigField "String", "ACCESS_TOKEN", "\"${ACCESS_TOKEN}\""
             def ACCESS_SECRET = properties.getProperty('access_secret')
             buildConfigField "String", "ACCESS_SECRET", "\"${ACCESS_SECRET}\""
+        } else {
+            buildConfigField "String", "CONSUMER_KEY", "\"\""
+            buildConfigField "String", "CONSUMER_SECRET", "\"\""
+            buildConfigField "String", "ACCESS_TOKEN", "\"\""
+            buildConfigField "String", "ACCESS_SECRET", "\"\""
         }
     }
 
