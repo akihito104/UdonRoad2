@@ -16,7 +16,7 @@ buildscript {
 
         recyclerview_version = '1.0.0'
         material_version = '1.2.0-alpha06'
-        constraintLayout_version = '2.0.0-beta6' // 2.0.0-beta2 is not fit view_user_header.xml
+        constraintLayout_version = '2.0.0-beta6'
         viewpager2_version = '1.0.0-beta03'
 
         dagger_version = '2.27'
