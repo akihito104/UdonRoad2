@@ -19,5 +19,5 @@ internal class TweetEntityRest(
     override val possiblySensitive: Boolean,
     override val source: String,
     override val createdAt: Instant,
-    override val media: List<MediaItem>
+    override val mediaItems: List<MediaItem>
 ) : TweetEntity

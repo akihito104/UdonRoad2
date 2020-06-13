@@ -18,19 +18,22 @@ package com.freshdigitable.udonroad2.di
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelStoreOwner
+import com.freshdigitable.udonroad2.model.ActivityScope
 import dagger.Binds
 import dagger.Module
+import dagger.Provides
 import javax.inject.Inject
 import javax.inject.Provider
 
 class ViewModelProviderFactory @Inject constructor(
-        private val providers: Map<Class<out ViewModel>, @JvmSuppressWildcards Provider<ViewModel>>
+    private val providers: Map<Class<out ViewModel>, @JvmSuppressWildcards Provider<ViewModel>>
 ) : ViewModelProvider.Factory {
 
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         val provider: Provider<out ViewModel> = providers[modelClass]
             ?: find(modelClass)
-            ?: throw IllegalStateException("unregistered class: $modelClass")
+            ?: throw IllegalStateException("unregistered class: $modelClass. all classes:(${providers.keys})")
         @Suppress("UNCHECKED_CAST")
         return provider.get() as T
     }
@@ -47,4 +50,12 @@ class ViewModelProviderFactory @Inject constructor(
 interface ViewModelModule {
     @Binds
     fun bindViewModelFactory(factory: ViewModelProviderFactory): ViewModelProvider.Factory
+
+    companion object {
+        @Provides
+        fun provideViewModelProvider(
+            viewModelStoreOwner: ViewModelStoreOwner,
+            viewModelFactory: ViewModelProvider.Factory
+        ): ViewModelProvider = ViewModelProvider(viewModelStoreOwner, viewModelFactory)
+    }
 }

@@ -19,8 +19,6 @@ package com.freshdigitable.udonroad2.di
 import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelStoreOwner
 import com.freshdigitable.udonroad2.main.MainActivity
 import com.freshdigitable.udonroad2.main.MainActivityModule
 import com.freshdigitable.udonroad2.media.MediaActivity
@@ -36,28 +34,37 @@ import javax.inject.Singleton
 @Module
 interface ActivityBuilders {
     @ActivityScope
-    @ContributesAndroidInjector(modules = [MainActivityModule::class])
+    @ContributesAndroidInjector(
+        modules = [
+            MainActivityModule::class,
+            ViewModelModule::class,
+            ListItemViewModelModule::class
+        ]
+    )
     fun contributesMainActivity(): MainActivity
 
     @ActivityScope
-    @ContributesAndroidInjector(modules = [UserActivityModule::class])
+    @ContributesAndroidInjector(
+        modules = [
+            UserActivityModule::class,
+            ViewModelModule::class,
+            ListItemViewModelModule::class
+        ]
+    )
     fun contributeUserActivity(): UserActivity
 
     @ActivityScope
-    @ContributesAndroidInjector(modules = [MediaActivityModule::class])
+    @ContributesAndroidInjector(
+        modules = [
+            MediaActivityModule::class,
+            ViewModelModule::class,
+            ListItemViewModelModule::class
+        ]
+    )
     fun contributeMediaActivity(): MediaActivity
 
-    @Module
     companion object {
         @Provides
-        @JvmStatic
-        fun provideViewModelProvider(
-            viewModelStoreOwner: ViewModelStoreOwner,
-            viewModelFactory: ViewModelProvider.Factory
-        ): ViewModelProvider = ViewModelProvider(viewModelStoreOwner, viewModelFactory)
-
-        @Provides
-        @JvmStatic
         @Singleton
         fun Application.provideSharedPreferences(): SharedPreferences {
             return getSharedPreferences("udonroad_prefs", Context.MODE_PRIVATE)

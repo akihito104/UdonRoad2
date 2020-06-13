@@ -29,8 +29,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import com.freshdigitable.udonroad2.R
-import com.freshdigitable.udonroad2.data.repository.OAuthTokenRepository
-import com.freshdigitable.udonroad2.data.repository.RepositoryComponent
+import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
+import com.freshdigitable.udonroad2.data.impl.RepositoryComponent
 import com.freshdigitable.udonroad2.databinding.ActivityMainBinding
 import com.freshdigitable.udonroad2.model.FragmentScope
 import com.freshdigitable.udonroad2.model.ViewModelKey
@@ -59,6 +59,7 @@ import javax.inject.Inject
 class MainActivity : AppCompatActivity(), HasAndroidInjector {
     @Inject
     lateinit var navigation: Navigation<MainActivityState>
+
     @Inject
     lateinit var viewModelProvider: ViewModelProvider
     private var actionBarDrawerToggle: ActionBarDrawerToggle? = null
@@ -105,7 +106,7 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
         navigation.navigator.postEvent(TimelineEvent.Back)
     }
 
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return actionBarDrawerToggle?.onOptionsItemSelected(item)
             ?: super.onOptionsItemSelected(item)
     }
@@ -182,28 +183,26 @@ class MainViewModel(
         OauthFragmentModule::class
     ]
 )
-abstract class MainActivityModule {
+interface MainActivityModule {
     @FragmentScope
     @ContributesAndroidInjector
-    abstract fun contributeTweetDetailFragment(): TweetDetailFragment
+    fun contributeTweetDetailFragment(): TweetDetailFragment
 
     @Binds
     @IntoMap
     @ViewModelKey(MainViewModel::class)
-    abstract fun bindMainViewModel(viewModel: MainViewModel): ViewModel
+    fun bindMainViewModel(viewModel: MainViewModel): ViewModel
 
     @Binds
     @IntoMap
     @ViewModelKey(TweetDetailViewModel::class)
-    abstract fun bindTweetDetailViewModel(viewModel: TweetDetailViewModel): ViewModel
+    fun bindTweetDetailViewModel(viewModel: TweetDetailViewModel): ViewModel
 
     @Binds
-    abstract fun bindViewModelStoreOwner(activity: MainActivity): ViewModelStoreOwner
+    fun bindViewModelStoreOwner(activity: MainActivity): ViewModelStoreOwner
 
-    @Module
     companion object {
         @Provides
-        @JvmStatic
         fun provideNavigation(
             navigator: NavigationDispatcher,
             activity: MainActivity,
@@ -218,7 +217,6 @@ abstract class MainActivityModule {
         }
 
         @Provides
-        @JvmStatic
         fun provideMainViewModel(
             navigator: NavigationDispatcher,
             repositoryBuilder: RepositoryComponent.Builder

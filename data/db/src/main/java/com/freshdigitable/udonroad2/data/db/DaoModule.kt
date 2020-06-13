@@ -32,7 +32,6 @@ import javax.inject.Singleton
 @Module
 object DatabaseModule {
     @Provides
-    @JvmStatic
     @Singleton
     fun provideAppDatabase(app: Application): AppDatabase =
         Room.inMemoryDatabaseBuilder(app, AppDatabase::class.java)
@@ -43,30 +42,23 @@ object DatabaseModule {
 @Module
 object DaoModule {
     @Provides
-    @JvmStatic
     fun providesTweetDao(db: AppDatabase): TweetDao = db.tweetDao()
 
     @Provides
-    @JvmStatic
     fun provideTweetListDao(dao: TweetDao): TweetListDao = TweetListDao(dao)
 
     @Provides
-    @JvmStatic
     fun providesUserDao(db: AppDatabase): UserDao = db.userDao()
 
     @Provides
-    @JvmStatic
     fun provideUserListDao(dao: UserDao): UserListDao = UserListDao(dao)
 
     @Provides
-    @JvmStatic
     fun provideMemberListDao(db: AppDatabase): MemberListDao = db.memberListDao()
 
     @Provides
-    @JvmStatic
     fun provideMemberListListDao(dao: MemberListDao): MemberListListDao = MemberListListDao(dao)
 
     @Provides
-    @JvmStatic
     fun provideRelationshipDao(db: AppDatabase): RelationshipDao = db.relationshipDao()
 }

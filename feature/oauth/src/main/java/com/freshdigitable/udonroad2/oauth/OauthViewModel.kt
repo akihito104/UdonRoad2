@@ -26,24 +26,27 @@ import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.viewModelScope
 import androidx.paging.DataSource
 import androidx.paging.PagedList
-import com.freshdigitable.udonroad2.data.repository.OAuthTokenRepository
-import com.freshdigitable.udonroad2.data.repository.RepositoryComponent
+import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
+import com.freshdigitable.udonroad2.data.impl.RepositoryComponent
+import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.RequestTokenItem
+import com.freshdigitable.udonroad2.model.ViewModelKey
 import com.freshdigitable.udonroad2.navigation.NavigationDispatcher
 import com.freshdigitable.udonroad2.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.timeline.ListItemLoadable
-import com.freshdigitable.udonroad2.timeline.viewmodel.ListOwner
+import dagger.Binds
 import dagger.Module
 import dagger.Provides
+import dagger.multibindings.IntoMap
 import kotlinx.coroutines.launch
 
 class OauthViewModel(
     dataSource: DataSource<Int, OauthItem>,
     private val repository: OAuthTokenRepository,
     private val navigator: NavigationDispatcher
-) : ViewModel(), ListItemLoadable<OauthItem> {
+) : ViewModel(), ListItemLoadable<QueryType.Oauth, OauthItem> {
 
-    override val loading: LiveData<Boolean> = MutableLiveData<Boolean>(false)
+    override val loading: LiveData<Boolean> = MutableLiveData(false)
     private val livePagedList: MutableLiveData<PagedList<OauthItem>>
 
     init {
@@ -62,7 +65,7 @@ class OauthViewModel(
         )
     }
 
-    override fun getList(listOwner: ListOwner): LiveData<PagedList<OauthItem>> = livePagedList
+    override val timeline: LiveData<PagedList<OauthItem>> = livePagedList
 
     override fun onRefresh() {}
 
@@ -77,7 +80,7 @@ class OauthViewModel(
         }
     }
 
-    private val _pin = MutableLiveData<String>("")
+    private val _pin = MutableLiveData("")
     val pin: LiveData<String> = _pin.distinctUntilChanged()
 
     val sendPinButtonEnabled: LiveData<Boolean> = merge(requestToken, pin) { token, p ->
@@ -120,15 +123,12 @@ sealed class OauthEvent : NavigationEvent {
 
 @Module
 interface OauthViewModelModule {
-    @Module
     companion object {
-        @JvmStatic
         @Provides
         fun provideOauthDataSource(context: Application): DataSource<Int, OauthItem> {
             return OauthDataSource(context)
         }
 
-        @JvmStatic
         @Provides
         fun provideOauthViewModel(
             dataSource: DataSource<Int, OauthItem>,
@@ -142,6 +142,11 @@ interface OauthViewModelModule {
             )
         }
     }
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(OauthViewModel::class)
+    fun bindOauthViewModel(viewModel: OauthViewModel): ViewModel
 }
 
 fun <T1, T2, E> merge(t1: LiveData<T1>, t2: LiveData<T2>, block: (T1?, T2?) -> E?): LiveData<E> {

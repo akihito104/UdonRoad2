@@ -26,7 +26,6 @@ import javax.inject.Singleton
 @Module
 object TwitterModule {
     @Provides
-    @JvmStatic
     @Singleton
     fun providesTwitter(): Twitter {
         val configuration = ConfigurationBuilder()

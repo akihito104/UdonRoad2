@@ -7,7 +7,8 @@ import androidx.annotation.IdRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.freshdigitable.udonroad2.media.MediaActivity
-import com.freshdigitable.udonroad2.model.ListQuery
+import com.freshdigitable.udonroad2.model.QueryType
+import com.freshdigitable.udonroad2.model.QueryType.TweetQueryType
 import com.freshdigitable.udonroad2.navigation.FragmentContainerState
 import com.freshdigitable.udonroad2.navigation.Navigation
 import com.freshdigitable.udonroad2.navigation.NavigationDispatcher
@@ -84,7 +85,7 @@ class MainActivityNavigation(
                 if (isStackedOnTop(BACK_STACK_TWEET_DETAIL)) {
                     activity.supportFragmentManager.popBackStack()
                 } else {
-                    replace(ListItemFragment.newInstance<TimelineFragment>(ListQuery.Timeline()))
+                    replace(ListItemFragment.newInstance<TimelineFragment>(TweetQueryType.Timeline()))
                 }
                 viewModel.setFabVisible(true)
             }
@@ -97,7 +98,7 @@ class MainActivityNavigation(
             }
             is MainActivityState.Oauth -> {
                 viewModel.setFabVisible(false)
-                replace(ListItemFragment.newInstance<OauthFragment>(ListQuery.Oauth))
+                replace(ListItemFragment.newInstance<OauthFragment>(QueryType.Oauth))
             }
             MainActivityState.Halt -> activity.finish()
         }
