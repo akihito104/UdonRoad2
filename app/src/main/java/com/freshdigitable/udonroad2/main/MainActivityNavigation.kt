@@ -62,8 +62,8 @@ class MainActivityNavigation(
             TimelineEvent.Back -> {
                 if (currentState is MainActivityState.TweetDetail) {
                     MainActivityState.MainTimeline
-                } else if (currentState is MainActivityState.MainTimeline
-                    && viewModel.isFabVisible.value == true
+                } else if (currentState is MainActivityState.MainTimeline &&
+                    viewModel.isFabVisible.value == true
                 ) {
                     viewModel.setFabVisible(false)
                     null
@@ -85,7 +85,9 @@ class MainActivityNavigation(
                 if (isStackedOnTop(BACK_STACK_TWEET_DETAIL)) {
                     activity.supportFragmentManager.popBackStack()
                 } else {
-                    replace(ListItemFragment.newInstance<TimelineFragment>(TweetQueryType.Timeline()))
+                    replace(
+                        ListItemFragment.newInstance<TimelineFragment>(TweetQueryType.Timeline())
+                    )
                 }
                 viewModel.setFabVisible(true)
             }

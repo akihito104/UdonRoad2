@@ -19,7 +19,7 @@ package com.freshdigitable.fabshortcut
 import android.view.MotionEvent
 
 enum class Direction constructor(
-        val index: Int
+    val index: Int
 ) {
     UP(6),
     UP_RIGHT(7),
@@ -36,8 +36,8 @@ enum class Direction constructor(
         get() = if (this == UNDEFINED) {
             arrayOf()
         } else arrayOf(
-                findByIndex((index + 1) % 8),
-                findByIndex(if ((index - 1) < 0) 7 else index - 1)
+            findByIndex((index + 1) % 8),
+            findByIndex(if ((index - 1) < 0) 7 else index - 1)
         )
 
     internal val isOnAxis: Boolean
@@ -53,8 +53,8 @@ enum class Direction constructor(
         private const val ANGLE_THRESHOLD = ANGLE_DIVIDE / 2
 
         internal fun getDirection(
-                e1: MotionEvent,
-                e2: MotionEvent
+            e1: MotionEvent,
+            e2: MotionEvent
         ): Direction {
             val distX = e2.x - e1.x
             val distY = e2.y - e1.y
@@ -65,19 +65,19 @@ enum class Direction constructor(
             val angle = atan3(distY, distX)
             return Direction.values().filter { it != UNDEFINED }.firstOrNull { d ->
                 if (RIGHT == d) {
-                    return@firstOrNull angle < ANGLE_THRESHOLD
-                            || angle > 2 * Math.PI - ANGLE_THRESHOLD
+                    return@firstOrNull angle < ANGLE_THRESHOLD ||
+                        angle > 2 * Math.PI - ANGLE_THRESHOLD
                 }
-                return@firstOrNull angle > d.angleLowerThresh
-                        && angle < d.angleUpperThresh
+                return@firstOrNull angle > d.angleLowerThresh &&
+                    angle < d.angleUpperThresh
             } ?: UNDEFINED
         }
 
         internal fun getDirection(
-                e1: MotionEvent,
-                e2: MotionEvent,
-                velocityX: Float,
-                velocityY: Float
+            e1: MotionEvent,
+            e2: MotionEvent,
+            velocityX: Float,
+            velocityY: Float
         ): Direction {
             val speed = velocityX * velocityX + velocityY * velocityY
             return if (speed < SWIPE_THRESH_VER) UNDEFINED else getDirection(e1, e2)
@@ -89,7 +89,7 @@ enum class Direction constructor(
         }
 
         internal fun findByIndex(
-                i: Int
+            i: Int
         ): Direction = values().firstOrNull { it.index == i } ?: UNDEFINED
 
         internal fun findByAngle(angle: Int): Direction {

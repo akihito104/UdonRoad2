@@ -19,6 +19,7 @@ import javax.inject.Inject
 class TweetDetailFragment : Fragment() {
 
     private lateinit var binding: FragmentDetailBinding
+
     @Inject
     lateinit var viewModelFactory: ViewModelProvider
 
@@ -53,7 +54,8 @@ class TweetDetailFragment : Fragment() {
                     it,
                     LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
                         rightMargin = 10 // XXX
-                    })
+                    }
+                )
             }
             item?.body?.favoriteCount?.let {
                 AppCompatTextView(view.context).apply {
@@ -70,8 +72,8 @@ class TweetDetailFragment : Fragment() {
         viewModel.showTweetItem(getTweetId())
     }
 
-    private fun getTweetId(): Long {
-        return requireNotNull(arguments?.getLong(ARGS_TWEET_ID)) { "use TweetDetailFragment.newInstance()" }
+    private fun getTweetId(): Long = requireNotNull(arguments?.getLong(ARGS_TWEET_ID)) {
+        "use TweetDetailFragment.newInstance()"
     }
 
     companion object {

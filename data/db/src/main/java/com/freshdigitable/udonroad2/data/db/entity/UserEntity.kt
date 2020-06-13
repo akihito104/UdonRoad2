@@ -89,5 +89,6 @@ internal data class UserEntity(
         location = user.location,
         url = user.url,
         verified = user.verified,
-        isProtected = user.isProtected)
+        isProtected = user.isProtected
+    )
 }

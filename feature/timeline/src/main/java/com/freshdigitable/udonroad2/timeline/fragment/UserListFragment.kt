@@ -14,7 +14,9 @@ class UserListFragment :
     ListItemFragment<UserListViewModel, QueryType.UserQueryType, UserListItem>() {
     override val viewModelClass: KClass<UserListViewModel> = UserListViewModel::class
 
-    override fun createListAdapter(viewModel: UserListViewModel): PagedListAdapter<UserListItem, *> {
+    override fun createListAdapter(
+        viewModel: UserListViewModel
+    ): PagedListAdapter<UserListItem, *> {
         return UserListAdapter(viewModel)
     }
 }

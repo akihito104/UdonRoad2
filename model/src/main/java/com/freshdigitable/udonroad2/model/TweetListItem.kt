@@ -18,7 +18,6 @@ package com.freshdigitable.udonroad2.model
 
 import org.threeten.bp.Instant
 
-
 interface TweetListItem {
 
     val originalId: Long

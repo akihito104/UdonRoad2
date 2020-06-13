@@ -25,11 +25,10 @@ import android.widget.ImageView
 import androidx.annotation.ColorInt
 import androidx.core.graphics.drawable.DrawableCompat
 
-
 class FlingActionIndicator @JvmOverloads constructor(
-        context: Context,
-        attrs: AttributeSet? = null,
-        defStyleAttr: Int = 0
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0
 ) : FrameLayout(context, attrs, defStyleAttr) {
 
     private val views: Map<Direction, ImageView>
@@ -42,10 +41,10 @@ class FlingActionIndicator @JvmOverloads constructor(
 
         val v = View.inflate(context, R.layout.view_fling_action_indicator, this)
         views = mapOf(
-                Direction.UP to v.findViewById(R.id.actionIndicator_up),
-                Direction.DOWN to v.findViewById(R.id.actionIndicator_down),
-                Direction.LEFT to v.findViewById(R.id.actionIndicator_left),
-                Direction.RIGHT to v.findViewById(R.id.actionIndicator_right)
+            Direction.UP to v.findViewById(R.id.actionIndicator_up),
+            Direction.DOWN to v.findViewById(R.id.actionIndicator_down),
+            Direction.LEFT to v.findViewById(R.id.actionIndicator_left),
+            Direction.RIGHT to v.findViewById(R.id.actionIndicator_right)
         )
 
         if (isInEditMode) {
@@ -83,7 +82,7 @@ class FlingActionIndicator @JvmOverloads constructor(
             translationTo(neighbor, TransCoefs.ORIGIN)
             return
         }
-        when(direction) {
+        when (direction) {
             Direction.UP_RIGHT -> {
                 translationTo(Direction.UP, TransCoefs.SECOND_QUAD)
                 translationTo(Direction.RIGHT, TransCoefs.FORTH_QUAD)
@@ -165,9 +164,9 @@ class FlingActionIndicator @JvmOverloads constructor(
     }
 
     private enum class TransCoefs constructor(
-            internal val xCoef: Float,
-            internal val yCoef: Float,
-            internal val scale: Float
+        internal val xCoef: Float,
+        internal val yCoef: Float,
+        internal val scale: Float
     ) {
         ORIGIN(0.5f, 0.5f, 2f),
         FIRST_QUAD(0.75f, 0.25f, 1.5f),

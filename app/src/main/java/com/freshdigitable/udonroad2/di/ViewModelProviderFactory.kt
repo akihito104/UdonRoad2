@@ -19,7 +19,6 @@ package com.freshdigitable.udonroad2.di
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
-import com.freshdigitable.udonroad2.model.ActivityScope
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -33,7 +32,10 @@ class ViewModelProviderFactory @Inject constructor(
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         val provider: Provider<out ViewModel> = providers[modelClass]
             ?: find(modelClass)
-            ?: throw IllegalStateException("unregistered class: $modelClass. all classes:(${providers.keys})")
+            ?: throw IllegalStateException(
+                "unregistered class: ${modelClass.simpleName}. " +
+                    "all classes:(${providers.keys.map { it.simpleName }})"
+            )
         @Suppress("UNCHECKED_CAST")
         return provider.get() as T
     }
@@ -43,7 +45,6 @@ class ViewModelProviderFactory @Inject constructor(
             modelClass.isAssignableFrom(k)
         }?.value
     }
-
 }
 
 @Module

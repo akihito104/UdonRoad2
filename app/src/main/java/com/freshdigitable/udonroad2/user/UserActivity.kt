@@ -65,21 +65,26 @@ class UserActivity : HasAndroidInjector, AppCompatActivity() {
     ) {
         lifecycleOwner = this@UserActivity
 
-        userAppBar.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener { appBar, offset ->
-            viewModel.setAppBarScrollRate(abs(offset).toFloat() / appBar.totalScrollRange.toFloat())
-        })
+        userAppBar.addOnOffsetChangedListener(
+            AppBarLayout.OnOffsetChangedListener { appBar, offset ->
+                viewModel.setAppBarScrollRate(
+                    abs(offset).toFloat() / appBar.totalScrollRange.toFloat()
+                )
+            }
+        )
 
         viewModel.user.observe(this@UserActivity) { u ->
-            adapter.apply {
-                titles.clear()
-                titles.addAll(UserPage.values().map { p ->
+            adapter.titles.clear()
+            adapter.titles.addAll(
+                UserPage.values().map { p ->
                     if (p.count != null) {
-                        this@UserActivity.getString(p.titleRes, p.count.invoke(u) ?: "---")
+                        getString(p.titleRes, p.count.invoke(u) ?: "---")
                     } else {
-                        this@UserActivity.getString(p.titleRes)
+                        getString(p.titleRes)
                     }
-                })
-            }.notifyDataSetChanged()
+                }
+            )
+            adapter.notifyDataSetChanged()
         }
         userPager.apply {
             this.adapter = adapter

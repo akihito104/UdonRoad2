@@ -29,10 +29,10 @@ import androidx.annotation.DrawableRes
 import androidx.appcompat.content.res.AppCompatResources
 
 internal class FfabMenuItem(
-        private val context: Context,
-        private val itemId: Int,
-        private val groupId: Int,
-        private val order: Int
+    private val context: Context,
+    private val itemId: Int,
+    private val groupId: Int,
+    private val order: Int
 ) : MenuItem {
     internal var direction: Direction? = null
 
@@ -130,7 +130,7 @@ internal class FfabMenuItem(
     override fun getAlphabeticShortcut(): Char = unsupported()
     override fun getActionView(): View = unsupported()
     override fun setOnActionExpandListener(
-            listener: MenuItem.OnActionExpandListener?
+        listener: MenuItem.OnActionExpandListener?
     ): MenuItem = unsupported()
     override fun setShowAsAction(actionEnum: Int): Unit = unsupported()
     override fun getNumericShortcut(): Char = unsupported()
@@ -146,6 +146,6 @@ internal class FfabMenuItem(
     override fun setShortcut(numericChar: Char, alphaChar: Char): MenuItem = this
     override fun setShowAsActionFlags(actionEnum: Int): MenuItem = this
     override fun setOnMenuItemClickListener(
-            menuItemClickListener: MenuItem.OnMenuItemClickListener?
+        menuItemClickListener: MenuItem.OnMenuItemClickListener?
     ): MenuItem = this
 }

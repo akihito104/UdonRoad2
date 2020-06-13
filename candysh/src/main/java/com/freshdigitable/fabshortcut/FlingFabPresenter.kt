@@ -77,9 +77,7 @@ internal class FlingFabPresenter(
                     prevDirection = event.direction
                 }
                 is FlingEvent.FLING -> {
-                    indicator.postDelayed({
-                        indicator.visibility = View.INVISIBLE
-                    }, 200)
+                    indicator.postDelayed({ indicator.visibility = View.INVISIBLE }, 200)
                     val item = menu.findItem(event.direction) ?: return
                     menuSelectedListener?.onMenuSelected(item)
                 }
@@ -105,18 +103,19 @@ internal class FlingFabPresenter(
         if (indicator.parent != null) {
             return
         }
+        val indicatorLp = indicator.layoutParams
         val lp = when (val fabLp = fab.layoutParams) {
-            is ConstraintLayout.LayoutParams -> ConstraintLayout.LayoutParams(indicator.layoutParams).apply {
+            is ConstraintLayout.LayoutParams -> ConstraintLayout.LayoutParams(indicatorLp).apply {
                 bottomToTop = fab.id
                 startToStart = fab.id
                 endToEnd = fab.id
                 bottomMargin = marginFromFab
             }
-            is FrameLayout.LayoutParams -> FrameLayout.LayoutParams(indicator.layoutParams).apply {
+            is FrameLayout.LayoutParams -> FrameLayout.LayoutParams(indicatorLp).apply {
                 gravity = fabLp.gravity
                 setMarginFromEdge()
             }
-            is CoordinatorLayout.LayoutParams -> CoordinatorLayout.LayoutParams(indicator.layoutParams).apply {
+            is CoordinatorLayout.LayoutParams -> CoordinatorLayout.LayoutParams(indicatorLp).apply {
                 gravity = fabLp.gravity
                 setMarginFromEdge()
             }

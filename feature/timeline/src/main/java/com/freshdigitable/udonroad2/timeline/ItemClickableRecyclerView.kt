@@ -10,6 +10,7 @@ import android.view.ViewConfiguration
 import androidx.annotation.Keep
 import androidx.customview.view.AbsSavedState
 import androidx.recyclerview.widget.RecyclerView
+import kotlin.math.hypot
 
 open class ItemClickableRecyclerView @JvmOverloads constructor(
     context: Context,
@@ -54,8 +55,8 @@ open class ItemClickableRecyclerView @JvmOverloads constructor(
             val previewEvent = prevEvent ?: return false
             val dx = (currentEvent.x - previewEvent.x).toDouble()
             val dy = (currentEvent.y - previewEvent.y).toDouble()
-            return currentEvent.eventTime - previewEvent.eventTime < ViewConfiguration.getTapTimeout()
-                && Math.hypot(dx, dy) < ViewConfiguration.get(context).scaledTouchSlop
+            return currentEvent.eventTime - previewEvent.eventTime < ViewConfiguration.getTapTimeout() &&
+                hypot(dx, dy) < ViewConfiguration.get(context).scaledTouchSlop
         }
 
         private fun clearPreviewEvent() {
@@ -68,7 +69,7 @@ open class ItemClickableRecyclerView @JvmOverloads constructor(
         fun onItemClick(vh: ViewHolder)
     }
 
-    var itemClickListener : OnItemClickListener? = null
+    var itemClickListener: OnItemClickListener? = null
 
     private fun onClickItem(rv: RecyclerView, e: MotionEvent) {
         val v = rv.findChildViewUnder(e.x, e.y) ?: return
@@ -99,10 +100,10 @@ class ItemSelectableRecyclerView @JvmOverloads constructor(
         }
 
     override fun onClickItem(viewHolder: ViewHolder) {
-        if (selectedItemId == viewHolder.itemId) {
-            selectedItemId = null
+        selectedItemId = if (selectedItemId == viewHolder.itemId) {
+            null
         } else {
-            selectedItemId = viewHolder.itemId
+            viewHolder.itemId
         }
         super.onClickItem(viewHolder)
     }
@@ -157,8 +158,8 @@ class ItemSelectableRecyclerView @JvmOverloads constructor(
 
     var itemSelectedListener: OnItemSelectedListener? = null
 
-    override fun onSaveInstanceState(
-    ): Parcelable? = SavedState(requireNotNull(super.onSaveInstanceState()), selectedItemId)
+    override fun onSaveInstanceState(): Parcelable? =
+        SavedState(requireNotNull(super.onSaveInstanceState()), selectedItemId)
 
     override fun onRestoreInstanceState(state: Parcelable?) {
         if (state !is SavedState) {
@@ -185,12 +186,14 @@ class ItemSelectableRecyclerView @JvmOverloads constructor(
         companion object CREATOR : Parcelable.ClassLoaderCreator<SavedState> {
             override fun createFromParcel(source: Parcel?, loader: ClassLoader?): SavedState {
                 val s = requireNotNull(source) { "source should not be null." }
-                val superState = requireNotNull(s.readParcelable<Parcelable>(loader)) { "superState should not be null." }
+                val superState: Parcelable =
+                    requireNotNull(s.readParcelable(loader)) { "superState should not be null." }
                 val selectedItemId = s.readLong()
                 return SavedState(superState, selectedItemId)
             }
 
-            override fun createFromParcel(parcel: Parcel): SavedState = createFromParcel(parcel, null)
+            override fun createFromParcel(parcel: Parcel): SavedState =
+                createFromParcel(parcel, null)
 
             override fun newArray(size: Int): Array<SavedState?> = arrayOfNulls(size)
         }

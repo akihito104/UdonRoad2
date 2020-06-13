@@ -27,9 +27,8 @@ import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserException
 import java.io.IOException
 
-
 internal class FfabMenuItemInflater private constructor(
-        private val context: Context
+    private val context: Context
 ) {
     companion object {
         internal fun inflate(context: Context, menu: FfabMenu, @MenuRes menuRes: Int) {
@@ -79,7 +78,8 @@ internal class FfabMenuItemInflater private constructor(
             findId(parser)?.let { id ->
                 val ta = context.obtainStyledAttributes(attributeSet, R.styleable.FlingFABMenu)
                 val direction = Direction.findByIndex(
-                        ta.getInt(R.styleable.FlingFABMenu_direction, Direction.UNDEFINED.index))
+                    ta.getInt(R.styleable.FlingFABMenu_direction, Direction.UNDEFINED.index)
+                )
                 if (direction == Direction.UNDEFINED) {
                     throw IllegalArgumentException("undefined direction value")
                 }
@@ -95,12 +95,12 @@ internal class FfabMenuItemInflater private constructor(
 
     private fun findId(parser: XmlPullParser): Int? {
         return (0 until parser.attributeCount)
-                .find { parser.getAttributeName(it) == "id" }
-                ?.let { index ->
-                    val attributeValue = parser.getAttributeValue(index)
-                    attributeValue.substring(1)
-                }
-                ?.takeIf { TextUtils.isDigitsOnly(it) }
-                ?.let { Integer.parseInt(it) }
+            .find { parser.getAttributeName(it) == "id" }
+            ?.let { index ->
+                val attributeValue = parser.getAttributeValue(index)
+                attributeValue.substring(1)
+            }
+            ?.takeIf { TextUtils.isDigitsOnly(it) }
+            ?.let { Integer.parseInt(it) }
     }
 }

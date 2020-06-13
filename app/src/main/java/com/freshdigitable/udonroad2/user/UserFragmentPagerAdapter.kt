@@ -65,7 +65,9 @@ enum class UserPage(
         count = { user -> user?.followingCount }
     ),
     FAV(
-        creator = { user -> ListItemFragment.newInstance<TimelineFragment>(TweetQueryType.Fav(user.id)) },
+        creator = { user ->
+            ListItemFragment.newInstance<TimelineFragment>(TweetQueryType.Fav(user.id))
+        },
         titleRes = R.string.user_tab_fav,
         count = { user -> user?.favoriteCount }
     ),

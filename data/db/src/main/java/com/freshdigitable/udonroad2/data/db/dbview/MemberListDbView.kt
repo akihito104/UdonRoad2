@@ -5,7 +5,8 @@ import androidx.room.DatabaseView
 import androidx.room.Embedded
 import com.freshdigitable.udonroad2.model.MemberListItem
 
-@DatabaseView("""
+@DatabaseView(
+    """
     SELECT m.id, m.name, m.description, m.member_count, m.follower_count, m.is_public,
      u.id AS user_id,
      u.name AS user_name,
@@ -13,7 +14,9 @@ import com.freshdigitable.udonroad2.model.MemberListItem
      u.icon_url AS user_icon_url
     FROM member_list AS m
     INNER JOIN view_user_in_tweet AS u ON m.user_id = u.id
-""", viewName = "view_member_list")
+""",
+    viewName = "view_member_list"
+)
 internal data class MemberListDbView(
     @ColumnInfo(name = "id")
     override val id: Long,

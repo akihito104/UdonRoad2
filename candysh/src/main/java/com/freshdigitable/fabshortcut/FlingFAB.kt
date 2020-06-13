@@ -23,9 +23,9 @@ import android.view.MotionEvent
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class FlingFAB @JvmOverloads constructor(
-        context: Context,
-        attrs: AttributeSet? = null,
-        defStyleAttr: Int = 0
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0
 ) : FloatingActionButton(context, attrs, defStyleAttr) {
 
     private val presenter = FlingFabPresenter(this, attrs, defStyleAttr)
@@ -54,7 +54,8 @@ class FlingFAB @JvmOverloads constructor(
                 return old?.let {
                     val direction = Direction.getDirection(it, motionEvent)
                     val isFling = direction != Direction.UNDEFINED
-                    listener.onFlingEvent(if (isFling) FlingEvent.FLING(direction) else FlingEvent.CANCEL)
+                    val event = if (isFling) FlingEvent.FLING(direction) else FlingEvent.CANCEL
+                    listener.onFlingEvent(event)
                     it.recycle()
                     return true
                 } ?: super.onTouchEvent(motionEvent)

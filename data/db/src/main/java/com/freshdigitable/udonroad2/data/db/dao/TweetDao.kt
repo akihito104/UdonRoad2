@@ -92,7 +92,8 @@ abstract class TweetDao(
                 .filterNotNull()
                 .distinctBy { it.id }
                 .map { it.toEntity() }
-                .toList())
+                .toList()
+        )
         addTweetEntitiesInternal(tweetEntities.map(TweetEntity::toDbEntity))
         addStructuredTweetEntities(tweet.map { it.toStructuredTweet() })
         if (owner != null) {
@@ -104,12 +105,14 @@ abstract class TweetDao(
             .flatten()
         db.urlDao().addUrlEntities(mediaItems.map { it.second.url.toEntity() })
         db.mediaDao().addMediaEntities(mediaItems.map { it.second.toEntity() })
-        db.mediaDao().addTweetMediaRelations(mediaItems.map {
-            TweetMediaRelation(
-                it.first.id,
-                it.second.id
-            )
-        })
+        db.mediaDao().addTweetMediaRelations(
+            mediaItems.map {
+                TweetMediaRelation(
+                    it.first.id,
+                    it.second.id
+                )
+            }
+        )
         val videoVariantEntities = mediaItems.map { it.second }
             .filter { it.videoValiantItems.isNotEmpty() }
             .flatMap { media -> media.videoValiantItems.map { media to it } }
@@ -128,7 +131,9 @@ abstract class TweetDao(
     internal abstract suspend fun addTweetEntitiesInternal(tweet: List<TweetEntityDb>)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    internal abstract suspend fun addStructuredTweetEntities(listEntities: List<StructuredTweetEntity>)
+    internal abstract suspend fun addStructuredTweetEntities(
+        listEntities: List<StructuredTweetEntity>
+    )
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     internal abstract suspend fun addTweetListEntities(listEntities: List<TweetListEntity>)

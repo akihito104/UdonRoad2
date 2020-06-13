@@ -22,4 +22,4 @@ data class UrlEntityRest(
     override val text: String,
     override val displayUrl: String,
     override val expandedUrl: String
-): UrlItem
+) : UrlItem

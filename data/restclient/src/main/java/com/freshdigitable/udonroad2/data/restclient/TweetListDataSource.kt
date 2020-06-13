@@ -37,15 +37,17 @@ class HomeTimelineDataSource @Inject constructor(
     override suspend fun getList(
         query: ListQuery<QueryType.TweetQueryType.Timeline>
     ): List<TweetEntity> = withContext(Dispatchers.IO) {
-        (query.type.userId?.let { id ->
-            when (query.pageOption) {
-                PageOption.OnInit -> twitter.getUserTimeline(id)
-                else -> twitter.getUserTimeline(id, query.pageOption.toPaging())
+        (
+            query.type.userId?.let { id ->
+                when (query.pageOption) {
+                    PageOption.OnInit -> twitter.getUserTimeline(id)
+                    else -> twitter.getUserTimeline(id, query.pageOption.toPaging())
+                }
+            } ?: when (query.pageOption) {
+                PageOption.OnInit -> twitter.homeTimeline
+                else -> twitter.getHomeTimeline(query.pageOption.toPaging())
             }
-        } ?: when (query.pageOption) {
-            PageOption.OnInit -> twitter.homeTimeline
-            else -> twitter.getHomeTimeline(query.pageOption.toPaging())
-        }).map(Status::toEntity)
+            ).map(Status::toEntity)
     }
 }
 
@@ -56,15 +58,17 @@ class FavTimelineDataSource @Inject constructor(
     override suspend fun getList(
         query: ListQuery<QueryType.TweetQueryType.Fav>
     ): List<TweetEntity> = withContext(Dispatchers.IO) {
-        (query.type.userId?.let { id ->
-            when (query.pageOption) {
-                PageOption.OnInit -> twitter.getFavorites(id)
-                else -> twitter.getFavorites(id, query.pageOption.toPaging())
+        (
+            query.type.userId?.let { id ->
+                when (query.pageOption) {
+                    PageOption.OnInit -> twitter.getFavorites(id)
+                    else -> twitter.getFavorites(id, query.pageOption.toPaging())
+                }
+            } ?: when (query.pageOption) {
+                PageOption.OnInit -> twitter.favorites
+                else -> twitter.getFavorites(query.pageOption.toPaging())
             }
-        } ?: when (query.pageOption) {
-            PageOption.OnInit -> twitter.favorites
-            else -> twitter.getFavorites(query.pageOption.toPaging())
-        }).map(Status::toEntity)
+            ).map(Status::toEntity)
     }
 }
 
