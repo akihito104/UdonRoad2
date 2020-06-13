@@ -35,18 +35,24 @@ buildscript {
         // android test
         androidTestRunner_version = '1.1.0-alpha4'
         espresso_version = '3.1.0-alpha4'
+
+        // ktlint
+        ktlint_plugin_version = '9.2.1'
+        ktlint_version = '0.37.1'
     }
     repositories {
         google()
         jcenter()
         maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
         maven { url 'https://kotlin.bintray.com/kotlin-eap' }
+        maven { url "https://plugins.gradle.org/m2/" }
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:4.0.0'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
+        classpath "org.jlleitschuh.gradle:ktlint-gradle:$ktlint_plugin_version"
     }
 }
 
@@ -56,6 +62,21 @@ allprojects {
         jcenter()
         maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
         maven { url 'https://kotlin.bintray.com/kotlin-eap' }
+        maven { url "https://plugins.gradle.org/m2/" }
+    }
+}
+
+subprojects {
+    apply plugin: "org.jlleitschuh.gradle.ktlint" // Version should be inherited from parent
+
+    // Optionally configure plugin
+    ktlint {
+        version = "$ktlint_version"
+        debug = false
+        android = true
+        outputToConsole = true
+        outputColorName = "RED"
+        ignoreFailures = true
     }
 }
 
