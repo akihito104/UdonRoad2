@@ -14,9 +14,6 @@
  * limitations under the License.
  */
 
-@file:Repository("https://repo.maven.apache.org")
-@file:DependsOn("groupId:artifactId:version")
-
 import systems.danger.kotlin.*
 
 danger(args) {
