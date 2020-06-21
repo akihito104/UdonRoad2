@@ -1,32 +1,28 @@
 package com.freshdigitable.udonroad2.data.impl
 
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.util.concurrent.Executor
 
-class AppExecutor {
-    val disk: Executor = Executor {
-        diskAccess { it.run() }
+class AppExecutor(
+    private val parentJob: Job = SupervisorJob(),
+    val dispatcher: DispatcherProvider = DispatcherProvider(),
+    coroutineScope: CoroutineScope = CoroutineScope(dispatcher.mainDispatcher + parentJob)
+) : CoroutineScope by coroutineScope {
+    val io: Executor = Executor { command ->
+        launchIO { command.run() }
     }
 
-    val network: Executor = Executor {
-        GlobalScope.launch(Dispatchers.Default) {
-            it.run()
-        }
-    }
-
-    fun diskIO(task: suspend () -> Unit) = diskAccess(task)
-}
-
-internal fun diskAccess(task: suspend () -> Unit) = GlobalScope.launch(Dispatchers.IO) {
-    task()
-}
-
-internal suspend fun <T> networkAccess(callable: () -> T): T = coroutineScope {
-    withContext(Dispatchers.Default) {
-        callable()
+    fun launchIO(task: suspend CoroutineScope.() -> Unit) {
+        launch(dispatcher.ioDispatcher, block = task)
     }
 }
+
+class DispatcherProvider(
+    val mainDispatcher: CoroutineDispatcher = Dispatchers.Main,
+    val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
+)

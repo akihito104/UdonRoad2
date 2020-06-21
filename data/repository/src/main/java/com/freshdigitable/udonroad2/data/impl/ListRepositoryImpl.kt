@@ -30,8 +30,6 @@ import com.freshdigitable.udonroad2.data.restclient.RemoteListDataSourceProvider
 import com.freshdigitable.udonroad2.model.ListQuery
 import com.freshdigitable.udonroad2.model.PageOption
 import com.freshdigitable.udonroad2.model.QueryType
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import java.io.IOException
 
 internal class ListRepositoryImpl<Q : QueryType, E>(
@@ -44,7 +42,7 @@ internal class ListRepositoryImpl<Q : QueryType, E>(
     override val loading: LiveData<Boolean> = _loading
 
     override fun loadList(query: ListQuery<Q>, owner: String) {
-        GlobalScope.launch {
+        executor.launchIO {
             _loading.postValue(true)
             try {
                 val timeline = remoteDataSource.getList(query)
@@ -58,7 +56,7 @@ internal class ListRepositoryImpl<Q : QueryType, E>(
     }
 
     override fun clear(owner: String) {
-        diskAccess {
+        executor.launchIO {
             localDataSource.clean(owner)
         }
     }
@@ -97,7 +95,7 @@ internal class PagedListProviderImpl<Q : QueryType, I>(
     ): LiveData<PagedList<I>> {
         val timeline = pagedListDataSourceFactory.getDataSourceFactory(owner)
         return LivePagedListBuilder(timeline, config)
-            .setFetchExecutor(executor.disk)
+            .setFetchExecutor(executor.io)
             .setBoundaryCallback(object : PagedList.BoundaryCallback<I>() {
                 override fun onZeroItemsLoaded() {
                     super.onZeroItemsLoaded()
