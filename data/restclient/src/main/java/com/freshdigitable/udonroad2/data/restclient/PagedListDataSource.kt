@@ -23,7 +23,7 @@ abstract class PagedListDataSource<Q : QueryType, E>(
 
     override suspend fun getList(query: ListQuery<Q>): List<E> = withContext(Dispatchers.IO) {
         when (nextCursor) {
-            0L -> emptyList()
+            0L -> emptyList<E>()
             else -> fetchBlock(twitter, query).also { nextCursor = it.nextCursor }
         }
     }
