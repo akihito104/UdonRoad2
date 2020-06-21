@@ -7,13 +7,11 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.freshdigitable.udonroad2.data.db.entity.RelationshipEntity
 import com.freshdigitable.udonroad2.model.Relationship
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 @Dao
 abstract class RelationshipDao {
 
-    suspend fun addRelationship(relationship: Relationship) = withContext(Dispatchers.IO) {
+    suspend fun addRelationship(relationship: Relationship) {
         val r = when (relationship) {
             is RelationshipEntity -> relationship
             else -> relationship.toEntity()
