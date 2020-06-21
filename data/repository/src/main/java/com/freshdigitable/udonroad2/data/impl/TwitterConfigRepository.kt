@@ -20,13 +20,12 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.freshdigitable.udonroad2.data.restclient.TwitterConfigApiClient
 import com.freshdigitable.udonroad2.model.TwitterApiConfigEntity
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 
 class TwitterConfigRepository(
     private val apiClient: TwitterConfigApiClient,
-    private val prefs: SharedPreferenceDataSource
+    private val prefs: SharedPreferenceDataSource,
+    private val executor: AppExecutor
 ) {
 
     private val twitterApiConfig =
@@ -57,7 +56,7 @@ class TwitterConfigRepository(
     }
 
     private fun fetchTwitterAPIConfig() {
-        GlobalScope.launch {
+        executor.launchIO {
             val conf = apiClient.getTwitterApiConfig()
             setFetchTwitterAPIConfigTime(System.currentTimeMillis())
 //        realm.executeTransaction({ r ->

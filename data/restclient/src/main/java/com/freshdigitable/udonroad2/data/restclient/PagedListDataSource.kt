@@ -22,12 +22,10 @@ abstract class PagedListDataSource<Q : QueryType, E>(
     protected abstract val fetchBlock: suspend Twitter.(ListQuery<Q>) -> PagedResponseList<E>
 
     override suspend fun getList(query: ListQuery<Q>): List<E> = withContext(Dispatchers.IO) {
-        if (nextCursor == 0L) {
-            return@withContext emptyList<E>()
+        when (nextCursor) {
+            0L -> emptyList<E>()
+            else -> fetchBlock(twitter, query).also { nextCursor = it.nextCursor }
         }
-        val list = fetchBlock(twitter, query)
-        nextCursor = list.nextCursor
-        return@withContext list
     }
 }
 
@@ -60,7 +58,7 @@ class ListMembershipListDataSource @Inject constructor(
         get() = { query ->
             getUserListMemberships(
                 query.type.userId,
-                50,
+                query.pageOption.count,
                 nextCursor
             ).toUserListPagedList()
         }

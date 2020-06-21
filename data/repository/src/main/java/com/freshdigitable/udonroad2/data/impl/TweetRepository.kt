@@ -9,28 +9,26 @@ import com.freshdigitable.udonroad2.model.RepositoryScope
 import com.freshdigitable.udonroad2.model.TweetListItem
 import dagger.Module
 import dagger.Provides
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class TweetRepository @Inject constructor(
     private val dao: TweetDao,
-    private val restClient: TweetApiClient
+    private val restClient: TweetApiClient,
+    private val executor: AppExecutor
 ) {
     fun getTweetItem(id: Long): LiveData<TweetListItem?> {
         val liveData = MediatorLiveData<TweetListItem?>()
         liveData.addSource(dao.findTweetItemById(id)) {
-            if (it == null) {
-                fetchTweet(id)
-            } else {
-                liveData.value = it
+            when (it) {
+                null -> fetchTweet(id)
+                else -> liveData.value = it
             }
         }
         return liveData
     }
 
     private fun fetchTweet(id: Long) {
-        GlobalScope.launch {
+        executor.launchIO {
             val tweet = restClient.fetchTweet(id)
             dao.addTweet(tweet)
         }
@@ -45,7 +43,11 @@ class TweetRepository @Inject constructor(
 object TweetRepositoryModule {
     @Provides
     @RepositoryScope
-    fun provideTweetRepository(dao: TweetDao, apiClient: TweetApiClient): TweetRepository {
-        return TweetRepository(dao, apiClient)
+    fun provideTweetRepository(
+        dao: TweetDao,
+        apiClient: TweetApiClient,
+        executor: AppExecutor
+    ): TweetRepository {
+        return TweetRepository(dao, apiClient, executor)
     }
 }

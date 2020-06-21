@@ -15,8 +15,6 @@ import com.freshdigitable.udonroad2.data.db.dbview.MemberListDbView
 import com.freshdigitable.udonroad2.data.db.entity.MemberListEntity
 import com.freshdigitable.udonroad2.data.db.ext.toEntity
 import com.freshdigitable.udonroad2.model.MemberList
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 @Dao
 abstract class MemberListDao(
@@ -35,7 +33,7 @@ abstract class MemberListDao(
     internal open suspend fun addMemberList(
         entities: List<MemberList>,
         owner: String?
-    ) = withContext(Dispatchers.IO) {
+    ) {
         val users = entities.map { it.user.toEntity() }
         val memberLists = entities.map { it.toEntity() }
         db.userDao().addUsers(users)
