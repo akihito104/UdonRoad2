@@ -30,7 +30,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
-import com.freshdigitable.udonroad2.data.impl.RepositoryComponent
 import com.freshdigitable.udonroad2.databinding.ActivityMainBinding
 import com.freshdigitable.udonroad2.model.FragmentScope
 import com.freshdigitable.udonroad2.model.ViewModelKey
@@ -219,9 +218,9 @@ interface MainActivityModule {
         @Provides
         fun provideMainViewModel(
             navigator: NavigationDispatcher,
-            repositoryBuilder: RepositoryComponent.Builder
+            oauthTokenRepository: OAuthTokenRepository
         ): MainViewModel {
-            return MainViewModel(navigator, repositoryBuilder.build().oauthTokenRepository())
+            return MainViewModel(navigator, oauthTokenRepository)
         }
     }
 }

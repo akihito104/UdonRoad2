@@ -24,7 +24,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.map
 import androidx.lifecycle.switchMap
-import com.freshdigitable.udonroad2.data.impl.RepositoryComponent
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
 import com.freshdigitable.udonroad2.ext.merge
 import com.freshdigitable.udonroad2.model.MediaItem
@@ -141,9 +140,9 @@ class MediaViewModel(
 object MediaViewModelModule {
     @Provides
     fun provideMediaViewModel(
-        repositoryComponent: RepositoryComponent.Builder,
+        tweetRepository: TweetRepository,
         application: Application
     ): MediaViewModel {
-        return MediaViewModel(repositoryComponent.build().tweetRepository(), application)
+        return MediaViewModel(tweetRepository, application)
     }
 }

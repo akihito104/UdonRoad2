@@ -27,7 +27,6 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.DataSource
 import androidx.paging.PagedList
 import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
-import com.freshdigitable.udonroad2.data.impl.RepositoryComponent
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.RequestTokenItem
 import com.freshdigitable.udonroad2.model.ViewModelKey
@@ -132,14 +131,10 @@ interface OauthViewModelModule {
         @Provides
         fun provideOauthViewModel(
             dataSource: DataSource<Int, OauthItem>,
-            repositoryComponent: RepositoryComponent.Builder,
+            oAuthTokenRepository: OAuthTokenRepository,
             navigator: NavigationDispatcher
         ): OauthViewModel {
-            return OauthViewModel(
-                dataSource,
-                repositoryComponent.build().oauthTokenRepository(),
-                navigator
-            )
+            return OauthViewModel(dataSource, oAuthTokenRepository, navigator)
         }
     }
 

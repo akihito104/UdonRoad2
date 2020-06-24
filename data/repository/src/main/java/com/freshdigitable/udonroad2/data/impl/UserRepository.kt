@@ -3,7 +3,6 @@ package com.freshdigitable.udonroad2.data.impl
 import androidx.lifecycle.LiveData
 import com.freshdigitable.udonroad2.data.db.DaoModule
 import com.freshdigitable.udonroad2.data.db.dao.UserDao
-import com.freshdigitable.udonroad2.model.RepositoryScope
 import com.freshdigitable.udonroad2.model.User
 import dagger.Module
 import dagger.Provides
@@ -21,7 +20,6 @@ class UserRepository(
 )
 object UserRepositoryModule {
     @Provides
-    @RepositoryScope
     fun provideUserRepository(dao: UserDao): UserRepository {
         return UserRepository(dao)
     }

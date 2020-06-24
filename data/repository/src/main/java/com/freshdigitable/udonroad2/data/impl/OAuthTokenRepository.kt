@@ -18,7 +18,6 @@ package com.freshdigitable.udonroad2.data.impl
 
 import com.freshdigitable.udonroad2.data.restclient.OAuthApiClient
 import com.freshdigitable.udonroad2.model.AccessTokenEntity
-import com.freshdigitable.udonroad2.model.RepositoryScope
 import com.freshdigitable.udonroad2.model.RequestTokenItem
 import dagger.Module
 import dagger.Provides
@@ -78,7 +77,6 @@ interface OAuthTokenRepositoryModule {
     @Module
     companion object {
         @Provides
-        @RepositoryScope
         fun provideOAuthTokenRepository(
             apiClient: OAuthApiClient,
             prefs: SharedPreferenceDataSource

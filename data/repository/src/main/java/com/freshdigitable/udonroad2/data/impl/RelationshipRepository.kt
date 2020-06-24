@@ -6,7 +6,6 @@ import com.freshdigitable.udonroad2.data.db.DaoModule
 import com.freshdigitable.udonroad2.data.db.dao.RelationshipDao
 import com.freshdigitable.udonroad2.data.restclient.FriendshipRestClient
 import com.freshdigitable.udonroad2.model.Relationship
-import com.freshdigitable.udonroad2.model.RepositoryScope
 import dagger.Module
 import dagger.Provides
 import javax.inject.Inject
@@ -90,7 +89,6 @@ class RelationshipRepository @Inject constructor(
     ]
 )
 object RelationshipRepositoryModule {
-    @RepositoryScope
     @Provides
     fun provideRelationshipRepository(
         dao: RelationshipDao,

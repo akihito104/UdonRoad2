@@ -4,7 +4,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.switchMap
-import com.freshdigitable.udonroad2.data.impl.RepositoryComponent
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
 import com.freshdigitable.udonroad2.model.Tweet
 import com.freshdigitable.udonroad2.model.TweetListItem
@@ -51,11 +50,8 @@ object TweetDetailViewModelModule {
     @Provides
     fun provideTweetDetailViewModel(
         navigator: NavigationDispatcher,
-        repositories: RepositoryComponent.Builder
+        tweetRepository: TweetRepository
     ): TweetDetailViewModel {
-        return TweetDetailViewModel(
-            navigator,
-            repositories.build().tweetRepository()
-        )
+        return TweetDetailViewModel(navigator, tweetRepository)
     }
 }

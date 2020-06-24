@@ -29,8 +29,3 @@ annotation class ViewModelScope
 @Retention(AnnotationRetention.RUNTIME)
 @MapKey
 annotation class ViewModelKey(val value: KClass<out ViewModel>)
-
-@Scope
-@MustBeDocumented
-@Retention
-annotation class RepositoryScope
