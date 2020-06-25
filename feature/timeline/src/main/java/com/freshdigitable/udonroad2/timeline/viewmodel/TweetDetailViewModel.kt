@@ -5,13 +5,17 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.switchMap
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
+import com.freshdigitable.udonroad2.model.FragmentScope
 import com.freshdigitable.udonroad2.model.Tweet
 import com.freshdigitable.udonroad2.model.TweetListItem
+import com.freshdigitable.udonroad2.model.ViewModelKey
 import com.freshdigitable.udonroad2.navigation.NavigationDispatcher
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.TweetListItemClickListener
+import dagger.Binds
 import dagger.Module
 import dagger.Provides
+import dagger.multibindings.IntoMap
 import javax.inject.Inject
 
 class TweetDetailViewModel @Inject constructor(
@@ -46,12 +50,20 @@ class TweetDetailViewModel @Inject constructor(
 }
 
 @Module
-object TweetDetailViewModelModule {
-    @Provides
-    fun provideTweetDetailViewModel(
-        navigator: NavigationDispatcher,
-        tweetRepository: TweetRepository
-    ): TweetDetailViewModel {
-        return TweetDetailViewModel(navigator, tweetRepository)
+interface TweetDetailViewModelModule {
+    @Binds
+    @IntoMap
+    @ViewModelKey(TweetDetailViewModel::class)
+    fun bindTweetDetailViewModel(viewModel: TweetDetailViewModel): ViewModel
+
+    companion object {
+        @Provides
+        @FragmentScope
+        fun provideTweetDetailViewModel(
+            navigator: NavigationDispatcher,
+            tweetRepository: TweetRepository
+        ): TweetDetailViewModel {
+            return TweetDetailViewModel(navigator, tweetRepository)
+        }
     }
 }
