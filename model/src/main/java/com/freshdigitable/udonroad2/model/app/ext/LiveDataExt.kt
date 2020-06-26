@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.freshdigitable.udonroad2.ext
+package com.freshdigitable.udonroad2.model.app.ext
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData

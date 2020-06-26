@@ -1,4 +1,4 @@
-package com.freshdigitable.udonroad2.model
+package com.freshdigitable.udonroad2.model.app.di
 
 import androidx.lifecycle.ViewModel
 import dagger.MapKey
@@ -29,8 +29,3 @@ annotation class ViewModelScope
 @Retention(AnnotationRetention.RUNTIME)
 @MapKey
 annotation class ViewModelKey(val value: KClass<out ViewModel>)
-
-@Scope
-@MustBeDocumented
-@Retention
-annotation class RepositoryScope

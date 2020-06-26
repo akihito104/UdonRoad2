@@ -21,13 +21,12 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.observe
 import androidx.viewpager2.widget.ViewPager2
 import com.freshdigitable.udonroad2.media.databinding.ActivityMediaBinding
-import com.freshdigitable.udonroad2.model.ViewModelKey
+import com.freshdigitable.udonroad2.model.app.di.FragmentScope
 import dagger.Binds
 import dagger.Module
 import dagger.android.AndroidInjection
@@ -35,7 +34,6 @@ import dagger.android.AndroidInjector
 import dagger.android.ContributesAndroidInjector
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasAndroidInjector
-import dagger.multibindings.IntoMap
 import javax.inject.Inject
 
 class MediaActivity : AppCompatActivity(), HasAndroidInjector {
@@ -120,16 +118,13 @@ class MediaActivity : AppCompatActivity(), HasAndroidInjector {
 
 @Module(includes = [MediaViewModelModule::class])
 interface MediaActivityModule {
+    @FragmentScope
     @ContributesAndroidInjector
     fun contributePhotoMediaFragment(): PhotoMediaFragment
 
+    @FragmentScope
     @ContributesAndroidInjector
     fun contributeMovieMediaFragment(): MovieMediaFragment
-
-    @Binds
-    @IntoMap
-    @ViewModelKey(MediaViewModel::class)
-    fun bindMediaViewModel(viewModel: MediaViewModel): ViewModel
 
     @Binds
     fun bindViewModelStoreOwner(activity: MediaActivity): ViewModelStoreOwner

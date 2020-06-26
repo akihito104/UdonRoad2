@@ -18,8 +18,8 @@ package com.freshdigitable.udonroad2.oauth
 
 import android.os.Bundle
 import androidx.paging.PagedListAdapter
-import com.freshdigitable.udonroad2.model.FragmentScope
 import com.freshdigitable.udonroad2.model.QueryType
+import com.freshdigitable.udonroad2.model.app.di.FragmentScope
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragment
 import dagger.Module
 import dagger.android.ContributesAndroidInjector

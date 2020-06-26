@@ -30,27 +30,22 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
-import com.freshdigitable.udonroad2.data.impl.RepositoryComponent
 import com.freshdigitable.udonroad2.databinding.ActivityMainBinding
-import com.freshdigitable.udonroad2.model.FragmentScope
-import com.freshdigitable.udonroad2.model.ViewModelKey
-import com.freshdigitable.udonroad2.navigation.Navigation
-import com.freshdigitable.udonroad2.navigation.NavigationDispatcher
+import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
+import com.freshdigitable.udonroad2.model.app.navigation.Navigation
+import com.freshdigitable.udonroad2.model.app.navigation.NavigationDispatcher
 import com.freshdigitable.udonroad2.oauth.OauthEvent
 import com.freshdigitable.udonroad2.oauth.OauthFragmentModule
 import com.freshdigitable.udonroad2.timeline.SelectedItemId
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.fragment.MemberListListFragmentModule
 import com.freshdigitable.udonroad2.timeline.fragment.TimelineFragmentModule
-import com.freshdigitable.udonroad2.timeline.fragment.TweetDetailFragment
-import com.freshdigitable.udonroad2.timeline.viewmodel.TweetDetailViewModel
-import com.freshdigitable.udonroad2.timeline.viewmodel.TweetDetailViewModelModule
+import com.freshdigitable.udonroad2.timeline.fragment.TweetDetailFragmentModule
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.android.AndroidInjection
 import dagger.android.AndroidInjector
-import dagger.android.ContributesAndroidInjector
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasAndroidInjector
 import dagger.multibindings.IntoMap
@@ -178,25 +173,16 @@ class MainViewModel(
 @Module(
     includes = [
         TimelineFragmentModule::class,
-        TweetDetailViewModelModule::class,
+        TweetDetailFragmentModule::class,
         MemberListListFragmentModule::class,
         OauthFragmentModule::class
     ]
 )
 interface MainActivityModule {
-    @FragmentScope
-    @ContributesAndroidInjector
-    fun contributeTweetDetailFragment(): TweetDetailFragment
-
     @Binds
     @IntoMap
     @ViewModelKey(MainViewModel::class)
     fun bindMainViewModel(viewModel: MainViewModel): ViewModel
-
-    @Binds
-    @IntoMap
-    @ViewModelKey(TweetDetailViewModel::class)
-    fun bindTweetDetailViewModel(viewModel: TweetDetailViewModel): ViewModel
 
     @Binds
     fun bindViewModelStoreOwner(activity: MainActivity): ViewModelStoreOwner
@@ -219,9 +205,9 @@ interface MainActivityModule {
         @Provides
         fun provideMainViewModel(
             navigator: NavigationDispatcher,
-            repositoryBuilder: RepositoryComponent.Builder
+            oauthTokenRepository: OAuthTokenRepository
         ): MainViewModel {
-            return MainViewModel(navigator, repositoryBuilder.build().oauthTokenRepository())
+            return MainViewModel(navigator, oauthTokenRepository)
         }
     }
 }

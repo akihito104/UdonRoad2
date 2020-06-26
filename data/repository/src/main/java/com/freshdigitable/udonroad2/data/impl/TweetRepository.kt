@@ -5,7 +5,6 @@ import androidx.lifecycle.MediatorLiveData
 import com.freshdigitable.udonroad2.data.db.DaoModule
 import com.freshdigitable.udonroad2.data.db.dao.TweetDao
 import com.freshdigitable.udonroad2.data.restclient.TweetApiClient
-import com.freshdigitable.udonroad2.model.RepositoryScope
 import com.freshdigitable.udonroad2.model.TweetListItem
 import dagger.Module
 import dagger.Provides
@@ -42,7 +41,6 @@ class TweetRepository @Inject constructor(
 )
 object TweetRepositoryModule {
     @Provides
-    @RepositoryScope
     fun provideTweetRepository(
         dao: TweetDao,
         apiClient: TweetApiClient,

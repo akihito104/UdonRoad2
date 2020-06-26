@@ -2,7 +2,7 @@ package com.freshdigitable.udonroad2.timeline
 
 import com.freshdigitable.udonroad2.model.MemberListItem
 import com.freshdigitable.udonroad2.model.TweetingUser
-import com.freshdigitable.udonroad2.navigation.NavigationEvent
+import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 
 sealed class TimelineEvent : NavigationEvent {
     object Init : TimelineEvent()

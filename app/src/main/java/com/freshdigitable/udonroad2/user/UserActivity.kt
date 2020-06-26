@@ -8,7 +8,6 @@ import android.view.MenuItem
 import androidx.annotation.IdRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil.setContentView
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.observe
@@ -16,9 +15,8 @@ import androidx.viewpager.widget.ViewPager
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.databinding.ActivityUserBinding
 import com.freshdigitable.udonroad2.model.TweetingUser
-import com.freshdigitable.udonroad2.model.ViewModelKey
-import com.freshdigitable.udonroad2.navigation.Navigation
-import com.freshdigitable.udonroad2.navigation.NavigationDispatcher
+import com.freshdigitable.udonroad2.model.app.navigation.Navigation
+import com.freshdigitable.udonroad2.model.app.navigation.NavigationDispatcher
 import com.freshdigitable.udonroad2.timeline.fragment.MemberListListFragmentModule
 import com.freshdigitable.udonroad2.timeline.fragment.TimelineFragmentModule
 import com.freshdigitable.udonroad2.timeline.fragment.UserListFragmentModule
@@ -30,7 +28,6 @@ import dagger.android.AndroidInjection
 import dagger.android.AndroidInjector
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasAndroidInjector
-import dagger.multibindings.IntoMap
 import javax.inject.Inject
 import kotlin.math.abs
 
@@ -184,14 +181,9 @@ class UserActivity : HasAndroidInjector, AppCompatActivity() {
         MemberListListFragmentModule::class
     ]
 )
-abstract class UserActivityModule {
+interface UserActivityModule {
     @Binds
-    @IntoMap
-    @ViewModelKey(UserViewModel::class)
-    abstract fun bindUserViewModel(viewModel: UserViewModel): ViewModel
-
-    @Binds
-    abstract fun bindViewModelStoreOwner(activity: UserActivity): ViewModelStoreOwner
+    fun bindViewModelStoreOwner(activity: UserActivity): ViewModelStoreOwner
 
     @Module
     companion object {

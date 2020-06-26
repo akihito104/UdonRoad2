@@ -11,8 +11,12 @@ import androidx.appcompat.widget.AppCompatTextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.observe
+import com.freshdigitable.udonroad2.model.app.di.FragmentScope
 import com.freshdigitable.udonroad2.timeline.databinding.FragmentDetailBinding
 import com.freshdigitable.udonroad2.timeline.viewmodel.TweetDetailViewModel
+import com.freshdigitable.udonroad2.timeline.viewmodel.TweetDetailViewModelModule
+import dagger.Module
+import dagger.android.ContributesAndroidInjector
 import dagger.android.support.AndroidSupportInjection
 import javax.inject.Inject
 
@@ -88,4 +92,11 @@ class TweetDetailFragment : Fragment() {
             }
         }
     }
+}
+
+@Module
+interface TweetDetailFragmentModule {
+    @FragmentScope
+    @ContributesAndroidInjector(modules = [TweetDetailViewModelModule::class])
+    fun contributeTweetDetailFragment(): TweetDetailFragment
 }

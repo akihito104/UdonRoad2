@@ -7,13 +7,15 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
 import androidx.lifecycle.switchMap
 import com.freshdigitable.udonroad2.data.impl.RelationshipRepository
-import com.freshdigitable.udonroad2.data.impl.RepositoryComponent
 import com.freshdigitable.udonroad2.data.impl.UserRepository
 import com.freshdigitable.udonroad2.model.Relationship
 import com.freshdigitable.udonroad2.model.User
+import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
 import com.freshdigitable.udonroad2.timeline.SelectedItemId
+import dagger.Binds
 import dagger.Module
 import dagger.Provides
+import dagger.multibindings.IntoMap
 import kotlin.math.min
 
 class UserViewModel(
@@ -91,13 +93,19 @@ class UserViewModel(
 }
 
 @Module
-object UserViewModelModule {
-    @Provides
-    fun provideUserViewModel(repository: RepositoryComponent.Builder): UserViewModel {
-        val repositoryComponent = repository.build()
-        return UserViewModel(
-            repositoryComponent.userRepository(),
-            repositoryComponent.relationshipRepository()
-        )
+interface UserViewModelModule {
+    @Binds
+    @IntoMap
+    @ViewModelKey(UserViewModel::class)
+    fun bindUserViewModel(viewModel: UserViewModel): ViewModel
+
+    companion object {
+        @Provides
+        fun provideUserViewModel(
+            userRepository: UserRepository,
+            relationshipRepository: RelationshipRepository
+        ): UserViewModel {
+            return UserViewModel(userRepository, relationshipRepository)
+        }
     }
 }

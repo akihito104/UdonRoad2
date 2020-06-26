@@ -1,9 +1,9 @@
 package com.freshdigitable.udonroad2.timeline.fragment
 
 import androidx.paging.PagedListAdapter
-import com.freshdigitable.udonroad2.model.FragmentScope
 import com.freshdigitable.udonroad2.model.MemberListItem
 import com.freshdigitable.udonroad2.model.QueryType.UserListMembership
+import com.freshdigitable.udonroad2.model.app.di.FragmentScope
 import com.freshdigitable.udonroad2.timeline.listadapter.MemberListListAdapter
 import com.freshdigitable.udonroad2.timeline.viewmodel.MemberListListViewModel
 import dagger.Module

@@ -22,15 +22,18 @@ import android.view.View
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
 import androidx.lifecycle.switchMap
-import com.freshdigitable.udonroad2.data.impl.RepositoryComponent
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
-import com.freshdigitable.udonroad2.ext.merge
 import com.freshdigitable.udonroad2.model.MediaItem
 import com.freshdigitable.udonroad2.model.TweetListItem
+import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
+import com.freshdigitable.udonroad2.model.app.ext.merge
+import dagger.Binds
 import dagger.Module
 import dagger.Provides
+import dagger.multibindings.IntoMap
 import kotlin.math.min
 
 class MediaViewModel(
@@ -138,12 +141,19 @@ class MediaViewModel(
 }
 
 @Module
-object MediaViewModelModule {
-    @Provides
-    fun provideMediaViewModel(
-        repositoryComponent: RepositoryComponent.Builder,
-        application: Application
-    ): MediaViewModel {
-        return MediaViewModel(repositoryComponent.build().tweetRepository(), application)
+interface MediaViewModelModule {
+    @Binds
+    @IntoMap
+    @ViewModelKey(MediaViewModel::class)
+    fun bindMediaViewModel(viewModel: MediaViewModel): ViewModel
+
+    companion object {
+        @Provides
+        fun provideMediaViewModel(
+            tweetRepository: TweetRepository,
+            application: Application
+        ): MediaViewModel {
+            return MediaViewModel(tweetRepository, application)
+        }
     }
 }
