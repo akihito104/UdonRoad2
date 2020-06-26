@@ -11,7 +11,7 @@ import androidx.appcompat.widget.AppCompatTextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.observe
-import com.freshdigitable.udonroad2.model.FragmentScope
+import com.freshdigitable.udonroad2.model.app.di.FragmentScope
 import com.freshdigitable.udonroad2.timeline.databinding.FragmentDetailBinding
 import com.freshdigitable.udonroad2.timeline.viewmodel.TweetDetailViewModel
 import com.freshdigitable.udonroad2.timeline.viewmodel.TweetDetailViewModelModule

@@ -23,7 +23,7 @@ import com.freshdigitable.udonroad2.main.MainActivity
 import com.freshdigitable.udonroad2.main.MainActivityModule
 import com.freshdigitable.udonroad2.media.MediaActivity
 import com.freshdigitable.udonroad2.media.MediaActivityModule
-import com.freshdigitable.udonroad2.model.ActivityScope
+import com.freshdigitable.udonroad2.model.app.di.ActivityScope
 import com.freshdigitable.udonroad2.user.UserActivity
 import com.freshdigitable.udonroad2.user.UserActivityModule
 import dagger.Module

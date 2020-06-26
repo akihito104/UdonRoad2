@@ -9,10 +9,10 @@ import androidx.lifecycle.ViewModelProvider
 import com.freshdigitable.udonroad2.media.MediaActivity
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.QueryType.TweetQueryType
-import com.freshdigitable.udonroad2.navigation.FragmentContainerState
-import com.freshdigitable.udonroad2.navigation.Navigation
-import com.freshdigitable.udonroad2.navigation.NavigationDispatcher
-import com.freshdigitable.udonroad2.navigation.NavigationEvent
+import com.freshdigitable.udonroad2.model.app.navigation.FragmentContainerState
+import com.freshdigitable.udonroad2.model.app.navigation.Navigation
+import com.freshdigitable.udonroad2.model.app.navigation.NavigationDispatcher
+import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.oauth.OauthEvent
 import com.freshdigitable.udonroad2.oauth.OauthFragment
 import com.freshdigitable.udonroad2.timeline.TimelineEvent

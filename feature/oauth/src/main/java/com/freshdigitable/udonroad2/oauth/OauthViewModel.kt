@@ -29,9 +29,9 @@ import androidx.paging.PagedList
 import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.RequestTokenItem
-import com.freshdigitable.udonroad2.model.ViewModelKey
-import com.freshdigitable.udonroad2.navigation.NavigationDispatcher
-import com.freshdigitable.udonroad2.navigation.NavigationEvent
+import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
+import com.freshdigitable.udonroad2.model.app.navigation.NavigationDispatcher
+import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.timeline.ListItemLoadable
 import dagger.Binds
 import dagger.Module

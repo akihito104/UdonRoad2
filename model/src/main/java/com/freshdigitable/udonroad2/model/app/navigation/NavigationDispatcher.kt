@@ -1,4 +1,4 @@
-package com.freshdigitable.udonroad2.navigation
+package com.freshdigitable.udonroad2.model.app.navigation
 
 import androidx.annotation.IdRes
 import androidx.appcompat.app.AppCompatActivity
@@ -8,7 +8,7 @@ import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.OnLifecycleEvent
 import androidx.lifecycle.observe
-import com.freshdigitable.udonroad2.model.ActivityScope
+import com.freshdigitable.udonroad2.model.app.di.ActivityScope
 import io.reactivex.disposables.Disposable
 import io.reactivex.subjects.PublishSubject
 import javax.inject.Inject

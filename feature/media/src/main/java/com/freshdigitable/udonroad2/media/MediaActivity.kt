@@ -26,7 +26,7 @@ import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.observe
 import androidx.viewpager2.widget.ViewPager2
 import com.freshdigitable.udonroad2.media.databinding.ActivityMediaBinding
-import com.freshdigitable.udonroad2.model.FragmentScope
+import com.freshdigitable.udonroad2.model.app.di.FragmentScope
 import dagger.Binds
 import dagger.Module
 import dagger.android.AndroidInjection

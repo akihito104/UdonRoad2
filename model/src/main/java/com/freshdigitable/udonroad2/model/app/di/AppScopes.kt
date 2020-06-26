@@ -1,4 +1,4 @@
-package com.freshdigitable.udonroad2.model
+package com.freshdigitable.udonroad2.model.app.di
 
 import androidx.lifecycle.ViewModel
 import dagger.MapKey
