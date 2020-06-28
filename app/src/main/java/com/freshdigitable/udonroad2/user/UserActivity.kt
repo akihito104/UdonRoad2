@@ -196,7 +196,6 @@ interface UserActivityModule {
             return UserActivityNavigation(
                 navigator,
                 activity,
-                0,
                 viewModelProvider
             )
         }

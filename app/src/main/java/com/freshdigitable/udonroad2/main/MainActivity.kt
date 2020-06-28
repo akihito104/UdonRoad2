@@ -197,8 +197,7 @@ interface MainActivityModule {
             return MainActivityNavigation(
                 navigator,
                 activity,
-                viewModelProvider,
-                R.id.main_container
+                viewModelProvider
             )
         }
 

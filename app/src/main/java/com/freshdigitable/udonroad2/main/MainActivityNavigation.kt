@@ -3,45 +3,53 @@ package com.freshdigitable.udonroad2.main
 import android.content.Intent
 import android.content.Intent.ACTION_VIEW
 import android.net.Uri
-import androidx.annotation.IdRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
-import com.freshdigitable.udonroad2.media.MediaActivity
+import androidx.navigation.NavController
+import androidx.navigation.findNavController
+import com.freshdigitable.udonroad2.R
+import com.freshdigitable.udonroad2.media.MediaActivityArgs
 import com.freshdigitable.udonroad2.model.QueryType
-import com.freshdigitable.udonroad2.model.QueryType.TweetQueryType
 import com.freshdigitable.udonroad2.model.app.navigation.FragmentContainerState
 import com.freshdigitable.udonroad2.model.app.navigation.Navigation
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.oauth.OauthEvent
-import com.freshdigitable.udonroad2.oauth.OauthFragment
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragment
-import com.freshdigitable.udonroad2.timeline.fragment.TimelineFragment
-import com.freshdigitable.udonroad2.timeline.fragment.TweetDetailFragment
-import com.freshdigitable.udonroad2.user.UserActivity
+import com.freshdigitable.udonroad2.timeline.fragment.TimelineFragmentDirections
+import com.freshdigitable.udonroad2.user.UserActivityDirections
 
 class MainActivityNavigation(
     dispatcher: NavigationDispatcher,
     activity: AppCompatActivity,
-    viewModelProvider: ViewModelProvider,
-    @IdRes containerId: Int
-) : Navigation<MainActivityState>(dispatcher, activity, containerId) {
+    viewModelProvider: ViewModelProvider
+) : Navigation<MainActivityState>(dispatcher, activity) {
 
+    private val navController: NavController by lazy {
+        activity.findNavController(R.id.main_nav_host)
+    }
     val viewModel = viewModelProvider[MainViewModel::class.java]
 
     override fun onEvent(event: NavigationEvent): MainActivityState? {
         return when (event) {
-            TimelineEvent.Init -> MainActivityState.MainTimeline
+            TimelineEvent.Init -> {
+                navController.setGraph(
+                    R.navigation.nav_main,
+                    ListItemFragment.bundle(QueryType.TweetQueryType.Timeline())
+                )
+                MainActivityState.MainTimeline
+            }
             is TimelineEvent.UserIconClicked -> {
-                UserActivity.start(activity, event.user)
+                navController.navigate(UserActivityDirections.actionTimelineToActivityUser(event.user))
                 null
             }
             is TimelineEvent.TweetDetailRequested -> {
+                navController.navigate(TimelineFragmentDirections.actionTimelineToDetail(event.tweetId))
                 MainActivityState.TweetDetail(event.tweetId)
             }
             is TimelineEvent.RetweetUserClicked -> {
-                UserActivity.start(activity, event.user)
+                navController.navigate(UserActivityDirections.actionTimelineToActivityUser(event.user))
                 null
             }
             is TimelineEvent.TweetItemSelected -> {
@@ -49,19 +57,35 @@ class MainActivityNavigation(
                 null
             }
             is TimelineEvent.MediaItemClicked -> {
-                MediaActivity.start(activity, event.tweetId, event.index)
+                navController.navigate(
+                    R.id.action_global_toMedia,
+                    MediaActivityArgs(event.tweetId, event.index).toBundle()
+                )
                 null
             }
-            is OauthEvent.Init -> MainActivityState.Oauth
+            OauthEvent.Init -> {
+                navController.setGraph(
+                    R.navigation.nav_oauth,
+                    ListItemFragment.bundle(QueryType.Oauth)
+                )
+                MainActivityState.Oauth
+            }
             is OauthEvent.OauthRequested -> {
                 val intent = Intent(ACTION_VIEW, Uri.parse(event.authUrl))
                 activity.startActivity(intent)
                 null
             }
-            is OauthEvent.OauthSucceeded -> MainActivityState.MainTimeline
+            is OauthEvent.OauthSucceeded -> {
+                navController.setGraph(
+                    R.navigation.nav_main,
+                    ListItemFragment.bundle(QueryType.TweetQueryType.Timeline())
+                )
+                MainActivityState.MainTimeline
+            }
             TimelineEvent.Back -> {
                 if (currentState is MainActivityState.TweetDetail) {
-                    MainActivityState.MainTimeline
+                    navController.popBackStack()
+                    null
                 } else if (currentState is MainActivityState.MainTimeline &&
                     viewModel.isFabVisible.value == true
                 ) {
@@ -75,32 +99,16 @@ class MainActivityNavigation(
         }
     }
 
-    companion object {
-        private const val BACK_STACK_TWEET_DETAIL = "tweet_detail"
-    }
-
     override fun navigate(s: MainActivityState?) {
         when (s) {
             is MainActivityState.MainTimeline -> {
-                if (isStackedOnTop(BACK_STACK_TWEET_DETAIL)) {
-                    activity.supportFragmentManager.popBackStack()
-                } else {
-                    replace(
-                        ListItemFragment.newInstance<TimelineFragment>(TweetQueryType.Timeline())
-                    )
-                }
                 viewModel.setFabVisible(true)
             }
             is MainActivityState.TweetDetail -> {
                 viewModel.setFabVisible(false)
-                replace(
-                    TweetDetailFragment.newInstance(s.tweetId),
-                    BACK_STACK_TWEET_DETAIL
-                )
             }
             is MainActivityState.Oauth -> {
                 viewModel.setFabVisible(false)
-                replace(ListItemFragment.newInstance<OauthFragment>(QueryType.Oauth))
             }
             MainActivityState.Halt -> activity.finish()
         }

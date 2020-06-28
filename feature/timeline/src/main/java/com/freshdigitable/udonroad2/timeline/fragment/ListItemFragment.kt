@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.os.bundleOf
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModel
@@ -80,17 +81,21 @@ abstract class ListItemFragment<T, Q : QueryType, I> : Fragment()
         get() = requireArguments().getSerializable(ARGS_QUERY) as Q
 
     companion object {
-        val ownerIdGen = AtomicInteger(0)
+        private val ownerIdGen = AtomicInteger(0)
         const val ARGS_OWNER_ID = "owner_id"
         const val ARGS_QUERY = "query"
 
         inline fun <reified T : ListItemFragment<*, *, *>> newInstance(query: QueryType): T {
             return T::class.java.newInstance().apply {
-                (this as Fragment).arguments = Bundle().apply {
-                    putSerializable(ARGS_QUERY, query)
-                    putInt(ARGS_OWNER_ID, ownerIdGen.getAndIncrement())
-                }
+                (this as Fragment).arguments = bundle(query)
             }
+        }
+
+        fun bundle(query: QueryType): Bundle {
+            return bundleOf(
+                ARGS_QUERY to query,
+                ARGS_OWNER_ID to ownerIdGen.getAndIncrement()
+            )
         }
     }
 }
