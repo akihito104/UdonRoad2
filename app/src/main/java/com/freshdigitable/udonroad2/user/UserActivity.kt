@@ -154,15 +154,15 @@ class UserActivity : HasAndroidInjector, AppCompatActivity() {
         return true
     }
 
-    private val user: TweetingUser
-        get() = intent.getSerializableExtra(ARGS_USER) as TweetingUser
+    private val args: UserActivityArgs by lazy {
+        UserActivityArgs.fromBundle(requireNotNull(intent.extras))
+    }
+    private val user: TweetingUser get() = args.user
 
     companion object {
-        private const val ARGS_USER = "user"
-
         fun start(context: Context, user: TweetingUser) {
             val intent = Intent(context, UserActivity::class.java)
-            intent.putExtra(ARGS_USER, user)
+            intent.putExtras(UserActivityArgs(user).toBundle())
             context.startActivity(intent)
         }
     }
@@ -196,7 +196,6 @@ interface UserActivityModule {
             return UserActivityNavigation(
                 navigator,
                 activity,
-                0,
                 viewModelProvider
             )
         }

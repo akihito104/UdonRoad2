@@ -1,6 +1,5 @@
 package com.freshdigitable.udonroad2.user
 
-import androidx.annotation.IdRes
 import androidx.lifecycle.ViewModelProvider
 import com.freshdigitable.udonroad2.model.app.navigation.FragmentContainerState
 import com.freshdigitable.udonroad2.model.app.navigation.Navigation
@@ -11,9 +10,8 @@ import com.freshdigitable.udonroad2.timeline.TimelineEvent
 class UserActivityNavigation(
     navigator: NavigationDispatcher,
     activity: UserActivity,
-    @IdRes containerId: Int,
     viewModelProvider: ViewModelProvider
-) : Navigation<UserActivityState>(navigator, activity, containerId) {
+) : Navigation<UserActivityState>(navigator, activity) {
 
     private val viewModel = viewModelProvider[UserViewModel::class.java]
 

@@ -16,8 +16,6 @@
 
 package com.freshdigitable.udonroad2.media
 
-import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
@@ -92,23 +90,11 @@ class MediaActivity : AppCompatActivity(), HasAndroidInjector {
         viewModel.setCurrentPosition(index)
     }
 
-    private val tweetId: Long
-        get() = intent.getLongExtra(EXTRA_ID, -1)
-    private val index: Int
-        get() = intent.getIntExtra(EXTRA_INDEX, 0)
-
-    companion object {
-        private const val EXTRA_ID = "id"
-        private const val EXTRA_INDEX = "index"
-
-        fun start(context: Context, id: Long, index: Int = 0) {
-            val intent = Intent(context, MediaActivity::class.java).apply {
-                putExtra(EXTRA_ID, id)
-                putExtra(EXTRA_INDEX, index)
-            }
-            context.startActivity(intent)
-        }
+    private val args: MediaActivityArgs by lazy {
+        MediaActivityArgs.fromBundle(requireNotNull(intent.extras))
     }
+    private val tweetId: Long get() = args.id
+    private val index: Int get() = args.index
 
     @Inject
     lateinit var injector: DispatchingAndroidInjector<Any>
