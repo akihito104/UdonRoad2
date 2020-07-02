@@ -43,7 +43,7 @@ class OauthViewModel(
     dataSource: DataSource<Int, OauthItem>,
     private val repository: OAuthTokenRepository,
     private val navigator: NavigationDispatcher,
-    private val handle: SavedStateHandle
+    handle: SavedStateHandle
 ) : ViewModel(), ListItemLoadable<QueryType.Oauth, OauthItem> {
 
     override val loading: LiveData<Boolean> = MutableLiveData(false)
@@ -100,11 +100,6 @@ class OauthViewModel(
             requestToken.value = null
             navigator.postEvent(OauthEvent.OauthSucceeded)
         }
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        handle.set(SAVED_STATE_REQUEST_TOKEN, requestToken.value)
     }
 
     companion object {
