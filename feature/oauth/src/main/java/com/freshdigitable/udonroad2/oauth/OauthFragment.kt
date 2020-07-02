@@ -16,7 +16,6 @@
 
 package com.freshdigitable.udonroad2.oauth
 
-import android.os.Bundle
 import androidx.paging.PagedListAdapter
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.app.di.FragmentScope
@@ -27,26 +26,9 @@ import kotlin.reflect.KClass
 
 class OauthFragment : ListItemFragment<OauthViewModel, QueryType.Oauth, OauthItem>() {
     override val viewModelClass: KClass<OauthViewModel> = OauthViewModel::class
-    private var viewModel: OauthViewModel? = null
 
     override fun createListAdapter(viewModel: OauthViewModel): PagedListAdapter<OauthItem, *> {
-        this.viewModel = viewModel
         return OauthListAdapter(viewModel, viewLifecycleOwner)
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        viewModel?.onSaveInstanceState(outState)
-    }
-
-    override fun onViewStateRestored(savedInstanceState: Bundle?) {
-        super.onViewStateRestored(savedInstanceState)
-        viewModel?.onViewStateRestore(savedInstanceState)
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        viewModel = null
     }
 }
 

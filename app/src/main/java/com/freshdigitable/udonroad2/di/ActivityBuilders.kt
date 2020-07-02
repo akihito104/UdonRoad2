@@ -57,8 +57,7 @@ interface ActivityBuilders {
     @ContributesAndroidInjector(
         modules = [
             MediaActivityModule::class,
-            ViewModelModule::class,
-            ListItemViewModelModule::class
+            ViewModelModule::class
         ]
     )
     fun contributeMediaActivity(): MediaActivity

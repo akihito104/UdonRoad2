@@ -16,8 +16,9 @@
 
 package com.freshdigitable.udonroad2.di
 
+import android.os.Bundle
+import androidx.savedstate.SavedStateRegistryOwner
 import com.freshdigitable.udonroad2.data.impl.ListRepositoryModule
-import com.freshdigitable.udonroad2.oauth.OauthViewModelModule
 import com.freshdigitable.udonroad2.timeline.ListItemViewModelComponent
 import com.freshdigitable.udonroad2.timeline.ListOwner
 import com.freshdigitable.udonroad2.timeline.viewmodel.MemberListListViewModelModule
@@ -44,7 +45,7 @@ interface ListItemViewModelModule {
         MemberListListViewModelModule::class,
         UserListViewModelModule::class,
         ListRepositoryModule::class,
-        OauthViewModelModule::class
+        SavedStateViewModelModule::class
     ]
 )
 interface ListItemViewModelComponentImpl : ListItemViewModelComponent {
@@ -53,6 +54,12 @@ interface ListItemViewModelComponentImpl : ListItemViewModelComponent {
     interface Builder : ListItemViewModelComponent.Builder {
         @BindsInstance
         override fun owner(owner: ListOwner<*>): Builder
+
+        @BindsInstance
+        override fun savedStateRegistryOwner(owner: SavedStateRegistryOwner): Builder
+
+        @BindsInstance
+        override fun firstArgs(bundle: Bundle?): Builder
 
         override fun build(): ListItemViewModelComponentImpl
     }

@@ -17,10 +17,10 @@
 package com.freshdigitable.udonroad2.oauth
 
 import android.app.Application
-import android.os.Bundle
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.viewModelScope
@@ -42,7 +42,8 @@ import kotlinx.coroutines.launch
 class OauthViewModel(
     dataSource: DataSource<Int, OauthItem>,
     private val repository: OAuthTokenRepository,
-    private val navigator: NavigationDispatcher
+    private val navigator: NavigationDispatcher,
+    handle: SavedStateHandle
 ) : ViewModel(), ListItemLoadable<QueryType.Oauth, OauthItem> {
 
     override val loading: LiveData<Boolean> = MutableLiveData(false)
@@ -68,13 +69,15 @@ class OauthViewModel(
 
     override fun onRefresh() {}
 
-    private val requestToken: MutableLiveData<RequestTokenItem?> = MutableLiveData()
+    private val requestToken: MutableLiveData<RequestTokenItem?> = handle.getLiveData(
+        SAVED_STATE_REQUEST_TOKEN
+    )
 
     fun onLoginClicked() {
         viewModelScope.launch {
             repository.getRequestTokenItem().also {
-                navigator.postEvent(OauthEvent.OauthRequested(it.authorizationUrl))
                 requestToken.value = it
+                navigator.postEvent(OauthEvent.OauthRequested(it.authorizationUrl))
             }
         }
     }
@@ -94,18 +97,8 @@ class OauthViewModel(
         viewModelScope.launch {
             val t = repository.getAccessToken(requestToken.value!!, pin.value.toString())
             repository.login(t.userId)
-            navigator.postEvent(OauthEvent.OauthSucceeded)
             requestToken.value = null
-        }
-    }
-
-    internal fun onSaveInstanceState(outState: Bundle) {
-        outState.putSerializable(SAVED_STATE_REQUEST_TOKEN, requestToken.value)
-    }
-
-    internal fun onViewStateRestore(savedInstanceState: Bundle?) {
-        (savedInstanceState?.getSerializable(SAVED_STATE_REQUEST_TOKEN) as? RequestTokenItem)?.let {
-            this.requestToken.value = it
+            navigator.postEvent(OauthEvent.OauthSucceeded)
         }
     }
 
@@ -132,9 +125,10 @@ interface OauthViewModelModule {
         fun provideOauthViewModel(
             dataSource: DataSource<Int, OauthItem>,
             oAuthTokenRepository: OAuthTokenRepository,
-            navigator: NavigationDispatcher
+            navigator: NavigationDispatcher,
+            handle: SavedStateHandle
         ): OauthViewModel {
-            return OauthViewModel(dataSource, oAuthTokenRepository, navigator)
+            return OauthViewModel(dataSource, oAuthTokenRepository, navigator, handle)
         }
     }
 
