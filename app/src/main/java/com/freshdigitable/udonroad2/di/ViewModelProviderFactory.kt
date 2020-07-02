@@ -16,12 +16,19 @@
 
 package com.freshdigitable.udonroad2.di
 
+import android.os.Bundle
+import androidx.lifecycle.AbstractSavedStateViewModelFactory
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
+import androidx.savedstate.SavedStateRegistryOwner
+import com.freshdigitable.udonroad2.oauth.OauthViewModelModule
 import dagger.Binds
+import dagger.BindsInstance
 import dagger.Module
 import dagger.Provides
+import dagger.Subcomponent
 import javax.inject.Inject
 import javax.inject.Provider
 
@@ -59,4 +66,36 @@ interface ViewModelModule {
             viewModelFactory: ViewModelProvider.Factory
         ): ViewModelProvider = ViewModelProvider(viewModelStoreOwner, viewModelFactory)
     }
+}
+
+class AppSavedStateViewModelFactory @Inject constructor(
+    private val savedStateViewModelComponent: SavedStateViewModelComponent.Factory,
+    savedStateRegistryOwner: SavedStateRegistryOwner,
+    defaultArgs: Bundle? = null
+) : AbstractSavedStateViewModelFactory(savedStateRegistryOwner, defaultArgs) {
+    override fun <T : ViewModel> create(
+        key: String,
+        modelClass: Class<T>,
+        handle: SavedStateHandle
+    ): T = savedStateViewModelComponent.create(handle)
+        .viewModelProviderFactory()
+        .create(modelClass)
+}
+
+@Module(subcomponents = [SavedStateViewModelComponent::class])
+interface SavedStateViewModelModule {
+    @Binds
+    fun bindAbstractSavedStateViewModelProviderFactory(
+        factory: AppSavedStateViewModelFactory
+    ): AbstractSavedStateViewModelFactory
+}
+
+@Subcomponent(modules = [OauthViewModelModule::class])
+interface SavedStateViewModelComponent {
+    @Subcomponent.Factory
+    interface Factory {
+        fun create(@BindsInstance handle: SavedStateHandle): SavedStateViewModelComponent
+    }
+
+    fun viewModelProviderFactory(): ViewModelProviderFactory
 }

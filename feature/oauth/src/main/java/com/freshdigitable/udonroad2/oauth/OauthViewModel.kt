@@ -21,6 +21,7 @@ import android.os.Bundle
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.viewModelScope
@@ -42,7 +43,8 @@ import kotlinx.coroutines.launch
 class OauthViewModel(
     dataSource: DataSource<Int, OauthItem>,
     private val repository: OAuthTokenRepository,
-    private val navigator: NavigationDispatcher
+    private val navigator: NavigationDispatcher,
+    private val handle: SavedStateHandle
 ) : ViewModel(), ListItemLoadable<QueryType.Oauth, OauthItem> {
 
     override val loading: LiveData<Boolean> = MutableLiveData(false)
@@ -132,9 +134,10 @@ interface OauthViewModelModule {
         fun provideOauthViewModel(
             dataSource: DataSource<Int, OauthItem>,
             oAuthTokenRepository: OAuthTokenRepository,
-            navigator: NavigationDispatcher
+            navigator: NavigationDispatcher,
+            handle: SavedStateHandle
         ): OauthViewModel {
-            return OauthViewModel(dataSource, oAuthTokenRepository, navigator)
+            return OauthViewModel(dataSource, oAuthTokenRepository, navigator, handle)
         }
     }
 

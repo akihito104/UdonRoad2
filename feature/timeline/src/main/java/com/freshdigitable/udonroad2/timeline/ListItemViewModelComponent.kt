@@ -16,15 +16,18 @@
 
 package com.freshdigitable.udonroad2.timeline
 
-import androidx.lifecycle.ViewModelProvider
+import android.os.Bundle
+import androidx.lifecycle.AbstractSavedStateViewModelFactory
+import androidx.savedstate.SavedStateRegistryOwner
 
 interface ListItemViewModelComponent {
 
     interface Builder {
         fun owner(owner: ListOwner<*>): Builder
-
+        fun savedStateRegistryOwner(owner: SavedStateRegistryOwner): Builder
+        fun firstArgs(bundle: Bundle?): Builder
         fun build(): ListItemViewModelComponent
     }
 
-    fun viewModelProvider(): ViewModelProvider
+    fun savedStateViewModelProviderFactory(): AbstractSavedStateViewModelFactory
 }
