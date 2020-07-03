@@ -34,6 +34,7 @@ import com.freshdigitable.udonroad2.model.QueryType.TweetQueryType
 import com.freshdigitable.udonroad2.model.Tweet
 import com.freshdigitable.udonroad2.model.TweetListItem
 import com.freshdigitable.udonroad2.model.TweetingUser
+import com.freshdigitable.udonroad2.model.app.di.QueryTypeKey
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationDispatcher
 import com.freshdigitable.udonroad2.timeline.ListItemLoadable
@@ -46,6 +47,7 @@ import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.multibindings.IntoMap
+import kotlin.reflect.KClass
 
 class TimelineViewModel(
     private val owner: ListOwner<TweetQueryType>,
@@ -140,6 +142,11 @@ interface TimelineViewModelModule {
                 )
             return TimelineViewModel(o, navigator, repository, pagedListProvider)
         }
+
+        @Provides
+        @IntoMap
+        @QueryTypeKey(TweetQueryType::class)
+        fun provideTimelineViewModelKClass(): KClass<out ViewModel> = TimelineViewModel::class
     }
 
     @Binds

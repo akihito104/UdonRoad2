@@ -29,6 +29,7 @@ import androidx.paging.PagedList
 import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.RequestTokenItem
+import com.freshdigitable.udonroad2.model.app.di.QueryTypeKey
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
@@ -38,6 +39,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.multibindings.IntoMap
 import kotlinx.coroutines.launch
+import kotlin.reflect.KClass
 
 class OauthViewModel(
     dataSource: DataSource<Int, OauthItem>,
@@ -130,6 +132,11 @@ interface OauthViewModelModule {
         ): OauthViewModel {
             return OauthViewModel(dataSource, oAuthTokenRepository, navigator, handle)
         }
+
+        @Provides
+        @IntoMap
+        @QueryTypeKey(QueryType.Oauth::class)
+        fun provideOauthViewModelKClass(): KClass<out ViewModel> = OauthViewModel::class
     }
 
     @Binds

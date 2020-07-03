@@ -38,7 +38,8 @@ interface ActivityBuilders {
         modules = [
             MainActivityModule::class,
             ViewModelModule::class,
-            ListItemViewModelModule::class
+            ListItemViewModelModule::class,
+            ListItemAdapterModule::class
         ]
     )
     fun contributesMainActivity(): MainActivity
@@ -48,7 +49,8 @@ interface ActivityBuilders {
         modules = [
             UserActivityModule::class,
             ViewModelModule::class,
-            ListItemViewModelModule::class
+            ListItemViewModelModule::class,
+            ListItemAdapterModule::class
         ]
     )
     fun contributeUserActivity(): UserActivity

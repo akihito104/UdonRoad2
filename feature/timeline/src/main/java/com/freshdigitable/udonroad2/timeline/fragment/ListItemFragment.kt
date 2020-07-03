@@ -15,22 +15,24 @@ import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.freshdigitable.udonroad2.model.QueryType
+import com.freshdigitable.udonroad2.model.app.di.FragmentScope
+import com.freshdigitable.udonroad2.timeline.ListItemAdapterComponent
 import com.freshdigitable.udonroad2.timeline.ListItemLoadable
 import com.freshdigitable.udonroad2.timeline.ListItemViewModelComponent
 import com.freshdigitable.udonroad2.timeline.ListOwner
 import com.freshdigitable.udonroad2.timeline.databinding.FragmentTimelineBinding
+import dagger.Module
+import dagger.android.ContributesAndroidInjector
 import dagger.android.support.AndroidSupportInjection
 import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
-import kotlin.reflect.KClass
 
-abstract class ListItemFragment<T, Q : QueryType, I> : Fragment()
-    where T : ViewModel,
-          T : ListItemLoadable<Q, I> {
+class ListItemFragment : Fragment() {
     @Inject
     lateinit var listItemViewModelBuilder: ListItemViewModelComponent.Builder
-    protected abstract val viewModelClass: KClass<T>
-    protected abstract fun createListAdapter(viewModel: T): PagedListAdapter<I, *>
+
+    @Inject
+    lateinit var listItemAdapterFactory: ListItemAdapterComponent.Factory
 
     override fun onAttach(context: Context) {
         AndroidSupportInjection.inject(this)
@@ -52,15 +54,18 @@ abstract class ListItemFragment<T, Q : QueryType, I> : Fragment()
         binding.lifecycleOwner = viewLifecycleOwner
 
         val listOwner = ListOwner(ownerId, query)
-        val viewModelProviderFactory = listItemViewModelBuilder
+        val viewModelComponent = listItemViewModelBuilder
             .owner(listOwner)
             .savedStateRegistryOwner(this)
             .firstArgs(savedInstanceState)
             .build()
-            .savedStateViewModelProviderFactory()
-        val viewModelProvider = ViewModelProvider(this, viewModelProviderFactory)
-        val viewModel = viewModelProvider.get("_$ownerId", viewModelClass.java)
-        binding.viewModel = viewModel
+        val viewModelProvider = ViewModelProvider(
+            this,
+            viewModelComponent.savedStateViewModelProviderFactory()
+        )
+        val viewModel: ViewModel =
+            viewModelProvider.get("_$ownerId", viewModelComponent.viewModelClass())
+        binding.viewModel = viewModel as ListItemLoadable<*, Any>
 
         val listView = binding.mainList
         val linearLayoutManager = LinearLayoutManager(view.context)
@@ -71,7 +76,9 @@ abstract class ListItemFragment<T, Q : QueryType, I> : Fragment()
                 linearLayoutManager.orientation
             )
         )
-        val adapter = createListAdapter(viewModel)
+        val adapter =
+            listItemAdapterFactory.create(viewModel, viewLifecycleOwner)
+                .adapter() as PagedListAdapter<Any, *>
         listView.adapter = adapter
         viewModel.timeline.observe(viewLifecycleOwner) {
             adapter.submitList(it)
@@ -81,17 +88,17 @@ abstract class ListItemFragment<T, Q : QueryType, I> : Fragment()
     private val ownerId: Int
         get() = requireArguments().getInt(ARGS_OWNER_ID)
 
-    private val query: Q
-        get() = requireArguments().getSerializable(ARGS_QUERY) as Q
+    private val query: QueryType
+        get() = requireArguments().getSerializable(ARGS_QUERY) as QueryType
 
     companion object {
         private val ownerIdGen = AtomicInteger(0)
         const val ARGS_OWNER_ID = "owner_id"
         const val ARGS_QUERY = "query"
 
-        inline fun <reified T : ListItemFragment<*, *, *>> newInstance(query: QueryType): T {
-            return T::class.java.newInstance().apply {
-                (this as Fragment).arguments = bundle(query)
+        fun newInstance(query: QueryType): ListItemFragment {
+            return ListItemFragment().apply {
+                arguments = bundle(query)
             }
         }
 
@@ -102,4 +109,11 @@ abstract class ListItemFragment<T, Q : QueryType, I> : Fragment()
             )
         }
     }
+}
+
+@Module
+interface ListItemFragmentModule {
+    @FragmentScope
+    @ContributesAndroidInjector
+    fun contributeListItemFragment(): ListItemFragment
 }

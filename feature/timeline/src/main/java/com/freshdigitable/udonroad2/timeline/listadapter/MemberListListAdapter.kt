@@ -2,13 +2,18 @@ package com.freshdigitable.udonroad2.timeline.listadapter
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.lifecycle.ViewModel
 import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.freshdigitable.udonroad2.model.MemberListItem
-import com.freshdigitable.udonroad2.timeline.viewmodel.MemberListListViewModel
+import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
 import com.freshdigitable.udonroad2.timeline.R
 import com.freshdigitable.udonroad2.timeline.databinding.ViewMemberListItemBinding
+import com.freshdigitable.udonroad2.timeline.viewmodel.MemberListListViewModel
+import dagger.Module
+import dagger.Provides
+import dagger.multibindings.IntoMap
 
 class MemberListListAdapter(
     private val viewModel: MemberListListViewModel
@@ -67,4 +72,15 @@ class MemberListViewHolder(
     internal val binding: ViewMemberListItemBinding
 ) : RecyclerView.ViewHolder(binding.root) {
     internal val root: ViewGroup = itemView as ViewGroup
+}
+
+@Module
+object MemberListListAdapterModule {
+    @Provides
+    @IntoMap
+    @ViewModelKey(MemberListListViewModel::class)
+    fun provideTimelineAdapter(viewModel: ViewModel): PagedListAdapter<out Any, *> {
+        val vm = viewModel as MemberListListViewModel
+        return MemberListListAdapter(vm)
+    }
 }

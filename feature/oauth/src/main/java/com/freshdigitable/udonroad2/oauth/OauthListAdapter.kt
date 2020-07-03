@@ -20,11 +20,16 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.databinding.ViewDataBinding
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.ViewModel
 import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
 import com.freshdigitable.udonroad2.oauth.databinding.ViewOauthInputBinding
 import com.freshdigitable.udonroad2.timeline.databinding.ViewTweetListItemBinding
+import dagger.Module
+import dagger.Provides
+import dagger.multibindings.IntoMap
 
 internal class OauthListAdapter internal constructor(
     private val viewModel: OauthViewModel,
@@ -84,4 +89,17 @@ private val diffUtil = object : DiffUtil.ItemCallback<OauthItem>() {
 
     override fun areContentsTheSame(oldItem: OauthItem, newItem: OauthItem): Boolean =
         oldItem == newItem
+}
+
+@Module
+object OauthListAdapterModule {
+    @Provides
+    @IntoMap
+    @ViewModelKey(OauthViewModel::class)
+    fun provideOauthAdapter(
+        viewModel: ViewModel,
+        lifecycleOwner: LifecycleOwner
+    ): PagedListAdapter<out Any, *> {
+        return OauthListAdapter(viewModel as OauthViewModel, lifecycleOwner)
+    }
 }

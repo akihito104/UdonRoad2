@@ -16,6 +16,7 @@ import com.freshdigitable.udonroad2.model.PageOption
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.TweetingUser
 import com.freshdigitable.udonroad2.model.UserListItem
+import com.freshdigitable.udonroad2.model.app.di.QueryTypeKey
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationDispatcher
 import com.freshdigitable.udonroad2.timeline.ListItemClickListener
@@ -26,6 +27,7 @@ import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.multibindings.IntoMap
+import kotlin.reflect.KClass
 
 class UserListViewModel(
     private val owner: ListOwner<QueryType.UserQueryType>,
@@ -92,6 +94,11 @@ interface UserListViewModelModule {
                 )
             return UserListViewModel(o, navigator, repository, pagedListProvider)
         }
+
+        @Provides
+        @IntoMap
+        @QueryTypeKey(QueryType.UserQueryType::class)
+        fun provideUserListViewModelKClass(): KClass<out ViewModel> = UserListViewModel::class
     }
 
     @Binds

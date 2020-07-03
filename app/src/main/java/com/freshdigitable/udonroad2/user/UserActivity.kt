@@ -17,9 +17,7 @@ import com.freshdigitable.udonroad2.databinding.ActivityUserBinding
 import com.freshdigitable.udonroad2.model.TweetingUser
 import com.freshdigitable.udonroad2.model.app.navigation.Navigation
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationDispatcher
-import com.freshdigitable.udonroad2.timeline.fragment.MemberListListFragmentModule
-import com.freshdigitable.udonroad2.timeline.fragment.TimelineFragmentModule
-import com.freshdigitable.udonroad2.timeline.fragment.UserListFragmentModule
+import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentModule
 import com.google.android.material.appbar.AppBarLayout
 import dagger.Binds
 import dagger.Module
@@ -175,10 +173,8 @@ class UserActivity : HasAndroidInjector, AppCompatActivity() {
 
 @Module(
     includes = [
-        TimelineFragmentModule::class,
-        UserViewModelModule::class,
-        UserListFragmentModule::class,
-        MemberListListFragmentModule::class
+        ListItemFragmentModule::class,
+        UserViewModelModule::class//,
     ]
 )
 interface UserActivityModule {

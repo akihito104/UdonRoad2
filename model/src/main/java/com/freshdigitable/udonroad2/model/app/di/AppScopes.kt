@@ -17,6 +17,7 @@
 package com.freshdigitable.udonroad2.model.app.di
 
 import androidx.lifecycle.ViewModel
+import com.freshdigitable.udonroad2.model.QueryType
 import dagger.MapKey
 import javax.inject.Scope
 import kotlin.reflect.KClass
@@ -45,3 +46,13 @@ annotation class ViewModelScope
 @Retention(AnnotationRetention.RUNTIME)
 @MapKey
 annotation class ViewModelKey(val value: KClass<out ViewModel>)
+
+@MustBeDocumented
+@Target(
+    AnnotationTarget.FUNCTION,
+    AnnotationTarget.PROPERTY_GETTER,
+    AnnotationTarget.PROPERTY_SETTER
+)
+@Retention(AnnotationRetention.RUNTIME)
+@MapKey
+annotation class QueryTypeKey(val value: KClass<out QueryType>)

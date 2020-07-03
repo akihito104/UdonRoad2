@@ -35,11 +35,9 @@ import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
 import com.freshdigitable.udonroad2.model.app.navigation.Navigation
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationDispatcher
 import com.freshdigitable.udonroad2.oauth.OauthEvent
-import com.freshdigitable.udonroad2.oauth.OauthFragmentModule
 import com.freshdigitable.udonroad2.timeline.SelectedItemId
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
-import com.freshdigitable.udonroad2.timeline.fragment.MemberListListFragmentModule
-import com.freshdigitable.udonroad2.timeline.fragment.TimelineFragmentModule
+import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentModule
 import com.freshdigitable.udonroad2.timeline.fragment.TweetDetailFragmentModule
 import dagger.Binds
 import dagger.Module
@@ -172,10 +170,8 @@ class MainViewModel(
 
 @Module(
     includes = [
-        TimelineFragmentModule::class,
-        TweetDetailFragmentModule::class,
-        MemberListListFragmentModule::class,
-        OauthFragmentModule::class
+        ListItemFragmentModule::class,
+        TweetDetailFragmentModule::class
     ]
 )
 interface MainActivityModule {
