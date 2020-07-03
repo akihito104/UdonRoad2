@@ -33,6 +33,7 @@ import com.freshdigitable.udonroad2.model.PageOption
 import com.freshdigitable.udonroad2.model.QueryType.TweetQueryType
 import com.freshdigitable.udonroad2.model.Tweet
 import com.freshdigitable.udonroad2.model.TweetListItem
+import com.freshdigitable.udonroad2.model.TweetingUser
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationDispatcher
 import com.freshdigitable.udonroad2.timeline.ListItemLoadable
@@ -102,8 +103,8 @@ class TimelineViewModel(
         )
     }
 
-    override fun onUserIconClicked(item: TweetListItem) {
-        navigator.postEvent(TimelineEvent.UserIconClicked(item.body.user))
+    override fun onUserIconClicked(user: TweetingUser) {
+        navigator.postEvent(TimelineEvent.UserIconClicked(user))
     }
 
     override fun onMediaItemClicked(originalId: Long, item: Tweet, index: Int) {
