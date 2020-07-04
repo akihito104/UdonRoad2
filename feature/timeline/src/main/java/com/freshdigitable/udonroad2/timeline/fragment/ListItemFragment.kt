@@ -5,12 +5,12 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.os.bundleOf
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.observe
+import androidx.navigation.fragment.navArgs
 import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -53,7 +53,6 @@ class ListItemFragment : Fragment() {
         val binding = DataBindingUtil.findBinding<FragmentTimelineBinding>(view) ?: return
         binding.lifecycleOwner = viewLifecycleOwner
 
-        val listOwner = ListOwner(ownerId, query)
         val viewModelComponent = listItemViewModelBuilder
             .owner(listOwner)
             .savedStateRegistryOwner(this)
@@ -85,16 +84,12 @@ class ListItemFragment : Fragment() {
         }
     }
 
-    private val ownerId: Int
-        get() = requireArguments().getInt(ARGS_OWNER_ID)
-
-    private val query: QueryType
-        get() = requireArguments().getSerializable(ARGS_QUERY) as QueryType
+    private val args: ListItemFragmentArgs by navArgs()
+    private val ownerId: Int get() = args.ownerId
+    private val listOwner: ListOwner<*> get() = ListOwner(ownerId, args.query)
 
     companion object {
         private val ownerIdGen = AtomicInteger(0)
-        const val ARGS_OWNER_ID = "owner_id"
-        const val ARGS_QUERY = "query"
 
         fun newInstance(query: QueryType): ListItemFragment {
             return ListItemFragment().apply {
@@ -103,10 +98,7 @@ class ListItemFragment : Fragment() {
         }
 
         fun bundle(query: QueryType): Bundle {
-            return bundleOf(
-                ARGS_QUERY to query,
-                ARGS_OWNER_ID to ownerIdGen.getAndIncrement()
-            )
+            return ListItemFragmentArgs(query, ownerIdGen.getAndIncrement()).toBundle()
         }
     }
 }

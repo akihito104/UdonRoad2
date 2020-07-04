@@ -24,12 +24,12 @@
     >
     <fragment
         android:id="@+id/fragment_timeline"
-        android:name="com.freshdigitable.udonroad2.timeline.fragment.TimelineFragment"
+        android:name="com.freshdigitable.udonroad2.timeline.fragment.ListItemFragment"
         tools:layout="@layout/fragment_timeline"
         >
         <argument
             android:name="query"
-            app:argType="com.freshdigitable.udonroad2.model.QueryType$TweetQueryType$Timeline"
+            app:argType="com.freshdigitable.udonroad2.model.QueryType"
             />
         <argument
             android:name="owner_id"
