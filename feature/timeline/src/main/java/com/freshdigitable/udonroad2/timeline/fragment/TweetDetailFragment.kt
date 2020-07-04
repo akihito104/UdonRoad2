@@ -11,6 +11,7 @@ import androidx.appcompat.widget.AppCompatTextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.observe
+import androidx.navigation.fragment.navArgs
 import com.freshdigitable.udonroad2.model.app.di.FragmentScope
 import com.freshdigitable.udonroad2.timeline.databinding.FragmentDetailBinding
 import com.freshdigitable.udonroad2.timeline.viewmodel.TweetDetailViewModel
@@ -21,7 +22,7 @@ import dagger.android.support.AndroidSupportInjection
 import javax.inject.Inject
 
 class TweetDetailFragment : Fragment() {
-
+    private val args: TweetDetailFragmentArgs by navArgs()
     private lateinit var binding: FragmentDetailBinding
 
     @Inject
@@ -73,24 +74,7 @@ class TweetDetailFragment : Fragment() {
             }
         }
 
-        viewModel.showTweetItem(getTweetId())
-    }
-
-    private fun getTweetId(): Long = requireNotNull(arguments?.getLong(ARGS_TWEET_ID)) {
-        "use TweetDetailFragment.newInstance()"
-    }
-
-    companion object {
-        private const val ARGS_TWEET_ID = "tweet_id"
-
-        fun newInstance(tweetId: Long): TweetDetailFragment {
-            val args = Bundle().apply {
-                putLong(ARGS_TWEET_ID, tweetId)
-            }
-            return TweetDetailFragment().apply {
-                arguments = args
-            }
-        }
+        viewModel.showTweetItem(args.tweetId)
     }
 }
 
