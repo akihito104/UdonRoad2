@@ -21,6 +21,8 @@ import com.freshdigitable.udonroad2.data.db.dao.MemberListListDao
 import com.freshdigitable.udonroad2.data.db.dao.TweetListDao
 import com.freshdigitable.udonroad2.data.db.dao.UserListDao
 import com.freshdigitable.udonroad2.model.QueryType
+import com.freshdigitable.udonroad2.model.app.ClassKeyMap
+import com.freshdigitable.udonroad2.model.app.valueByAssignableClassObject
 import dagger.Binds
 import dagger.MapKey
 import dagger.Module
@@ -30,21 +32,11 @@ import javax.inject.Provider
 import kotlin.reflect.KClass
 
 class LocalListDataSourceProvider @Inject constructor(
-    private val providers: Map<Class<out QueryType>, @JvmSuppressWildcards Provider<LocalListDataSource<out QueryType, *>>>
+    private val providers: ClassKeyMap<QueryType, Provider<LocalListDataSource<out QueryType, *>>>
 ) {
     fun <Q : QueryType, DS : LocalListDataSource<Q, *>> get(query: Q): DS {
-        val qClass = query::class.java
-        val provider = providers[qClass]
-            ?: providers.toList().firstOrNull { (clazz, _) ->
-                clazz.isAssignableFrom(qClass)
-            }?.second
-            ?: throw IllegalStateException(
-                "unregistered: ${query::class.java.simpleName}, " +
-                    "all classes: ${providers.keys.map { it::class.java.simpleName }}"
-            )
-
         @Suppress("UNCHECKED_CAST")
-        return provider.get() as DS
+        return providers.valueByAssignableClassObject(query).get() as DS
     }
 }
 

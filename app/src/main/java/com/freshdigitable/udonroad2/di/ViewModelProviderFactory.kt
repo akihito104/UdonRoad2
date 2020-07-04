@@ -23,6 +23,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.savedstate.SavedStateRegistryOwner
+import com.freshdigitable.udonroad2.model.app.ClassKeyMap
+import com.freshdigitable.udonroad2.model.app.valueByAssignableClass
 import com.freshdigitable.udonroad2.oauth.OauthViewModelModule
 import dagger.Binds
 import dagger.BindsInstance
@@ -33,24 +35,12 @@ import javax.inject.Inject
 import javax.inject.Provider
 
 class ViewModelProviderFactory @Inject constructor(
-    private val providers: Map<Class<out ViewModel>, @JvmSuppressWildcards Provider<ViewModel>>
+    private val providers: ClassKeyMap<ViewModel, Provider<ViewModel>>
 ) : ViewModelProvider.Factory {
 
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        val provider: Provider<out ViewModel> = providers[modelClass]
-            ?: find(modelClass)
-            ?: throw IllegalStateException(
-                "unregistered class: ${modelClass.simpleName}. " +
-                    "all classes:(${providers.keys.map { it.simpleName }})"
-            )
         @Suppress("UNCHECKED_CAST")
-        return provider.get() as T
-    }
-
-    private fun <T : ViewModel> find(modelClass: Class<T>): Provider<out ViewModel>? {
-        return providers.entries.firstOrNull { (k, _) ->
-            modelClass.isAssignableFrom(k)
-        }?.value
+        return providers.valueByAssignableClass(modelClass).get() as T
     }
 }
 

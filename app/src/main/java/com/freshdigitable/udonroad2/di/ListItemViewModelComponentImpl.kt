@@ -23,6 +23,8 @@ import androidx.paging.PagedListAdapter
 import androidx.savedstate.SavedStateRegistryOwner
 import com.freshdigitable.udonroad2.data.impl.ListRepositoryModule
 import com.freshdigitable.udonroad2.model.QueryType
+import com.freshdigitable.udonroad2.model.app.ClassKeyMap
+import com.freshdigitable.udonroad2.model.app.valueByAssignableClassObject
 import com.freshdigitable.udonroad2.oauth.OauthListAdapterModule
 import com.freshdigitable.udonroad2.timeline.ListItemAdapterComponent
 import com.freshdigitable.udonroad2.timeline.ListItemViewModelComponent
@@ -80,12 +82,9 @@ interface ListItemViewModelComponentImpl : ListItemViewModelComponent {
 @Module
 object ViewModelClassProvider {
     @Provides
-    fun provideViewModelClass(
-        owner: ListOwner<*>,
-        map: Map<Class<out QueryType>, @JvmSuppressWildcards KClass<out ViewModel>>
-    ): Class<out ViewModel> {
-        return map[owner.query.javaClass]?.java ?: throw IllegalStateException()
-    }
+    fun ClassKeyMap<QueryType, KClass<out ViewModel>>.provideViewModelClass(
+        owner: ListOwner<*>
+    ): Class<out ViewModel> = this.valueByAssignableClassObject(owner.query).java
 }
 
 @Module(subcomponents = [ListItemAdapterComponentImpl::class])
@@ -120,10 +119,7 @@ interface ListItemAdapterComponentImpl : ListItemAdapterComponent {
 @Module
 object ListItemAdapterProvider {
     @Provides
-    fun provideItemAdapter(
-        map: Map<Class<out ViewModel>, @JvmSuppressWildcards Provider<PagedListAdapter<out Any, *>>>,
+    fun ClassKeyMap<ViewModel, Provider<PagedListAdapter<out Any, *>>>.provideItemAdapter(
         viewModel: ViewModel
-    ): PagedListAdapter<out Any, *> {
-        return map[viewModel::class.java]?.get() ?: throw IllegalStateException()
-    }
+    ): PagedListAdapter<out Any, *> = this.valueByAssignableClassObject(viewModel).get()
 }
