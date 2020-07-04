@@ -17,7 +17,7 @@ import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.oauth.OauthEvent
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragment
-import com.freshdigitable.udonroad2.timeline.fragment.TimelineFragmentDirections
+import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentDirections
 import com.freshdigitable.udonroad2.user.UserActivityDirections
 
 class MainActivityNavigation(
@@ -45,7 +45,7 @@ class MainActivityNavigation(
                 null
             }
             is TimelineEvent.TweetDetailRequested -> {
-                navController.navigate(TimelineFragmentDirections.actionTimelineToDetail(event.tweetId))
+                navController.navigate(ListItemFragmentDirections.actionTimelineToDetail(event.tweetId))
                 MainActivityState.TweetDetail(event.tweetId)
             }
             is TimelineEvent.RetweetUserClicked -> {
@@ -65,7 +65,7 @@ class MainActivityNavigation(
             }
             OauthEvent.Init -> {
                 navController.setGraph(
-                    R.navigation.nav_oauth,
+                    R.navigation.nav_main,
                     ListItemFragment.bundle(QueryType.Oauth)
                 )
                 MainActivityState.Oauth

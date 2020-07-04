@@ -2,16 +2,22 @@ package com.freshdigitable.udonroad2.timeline.listadapter
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.lifecycle.ViewModel
 import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.freshdigitable.udonroad2.model.UserListItem
+import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
+import com.freshdigitable.udonroad2.timeline.ListItemClickListener
 import com.freshdigitable.udonroad2.timeline.R
-import com.freshdigitable.udonroad2.timeline.viewmodel.UserListViewModel
 import com.freshdigitable.udonroad2.timeline.databinding.ViewUserListItemBinding
+import com.freshdigitable.udonroad2.timeline.viewmodel.UserListViewModel
+import dagger.Module
+import dagger.Provides
+import dagger.multibindings.IntoMap
 
 class UserListAdapter(
-    private val viewModel: UserListViewModel
+    private val clickListener: ListItemClickListener<UserListItem>
 ) : PagedListAdapter<UserListItem, UserListViewHolder>(diffUtil) {
 
     init {
@@ -21,14 +27,9 @@ class UserListAdapter(
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int
-    ): UserListViewHolder =
-        UserListViewHolder(
-            ViewUserListItemBinding.inflate(
-                LayoutInflater.from(parent.context),
-                parent,
-                false
-            )
-        )
+    ): UserListViewHolder = UserListViewHolder(
+        ViewUserListItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+    )
 
     override fun onBindViewHolder(holder: UserListViewHolder, position: Int) {
         val item = getItem(position) ?: return
@@ -38,7 +39,7 @@ class UserListAdapter(
 
     override fun onViewAttachedToWindow(holder: UserListViewHolder) {
         super.onViewAttachedToWindow(holder)
-        holder.binding.viewModel = viewModel
+        holder.binding.viewModel = clickListener
     }
 
     override fun onViewDetachedFromWindow(holder: UserListViewHolder) {
@@ -46,8 +47,7 @@ class UserListAdapter(
         holder.binding.viewModel = null
     }
 
-    override fun getItemViewType(position: Int): Int =
-        R.layout.view_tweet_list_item
+    override fun getItemViewType(position: Int): Int = R.layout.view_tweet_list_item
 
     override fun getItemId(position: Int): Long = getItem(position)?.id ?: -1
 }
@@ -68,4 +68,15 @@ class UserListViewHolder(
     internal val binding: ViewUserListItemBinding
 ) : RecyclerView.ViewHolder(binding.root) {
     internal val root: ViewGroup = itemView as ViewGroup
+}
+
+@Module
+object UserListAdapterModule {
+    @Provides
+    @IntoMap
+    @ViewModelKey(UserListViewModel::class)
+    fun provideTimelineAdapter(viewModel: ViewModel): PagedListAdapter<out Any, *> {
+        val vm = viewModel as UserListViewModel
+        return UserListAdapter(vm)
+    }
 }

@@ -14,9 +14,12 @@ import com.freshdigitable.udonroad2.data.restclient.RemoteListDataSourceProvider
 import com.freshdigitable.udonroad2.model.ListQuery
 import com.freshdigitable.udonroad2.model.PageOption
 import com.freshdigitable.udonroad2.model.QueryType
+import com.freshdigitable.udonroad2.model.TweetingUser
 import com.freshdigitable.udonroad2.model.UserListItem
+import com.freshdigitable.udonroad2.model.app.di.QueryTypeKey
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationDispatcher
+import com.freshdigitable.udonroad2.timeline.ListItemClickListener
 import com.freshdigitable.udonroad2.timeline.ListItemLoadable
 import com.freshdigitable.udonroad2.timeline.ListOwner
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
@@ -24,13 +27,15 @@ import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.multibindings.IntoMap
+import kotlin.reflect.KClass
 
 class UserListViewModel(
     private val owner: ListOwner<QueryType.UserQueryType>,
     private val navigator: NavigationDispatcher,
     private val repository: ListRepository<QueryType.UserQueryType>,
     pagedListProvider: PagedListProvider<QueryType.UserQueryType, UserListItem>
-) : ListItemLoadable<QueryType.UserQueryType, UserListItem>, ViewModel() {
+) : ListItemLoadable<QueryType.UserQueryType, UserListItem>, ListItemClickListener<UserListItem>,
+    ViewModel() {
 
     override val timeline: LiveData<PagedList<UserListItem>> =
         pagedListProvider.getList(owner.query, owner.value)
@@ -52,13 +57,13 @@ class UserListViewModel(
         repository.clear(owner.value)
     }
 
-    fun onBodyItemClicked(item: UserListItem) {
+    override fun onBodyItemClicked(item: UserListItem) {
         Log.d("TimelineViewModel", "onBodyItemClicked: ${item.id}")
         navigator.postEvent(TimelineEvent.UserIconClicked(item))
     }
 
-    fun onUserIconClicked(item: UserListItem) {
-        navigator.postEvent(TimelineEvent.UserIconClicked(item))
+    override fun onUserIconClicked(user: TweetingUser) {
+        navigator.postEvent(TimelineEvent.UserIconClicked(user))
     }
 }
 
@@ -89,6 +94,11 @@ interface UserListViewModelModule {
                 )
             return UserListViewModel(o, navigator, repository, pagedListProvider)
         }
+
+        @Provides
+        @IntoMap
+        @QueryTypeKey(QueryType.UserQueryType::class)
+        fun provideUserListViewModelKClass(): KClass<out ViewModel> = UserListViewModel::class
     }
 
     @Binds

@@ -15,8 +15,10 @@ import com.freshdigitable.udonroad2.model.MemberListItem
 import com.freshdigitable.udonroad2.model.PageOption
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.TweetingUser
+import com.freshdigitable.udonroad2.model.app.di.QueryTypeKey
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationDispatcher
+import com.freshdigitable.udonroad2.timeline.ListItemClickListener
 import com.freshdigitable.udonroad2.timeline.ListItemLoadable
 import com.freshdigitable.udonroad2.timeline.ListOwner
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
@@ -24,13 +26,15 @@ import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.multibindings.IntoMap
+import kotlin.reflect.KClass
 
 class MemberListListViewModel(
     private val owner: ListOwner<QueryType.UserListMembership>,
     private val repository: ListRepository<QueryType.UserListMembership>,
     private val navigator: NavigationDispatcher,
     pagedListProvider: PagedListProvider<QueryType.UserListMembership, MemberListItem>
-) : ListItemLoadable<QueryType.UserListMembership, MemberListItem>, ViewModel() {
+) : ListItemLoadable<QueryType.UserListMembership, MemberListItem>,
+    ListItemClickListener<MemberListItem>, ViewModel() {
     override val loading: LiveData<Boolean>
         get() = repository.loading
 
@@ -46,14 +50,12 @@ class MemberListListViewModel(
     override val timeline: LiveData<PagedList<MemberListItem>> =
         pagedListProvider.getList(owner.query, owner.value)
 
-    fun onUserIconClicked(user: TweetingUser) {
+    override fun onUserIconClicked(user: TweetingUser) {
         navigator.postEvent(TimelineEvent.UserIconClicked(user))
     }
 
-    fun onBodyItemClicked(memberList: MemberListItem) {
-        navigator.postEvent(
-            TimelineEvent.MemberListClicked(memberList)
-        )
+    override fun onBodyItemClicked(item: MemberListItem) {
+        navigator.postEvent(TimelineEvent.MemberListClicked(item))
     }
 
     override fun onCleared() {
@@ -89,6 +91,12 @@ interface MemberListListViewModelModule {
                 )
             return MemberListListViewModel(o, repository, navigator, pagedListProvider)
         }
+
+        @Provides
+        @IntoMap
+        @QueryTypeKey(QueryType.UserListMembership::class)
+        fun provideMemberListListViewModelKClass(): KClass<out ViewModel> =
+            MemberListListViewModel::class
     }
 
     @Binds

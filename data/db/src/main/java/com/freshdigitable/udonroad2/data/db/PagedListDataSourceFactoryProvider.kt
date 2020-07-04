@@ -21,6 +21,8 @@ import com.freshdigitable.udonroad2.data.db.dao.MemberListListDao
 import com.freshdigitable.udonroad2.data.db.dao.TweetListDao
 import com.freshdigitable.udonroad2.data.db.dao.UserListDao
 import com.freshdigitable.udonroad2.model.QueryType
+import com.freshdigitable.udonroad2.model.app.ClassKeyMap
+import com.freshdigitable.udonroad2.model.app.valueByAssignableClassObject
 import dagger.Binds
 import dagger.MapKey
 import dagger.Module
@@ -30,17 +32,11 @@ import javax.inject.Provider
 import kotlin.reflect.KClass
 
 class PagedListDataSourceFactoryProvider @Inject constructor(
-    private val providers: Map<Class<out QueryType>, @JvmSuppressWildcards Provider<PagedListProvider.DataSourceFactory<*>>>
+    private val providers: ClassKeyMap<QueryType, Provider<PagedListProvider.DataSourceFactory<*>>>
 ) {
     fun <Q : QueryType, F : PagedListProvider.DataSourceFactory<*>> get(query: Q): F {
-        val factory = providers[query::class.java]?.get()
-            ?: providers.toList().firstOrNull { (clazz, _) ->
-                clazz.isAssignableFrom(query::class.java)
-            }?.second?.get()
-            ?: throw IllegalStateException()
-
         @Suppress("UNCHECKED_CAST")
-        return factory as F
+        return providers.valueByAssignableClassObject(query).get() as F
     }
 }
 

@@ -18,7 +18,6 @@ package com.freshdigitable.udonroad2.oauth
 
 import android.app.Application
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -29,7 +28,9 @@ import androidx.paging.PagedList
 import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.RequestTokenItem
+import com.freshdigitable.udonroad2.model.app.di.QueryTypeKey
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
+import com.freshdigitable.udonroad2.model.app.ext.merge
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.timeline.ListItemLoadable
@@ -38,6 +39,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.multibindings.IntoMap
 import kotlinx.coroutines.launch
+import kotlin.reflect.KClass
 
 class OauthViewModel(
     dataSource: DataSource<Int, OauthItem>,
@@ -130,17 +132,15 @@ interface OauthViewModelModule {
         ): OauthViewModel {
             return OauthViewModel(dataSource, oAuthTokenRepository, navigator, handle)
         }
+
+        @Provides
+        @IntoMap
+        @QueryTypeKey(QueryType.Oauth::class)
+        fun provideOauthViewModelKClass(): KClass<out ViewModel> = OauthViewModel::class
     }
 
     @Binds
     @IntoMap
     @ViewModelKey(OauthViewModel::class)
     fun bindOauthViewModel(viewModel: OauthViewModel): ViewModel
-}
-
-fun <T1, T2, E> merge(t1: LiveData<T1>, t2: LiveData<T2>, block: (T1?, T2?) -> E?): LiveData<E> {
-    val res = MediatorLiveData<E>()
-    res.addSource(t1) { res.value = block(it, t2.value) }
-    res.addSource(t2) { res.value = block(t1.value, it) }
-    return res
 }

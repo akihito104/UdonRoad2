@@ -4,6 +4,8 @@ import com.freshdigitable.udonroad2.data.RemoteListDataSource
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.QueryType.TweetQueryType
 import com.freshdigitable.udonroad2.model.QueryType.UserQueryType
+import com.freshdigitable.udonroad2.model.app.ClassKeyMap
+import com.freshdigitable.udonroad2.model.app.valueByAssignableClassObject
 import dagger.Binds
 import dagger.MapKey
 import dagger.Module
@@ -13,16 +15,11 @@ import javax.inject.Provider
 import kotlin.reflect.KClass
 
 class RemoteListDataSourceProvider @Inject constructor(
-    private val providers: Map<Class<out QueryType>, @JvmSuppressWildcards Provider<RemoteListDataSource<out QueryType, *>>>
+    private val providers: ClassKeyMap<QueryType, Provider<RemoteListDataSource<out QueryType, *>>>
 ) {
     fun <Q : QueryType, T : RemoteListDataSource<Q, *>> get(query: Q): T {
-        val dataSource = providers[query::class.java]?.get()
-            ?: throw IllegalStateException(
-                "ListRestClient: ${query::class.java.simpleName} is not registered list client."
-            )
-
         @Suppress("UNCHECKED_CAST")
-        return dataSource as T
+        return providers.valueByAssignableClassObject(query).get() as T
     }
 }
 
