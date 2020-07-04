@@ -20,6 +20,8 @@ import android.os.Bundle
 import androidx.lifecycle.AbstractSavedStateViewModelFactory
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelStoreOwner
 import androidx.paging.PagedListAdapter
 import androidx.savedstate.SavedStateRegistryOwner
 
@@ -32,8 +34,14 @@ interface ListItemViewModelComponent {
         fun build(): ListItemViewModelComponent
     }
 
-    fun savedStateViewModelProviderFactory(): AbstractSavedStateViewModelFactory
-    fun viewModelClass(): Class<out ViewModel>
+    val savedStateViewModelProviderFactory: AbstractSavedStateViewModelFactory
+    val viewModelStoreOwner: ViewModelStoreOwner
+    val viewModelClass: Class<out ViewModel>
+}
+
+fun ListItemViewModelComponent.viewModel(key: String): ViewModel {
+    return ViewModelProvider(viewModelStoreOwner, savedStateViewModelProviderFactory) // XXX
+        .get(key, viewModelClass)
 }
 
 interface ListItemAdapterComponent {
@@ -44,5 +52,5 @@ interface ListItemAdapterComponent {
         ): ListItemAdapterComponent
     }
 
-    fun adapter(): PagedListAdapter<out Any, *>
+    val adapter: PagedListAdapter<out Any, *>
 }

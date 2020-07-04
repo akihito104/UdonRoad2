@@ -8,12 +8,12 @@ import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.observe
 import androidx.navigation.fragment.navArgs
 import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.app.di.FragmentScope
 import com.freshdigitable.udonroad2.timeline.ListItemAdapterComponent
@@ -21,6 +21,7 @@ import com.freshdigitable.udonroad2.timeline.ListItemLoadable
 import com.freshdigitable.udonroad2.timeline.ListItemViewModelComponent
 import com.freshdigitable.udonroad2.timeline.ListOwner
 import com.freshdigitable.udonroad2.timeline.databinding.FragmentTimelineBinding
+import com.freshdigitable.udonroad2.timeline.viewModel
 import dagger.Module
 import dagger.android.ContributesAndroidInjector
 import dagger.android.support.AndroidSupportInjection
@@ -43,45 +44,34 @@ class ListItemFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        val binding = FragmentTimelineBinding.inflate(inflater, container, false)
-        return binding.root
-    }
+    ): View? = FragmentTimelineBinding.inflate(inflater, container, false).root
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val binding = DataBindingUtil.findBinding<FragmentTimelineBinding>(view) ?: return
         binding.lifecycleOwner = viewLifecycleOwner
 
-        val viewModelComponent = listItemViewModelBuilder
+        val viewModel: ViewModel = listItemViewModelBuilder
             .owner(listOwner)
             .savedStateRegistryOwner(this)
             .firstArgs(savedInstanceState)
             .build()
-        val viewModelProvider = ViewModelProvider(
-            this,
-            viewModelComponent.savedStateViewModelProviderFactory()
-        )
-        val viewModel: ViewModel =
-            viewModelProvider.get("_$ownerId", viewModelComponent.viewModelClass())
+            .viewModel("_$ownerId")
         binding.viewModel = viewModel as ListItemLoadable<*, Any>
 
-        val listView = binding.mainList
-        val linearLayoutManager = LinearLayoutManager(view.context)
-        listView.layoutManager = linearLayoutManager
-        listView.addItemDecoration(
-            DividerItemDecoration(
-                view.context,
-                linearLayoutManager.orientation
-            )
-        )
-        val adapter =
-            listItemAdapterFactory.create(viewModel, viewLifecycleOwner)
-                .adapter() as PagedListAdapter<Any, *>
-        listView.adapter = adapter
+        val adapter = listItemAdapterFactory.create(viewModel, viewLifecycleOwner)
+            .adapter as PagedListAdapter<Any, *>
+        binding.mainList.setup(adapter)
         viewModel.timeline.observe(viewLifecycleOwner) {
             adapter.submitList(it)
         }
+    }
+
+    private fun RecyclerView.setup(adapter: PagedListAdapter<*, *>) {
+        val linearLayoutManager = LinearLayoutManager(context)
+        this.layoutManager = linearLayoutManager
+        this.addItemDecoration(DividerItemDecoration(context, linearLayoutManager.orientation))
+        this.adapter = adapter
     }
 
     private val args: ListItemFragmentArgs by navArgs()
