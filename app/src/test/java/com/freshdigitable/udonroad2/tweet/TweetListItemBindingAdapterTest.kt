@@ -16,8 +16,9 @@
 
 package com.freshdigitable.udonroad2.tweet
 
-import androidx.test.InstrumentationRegistry
-import androidx.test.runner.AndroidJUnit4
+import android.content.Context
+import androidx.test.core.app.ApplicationProvider
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.freshdigitable.udonroad2.R
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
@@ -32,7 +33,7 @@ class TweetListItemBindingAdapterTest {
 
     @Test
     fun studyDateTimeFormatting() {
-        val context = InstrumentationRegistry.getTargetContext()
+        val context = ApplicationProvider.getApplicationContext<Context>()
         val createdAt = Instant.parse("2018-10-04T11:45:06Z")
 
         val formatter = DateTimeFormatter.ofPattern(context.getString(R.string.created_date))
@@ -43,7 +44,7 @@ class TweetListItemBindingAdapterTest {
 
     @Test
     fun studyDateTimeFormatting2() {
-        val context = InstrumentationRegistry.getTargetContext()
+        val context = ApplicationProvider.getApplicationContext<Context>()
         val createdAt = Instant.parse("2018-10-04T11:45:06Z")
 
         val formatter = DateTimeFormatter.ofPattern(context.getString(R.string.created_year_date))

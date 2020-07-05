@@ -25,7 +25,7 @@ import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasAndroidInjector
 import javax.inject.Inject
 
-class AppApplication : HasAndroidInjector, Application() {
+open class AppApplication : HasAndroidInjector, Application() {
 
     override fun onCreate() {
         super.onCreate()
@@ -37,7 +37,7 @@ class AppApplication : HasAndroidInjector, Application() {
         component.inject(this)
     }
 
-    private fun setupLeakCanary() {
+    protected open fun setupLeakCanary() {
         if (LeakCanary.isInAnalyzerProcess(this)) {
             // This process is dedicated to LeakCanary for heap analysis.
             // You should not init your app in this process.
