@@ -18,6 +18,8 @@ package com.freshdigitable.udonroad2.di
 
 import android.app.Application
 import com.freshdigitable.udonroad2.AppApplication
+import com.freshdigitable.udonroad2.AppSetup
+import com.freshdigitable.udonroad2.AppSetupModule
 import com.freshdigitable.udonroad2.data.db.DatabaseModule
 import com.freshdigitable.udonroad2.data.impl.RepositoryModule
 import com.freshdigitable.udonroad2.data.restclient.TwitterModule
@@ -34,7 +36,8 @@ import javax.inject.Singleton
         ExecutorModule::class,
         RepositoryModule::class,
         DatabaseModule::class,
-        TwitterModule::class
+        TwitterModule::class,
+        AppSetupModule::class
     ]
 )
 interface AppComponent {
@@ -47,6 +50,8 @@ interface AppComponent {
 
         fun build(): AppComponent
     }
+
+    val setup: AppSetup
 
     fun inject(instance: AppApplication)
 }
