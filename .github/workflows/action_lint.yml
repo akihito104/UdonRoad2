@@ -4,7 +4,7 @@ on: pull_request
 
 jobs:
   build:
-    name: lint check
+    name: pull request check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
@@ -22,6 +22,9 @@ jobs:
 
       - name: ktlint
         run: ./gradlew ktlintCheck
+
+      - name: unit test
+        run: ./gradlew testDebugUnitTest
 
       - name: Danger
         uses: danger/kotlin@0.5.1

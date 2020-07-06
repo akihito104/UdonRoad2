@@ -24,6 +24,17 @@ android {
 
     buildFeatures.dataBinding = true
 
+    sourceSets {
+        test {
+            java.srcDirs += ["src/testShared/java", "src/androidTest/java"]
+            resources.srcDirs += "src/testShared/resources"
+        }
+        androidTest {
+            java.srcDirs += "src/testShared/java"
+            resources.srcDirs += "src/testShared/resources"
+        }
+    }
+
     testOptions {
         unitTests {
             includeAndroidResources = true
@@ -80,10 +91,19 @@ dependencies {
 
     // test
     testImplementation "junit:junit:$junit_version"
-    testImplementation "org.robolectric:robolectric:$robolectric_version"
+    testImplementation "com.google.truth:truth:$truth_version"
+    testImplementation "androidx.test:core:$androidx_test_core_version"
+    testImplementation "androidx.test.ext:junit:$androidx_junit_ext_version"
     testImplementation "androidx.test:runner:$androidTestRunner_version"
-    testImplementation "com.google.truth:truth:0.42"
+    testImplementation "org.robolectric:robolectric:$robolectric_version"
+    testImplementation "com.google.dagger:dagger-android:$dagger_version"
+    testImplementation "com.google.dagger:dagger-android-support:$dagger_version"
+    kaptTest "com.google.dagger:dagger-compiler:$dagger_version"
+    kaptTest "com.google.dagger:dagger-android-processor:$dagger_version"
+
     // android test
+    androidTestImplementation "androidx.test:core:$androidx_test_core_version"
+    androidTestImplementation "androidx.test.ext:junit:$androidx_junit_ext_version"
     androidTestImplementation "androidx.test:runner:$androidTestRunner_version"
     androidTestImplementation "androidx.test.espresso:espresso-core:$espresso_version"
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018. Matsuda, Akihit (akihito104)
+ * Copyright (c) 2020. Matsuda, Akihit (akihito104)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,19 +14,27 @@
  * limitations under the License.
  */
 
-package com.freshdigitable.udonroad2.di
+package com.freshdigitable.udonroad2
 
-import android.app.Application
-import com.freshdigitable.udonroad2.AppApplication
-import com.freshdigitable.udonroad2.AppSetup
-import com.freshdigitable.udonroad2.AppSetupModule
 import com.freshdigitable.udonroad2.data.db.DatabaseModule
 import com.freshdigitable.udonroad2.data.impl.RepositoryModule
 import com.freshdigitable.udonroad2.data.restclient.TwitterModule
+import com.freshdigitable.udonroad2.di.ActivityBuilders
+import com.freshdigitable.udonroad2.di.AppComponent
+import com.freshdigitable.udonroad2.di.ExecutorModule
 import dagger.BindsInstance
 import dagger.Component
 import dagger.android.support.AndroidSupportInjectionModule
 import javax.inject.Singleton
+
+class TestApplication : AppApplication() {
+    override fun createComponent(): AppComponent {
+        return DaggerTestAppComponent.builder()
+            .setupModule { /* nop */ }
+            .application(this)
+            .build()
+    }
+}
 
 @Singleton
 @Component(
@@ -36,22 +44,14 @@ import javax.inject.Singleton
         ExecutorModule::class,
         RepositoryModule::class,
         DatabaseModule::class,
-        TwitterModule::class,
-        AppSetupModule::class
+        TwitterModule::class
     ]
 )
-interface AppComponent {
-
+interface TestAppComponent : AppComponent {
     @Component.Builder
-    interface Builder {
-
+    interface Builder : AppComponent.Builder {
         @BindsInstance
-        fun application(application: Application): Builder
-
-        fun build(): AppComponent
+        fun setupModule(setup: AppSetup): Builder
+        override fun build(): TestAppComponent
     }
-
-    val setup: AppSetup
-
-    fun inject(instance: AppApplication)
 }

@@ -32,9 +32,12 @@ buildscript {
         leakcanary_version = '1.6.3'
         // test
         junit_version = '4.12'
-        robolectric_version = '4.0'
+        robolectric_version = '4.3.1'
+        truth_version = '0.42'
+        androidx_test_core_version = '1.2.0'
+        androidx_junit_ext_version = '1.1.1'
         // android test
-        androidTestRunner_version = '1.1.0-alpha4'
+        androidTestRunner_version = '1.2.0'
         espresso_version = '3.1.0-alpha4'
 
         // ktlint
