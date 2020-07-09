@@ -19,3 +19,11 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+-dontoptimize
+-dontobfuscate
+-ignorewarnings
+-keep class kotlin.reflect.* { *; }
+-keep class kotlin.jvm.* { *; }
+-keep class kotlin.collections.* { *; }
+-keep class kotlin.io.* { *; }
+-keep class kotlin.text.* { *; }

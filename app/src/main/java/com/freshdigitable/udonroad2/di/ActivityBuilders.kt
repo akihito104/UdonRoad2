@@ -63,12 +63,13 @@ interface ActivityBuilders {
         ]
     )
     fun contributeMediaActivity(): MediaActivity
+}
 
-    companion object {
-        @Provides
-        @Singleton
-        fun Application.provideSharedPreferences(): SharedPreferences {
-            return getSharedPreferences("udonroad_prefs", Context.MODE_PRIVATE)
-        }
+@Module
+object SharedPreferencesModule {
+    @Provides
+    @Singleton
+    fun Application.provideSharedPreferences(): SharedPreferences {
+        return getSharedPreferences("udonroad_prefs", Context.MODE_PRIVATE)
     }
 }

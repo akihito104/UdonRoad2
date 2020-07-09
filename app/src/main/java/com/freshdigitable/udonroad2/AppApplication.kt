@@ -27,6 +27,7 @@ import dagger.android.AndroidInjector
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasAndroidInjector
 import javax.inject.Inject
+import javax.inject.Singleton
 
 open class AppApplication : HasAndroidInjector, Application() {
 
@@ -54,8 +55,9 @@ open class AppApplication : HasAndroidInjector, Application() {
 typealias AppSetup = () -> Unit
 
 @Module
-class AppSetupModule {
+object AppSetupModule {
     @Provides
+    @Singleton
     fun provideSetup(
         app: Application
     ): AppSetup = {
