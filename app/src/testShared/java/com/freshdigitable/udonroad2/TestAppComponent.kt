@@ -16,25 +16,18 @@
 
 package com.freshdigitable.udonroad2
 
+import android.app.Application
 import com.freshdigitable.udonroad2.data.db.DatabaseModule
 import com.freshdigitable.udonroad2.data.impl.RepositoryModule
-import com.freshdigitable.udonroad2.data.restclient.TwitterModule
+import com.freshdigitable.udonroad2.data.impl.SharedPreferenceDataSource
 import com.freshdigitable.udonroad2.di.ActivityBuilders
 import com.freshdigitable.udonroad2.di.AppComponent
 import com.freshdigitable.udonroad2.di.ExecutorModule
 import dagger.BindsInstance
 import dagger.Component
 import dagger.android.support.AndroidSupportInjectionModule
+import twitter4j.Twitter
 import javax.inject.Singleton
-
-class TestApplication : AppApplication() {
-    override fun createComponent(): AppComponent {
-        return DaggerTestAppComponent.builder()
-            .setupModule { /* nop */ }
-            .application(this)
-            .build()
-    }
-}
 
 @Singleton
 @Component(
@@ -44,14 +37,20 @@ class TestApplication : AppApplication() {
         ExecutorModule::class,
         RepositoryModule::class,
         DatabaseModule::class,
-        TwitterModule::class
+        MockTwitterModule::class,
+        TestSharedPreferencesModule::class,
+        MockSetupModule::class
     ]
 )
 interface TestAppComponent : AppComponent {
     @Component.Builder
-    interface Builder : AppComponent.Builder {
+    interface Builder {
         @BindsInstance
-        fun setupModule(setup: AppSetup): Builder
-        override fun build(): TestAppComponent
+        fun application(application: Application): Builder
+
+        fun build(): TestAppComponent
     }
+
+    val twitter: Twitter
+    val sharedPreferencesDao: SharedPreferenceDataSource
 }

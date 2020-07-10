@@ -9,12 +9,14 @@ apply from: rootProject.file("android_build.gradle")
 android {
     defaultConfig {
         applicationId "com.freshdigitable.udonroad2"
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner "com.freshdigitable.udonroad2.AppTestRunner"
+        testInstrumentationRunnerArguments clearPackageData: 'true'
     }
     buildTypes {
         debug {
             minifyEnabled true
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro', 'proguard-rules-debug.pro'
+            testProguardFiles 'proguard-rules-test.pro'
         }
         release {
             minifyEnabled true
@@ -26,12 +28,10 @@ android {
 
     sourceSets {
         test {
-            java.srcDirs += ["src/testShared/java", "src/androidTest/java"]
-            resources.srcDirs += "src/testShared/resources"
+            java.srcDirs += ["src/testShared/java"]
         }
         androidTest {
-            java.srcDirs += "src/testShared/java"
-            resources.srcDirs += "src/testShared/resources"
+            java.srcDirs += ["src/testShared/java"]
         }
     }
 
@@ -39,6 +39,7 @@ android {
         unitTests {
             includeAndroidResources = true
         }
+        execution 'ANDROIDX_TEST_ORCHESTRATOR'
     }
 }
 
@@ -91,6 +92,7 @@ dependencies {
 
     // test
     testImplementation "junit:junit:$junit_version"
+    testImplementation "io.mockk:mockk:$mockk_version"
     testImplementation "com.google.truth:truth:$truth_version"
     testImplementation "androidx.test:core:$androidx_test_core_version"
     testImplementation "androidx.test.ext:junit:$androidx_junit_ext_version"
@@ -102,8 +104,17 @@ dependencies {
     kaptTest "com.google.dagger:dagger-android-processor:$dagger_version"
 
     // android test
+    androidTestImplementation "io.mockk:mockk-android:$mockk_version"
     androidTestImplementation "androidx.test:core:$androidx_test_core_version"
-    androidTestImplementation "androidx.test.ext:junit:$androidx_junit_ext_version"
     androidTestImplementation "androidx.test:runner:$androidTestRunner_version"
+    androidTestImplementation "androidx.test:rules:$androidx_test_rules_version"
+    androidTestImplementation "androidx.test.ext:junit:$androidx_junit_ext_version"
+    androidTestImplementation "androidx.test.ext:truth:$androidx_truth_ext_version"
+    androidTestImplementation "com.google.truth:truth:$truth_version"
     androidTestImplementation "androidx.test.espresso:espresso-core:$espresso_version"
+    androidTestUtil "androidx.test:orchestrator:$test_orchestrator_version"
+    androidTestImplementation "com.google.dagger:dagger-android:$dagger_version"
+    androidTestImplementation "com.google.dagger:dagger-android-support:$dagger_version"
+    kaptAndroidTest "com.google.dagger:dagger-compiler:$dagger_version"
+    kaptAndroidTest "com.google.dagger:dagger-android-processor:$dagger_version"
 }
