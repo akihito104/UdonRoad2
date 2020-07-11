@@ -16,16 +16,35 @@
 
 package com.freshdigitable.udonroad2
 
-import androidx.test.core.app.ActivityScenario
+import android.app.Instrumentation
+import android.net.Uri
+import androidx.test.core.app.ApplicationProvider
+import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.action.ViewActions.click
+import androidx.test.espresso.assertion.ViewAssertions.matches
+import androidx.test.espresso.intent.Intents.intending
+import androidx.test.espresso.intent.matcher.IntentMatchers.hasData
+import androidx.test.espresso.intent.rule.IntentsTestRule
+import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
+import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.freshdigitable.udonroad2.main.MainActivity
+import io.mockk.every
+import io.mockk.just
+import io.mockk.runs
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import twitter4j.auth.RequestToken
 
 @RunWith(AndroidJUnit4::class)
 class MainActivityInstTest {
+    @get:Rule
+    val intentsTestRule = IntentsTestRule(MainActivity::class.java, false, false)
+
     @Test
     fun testLaunch() {
-        ActivityScenario.launch(MainActivity::class.java)
+        intentsTestRule.launchActivity(null)
+        onView(withId(R.id.oauth_start)).check(matches(isDisplayed()))
     }
 }
