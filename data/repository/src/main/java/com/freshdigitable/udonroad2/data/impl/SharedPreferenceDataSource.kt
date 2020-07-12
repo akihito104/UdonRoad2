@@ -28,9 +28,7 @@ class SharedPreferenceDataSource @Inject constructor(
 ) {
     fun storeAccessToken(token: AccessTokenEntity) {
         val userId = token.userId
-        if (userId < 0) {
-            return
-        }
+        check(userId >= 0) { "invalid token: $token" }
         val authenticatedUsers = prefs.getStringSet(AUTHENTICATED_USERS, HashSet()) ?: HashSet()
         authenticatedUsers.add("$userId")
 
