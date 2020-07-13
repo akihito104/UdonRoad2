@@ -16,14 +16,4 @@
 
 package com.freshdigitable.udonroad2
 
-import com.freshdigitable.udonroad2.di.AppComponent
-
-class InstTestApplication : TestApplicationBase() {
-    val component: TestAppComponent by lazy {
-        DaggerTestAppComponent.builder()
-            .application(this)
-            .build()
-    }
-
-    override fun createComponent(): AppComponent = component
-}
+class InstTestApplication : TestApplicationBase()

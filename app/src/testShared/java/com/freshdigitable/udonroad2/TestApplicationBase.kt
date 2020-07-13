@@ -16,19 +16,19 @@
 
 package com.freshdigitable.udonroad2
 
-import androidx.test.core.app.ApplicationProvider
 import com.freshdigitable.udonroad2.di.AppComponent
 import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton
 
 abstract class TestApplicationBase : AppApplication() {
-
-    override fun createComponent(): AppComponent {
-        return DaggerTestAppComponent.builder()
-            .application(ApplicationProvider.getApplicationContext())
+    val component: TestAppComponent by lazy {
+        DaggerTestAppComponent.builder()
+            .application(this)
             .build()
     }
+
+    override fun createComponent(): AppComponent = component
 }
 
 @Module
