@@ -18,15 +18,9 @@ package com.freshdigitable.udonroad2
 
 import android.app.Instrumentation
 import android.net.Uri
-import androidx.test.espresso.Espresso.onView
-import androidx.test.espresso.action.ViewActions.click
-import androidx.test.espresso.action.ViewActions.typeText
-import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.intent.Intents.intending
 import androidx.test.espresso.intent.matcher.IntentMatchers.hasData
 import androidx.test.espresso.intent.rule.IntentsTestRule
-import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
-import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.freshdigitable.udonroad2.main.MainActivity
 import io.mockk.every
@@ -46,12 +40,6 @@ class MainActivityInstTest {
     val twitterRobot = TwitterRobot()
 
     @Test
-    fun testLaunch() {
-        intentsTestRule.launchActivity(null)
-        onView(withId(R.id.oauth_start)).check(matches(isDisplayed()))
-    }
-
-    @Test
     fun testStartOauth() {
         // setup
         twitterRobot.setupSetOAuthAccessToken { null }
@@ -69,14 +57,21 @@ class MainActivityInstTest {
         twitterRobot.setupGetHomeTimeline(emptyList())
 
         intentsTestRule.launchActivity(null)
-        onView(withId(R.id.oauth_start)).check(matches(isDisplayed()))
+        OauthRobot.Result().sendPinIsDisabled()
         intending(hasData(Uri.parse("http://localhost/hoge"))).respondWithFunction {
             Instrumentation.ActivityResult(0, null)
         }
 
         // exercise
-        onView(withId(R.id.oauth_start)).perform(click())
-        onView(withId(R.id.oauth_pin)).perform(typeText("0123456"))
-        onView(withId(R.id.oauth_send_pin)).perform(click())
+        oauth {
+            clickLogin()
+            inputPin("0123456")
+        } result {
+            sendPinIsEnabled()
+        }
+
+        oauth {
+            clickSendPin()
+        }
     }
 }
