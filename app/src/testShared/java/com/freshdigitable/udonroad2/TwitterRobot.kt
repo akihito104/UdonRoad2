@@ -16,7 +16,11 @@
 
 package com.freshdigitable.udonroad2
 
+import android.app.Instrumentation
+import android.net.Uri
 import androidx.test.core.app.ApplicationProvider
+import androidx.test.espresso.intent.Intents.intending
+import androidx.test.espresso.intent.matcher.IntentMatchers.hasData
 import io.mockk.MockKMatcherScope
 import io.mockk.confirmVerified
 import io.mockk.every
@@ -42,7 +46,10 @@ class TwitterRobot : TestWatcher() {
         expected.add { verify { twitter.setOAuthAccessToken(block()) } }
     }
 
-    fun setupGetOAuthRequestToken(block: MatcherScopedBlock<String>, response: RequestToken) {
+    fun setupGetOAuthRequestToken(
+        block: MatcherScopedBlock<String> = { "oob" },
+        response: RequestToken
+    ) {
         every { twitter.getOAuthRequestToken(block()) } returns response
         expected.add { verify { twitter.getOAuthRequestToken(block()) } }
     }
@@ -72,3 +79,22 @@ class TwitterRobot : TestWatcher() {
 }
 
 typealias MatcherScopedBlock<T> = MockKMatcherScope.() -> T
+
+fun createRequestToken(
+    userId: Long,
+    token: String,
+    tokenSecret: String,
+    authorizationUrl: String
+): RequestToken {
+    return mockk<RequestToken>().apply {
+        every { this@apply.token } returns "$userId-$token"
+        every { this@apply.tokenSecret } returns tokenSecret
+        every { authorizationURL } returns authorizationUrl
+    }
+}
+
+fun intendingToAuthorizationUrl(url: String) {
+    intending(hasData(Uri.parse(url))).respondWithFunction {
+        Instrumentation.ActivityResult(0, null)
+    }
+}

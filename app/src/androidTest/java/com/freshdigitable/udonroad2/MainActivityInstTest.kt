@@ -16,20 +16,13 @@
 
 package com.freshdigitable.udonroad2
 
-import android.app.Instrumentation
-import android.net.Uri
-import androidx.test.espresso.intent.Intents.intending
-import androidx.test.espresso.intent.matcher.IntentMatchers.hasData
 import androidx.test.espresso.intent.rule.IntentsTestRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.freshdigitable.udonroad2.main.MainActivity
-import io.mockk.every
-import io.mockk.mockk
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import twitter4j.auth.AccessToken
-import twitter4j.auth.RequestToken
 
 @RunWith(AndroidJUnit4::class)
 class MainActivityInstTest {
@@ -42,25 +35,22 @@ class MainActivityInstTest {
     @Test
     fun testStartOauth() {
         // setup
+        val requestToken = createRequestToken(
+            10000, "verified_token", "verified_secret_token", "http://localhost/hoge"
+        )
         twitterRobot.setupSetOAuthAccessToken { null }
         twitterRobot.setupSetOAuthAccessToken { match { it.userId == 10000L } }
-        twitterRobot.setupGetOAuthRequestToken({ "oob" }, mockk<RequestToken>().apply {
-            every { token } returns "10000-verified_token"
-            every { tokenSecret } returns "verified_secret_token"
-            every { authorizationURL } returns "http://localhost/hoge"
-        })
+        twitterRobot.setupGetOAuthRequestToken(response = requestToken)
         twitterRobot.setupGetOAuthAccessToken(
             { any() },
             { "0123456" },
-            AccessToken("10000-verified_token", "verified_secret_token")
+            AccessToken(requestToken.token, requestToken.tokenSecret)
         )
         twitterRobot.setupGetHomeTimeline(emptyList())
 
         intentsTestRule.launchActivity(null)
         OauthRobot.Result().sendPinIsDisabled()
-        intending(hasData(Uri.parse("http://localhost/hoge"))).respondWithFunction {
-            Instrumentation.ActivityResult(0, null)
-        }
+        intendingToAuthorizationUrl(requestToken.authorizationURL)
 
         // exercise
         oauth {
