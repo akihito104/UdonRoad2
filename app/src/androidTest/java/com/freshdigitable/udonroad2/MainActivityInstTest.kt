@@ -20,8 +20,6 @@ import android.app.Instrumentation
 import android.net.Uri
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.espresso.Espresso.onView
-import androidx.test.espresso.IdlingRegistry
-import androidx.test.espresso.IdlingResource
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.action.ViewActions.typeText
 import androidx.test.espresso.assertion.ViewAssertions.matches
@@ -93,21 +91,6 @@ class MainActivityInstTest {
         }
 
         onView(withId(R.id.oauth_start)).perform(click())
-        IdlingRegistry.getInstance().register(object : IdlingResource {
-            override fun getName(): String = "idleres"
-
-            override fun isIdleNow(): Boolean {
-                if (doneLogin) {
-                    callback?.onTransitionToIdle()
-                }
-                return doneLogin
-            }
-
-            var callback: IdlingResource.ResourceCallback? = null
-            override fun registerIdleTransitionCallback(callback: IdlingResource.ResourceCallback?) {
-                this.callback = callback
-            }
-        })
         onView(withId(R.id.oauth_pin)).perform(typeText("0123456"))
         onView(withId(R.id.oauth_send_pin)).perform(click())
 
