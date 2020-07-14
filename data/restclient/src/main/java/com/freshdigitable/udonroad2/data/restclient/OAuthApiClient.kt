@@ -44,7 +44,7 @@ class OAuthApiClient @Inject constructor(
         requestToken: RequestTokenItem,
         verifier: String
     ): AccessTokenEntity = withContext(Dispatchers.IO) {
-        val token: RequestToken = requireNotNull(requestToken as? RequestTokenItemImpl).token
+        val token: RequestToken = (requestToken as RequestTokenItemImpl).token
         twitter.getOAuthAccessToken(token, verifier).toEntity()
     }
 

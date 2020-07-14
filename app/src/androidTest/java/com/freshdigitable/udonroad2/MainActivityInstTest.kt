@@ -16,16 +16,94 @@
 
 package com.freshdigitable.udonroad2
 
-import androidx.test.core.app.ActivityScenario
+import android.widget.TextView
+import androidx.test.core.app.ApplicationProvider
+import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.IdlingRegistry
+import androidx.test.espresso.assertion.ViewAssertions.matches
+import androidx.test.espresso.idling.CountingIdlingResource
+import androidx.test.espresso.intent.rule.IntentsTestRule
+import androidx.test.espresso.matcher.ViewMatchers.isAssignableFrom
+import androidx.test.espresso.matcher.ViewMatchers.withId
+import androidx.test.espresso.matcher.ViewMatchers.withParent
+import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.freshdigitable.udonroad2.main.MainActivity
+import com.freshdigitable.udonroad2.model.AccessTokenEntity
+import org.hamcrest.CoreMatchers.allOf
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import twitter4j.auth.AccessToken
 
 @RunWith(AndroidJUnit4::class)
 class MainActivityInstTest {
+    @get:Rule
+    val intentsTestRule = IntentsTestRule(MainActivity::class.java, false, false)
+
+    @get:Rule
+    val twitterRobot = TwitterRobot()
+
     @Test
-    fun testLaunch() {
-        ActivityScenario.launch(MainActivity::class.java)
+    fun startOauth() {
+        // setup
+        val requestToken = createRequestToken(
+            10000, "verified_token", "verified_secret_token", "http://localhost/hoge"
+        )
+        twitterRobot.setupSetOAuthAccessToken { null }
+        twitterRobot.setupSetOAuthAccessToken { match { it.userId == 10000L } }
+        twitterRobot.setupGetOAuthRequestToken(response = requestToken)
+        twitterRobot.setupGetOAuthAccessToken(
+            { any() },
+            { "0123456" },
+            AccessToken(requestToken.token, requestToken.tokenSecret)
+        )
+        twitterRobot.setupGetHomeTimeline(emptyList())
+
+        intentsTestRule.launchActivity(null)
+        checkTitle("Welcome")
+        OauthRobot.Result().sendPinIsDisabled()
+        intendingToAuthorizationUrl(requestToken.authorizationURL)
+
+        // exercise
+        oauth {
+            clickLogin()
+            inputPin("0123456")
+        } result {
+            sendPinIsEnabled()
+        }
+
+        oauth {
+            clickSendPin()
+        }
+        checkTitle("Home")
+    }
+
+    @Test
+    fun startTimeline() {
+        // setup
+        val sp = ApplicationProvider.getApplicationContext<TestApplicationBase>()
+            .component
+            .sharedPreferencesDao
+        sp.storeAccessToken(AccessTokenEntity.create(10000, "token", "tokensecret"))
+        sp.setCurrentUserId(10000)
+
+        val countingIdlingResource = CountingIdlingResource("load_timeline")
+        twitterRobot.setupSetOAuthAccessToken { any() }
+        twitterRobot.setupGetHomeTimeline(emptyList()) {
+            countingIdlingResource.decrement()
+        }
+        countingIdlingResource.increment()
+        IdlingRegistry.getInstance().register(countingIdlingResource)
+        intentsTestRule.launchActivity(null)
+
+        // verify
+        checkTitle("Home")
+    }
+
+    private fun checkTitle(title: String) {
+        onView(
+            allOf(withParent(withId(R.id.action_bar)), isAssignableFrom(TextView::class.java))
+        ).check(matches(withText(title)))
     }
 }

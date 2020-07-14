@@ -22,8 +22,4 @@
 -dontoptimize
 -dontobfuscate
 -ignorewarnings
--keep class kotlin.reflect.* { *; }
--keep class kotlin.jvm.* { *; }
--keep class kotlin.collections.* { *; }
--keep class kotlin.io.* { *; }
--keep class kotlin.text.* { *; }
+-keep class kotlin.** { public *; }
