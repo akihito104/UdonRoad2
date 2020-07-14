@@ -3,6 +3,7 @@ package com.freshdigitable.udonroad2.main
 import android.content.Intent
 import android.content.Intent.ACTION_VIEW
 import android.net.Uri
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
@@ -32,6 +33,7 @@ class MainActivityNavigation(
     val viewModel = viewModelProvider[MainViewModel::class.java]
 
     override fun onEvent(event: NavigationEvent): MainActivityState? {
+        Log.d("MainActivityNav", "onEvent: $event")
         return when (event) {
             TimelineEvent.Init -> {
                 navController.setGraph(
@@ -103,12 +105,15 @@ class MainActivityNavigation(
         when (s) {
             is MainActivityState.MainTimeline -> {
                 viewModel.setFabVisible(true)
+                activity.supportActionBar?.title = "Home"
             }
             is MainActivityState.TweetDetail -> {
                 viewModel.setFabVisible(false)
+                activity.supportActionBar?.title = "Tweet"
             }
             is MainActivityState.Oauth -> {
                 viewModel.setFabVisible(false)
+                activity.supportActionBar?.title = "Welcome"
             }
             MainActivityState.Halt -> activity.finish()
         }

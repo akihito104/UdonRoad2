@@ -21,6 +21,7 @@ import android.net.Uri
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.espresso.intent.Intents.intending
 import androidx.test.espresso.intent.matcher.IntentMatchers.hasData
+import io.mockk.MockKAnswerScope
 import io.mockk.MockKMatcherScope
 import io.mockk.confirmVerified
 import io.mockk.every
@@ -32,13 +33,16 @@ import org.junit.rules.TestWatcher
 import org.junit.runner.Description
 import twitter4j.ResponseList
 import twitter4j.Status
+import twitter4j.Twitter
 import twitter4j.auth.AccessToken
 import twitter4j.auth.RequestToken
 
 class TwitterRobot : TestWatcher() {
-    private val twitter = ApplicationProvider.getApplicationContext<TestApplicationBase>()
-        .component
-        .twitter
+    private val twitter: Twitter by lazy {
+        ApplicationProvider.getApplicationContext<TestApplicationBase>()
+            .component
+            .twitter
+    }
     private val expected: MutableCollection<() -> Unit> = mutableListOf()
 
     fun setupSetOAuthAccessToken(block: MatcherScopedBlock<AccessToken?>) {
@@ -63,10 +67,17 @@ class TwitterRobot : TestWatcher() {
         expected.add { verify { twitter.getOAuthAccessToken(requestTokenBlock(), pinBlock()) } }
     }
 
-    fun setupGetHomeTimeline(response: List<Status>) {
-        every { twitter.homeTimeline } returns mockk<ResponseList<Status>>().apply {
+    fun setupGetHomeTimeline(
+        response: List<Status>,
+        answer: MockKAnswerScope<ResponseList<Status>, ResponseList<Status>>.() -> Unit = {}
+    ) {
+        val res = mockk<ResponseList<Status>>().apply {
             every { size } returns response.size
             every { iterator() } returns response.toMutableList().iterator()
+        }
+        every { twitter.homeTimeline } answers {
+            answer()
+            res
         }
         expected.add { verify { twitter.homeTimeline } }
     }
