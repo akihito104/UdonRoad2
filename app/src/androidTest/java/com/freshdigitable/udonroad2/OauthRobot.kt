@@ -16,12 +16,16 @@
 
 package com.freshdigitable.udonroad2
 
+import android.app.Instrumentation
+import android.net.Uri
 import androidx.test.espresso.Espresso.closeSoftKeyboard
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.ViewInteraction
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.action.ViewActions.typeText
 import androidx.test.espresso.assertion.ViewAssertions.matches
+import androidx.test.espresso.intent.Intents.intending
+import androidx.test.espresso.intent.matcher.IntentMatchers.hasData
 import androidx.test.espresso.matcher.ViewMatchers.isEnabled
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import org.hamcrest.CoreMatchers.not
@@ -57,5 +61,11 @@ class OauthRobot {
         fun sendPinIsDisabled() {
             sendPinButton.check(matches(not(isEnabled())))
         }
+    }
+}
+
+fun intendingToAuthorizationUrl(url: String) {
+    intending(hasData(Uri.parse(url))).respondWithFunction {
+        Instrumentation.ActivityResult(0, null)
     }
 }

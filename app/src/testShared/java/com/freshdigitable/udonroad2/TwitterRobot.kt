@@ -16,11 +16,7 @@
 
 package com.freshdigitable.udonroad2
 
-import android.app.Instrumentation
-import android.net.Uri
 import androidx.test.core.app.ApplicationProvider
-import androidx.test.espresso.intent.Intents.intending
-import androidx.test.espresso.intent.matcher.IntentMatchers.hasData
 import io.mockk.MockKAnswerScope
 import io.mockk.MockKMatcherScope
 import io.mockk.confirmVerified
@@ -101,11 +97,5 @@ fun createRequestToken(
         every { this@apply.token } returns "$userId-$token"
         every { this@apply.tokenSecret } returns tokenSecret
         every { authorizationURL } returns authorizationUrl
-    }
-}
-
-fun intendingToAuthorizationUrl(url: String) {
-    intending(hasData(Uri.parse(url))).respondWithFunction {
-        Instrumentation.ActivityResult(0, null)
     }
 }
