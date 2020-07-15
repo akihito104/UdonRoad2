@@ -16,7 +16,6 @@
 
 package com.freshdigitable.udonroad2.data.impl
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.paging.LivePagedListBuilder
@@ -30,6 +29,7 @@ import com.freshdigitable.udonroad2.data.restclient.RemoteListDataSourceProvider
 import com.freshdigitable.udonroad2.model.ListQuery
 import com.freshdigitable.udonroad2.model.PageOption
 import com.freshdigitable.udonroad2.model.QueryType
+import timber.log.Timber
 import java.io.IOException
 
 internal class ListRepositoryImpl<Q : QueryType, E>(
@@ -48,7 +48,7 @@ internal class ListRepositoryImpl<Q : QueryType, E>(
                 val timeline = remoteDataSource.getList(query)
                 localDataSource.putList(timeline, query, owner)
             } catch (e: IOException) {
-                Log.e("TweetTimelineRepository", "fetchTimeline: ${e.message}", e)
+                Timber.tag("TweetTimelineRepository").e(e, "fetchTimeline: ${e.message}")
             } finally {
                 _loading.postValue(false)
             }

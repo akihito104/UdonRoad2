@@ -1,6 +1,5 @@
 package com.freshdigitable.udonroad2.timeline.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.paging.PagedList
@@ -27,6 +26,7 @@ import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.multibindings.IntoMap
+import timber.log.Timber
 import kotlin.reflect.KClass
 
 class UserListViewModel(
@@ -58,7 +58,7 @@ class UserListViewModel(
     }
 
     override fun onBodyItemClicked(item: UserListItem) {
-        Log.d("TimelineViewModel", "onBodyItemClicked: ${item.id}")
+        Timber.tag("TimelineViewModel").d("onBodyItemClicked: ${item.id}")
         navigator.postEvent(TimelineEvent.UserIconClicked(item))
     }
 

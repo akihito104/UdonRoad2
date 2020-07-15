@@ -74,6 +74,7 @@ dependencies {
     kapt "com.github.bumptech.glide:compiler:$glide_version"
 
     implementation "com.jakewharton.threetenabp:threetenabp:$threetenbp_version"
+    implementation "com.jakewharton.timber:timber:$timber_version"
 
     testImplementation "junit:junit:$junit_version"
 

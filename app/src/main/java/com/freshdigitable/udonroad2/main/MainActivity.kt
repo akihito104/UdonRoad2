@@ -17,7 +17,6 @@
 package com.freshdigitable.udonroad2.main
 
 import android.os.Bundle
-import android.util.Log
 import android.view.MenuItem
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
@@ -47,6 +46,7 @@ import dagger.android.AndroidInjector
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasAndroidInjector
 import dagger.multibindings.IntoMap
+import timber.log.Timber
 import javax.inject.Inject
 
 class MainActivity : AppCompatActivity(), HasAndroidInjector {
@@ -154,7 +154,7 @@ class MainViewModel(
     }
 
     fun onFabMenuSelected(item: MenuItem) {
-        Log.d("TimelineViewModel", "onFabSelected: $item")
+        Timber.tag("MainViewModel").d("onFabSelected: $item")
         val selected = requireNotNull(selectedItemId.value) { "selectedItem should not be null." }
         when (item.itemId) {
             com.freshdigitable.udonroad2.timeline.R.id.iffabMenu_main_detail -> {

@@ -87,6 +87,7 @@ dependencies {
     implementation "org.twitter4j:twitter4j-core:$t4j_version"
 
     implementation "com.jakewharton.threetenabp:threetenabp:$threetenbp_version"
+    implementation "com.jakewharton.timber:timber:$timber_version"
 
     debugImplementation "com.squareup.leakcanary:leakcanary-android:$leakcanary_version"
     releaseImplementation "com.squareup.leakcanary:leakcanary-android-no-op:$leakcanary_version"

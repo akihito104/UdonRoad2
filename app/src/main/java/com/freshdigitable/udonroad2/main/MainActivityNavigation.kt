@@ -3,7 +3,6 @@ package com.freshdigitable.udonroad2.main
 import android.content.Intent
 import android.content.Intent.ACTION_VIEW
 import android.net.Uri
-import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
@@ -20,6 +19,7 @@ import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragment
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentDirections
 import com.freshdigitable.udonroad2.user.UserActivityDirections
+import timber.log.Timber
 
 class MainActivityNavigation(
     dispatcher: NavigationDispatcher,
@@ -33,7 +33,7 @@ class MainActivityNavigation(
     val viewModel = viewModelProvider[MainViewModel::class.java]
 
     override fun onEvent(event: NavigationEvent): MainActivityState? {
-        Log.d("MainActivityNav", "onEvent: $event")
+        Timber.tag("MainActivityNav").d("onEvent: $event")
         return when (event) {
             TimelineEvent.Init -> {
                 navController.setGraph(
