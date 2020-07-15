@@ -16,7 +16,6 @@
 
 package com.freshdigitable.udonroad2.timeline.viewmodel
 
-import android.util.Log
 import androidx.databinding.ObservableField
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
@@ -47,6 +46,7 @@ import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.multibindings.IntoMap
+import timber.log.Timber
 import kotlin.reflect.KClass
 
 class TimelineViewModel(
@@ -94,12 +94,12 @@ class TimelineViewModel(
     }
 
     override fun onBodyItemClicked(item: TweetListItem) {
-        Log.d("TimelineViewModel", "onBodyItemClicked: ${item.body.id}")
+        Timber.tag("TimelineViewModel").d("onBodyItemClicked: ${item.body.id}")
         updateSelectedItem(SelectedItemId(item.originalId))
     }
 
     override fun onQuoteItemClicked(item: TweetListItem) {
-        Log.d("TimelineViewModel", "onQuoteItemClicked: ${item.quoted?.id}")
+        Timber.tag("TimelineViewModel").d("onQuoteItemClicked: ${item.quoted?.id}")
         updateSelectedItem(
             SelectedItemId(item.originalId, item.quoted?.id)
         )

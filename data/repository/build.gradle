@@ -47,6 +47,7 @@ dependencies {
     kapt "com.google.dagger:dagger-android-processor:$dagger_version"
 
     implementation "com.jakewharton.threetenabp:threetenabp:$threetenbp_version"
+    implementation "com.jakewharton.timber:timber:$timber_version"
 
     testImplementation "junit:junit:$junit_version"
     androidTestImplementation "androidx.test:runner:$androidTestRunner_version"
