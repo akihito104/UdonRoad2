@@ -20,10 +20,15 @@ import android.widget.TextView
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.IdlingRegistry
+import androidx.test.espresso.action.ViewActions.click
+import androidx.test.espresso.action.ViewActions.swipeLeft
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.idling.CountingIdlingResource
 import androidx.test.espresso.intent.rule.IntentsTestRule
 import androidx.test.espresso.matcher.ViewMatchers.isAssignableFrom
+import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
+import androidx.test.espresso.matcher.ViewMatchers.isSelected
+import androidx.test.espresso.matcher.ViewMatchers.withChild
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withParent
 import androidx.test.espresso.matcher.ViewMatchers.withText
@@ -31,6 +36,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.freshdigitable.udonroad2.main.MainActivity
 import com.freshdigitable.udonroad2.model.AccessTokenEntity
 import org.hamcrest.CoreMatchers.allOf
+import org.hamcrest.CoreMatchers.not
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -53,7 +59,7 @@ class MainActivityInstTest {
         fun startOauth() {
             // setup
             val requestToken = createRequestToken(
-                10000, "verified_token", "verified_secret_token", "http://localhost/hoge"
+                10000, "verified_token", "verified_secret_token"
             )
             twitterRobot.setupSetOAuthAccessToken { null }
             twitterRobot.setupSetOAuthAccessToken { match { it.userId == 10000L } }
@@ -104,12 +110,12 @@ class MainActivityInstTest {
             val countingIdlingResource = CountingIdlingResource("load_timeline")
             twitterRobot.setupSetOAuthAccessToken { any() }
             val user = createUser(2000, "user2000", "_user2000")
-            twitterRobot.setupGetHomeTimeline(response = (100 until 110).map {
+            twitterRobot.setupGetHomeTimeline(response = (0 until 10).map {
                 createStatus(
-                    it.toLong(),
+                    100L + it,
                     "tweet: $it",
                     user,
-                    Date()
+                    Date(100000L + it)
                 )
             }) {
                 countingIdlingResource.decrement()
@@ -118,12 +124,28 @@ class MainActivityInstTest {
             countingIdlingResource.increment()
             IdlingRegistry.getInstance().register(countingIdlingResource)
             intentsTestRule.launchActivity(null)
+            checkTitle("Home")
         }
 
         @Test
-        fun startTimeline() {
-            // verify
-            checkTitle("Home")
+        fun swipeFabAndThenMoveToDetailOfSelectedTweet() {
+            onView(
+                allOf(
+                    withParent(withId(R.id.main_list)),
+                    withChild(withText("tweet: 9"))
+                )
+            ).perform(click())
+            onView(withId(R.id.main_fab)).check(matches(isDisplayed()))
+            onView(
+                allOf(
+                    withParent(withId(R.id.main_list)),
+                    withChild(withText("tweet: 9"))
+                )
+            ).check(matches(isSelected()))
+
+            onView(withId(R.id.main_fab)).perform(swipeLeft())
+                .check(matches(not(isDisplayed())))
+            checkTitle("Tweet")
         }
     }
 

@@ -111,14 +111,9 @@ typealias MatcherScopedBlock<T> = MockKMatcherScope.() -> T
 fun createRequestToken(
     userId: Long,
     token: String,
-    tokenSecret: String,
-    authorizationUrl: String
+    tokenSecret: String
 ): RequestToken {
-    return mockk<RequestToken>().apply {
-        every { this@apply.token } returns "$userId-$token"
-        every { this@apply.tokenSecret } returns tokenSecret
-        every { authorizationURL } returns authorizationUrl
-    }
+    return RequestToken("$userId-$token", tokenSecret)
 }
 
 fun createStatus(
