@@ -21,21 +21,19 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.espresso.Espresso
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.IdlingRegistry
-import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.action.ViewActions.swipeLeft
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.idling.CountingIdlingResource
 import androidx.test.espresso.intent.rule.IntentsTestRule
 import androidx.test.espresso.matcher.ViewMatchers.isAssignableFrom
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
-import androidx.test.espresso.matcher.ViewMatchers.isSelected
-import androidx.test.espresso.matcher.ViewMatchers.withChild
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withParent
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.freshdigitable.udonroad2.main.MainActivity
 import com.freshdigitable.udonroad2.model.AccessTokenEntity
+import com.freshdigitable.udonroad2.test.mainList
 import org.hamcrest.CoreMatchers.allOf
 import org.hamcrest.CoreMatchers.not
 import org.junit.Before
@@ -130,19 +128,12 @@ class MainActivityInstTest {
 
         @Test
         fun swipeFabAndThenMoveToDetailOfSelectedTweet() {
-            onView(
-                allOf(
-                    withParent(withId(R.id.main_list)),
-                    withChild(withText("tweet: 9"))
-                )
-            ).perform(click())
-            onView(withId(R.id.main_fab)).check(matches(isDisplayed()))
-            onView(
-                allOf(
-                    withParent(withId(R.id.main_list)),
-                    withChild(withText("tweet: 9"))
-                )
-            ).check(matches(isSelected()))
+            mainList {
+                clickListItemOf(0)
+            } verify {
+                onView(withId(R.id.main_fab)).check(matches(isDisplayed()))
+                stateIsSelectedOnItemOf(0)
+            }
 
             onView(withId(R.id.main_fab)).perform(swipeLeft())
                 .check(matches(not(isDisplayed())))
@@ -151,19 +142,12 @@ class MainActivityInstTest {
 
         @Test
         fun backFromDetailAndThenTweetIsSelected() {
-            onView(
-                allOf(
-                    withParent(withId(R.id.main_list)),
-                    withChild(withText("tweet: 9"))
-                )
-            ).perform(click())
-            onView(withId(R.id.main_fab)).check(matches(isDisplayed()))
-            onView(
-                allOf(
-                    withParent(withId(R.id.main_list)),
-                    withChild(withText("tweet: 9"))
-                )
-            ).check(matches(isSelected()))
+            mainList {
+                clickListItemOf(0)
+            } verify {
+                onView(withId(R.id.main_fab)).check(matches(isDisplayed()))
+                stateIsSelectedOnItemOf(0)
+            }
 
             onView(withId(R.id.main_fab)).perform(swipeLeft())
                 .check(matches(not(isDisplayed())))
@@ -174,12 +158,9 @@ class MainActivityInstTest {
 
             // verify
             onView(withId(R.id.main_fab)).check(matches(isDisplayed()))
-            onView(
-                allOf(
-                    withParent(withId(R.id.main_list)),
-                    withChild(withText("tweet: 9"))
-                )
-            ).check(matches(isSelected()))
+            mainList() verify {
+                stateIsSelectedOnItemOf(0)
+            }
         }
     }
 
