@@ -18,6 +18,7 @@ package com.freshdigitable.udonroad2
 
 import android.widget.TextView
 import androidx.test.core.app.ApplicationProvider
+import androidx.test.espresso.Espresso
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.IdlingRegistry
 import androidx.test.espresso.action.ViewActions.click
@@ -146,6 +147,39 @@ class MainActivityInstTest {
             onView(withId(R.id.main_fab)).perform(swipeLeft())
                 .check(matches(not(isDisplayed())))
             checkTitle("Tweet")
+        }
+
+        @Test
+        fun backFromDetailAndThenTweetIsSelected() {
+            onView(
+                allOf(
+                    withParent(withId(R.id.main_list)),
+                    withChild(withText("tweet: 9"))
+                )
+            ).perform(click())
+            onView(withId(R.id.main_fab)).check(matches(isDisplayed()))
+            onView(
+                allOf(
+                    withParent(withId(R.id.main_list)),
+                    withChild(withText("tweet: 9"))
+                )
+            ).check(matches(isSelected()))
+
+            onView(withId(R.id.main_fab)).perform(swipeLeft())
+                .check(matches(not(isDisplayed())))
+            checkTitle("Tweet")
+
+            // exercise
+            Espresso.pressBack()
+
+            // verify
+            onView(withId(R.id.main_fab)).check(matches(isDisplayed()))
+            onView(
+                allOf(
+                    withParent(withId(R.id.main_list)),
+                    withChild(withText("tweet: 9"))
+                )
+            ).check(matches(isSelected()))
         }
     }
 
