@@ -33,7 +33,10 @@ import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.freshdigitable.udonroad2.main.MainActivity
 import com.freshdigitable.udonroad2.model.AccessTokenEntity
+import com.freshdigitable.udonroad2.test.OauthRobot
+import com.freshdigitable.udonroad2.test.intendingToAuthorizationUrl
 import com.freshdigitable.udonroad2.test.mainList
+import com.freshdigitable.udonroad2.test.oauth
 import org.hamcrest.CoreMatchers.allOf
 import org.hamcrest.CoreMatchers.not
 import org.junit.Before

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.freshdigitable.udonroad2
+package com.freshdigitable.udonroad2.test
 
 import android.app.Instrumentation
 import android.net.Uri
@@ -28,6 +28,7 @@ import androidx.test.espresso.intent.Intents.intending
 import androidx.test.espresso.intent.matcher.IntentMatchers.hasData
 import androidx.test.espresso.matcher.ViewMatchers.isEnabled
 import androidx.test.espresso.matcher.ViewMatchers.withId
+import com.freshdigitable.udonroad2.R
 import org.hamcrest.CoreMatchers.not
 
 fun oauth(block: OauthRobot.() -> Unit): OauthRobot = OauthRobot().apply(block)
