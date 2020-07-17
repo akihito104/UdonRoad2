@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.freshdigitable.udonroad2
+package com.freshdigitable.udonroad2.test
 
 import android.app.Instrumentation
 import android.net.Uri
@@ -28,6 +28,7 @@ import androidx.test.espresso.intent.Intents.intending
 import androidx.test.espresso.intent.matcher.IntentMatchers.hasData
 import androidx.test.espresso.matcher.ViewMatchers.isEnabled
 import androidx.test.espresso.matcher.ViewMatchers.withId
+import com.freshdigitable.udonroad2.R
 import org.hamcrest.CoreMatchers.not
 
 fun oauth(block: OauthRobot.() -> Unit): OauthRobot = OauthRobot().apply(block)
@@ -48,12 +49,13 @@ class OauthRobot {
     }
 
     fun clickSendPin(): ViewInteraction = sendPinButton.perform(click())
+    fun checkSendPinIsDisabled(): Unit = Verify().sendPinIsDisabled()
 
-    infix fun result(block: Result.() -> Unit) {
-        Result().apply(block)
+    infix fun verify(block: Verify.() -> Unit) {
+        Verify().apply(block)
     }
 
-    class Result {
+    class Verify {
         fun sendPinIsEnabled() {
             sendPinButton.check(matches(isEnabled()))
         }

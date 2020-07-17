@@ -87,7 +87,7 @@ class MainActivityNavigation(
             TimelineEvent.Back -> {
                 if (currentState is MainActivityState.TweetDetail) {
                     navController.popBackStack()
-                    null
+                    MainActivityState.MainTimeline
                 } else if (currentState is MainActivityState.MainTimeline &&
                     viewModel.isFabVisible.value == true
                 ) {

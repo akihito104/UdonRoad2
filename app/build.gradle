@@ -29,9 +29,11 @@ android {
     sourceSets {
         test {
             java.srcDirs += ["src/testShared/java"]
+            resources.srcDirs += ["src/testShared/resources"]
         }
         androidTest {
             java.srcDirs += ["src/testShared/java"]
+            resources.srcDirs += ["src/testShared/resources"]
         }
     }
 

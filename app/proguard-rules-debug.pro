@@ -23,3 +23,4 @@
 -dontobfuscate
 -ignorewarnings
 -keep class kotlin.** { public *; }
+-keep class twitter4j.auth.RequestToken { *; }
