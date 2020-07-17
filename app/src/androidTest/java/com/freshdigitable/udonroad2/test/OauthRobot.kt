@@ -49,12 +49,13 @@ class OauthRobot {
     }
 
     fun clickSendPin(): ViewInteraction = sendPinButton.perform(click())
+    fun checkSendPinIsDisabled(): Unit = Verify().sendPinIsDisabled()
 
-    infix fun result(block: Result.() -> Unit) {
-        Result().apply(block)
+    infix fun verify(block: Verify.() -> Unit) {
+        Verify().apply(block)
     }
 
-    class Result {
+    class Verify {
         fun sendPinIsEnabled() {
             sendPinButton.check(matches(isEnabled()))
         }

@@ -16,29 +16,17 @@
 
 package com.freshdigitable.udonroad2
 
-import android.widget.TextView
 import androidx.test.core.app.ApplicationProvider
-import androidx.test.espresso.Espresso
-import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.IdlingRegistry
-import androidx.test.espresso.action.ViewActions.swipeLeft
-import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.idling.CountingIdlingResource
 import androidx.test.espresso.intent.rule.IntentsTestRule
-import androidx.test.espresso.matcher.ViewMatchers.isAssignableFrom
-import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
-import androidx.test.espresso.matcher.ViewMatchers.withId
-import androidx.test.espresso.matcher.ViewMatchers.withParent
-import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.freshdigitable.udonroad2.main.MainActivity
 import com.freshdigitable.udonroad2.model.AccessTokenEntity
-import com.freshdigitable.udonroad2.test.OauthRobot
 import com.freshdigitable.udonroad2.test.intendingToAuthorizationUrl
 import com.freshdigitable.udonroad2.test.mainList
 import com.freshdigitable.udonroad2.test.oauth
-import org.hamcrest.CoreMatchers.allOf
-import org.hamcrest.CoreMatchers.not
+import com.freshdigitable.udonroad2.test.onMainActivity
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -58,7 +46,7 @@ class MainActivityInstTest {
         val twitterRobot = TwitterRobot()
 
         @Test
-        fun startOauth() {
+        fun startOauth(): Unit = onMainActivity {
             // setup
             val requestToken = createRequestToken(
                 10000, "verified_token", "verified_secret_token"
@@ -74,22 +62,26 @@ class MainActivityInstTest {
             twitterRobot.setupGetHomeTimeline(response = emptyList())
 
             intentsTestRule.launchActivity(null)
-            checkTitle("Welcome")
-            OauthRobot.Result().sendPinIsDisabled()
+            checkActionBarTitle("Welcome")
+            oauth { checkSendPinIsDisabled() }
             intendingToAuthorizationUrl(requestToken.authorizationURL)
 
             // exercise
             oauth {
                 clickLogin()
                 inputPin("0123456")
-            } result {
+            } verify {
                 sendPinIsEnabled()
             }
 
             oauth {
                 clickSendPin()
             }
-            checkTitle("Home")
+
+            // verify
+            verify {
+                actionBarTitle("Home")
+            }
         }
     }
 
@@ -102,7 +94,7 @@ class MainActivityInstTest {
         val twitterRobot = TwitterRobot()
 
         @Before
-        fun setup() {
+        fun setup(): Unit = onMainActivity {
             val sp = ApplicationProvider.getApplicationContext<TestApplicationBase>()
                 .component
                 .sharedPreferencesDao
@@ -126,52 +118,48 @@ class MainActivityInstTest {
             countingIdlingResource.increment()
             IdlingRegistry.getInstance().register(countingIdlingResource)
             intentsTestRule.launchActivity(null)
-            checkTitle("Home")
+            checkActionBarTitle("Home")
         }
 
         @Test
-        fun swipeFabAndThenMoveToDetailOfSelectedTweet() {
-            mainList {
-                clickListItemOf(0)
-            } verify {
-                onView(withId(R.id.main_fab)).check(matches(isDisplayed()))
-                stateIsSelectedOnItemOf(0)
-            }
-
-            onView(withId(R.id.main_fab)).perform(swipeLeft())
-                .check(matches(not(isDisplayed())))
-            checkTitle("Tweet")
-        }
-
-        @Test
-        fun backFromDetailAndThenTweetIsSelected() {
-            mainList {
-                clickListItemOf(0)
-            } verify {
-                onView(withId(R.id.main_fab)).check(matches(isDisplayed()))
-                stateIsSelectedOnItemOf(0)
-            }
-
-            onView(withId(R.id.main_fab)).perform(swipeLeft())
-                .check(matches(not(isDisplayed())))
-            checkTitle("Tweet")
-
+        fun swipeFabAndThenMoveToDetailOfSelectedTweet(): Unit = onMainActivity {
             // exercise
-            Espresso.pressBack()
+            mainList {
+                clickListItemOf(0)
+            } verify {
+                checkFabIsDisplayed()
+                stateIsSelectedOnItemOf(0)
+            }
+            showDetail()
 
             // verify
-            onView(withId(R.id.main_fab)).check(matches(isDisplayed()))
+            verify {
+                fabIsNotDisplayed()
+                actionBarTitle("Tweet")
+            }
+        }
+
+        @Test
+        fun backFromDetailAndThenTweetIsSelected(): Unit = onMainActivity {
+            // setup
+            mainList {
+                clickListItemOf(0)
+            } verify {
+                checkFabIsDisplayed()
+                stateIsSelectedOnItemOf(0)
+            }
+            showDetail()
+
+            // exercise
+            pressBack()
+
+            // verify
             mainList() verify {
                 stateIsSelectedOnItemOf(0)
             }
-        }
-    }
-
-    companion object {
-        private fun checkTitle(title: String) {
-            onView(
-                allOf(withParent(withId(R.id.action_bar)), isAssignableFrom(TextView::class.java))
-            ).check(matches(withText(title)))
+            verify {
+                fabIsDisplayed()
+            }
         }
     }
 }
