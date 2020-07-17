@@ -22,7 +22,6 @@ import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -31,6 +30,7 @@ import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
 import com.freshdigitable.udonroad2.databinding.ActivityMainBinding
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
+import com.freshdigitable.udonroad2.model.app.ext.merge
 import com.freshdigitable.udonroad2.model.app.navigation.Navigation
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationDispatcher
 import com.freshdigitable.udonroad2.oauth.OauthEvent
@@ -122,12 +122,8 @@ class MainViewModel(
 
     private val selectedItemId = MutableLiveData<SelectedItemId?>()
     private val fabVisible = MutableLiveData<Boolean>()
-    private val _isFabVisible = MediatorLiveData<Boolean>()
-    val isFabVisible: LiveData<Boolean> = _isFabVisible
-
-    init {
-        _isFabVisible.addSource(selectedItemId) { updateFabVisible() }
-        _isFabVisible.addSource(fabVisible) { updateFabVisible() }
+    val isFabVisible: LiveData<Boolean> = merge(selectedItemId, fabVisible) { selected, visible ->
+        selected != null && visible == true
     }
 
     internal fun initialEvent() {
@@ -139,10 +135,6 @@ class MainViewModel(
             else -> OauthEvent.Init
         }
         navigator.postEvent(event)
-    }
-
-    private fun updateFabVisible() {
-        _isFabVisible.value = selectedItemId.value != null && fabVisible.value == true
     }
 
     fun setFabVisible(visible: Boolean) {
