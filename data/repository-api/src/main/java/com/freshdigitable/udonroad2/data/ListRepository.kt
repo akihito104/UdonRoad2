@@ -22,10 +22,12 @@ import androidx.paging.PagedList
 import com.freshdigitable.udonroad2.model.ListQuery
 import com.freshdigitable.udonroad2.model.PageOption
 import com.freshdigitable.udonroad2.model.QueryType
+import com.freshdigitable.udonroad2.model.SelectedItemId
 
 interface ListRepository<Q : QueryType> {
     val loading: LiveData<Boolean>
 
+    var selectedItemId: SelectedItemId?
     fun loadList(query: ListQuery<Q>, owner: String)
     fun clear(owner: String)
 

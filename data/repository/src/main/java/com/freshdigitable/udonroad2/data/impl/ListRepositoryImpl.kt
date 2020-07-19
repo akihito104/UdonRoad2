@@ -29,6 +29,7 @@ import com.freshdigitable.udonroad2.data.restclient.RemoteListDataSourceProvider
 import com.freshdigitable.udonroad2.model.ListQuery
 import com.freshdigitable.udonroad2.model.PageOption
 import com.freshdigitable.udonroad2.model.QueryType
+import com.freshdigitable.udonroad2.model.SelectedItemId
 import timber.log.Timber
 import java.io.IOException
 
@@ -54,6 +55,8 @@ internal class ListRepositoryImpl<Q : QueryType, E>(
             }
         }
     }
+
+    override var selectedItemId: SelectedItemId? = null
 
     override fun clear(owner: String) {
         executor.launchIO {

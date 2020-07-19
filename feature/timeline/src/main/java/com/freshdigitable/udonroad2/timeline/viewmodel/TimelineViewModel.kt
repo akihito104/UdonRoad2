@@ -84,13 +84,12 @@ class TimelineViewModel(
     override val selectedItemId: ObservableField<SelectedItemId?> = ObservableField()
 
     private fun updateSelectedItem(selected: SelectedItemId) {
-        when (selected) {
-            selectedItemId.get() -> selectedItemId.set(null)
-            else -> selectedItemId.set(selected)
+        homeRepository.selectedItemId = when (selected) {
+            homeRepository.selectedItemId -> null
+            else -> selected
         }
-        navigator.postEvent(
-            TimelineEvent.TweetItemSelected(selectedItemId.get())
-        )
+        navigator.postEvent(TimelineEvent.TweetItemSelected(homeRepository.selectedItemId))
+        selectedItemId.set(homeRepository.selectedItemId)
     }
 
     override fun onBodyItemClicked(item: TweetListItem) {
