@@ -63,8 +63,7 @@ class TimelineViewModel(
             PageOption.OnTail(i.originalId - 1)
         }
 
-    override val loading: LiveData<Boolean>
-        get() = homeRepository.loading
+    override val loading: LiveData<Boolean> = homeRepository.loading
 
     override fun onRefresh() {
         val items = timeline.value
@@ -83,25 +82,18 @@ class TimelineViewModel(
 
     override val selectedItemId: ObservableField<SelectedItemId?> = ObservableField()
 
-    private fun updateSelectedItem(selected: SelectedItemId) {
-        homeRepository.selectedItemId = when (selected) {
-            homeRepository.selectedItemId -> null
-            else -> selected
-        }
-        navigator.postEvent(TimelineEvent.TweetItemSelected(homeRepository.selectedItemId))
-        selectedItemId.set(homeRepository.selectedItemId)
-    }
-
     override fun onBodyItemClicked(item: TweetListItem) {
         Timber.tag("TimelineViewModel").d("onBodyItemClicked: ${item.body.id}")
-        updateSelectedItem(SelectedItemId(item.originalId))
+        updateSelectedItem(SelectedItemId(owner, item.originalId))
     }
 
     override fun onQuoteItemClicked(item: TweetListItem) {
         Timber.tag("TimelineViewModel").d("onQuoteItemClicked: ${item.quoted?.id}")
-        updateSelectedItem(
-            SelectedItemId(item.originalId, item.quoted?.id)
-        )
+        updateSelectedItem(SelectedItemId(owner, item.originalId, item.quoted?.id))
+    }
+
+    private fun updateSelectedItem(selected: SelectedItemId) {
+        navigator.postEvent(TimelineEvent.ToggleTweetItemSelectedState(selected))
     }
 
     override fun onUserIconClicked(user: TweetingUser) {
@@ -109,7 +101,6 @@ class TimelineViewModel(
     }
 
     override fun onMediaItemClicked(originalId: Long, item: Tweet, index: Int) {
-        updateSelectedItem(SelectedItemId(originalId, item.id))
         navigator.postEvent(TimelineEvent.MediaItemClicked(item.id, index))
     }
 }
