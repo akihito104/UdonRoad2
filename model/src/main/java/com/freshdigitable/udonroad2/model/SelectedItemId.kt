@@ -17,7 +17,8 @@
 package com.freshdigitable.udonroad2.model
 
 data class SelectedItemId(
-    val originalId: Long,
+    val owner: ListOwner<*>,
+    val originalId: Long?,
     val quoteId: Long? = null
 ) {
     @JvmOverloads
