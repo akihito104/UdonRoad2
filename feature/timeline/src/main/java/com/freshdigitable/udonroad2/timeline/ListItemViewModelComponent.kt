@@ -24,6 +24,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.paging.PagedListAdapter
 import androidx.savedstate.SavedStateRegistryOwner
+import com.freshdigitable.udonroad2.model.ListOwner
 
 interface ListItemViewModelComponent {
 

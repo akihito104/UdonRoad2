@@ -22,6 +22,7 @@ import androidx.lifecycle.ViewModel
 import androidx.paging.PagedListAdapter
 import androidx.savedstate.SavedStateRegistryOwner
 import com.freshdigitable.udonroad2.data.impl.ListRepositoryModule
+import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.app.ClassKeyMap
 import com.freshdigitable.udonroad2.model.app.valueByAssignableClassObject
@@ -29,7 +30,6 @@ import com.freshdigitable.udonroad2.oauth.OauthListAdapterModule
 import com.freshdigitable.udonroad2.oauth.OauthViewModelModule
 import com.freshdigitable.udonroad2.timeline.ListItemAdapterComponent
 import com.freshdigitable.udonroad2.timeline.ListItemViewModelComponent
-import com.freshdigitable.udonroad2.timeline.ListOwner
 import com.freshdigitable.udonroad2.timeline.listadapter.MemberListListAdapterModule
 import com.freshdigitable.udonroad2.timeline.listadapter.TimelineAdapterModule
 import com.freshdigitable.udonroad2.timeline.listadapter.UserListAdapterModule

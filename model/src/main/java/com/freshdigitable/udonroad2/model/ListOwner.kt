@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-package com.freshdigitable.udonroad2.timeline
-
-import com.freshdigitable.udonroad2.model.QueryType
+package com.freshdigitable.udonroad2.model
 
 data class ListOwner<Q : QueryType>(
     val id: Int,
