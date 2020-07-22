@@ -22,17 +22,15 @@ import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
+import androidx.lifecycle.map
+import androidx.lifecycle.observe
 import com.freshdigitable.udonroad2.R
-import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
 import com.freshdigitable.udonroad2.databinding.ActivityMainBinding
-import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
-import com.freshdigitable.udonroad2.model.app.ext.merge
-import com.freshdigitable.udonroad2.model.app.navigation.Navigation
+import com.freshdigitable.udonroad2.model.app.navigation.CommonEvent
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationDispatcher
 import com.freshdigitable.udonroad2.oauth.OauthEvent
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
@@ -51,11 +49,12 @@ import javax.inject.Inject
 
 class MainActivity : AppCompatActivity(), HasAndroidInjector {
     @Inject
-    lateinit var navigation: Navigation<MainActivityState>
+    lateinit var navigation: MainActivityNav
 
     @Inject
     lateinit var viewModelProvider: ViewModelProvider
     private var actionBarDrawerToggle: ActionBarDrawerToggle? = null
+    val viewModel: MainViewModel by lazy { viewModelProvider[MainViewModel::class.java] }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
@@ -64,7 +63,6 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
             this, R.layout.activity_main
         )
 
-        val viewModel = viewModelProvider[MainViewModel::class.java]
         binding.lifecycleOwner = this
         binding.viewModel = viewModel
 
@@ -74,6 +72,7 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
             setDisplayHomeAsUpEnabled(true)
             setHomeButtonEnabled(true)
         }
+        viewModel.title.observe(this) { supportActionBar?.title = it }
 
         actionBarDrawerToggle = ActionBarDrawerToggle(this, binding.mainDrawer, 0, 0).apply {
             isDrawerIndicatorEnabled = true
@@ -88,7 +87,7 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
                 else -> null
             }
             if (event != null) {
-                navigation.navigator.postEvent(event)
+//                navigation.navigator.postEvent(event)
                 binding.mainDrawer.closeDrawer(binding.mainGlobalMenu)
             }
             return@setNavigationItemSelectedListener event != null
@@ -96,7 +95,7 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
     }
 
     override fun onBackPressed() {
-        navigation.navigator.postEvent(TimelineEvent.Back)
+        viewModel.onBackPressed()
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -117,46 +116,34 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
 
 class MainViewModel(
     private val navigator: NavigationDispatcher,
-    private val oauthTokenRepository: OAuthTokenRepository
+    private val viewSink: MainActivityViewSink
 ) : ViewModel() {
 
-    private val selectedItemId = MutableLiveData<SelectedItemId?>()
-    private val fabVisible = MutableLiveData<Boolean>()
-    val isFabVisible: LiveData<Boolean> = merge(selectedItemId, fabVisible) { selected, visible ->
-        selected != null && visible == true
-    }
+    private val state: LiveData<MainActivityViewState> = viewSink.state
+    val isFabVisible: LiveData<Boolean> = state.map { it.fabVisible }
+    val title: LiveData<String> = state.map { it.title }
 
     internal fun initialEvent() {
-        val event = when {
-            oauthTokenRepository.getCurrentUserId() != null -> {
-                oauthTokenRepository.login()
-                TimelineEvent.Init
-            }
-            else -> OauthEvent.Init
-        }
-        navigator.postEvent(event)
-    }
-
-    fun setFabVisible(visible: Boolean) {
-        fabVisible.value = visible
-    }
-
-    fun setSelectedItemId(selectedItemId: SelectedItemId?) {
-        this.selectedItemId.value = selectedItemId
+        navigator.postEvent(TimelineEvent.Setup)
     }
 
     fun onFabMenuSelected(item: MenuItem) {
         Timber.tag("MainViewModel").d("onFabSelected: $item")
-        val selected = requireNotNull(selectedItemId.value) { "selectedItem should not be null." }
+        val selected =
+            requireNotNull(viewSink.state.value?.selectedItem) { "selectedItem should not be null." }
         when (item.itemId) {
             com.freshdigitable.udonroad2.timeline.R.id.iffabMenu_main_detail -> {
                 navigator.postEvent(
                     TimelineEvent.TweetDetailRequested(
-                        selected.quoteId ?: selected.originalId
+                        selected.quoteId ?: requireNotNull(selected.originalId)
                     )
                 )
             }
         }
+    }
+
+    fun onBackPressed() {
+        navigator.postEvent(CommonEvent.Back(viewSink.state.value))
     }
 }
 
@@ -176,25 +163,20 @@ interface MainActivityModule {
     fun bindViewModelStoreOwner(activity: MainActivity): ViewModelStoreOwner
 
     companion object {
-        @Provides
-        fun provideNavigation(
-            navigator: NavigationDispatcher,
-            activity: MainActivity,
-            viewModelProvider: ViewModelProvider
-        ): Navigation<MainActivityState> {
-            return MainActivityNavigation(
-                navigator,
-                activity,
-                viewModelProvider
-            )
-        }
+//        @Provides
+//        fun provideNavigation(
+//            navigator: NavigationDispatcher,
+//            activity: MainActivity
+//        ): Navigation<MainActivityState> {
+//            return MainActivityNavigation(navigator, activity)
+//        }
 
         @Provides
         fun provideMainViewModel(
             navigator: NavigationDispatcher,
-            oauthTokenRepository: OAuthTokenRepository
+            viewSink: MainActivityViewSink
         ): MainViewModel {
-            return MainViewModel(navigator, oauthTokenRepository)
+            return MainViewModel(navigator, viewSink)
         }
     }
 }

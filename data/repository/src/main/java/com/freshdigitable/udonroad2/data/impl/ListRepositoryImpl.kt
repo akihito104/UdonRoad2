@@ -33,6 +33,8 @@ import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import timber.log.Timber
 import java.io.IOException
+import javax.inject.Inject
+import javax.inject.Singleton
 
 internal class ListRepositoryImpl<Q : QueryType, E>(
     private val localDataSource: LocalListDataSource<Q, E>,
@@ -63,6 +65,28 @@ internal class ListRepositoryImpl<Q : QueryType, E>(
         executor.launchIO {
             localDataSource.clean(owner)
         }
+    }
+}
+
+@Singleton
+class SelectedItemRepository @Inject constructor() {
+    private val selectedItems: MutableMap<ListOwner<*>, SelectedItemId> =
+        mutableMapOf()
+
+    fun put(itemId: SelectedItemId) {
+        if (itemId.originalId == null) {
+            remove(itemId.owner)
+        } else {
+            selectedItems[itemId.owner] = itemId
+        }
+    }
+
+    fun remove(owner: ListOwner<*>) {
+        selectedItems.remove(owner)
+    }
+
+    fun find(owner: ListOwner<*>): SelectedItemId? {
+        return selectedItems[owner]
     }
 }
 
