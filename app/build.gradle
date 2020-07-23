@@ -100,6 +100,7 @@ dependencies {
     testImplementation "io.mockk:mockk:$mockk_version"
     testImplementation "com.google.truth:truth:$truth_version"
     testImplementation "androidx.test:core:$androidx_test_core_version"
+    testImplementation "androidx.arch.core:core-testing:2.1.0"
     testImplementation "androidx.test.ext:junit:$androidx_junit_ext_version"
     testImplementation "androidx.test:runner:$androidTestRunner_version"
     testImplementation "org.robolectric:robolectric:$robolectric_version"
