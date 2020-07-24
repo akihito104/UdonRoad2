@@ -22,96 +22,29 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.distinctUntilChanged
+import androidx.lifecycle.map
 import androidx.lifecycle.observe
 import androidx.lifecycle.toLiveData
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import com.freshdigitable.udonroad2.R
-import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
-import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
 import com.freshdigitable.udonroad2.media.MediaActivityArgs
-import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
+import com.freshdigitable.udonroad2.model.app.navigation.AppViewState
 import com.freshdigitable.udonroad2.model.app.navigation.ViewState
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragment
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentDirections
 import com.freshdigitable.udonroad2.user.UserActivityDirections
-import io.reactivex.Flowable
+import io.reactivex.BackpressureStrategy
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
-import timber.log.Timber
 import javax.inject.Inject
-
-class MainActivityStateModel @Inject constructor(
-    action: MainActivityAction,
-    tokenRepository: OAuthTokenRepository,
-    selectedItemRepository: SelectedItemRepository
-) {
-    private val firstContainerState: Flowable<MainActivityState> = action.showFirstView.map {
-        Timber.tag("StateModel").d("firstContainerState: $it")
-        when {
-            tokenRepository.getCurrentUserId() != null -> {
-                tokenRepository.login()
-                MainActivityState.Init(QueryType.TweetQueryType.Timeline())
-            }
-            else -> MainActivityState.Init(QueryType.Oauth)
-        }
-    }
-    val containerState: Flowable<MainActivityState> = Flowable.merge(
-        firstContainerState,
-        action.showTimeline.map {
-            when (it) {
-                is QueryType.TweetQueryType.Timeline,
-                is QueryType.Oauth -> MainActivityState.Timeline(it)
-                else -> TODO("not implemented")
-            }
-        },
-        action.showTweetDetail.map { MainActivityState.TweetDetail(it.tweetId) }
-    )
-
-    val selectedItemId: Flowable<SelectedItemId> = Flowable.merge(
-        action.changeItemSelectState.map {
-            selectedItemRepository.put(it.selectedItemId)
-            selectedItemRepository.find(it.selectedItemId.owner)
-                ?: SelectedItemId(it.selectedItemId.owner, null)
-        },
-        action.toggleSelectedItem.map {
-            val current = selectedItemRepository.find(it.item.owner)
-            when (it.item) {
-                current -> selectedItemRepository.remove(it.item.owner)
-                else -> selectedItemRepository.put(it.item)
-            }
-            selectedItemRepository.find(it.item.owner) ?: SelectedItemId(it.item.owner, null)
-        }
-    )
-
-    val isFabVisible: Flowable<Boolean> = selectedItemId.map { it.originalId != null }
-
-    val title: Flowable<String> = containerState
-        .filter { it is MainActivityState.Init || it is MainActivityState.Timeline || it is MainActivityState.TweetDetail }
-        .map {
-            when (it) {
-                is MainActivityState.Init, is MainActivityState.Timeline -> {
-                    val queryType = when (it) {
-                        is MainActivityState.Init -> it.type
-                        is MainActivityState.Timeline -> it.type
-                        else -> throw IllegalStateException()
-                    }
-                    when (queryType) {
-                        is QueryType.TweetQueryType.Timeline -> "Home"
-                        is QueryType.Oauth -> "Welcome"
-                        else -> throw IllegalStateException()
-                    }
-                }
-                is MainActivityState.TweetDetail -> "Tweet"
-            }
-        }
-}
 
 class MainActivityViewSink @Inject constructor(
     stateModel: MainActivityStateModel
 ) {
-    val state: LiveData<MainActivityViewState> = Flowable.combineLatest(
+    val state: LiveData<MainActivityViewState> = AppViewState.combineLatest(
         listOf(
             stateModel.containerState,
             stateModel.title,
@@ -126,7 +59,7 @@ class MainActivityViewSink @Inject constructor(
             fabVisible = isFabVisible as Boolean
         )
     }
-//        .toFlowable(BackpressureStrategy.BUFFER)
+        .toFlowable(BackpressureStrategy.BUFFER)
         .toLiveData()
 }
 
@@ -167,8 +100,8 @@ class MainActivityNav @Inject constructor(
         }.addTo(disposables)
         activity.lifecycle.addObserver(this)
 
-        viewSink.state.observe(activity) {
-            when (val containerState = it.containerState) {
+        viewSink.state.map { it.containerState }.distinctUntilChanged().observe(activity) {
+            when (val containerState = it) {
                 is MainActivityState.Init -> {
                     navController.setGraph(
                         R.navigation.nav_main,

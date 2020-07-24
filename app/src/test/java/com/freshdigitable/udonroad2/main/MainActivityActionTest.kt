@@ -16,8 +16,11 @@
 
 package com.freshdigitable.udonroad2.main
 
+import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.QueryType
+import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationDispatcher
+import com.freshdigitable.udonroad2.oauth.OauthEvent
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import org.junit.Test
 
@@ -53,6 +56,45 @@ class MainActivityActionTest {
         test.assertOf {
             it.assertNoErrors()
             it.assertValueSequence(listOf(QueryType.TweetQueryType.Timeline()))
+        }
+    }
+
+    @Test
+    fun showFirstView_dispatchOauthSucceededEvent_then_SetupIsFlowing() {
+        // setup
+        val test = mainActivityAction.showFirstView.test()
+
+        // exercise
+        navigationDispatcher.postEvent(OauthEvent.OauthSucceeded)
+
+        // verify
+        test.assertOf {
+            it.assertNoErrors()
+            it.assertValueSequence(listOf(TimelineEvent.Setup))
+        }
+    }
+
+    @Test
+    fun dispatch2Events() {
+        val testShowFirstView = mainActivityAction.showFirstView.test()
+        val testToggleSelectedItem = mainActivityAction.toggleSelectedItem.test()
+
+        navigationDispatcher.postEvent(TimelineEvent.Setup)
+        navigationDispatcher.postEvent(
+            TimelineEvent.ToggleTweetItemSelectedState(
+                SelectedItemId(
+                    ListOwner(0, QueryType.TweetQueryType.Timeline()), null
+                )
+            )
+        )
+
+        testShowFirstView.assertOf {
+            it.assertNotComplete()
+            it.assertValueCount(1)
+        }
+        testToggleSelectedItem.assertOf {
+            it.assertNotComplete()
+            it.assertValueCount(1)
         }
     }
 }

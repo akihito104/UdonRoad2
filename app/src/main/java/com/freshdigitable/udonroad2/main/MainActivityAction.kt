@@ -28,7 +28,6 @@ import com.freshdigitable.udonroad2.model.app.navigation.filterByType
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
 import com.freshdigitable.udonroad2.oauth.OauthEvent
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
-import io.reactivex.Flowable
 import javax.inject.Inject
 
 @ActivityScope
@@ -36,7 +35,10 @@ class MainActivityAction @Inject constructor(
     dispatcher: NavigationDispatcher
 ) {
     val showFirstView: AppAction<TimelineEvent.Setup> = dispatcher.toAction {
-        filterByType<TimelineEvent.Setup>()
+        AppAction.merge(
+            filterByType<TimelineEvent.Setup>(),
+            filterByType<OauthEvent.OauthSucceeded>().map { TimelineEvent.Setup }
+        )
     }
 
     val authApp: AppAction<OauthEvent.OauthRequested> = dispatcher.toAction {
@@ -44,7 +46,7 @@ class MainActivityAction @Inject constructor(
     }
 
     val showTimeline: AppAction<QueryType> = dispatcher.toAction {
-        Flowable.merge(
+        AppAction.merge(
             filterByType<OauthEvent.Init>().map { QueryType.Oauth },
             filterByType<TimelineEvent.Init>().map { QueryType.TweetQueryType.Timeline() }
         )
@@ -64,7 +66,7 @@ class MainActivityAction @Inject constructor(
             }
         }
     val changeItemSelectState: AppAction<TimelineEvent.TweetItemSelected> = dispatcher.toAction {
-        Flowable.merge(
+        AppAction.merge(
             filterByType<TimelineEvent.TweetItemSelected>(),
             backDispatched.filterByType<TimelineEvent.TweetItemSelected>()
         )
@@ -81,7 +83,7 @@ class MainActivityAction @Inject constructor(
     val rollbackViewState: AppAction<CommonEvent.Back> = backDispatched.filterByType()
 
     val launchUserInfo: AppAction<TweetingUser> = dispatcher.toAction {
-        Flowable.merge(
+        AppAction.merge(
             filterByType<TimelineEvent.UserIconClicked>().map { it.user },
             filterByType<TimelineEvent.RetweetUserClicked>().map { it.user }
         )

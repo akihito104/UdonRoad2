@@ -1,6 +1,5 @@
 package com.freshdigitable.udonroad2.model.app.navigation
 
-import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
@@ -11,32 +10,35 @@ import com.freshdigitable.udonroad2.model.app.di.ActivityScope
 import io.reactivex.Flowable
 import io.reactivex.Observable
 import io.reactivex.disposables.Disposable
-import io.reactivex.processors.BehaviorProcessor
-import io.reactivex.processors.PublishProcessor
+import io.reactivex.subjects.BehaviorSubject
+import io.reactivex.subjects.PublishSubject
 import javax.inject.Inject
 
 @ActivityScope
 class NavigationDispatcher @Inject constructor() {
-    val emitter = PublishProcessor.create<NavigationEvent>()
+    val emitter = PublishSubject.create<NavigationEvent>()
 
     fun postEvent(event: NavigationEvent) {
         emitter.onNext(event)
     }
 }
 
-typealias AppAction<T> = Flowable<T>
+typealias AppAction<T> = Observable<T>
+typealias AppViewState<T> = Observable<T>
 
 inline fun <T> NavigationDispatcher.toAction(
-    block: PublishProcessor<NavigationEvent>.() -> Flowable<T>
+    block: PublishSubject<NavigationEvent>.() -> AppAction<T>
 ): AppAction<T> {
-    return BehaviorProcessor.create<T>().also { action ->
-        action.doOnEach {
-            Log.d(
-                "Dispatcher",
-                "onNext>${it.isOnNext}, onError>${it.isOnError}, onComplete>${it.isOnComplete}, val>${it.value}"
-            )
-        }
+    return PublishSubject.create<T>().also { action ->
         this.emitter.block().subscribe(action)
+    }
+}
+
+inline fun <T, reified E> AppAction<T>.toViewState(
+    block: AppAction<T>.() -> AppViewState<E> = { cast(E::class.java) }
+): AppViewState<E> {
+    return BehaviorSubject.create<E>().also { action ->
+        this.block().subscribe(action)
     }
 }
 

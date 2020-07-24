@@ -70,8 +70,7 @@ internal class ListRepositoryImpl<Q : QueryType, E>(
 
 @Singleton
 class SelectedItemRepository @Inject constructor() {
-    private val selectedItems: MutableMap<ListOwner<*>, SelectedItemId> =
-        mutableMapOf()
+    private val selectedItems: MutableMap<ListOwner<*>, SelectedItemId> = mutableMapOf()
 
     fun put(itemId: SelectedItemId) {
         if (itemId.originalId == null) {
