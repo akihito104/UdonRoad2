@@ -21,12 +21,14 @@ import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
+import com.freshdigitable.udonroad2.model.app.di.ActivityScope
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.AppViewState
 import com.freshdigitable.udonroad2.model.app.navigation.toViewState
 import timber.log.Timber
 import javax.inject.Inject
 
+@ActivityScope
 class MainActivityStateModel @Inject constructor(
     action: MainActivityAction,
     tokenRepository: OAuthTokenRepository,

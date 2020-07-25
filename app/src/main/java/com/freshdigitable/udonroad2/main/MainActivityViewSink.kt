@@ -31,6 +31,7 @@ import androidx.navigation.findNavController
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.media.MediaActivityArgs
 import com.freshdigitable.udonroad2.model.SelectedItemId
+import com.freshdigitable.udonroad2.model.app.di.ActivityScope
 import com.freshdigitable.udonroad2.model.app.navigation.AppViewState
 import com.freshdigitable.udonroad2.model.app.navigation.ViewState
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragment
@@ -41,6 +42,7 @@ import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
 import javax.inject.Inject
 
+@ActivityScope
 class MainActivityViewSink @Inject constructor(
     stateModel: MainActivityStateModel
 ) {
