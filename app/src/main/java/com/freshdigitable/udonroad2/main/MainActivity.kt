@@ -49,7 +49,7 @@ import javax.inject.Inject
 
 class MainActivity : AppCompatActivity(), HasAndroidInjector {
     @Inject
-    lateinit var navigation: MainActivityNav
+    lateinit var navigation: MainActivityNavigation
 
     @Inject
     lateinit var viewModelProvider: ViewModelProvider
