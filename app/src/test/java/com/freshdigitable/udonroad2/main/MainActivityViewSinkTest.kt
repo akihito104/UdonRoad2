@@ -17,15 +17,18 @@
 package com.freshdigitable.udonroad2.main
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import androidx.lifecycle.Observer
 import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
 import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
+import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.QueryType
+import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationDispatcher
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
+import com.google.common.truth.Truth.assertThat
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
-import io.mockk.verify
+import io.mockk.runs
 import org.junit.Rule
 import org.junit.Test
 
@@ -44,20 +47,39 @@ class MainActivityViewSinkTest {
     )
 
     @Test
-    fun state() {
+    fun state_dispatchSetupEvent_then_containerStateIsInit() {
         // setup
         every { tokenRepository.getCurrentUserId() } returns null
-        val stateObserver = mockk<Observer<MainActivityViewState>>(relaxed = true)
-        sut.state.observeForever(stateObserver)
+        sut.state.observeForever {}
 
         // exercise
         dispatcher.postEvent(TimelineEvent.Setup)
 
         // verify
-        verify {
-            stateObserver.onChanged(match {
-                it.containerState == MainActivityState.Init(QueryType.Oauth)
-            })
-        }
+        assertThat(sut.state.value?.containerState)
+            .isEqualTo(MainActivityState.Init(QueryType.Oauth))
+    }
+
+    @Test
+    fun state_dispatchToggleTweetEvent_then_fabVisibleIsTrue() {
+        // setup
+        every { tokenRepository.getCurrentUserId() } returns 100000L
+        every { tokenRepository.login(100000L) } just runs
+        sut.state.observeForever {}
+
+        // exercise
+        dispatcher.postEvent(TimelineEvent.Setup)
+        dispatcher.postEvent(
+            TimelineEvent.ToggleTweetItemSelectedState(
+                SelectedItemId(
+                    ListOwner(0, QueryType.TweetQueryType.Timeline()), 20000L
+                )
+            )
+        )
+
+        // verify
+        assertThat(sut.state.value?.containerState)
+            .isEqualTo(MainActivityState.Init(QueryType.TweetQueryType.Timeline()))
+        assertThat(sut.state.value?.fabVisible).isTrue()
     }
 }
