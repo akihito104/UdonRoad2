@@ -26,6 +26,8 @@ class NavigationDispatcher @Inject constructor() {
 typealias AppAction<T> = Observable<T>
 typealias AppViewState<T> = Observable<T>
 
+data class StateHolder<T>(val value: T?)
+
 inline fun <T> NavigationDispatcher.toAction(
     block: PublishSubject<NavigationEvent>.() -> AppAction<T>
 ): AppAction<T> {

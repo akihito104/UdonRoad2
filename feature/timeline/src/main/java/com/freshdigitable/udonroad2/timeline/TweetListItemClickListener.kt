@@ -1,6 +1,6 @@
 package com.freshdigitable.udonroad2.timeline
 
-import androidx.databinding.ObservableField
+import androidx.lifecycle.LiveData
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.Tweet
 import com.freshdigitable.udonroad2.model.TweetListItem
@@ -17,5 +17,5 @@ interface TweetListItemClickListener : ListItemClickListener<TweetListItem> {
 }
 
 interface TweetListEventListener {
-    val selectedItemId: ObservableField<SelectedItemId?>
+    val selectedItemId: LiveData<SelectedItemId?>
 }

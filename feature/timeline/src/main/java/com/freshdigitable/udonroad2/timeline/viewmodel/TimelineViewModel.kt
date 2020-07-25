@@ -16,7 +16,6 @@
 
 package com.freshdigitable.udonroad2.timeline.viewmodel
 
-import androidx.databinding.ObservableField
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.paging.PagedList
@@ -52,6 +51,7 @@ import kotlin.reflect.KClass
 class TimelineViewModel(
     private val owner: ListOwner<TweetQueryType>,
     private val navigator: NavigationDispatcher,
+    viewSink: FragmentContainerViewSink,
     private val homeRepository: ListRepository<TweetQueryType>,
     pagedListProvider: PagedListProvider<TweetQueryType, TweetListItem>
 ) : ListItemLoadable<TweetQueryType, TweetListItem>,
@@ -80,7 +80,7 @@ class TimelineViewModel(
         homeRepository.clear(owner.value)
     }
 
-    override val selectedItemId: ObservableField<SelectedItemId?> = ObservableField()
+    override val selectedItemId: LiveData<SelectedItemId?> = viewSink.containerState
 
     override fun onBodyItemClicked(item: TweetListItem) {
         Timber.tag("TimelineViewModel").d("onBodyItemClicked: ${item.body.id}")
@@ -105,6 +105,10 @@ class TimelineViewModel(
     }
 }
 
+interface FragmentContainerViewSink {
+    val containerState: LiveData<SelectedItemId?>
+}
+
 @Module
 interface TimelineViewModelModule {
     companion object {
@@ -112,6 +116,7 @@ interface TimelineViewModelModule {
         fun provideTimelineViewModel(
             owner: ListOwner<*>,
             navigator: NavigationDispatcher,
+            viewSink: FragmentContainerViewSink,
             localListDataSourceProvider: LocalListDataSourceProvider,
             remoteListDataSourceProvider: RemoteListDataSourceProvider,
             pagedListDataSourceFactoryProvider: PagedListDataSourceFactoryProvider,
@@ -130,7 +135,7 @@ interface TimelineViewModelModule {
                     repository,
                     executor
                 )
-            return TimelineViewModel(o, navigator, repository, pagedListProvider)
+            return TimelineViewModel(o, navigator, viewSink, repository, pagedListProvider)
         }
 
         @Provides

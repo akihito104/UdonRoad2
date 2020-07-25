@@ -59,7 +59,7 @@ class MainActivityStateModelTest {
             it.assertNotComplete()
         }
         testSelectedItemId.assertOf {
-            it.assertValue { actual -> actual.originalId == null }
+            it.assertValue { actual -> actual.value?.originalId == null }
         }
     }
 
@@ -99,8 +99,8 @@ class MainActivityStateModelTest {
         testSelectedItemId.assertOf {
             it.assertNotComplete()
             it.assertValueCount(2)
-            it.assertValueAt(0) { actual -> actual.originalId == null }
-            it.assertValueAt(1) { actual -> actual.originalId == 200L }
+            it.assertValueAt(0) { actual -> actual.value?.originalId == null }
+            it.assertValueAt(1) { actual -> actual.value?.originalId == 200L }
         }
     }
 }

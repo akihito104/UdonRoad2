@@ -22,6 +22,7 @@ import androidx.lifecycle.ViewModel
 import androidx.paging.PagedListAdapter
 import androidx.savedstate.SavedStateRegistryOwner
 import com.freshdigitable.udonroad2.data.impl.ListRepositoryModule
+import com.freshdigitable.udonroad2.main.MainActivityViewSink
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.app.ClassKeyMap
@@ -33,9 +34,11 @@ import com.freshdigitable.udonroad2.timeline.ListItemViewModelComponent
 import com.freshdigitable.udonroad2.timeline.listadapter.MemberListListAdapterModule
 import com.freshdigitable.udonroad2.timeline.listadapter.TimelineAdapterModule
 import com.freshdigitable.udonroad2.timeline.listadapter.UserListAdapterModule
+import com.freshdigitable.udonroad2.timeline.viewmodel.FragmentContainerViewSink
 import com.freshdigitable.udonroad2.timeline.viewmodel.MemberListListViewModelModule
 import com.freshdigitable.udonroad2.timeline.viewmodel.TimelineViewModelModule
 import com.freshdigitable.udonroad2.timeline.viewmodel.UserListViewModelModule
+import dagger.Binds
 import dagger.BindsInstance
 import dagger.Module
 import dagger.Provides
@@ -51,6 +54,9 @@ interface ListItemViewModelModule {
             builder: ListItemViewModelComponentImpl.Builder
         ): ListItemViewModelComponent.Builder = builder
     }
+
+    @Binds
+    fun bindMainActivityViewSink(viewSink: MainActivityViewSink): FragmentContainerViewSink
 }
 
 @Subcomponent(

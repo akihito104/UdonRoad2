@@ -33,9 +33,11 @@ import com.freshdigitable.udonroad2.media.MediaActivityArgs
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.app.di.ActivityScope
 import com.freshdigitable.udonroad2.model.app.navigation.AppViewState
+import com.freshdigitable.udonroad2.model.app.navigation.StateHolder
 import com.freshdigitable.udonroad2.model.app.navigation.ViewState
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragment
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentDirections
+import com.freshdigitable.udonroad2.timeline.viewmodel.FragmentContainerViewSink
 import com.freshdigitable.udonroad2.user.UserActivityDirections
 import io.reactivex.BackpressureStrategy
 import io.reactivex.disposables.CompositeDisposable
@@ -45,7 +47,7 @@ import javax.inject.Inject
 @ActivityScope
 class MainActivityViewSink @Inject constructor(
     stateModel: MainActivityStateModel
-) {
+) : FragmentContainerViewSink {
     val state: LiveData<MainActivityViewState> = AppViewState.combineLatest(
         listOf(
             stateModel.containerState,
@@ -57,12 +59,14 @@ class MainActivityViewSink @Inject constructor(
         MainActivityViewState(
             containerState = containerState as MainActivityState,
             title = title as String,
-            selectedItem = selectedItemId as SelectedItemId,
+            selectedItem = (selectedItemId as StateHolder<SelectedItemId>).value,
             fabVisible = isFabVisible as Boolean
         )
     }
         .toFlowable(BackpressureStrategy.BUFFER)
         .toLiveData()
+
+    override val containerState: LiveData<SelectedItemId?> = state.map { it.selectedItem }
 }
 
 data class MainActivityViewState(

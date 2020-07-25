@@ -18,12 +18,12 @@ package com.freshdigitable.udonroad2.main
 
 import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
 import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
-import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.app.di.ActivityScope
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.AppViewState
+import com.freshdigitable.udonroad2.model.app.navigation.StateHolder
 import com.freshdigitable.udonroad2.model.app.navigation.toViewState
 import timber.log.Timber
 import javax.inject.Inject
@@ -60,12 +60,10 @@ class MainActivityStateModel @Inject constructor(
         action.showTweetDetail.map { MainActivityState.TweetDetail(it.tweetId) }
     ).toViewState()
 
-
-    val selectedItemId: AppViewState<SelectedItemId> = AppAction.merge(
+    val selectedItemId: AppViewState<StateHolder<SelectedItemId>> = AppAction.merge(
         action.changeItemSelectState.map {
             selectedItemRepository.put(it.selectedItemId)
-            selectedItemRepository.find(it.selectedItemId.owner)
-                ?: SelectedItemId(it.selectedItemId.owner, null)
+            StateHolder(selectedItemRepository.find(it.selectedItemId.owner))
         },
         action.toggleSelectedItem.map {
             val current = selectedItemRepository.find(it.item.owner)
@@ -73,21 +71,13 @@ class MainActivityStateModel @Inject constructor(
                 current -> selectedItemRepository.remove(it.item.owner)
                 else -> selectedItemRepository.put(it.item)
             }
-            selectedItemRepository.find(it.item.owner) ?: SelectedItemId(it.item.owner, null)
+            StateHolder(selectedItemRepository.find(it.item.owner))
         },
-        containerState
-            .filter { it is MainActivityState.Init || it is MainActivityState.Timeline }
-            .map { // TODO
-                when (it) {
-                    is MainActivityState.Init -> SelectedItemId(ListOwner(-1, it.type), null)
-                    is MainActivityState.Timeline -> SelectedItemId(ListOwner(-1, it.type), null)
-                    else -> throw IllegalStateException()
-                }
-            }
+        containerState.map { StateHolder(null) }
     ).toViewState()
 
     val isFabVisible: AppViewState<Boolean> = selectedItemId.toViewState {
-        map { item -> item.originalId != null }
+        map { item -> item.value != null }
     }
 
     val title: AppViewState<String> = containerState.toViewState {
