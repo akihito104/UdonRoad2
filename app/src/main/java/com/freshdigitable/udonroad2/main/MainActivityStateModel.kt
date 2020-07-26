@@ -25,6 +25,8 @@ import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.AppViewState
 import com.freshdigitable.udonroad2.model.app.navigation.StateHolder
 import com.freshdigitable.udonroad2.model.app.navigation.toViewState
+import com.freshdigitable.udonroad2.oauth.OauthEvent
+import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -34,30 +36,39 @@ class MainActivityStateModel @Inject constructor(
     tokenRepository: OAuthTokenRepository,
     selectedItemRepository: SelectedItemRepository
 ) {
-    private val firstContainerState: AppViewState<out MainActivityState> =
+    private val firstContainerState: AppViewState<out MainNavHostState> =
         action.showFirstView.toViewState {
             map {
                 Timber.tag("StateModel").d("firstContainerState: $it")
                 when {
                     tokenRepository.getCurrentUserId() != null -> {
                         tokenRepository.login()
-                        MainActivityState.Init(QueryType.TweetQueryType.Timeline())
+                        MainNavHostState.Timeline(
+                            QueryType.TweetQueryType.Timeline(),
+                            MainNavHostState.Cause.INIT
+                        )
                     }
-                    else -> MainActivityState.Init(QueryType.Oauth)
+                    else -> MainNavHostState.Timeline(QueryType.Oauth, MainNavHostState.Cause.INIT)
                 }
             }
         }
 
-    val containerState: AppViewState<MainActivityState> = AppAction.merge(
+    val containerState: AppViewState<MainNavHostState> = AppAction.merge(
         firstContainerState,
         action.showTimeline.map {
             when (it) {
-                is QueryType.TweetQueryType.Timeline,
-                is QueryType.Oauth -> MainActivityState.Timeline(it)
+                is OauthEvent.Init -> MainNavHostState.Timeline(
+                    QueryType.Oauth,
+                    MainNavHostState.Cause.INIT
+                )
+                is TimelineEvent.Init -> MainNavHostState.Timeline(
+                    QueryType.TweetQueryType.Timeline(),
+                    MainNavHostState.Cause.INIT
+                )
                 else -> TODO("not implemented")
             }
         },
-        action.showTweetDetail.map { MainActivityState.TweetDetail(it.tweetId) }
+        action.showTweetDetail.map { MainNavHostState.TweetDetail(it.tweetId) }
     ).toViewState()
 
     val selectedItemId: AppViewState<StateHolder<SelectedItemId>> = AppAction.merge(
@@ -78,29 +89,5 @@ class MainActivityStateModel @Inject constructor(
 
     val isFabVisible: AppViewState<Boolean> = selectedItemId.toViewState {
         map { item -> item.value != null }
-    }
-
-    val title: AppViewState<String> = containerState.toViewState {
-        filter {
-            it is MainActivityState.Init ||
-                it is MainActivityState.Timeline ||
-                it is MainActivityState.TweetDetail
-        }.map {
-            when (it) {
-                is MainActivityState.Init, is MainActivityState.Timeline -> {
-                    val queryType = when (it) {
-                        is MainActivityState.Init -> it.type
-                        is MainActivityState.Timeline -> it.type
-                        else -> throw IllegalStateException()
-                    }
-                    when (queryType) {
-                        is QueryType.TweetQueryType.Timeline -> "Home"
-                        is QueryType.Oauth -> "Welcome"
-                        else -> throw IllegalStateException()
-                    }
-                }
-                is MainActivityState.TweetDetail -> "Tweet"
-            }
-        }
     }
 }

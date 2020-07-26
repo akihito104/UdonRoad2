@@ -55,7 +55,7 @@ class MainActivityActionTest {
         // verify
         test.assertOf {
             it.assertNoErrors()
-            it.assertValueSequence(listOf(QueryType.TweetQueryType.Timeline()))
+            it.assertValueSequence(listOf(TimelineEvent.Init))
         }
     }
 

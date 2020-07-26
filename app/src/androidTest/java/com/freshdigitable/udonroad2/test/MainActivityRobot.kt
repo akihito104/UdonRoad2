@@ -17,6 +17,7 @@
 package com.freshdigitable.udonroad2.test
 
 import android.widget.TextView
+import androidx.annotation.StringRes
 import androidx.test.espresso.Espresso
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.ViewInteraction
@@ -46,6 +47,10 @@ interface ActivityRobot {
         fun actionBarTitle(title: String) {
             actionBarTitle.check(matches(withText(title)))
         }
+
+        fun actionBarTitle(@StringRes titleRes: Int) {
+            actionBarTitle.check(matches(withText(titleRes)))
+        }
     }
 
     fun pressBack() {
@@ -73,6 +78,10 @@ class MainActivityRobot : ActivityRobot {
 
     fun checkActionBarTitle(title: String) {
         verifyRobot.actionBarTitle(title)
+    }
+
+    fun checkActionBarTitle(@StringRes titleRes: Int) {
+        verifyRobot.actionBarTitle(titleRes)
     }
 
     infix fun verify(block: Verify.() -> Unit) {

@@ -25,8 +25,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
+import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.map
-import androidx.lifecycle.observe
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.databinding.ActivityMainBinding
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
@@ -72,7 +72,6 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
             setDisplayHomeAsUpEnabled(true)
             setHomeButtonEnabled(true)
         }
-        viewModel.title.observe(this) { supportActionBar?.title = it }
 
         actionBarDrawerToggle = ActionBarDrawerToggle(this, binding.mainDrawer, 0, 0).apply {
             isDrawerIndicatorEnabled = true
@@ -120,8 +119,7 @@ class MainViewModel(
 ) : ViewModel() {
 
     private val state: LiveData<MainActivityViewState> = viewSink.state
-    val isFabVisible: LiveData<Boolean> = state.map { it.fabVisible }
-    val title: LiveData<String> = state.map { it.title }
+    val isFabVisible: LiveData<Boolean> = state.map { it.fabVisible }.distinctUntilChanged()
 
     internal fun initialEvent() {
         navigator.postEvent(TimelineEvent.Setup)
@@ -163,14 +161,6 @@ interface MainActivityModule {
     fun bindViewModelStoreOwner(activity: MainActivity): ViewModelStoreOwner
 
     companion object {
-//        @Provides
-//        fun provideNavigation(
-//            navigator: NavigationDispatcher,
-//            activity: MainActivity
-//        ): Navigation<MainActivityState> {
-//            return MainActivityNavigation(navigator, activity)
-//        }
-
         @Provides
         fun provideMainViewModel(
             navigator: NavigationDispatcher,

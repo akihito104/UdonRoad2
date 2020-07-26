@@ -10,6 +10,7 @@ import androidx.lifecycle.map
 import androidx.lifecycle.observe
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
+import androidx.navigation.ui.setupActionBarWithNavController
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.media.MediaActivityArgs
 import com.freshdigitable.udonroad2.model.QueryType
@@ -54,13 +55,25 @@ class MainActivityNavigation @Inject constructor(
 
         viewSink.state.map { it.containerState }.distinctUntilChanged().observe(activity) {
             when (val containerState = it) {
-                is MainActivityState.Init -> {
-                    navController.setGraph(
-                        R.navigation.nav_main,
-                        ListItemFragment.bundle(containerState.type)
-                    )
+                is MainNavHostState.Timeline -> {
+                    when (containerState.cause) {
+                        MainNavHostState.Cause.INIT -> {
+                            navController.setGraph(
+                                R.navigation.nav_main,
+                                ListItemFragment.bundle(
+                                    containerState.type,
+                                    activity.getString(containerState.label)
+                                )
+                            )
+                            activity.setupActionBarWithNavController(navController)
+                        }
+                        MainNavHostState.Cause.NAVIGATION -> TODO()
+                        MainNavHostState.Cause.BACK -> {
+                            navController.popBackStack()
+                        }
+                    }
                 }
-                is MainActivityState.TweetDetail -> {
+                is MainNavHostState.TweetDetail -> {
                     navController.navigate(
                         ListItemFragmentDirections.actionTimelineToDetail(containerState.tweetId)
                     )
@@ -80,8 +93,21 @@ class MainActivityNavigation @Inject constructor(
     }
 }
 
-sealed class MainActivityState : FragmentContainerState {
-    data class Init(val type: QueryType) : MainActivityState()
-    data class Timeline(val type: QueryType) : MainActivityState()
-    data class TweetDetail(val tweetId: Long) : MainActivityState()
+sealed class MainNavHostState : FragmentContainerState {
+    data class Timeline(val type: QueryType, override val cause: Cause) : MainNavHostState() {
+        val label: Int = when (type) {
+            QueryType.Oauth -> R.string.title_oauth
+            is QueryType.TweetQueryType.Timeline -> {
+                if (type.userId == null) R.string.title_home else 0
+            }
+            else -> TODO()
+        }
+    }
+
+    data class TweetDetail(val tweetId: Long, override val cause: Cause = Cause.NAVIGATION) :
+        MainNavHostState()
+
+    abstract val cause: Cause
+
+    enum class Cause { INIT, NAVIGATION, BACK }
 }

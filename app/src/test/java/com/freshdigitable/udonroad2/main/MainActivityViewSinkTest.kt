@@ -57,7 +57,7 @@ class MainActivityViewSinkTest {
 
         // verify
         assertThat(sut.state.value?.containerState)
-            .isEqualTo(MainActivityState.Init(QueryType.Oauth))
+            .isEqualTo(MainNavHostState.Timeline(QueryType.Oauth, MainNavHostState.Cause.INIT))
     }
 
     @Test
@@ -79,7 +79,12 @@ class MainActivityViewSinkTest {
 
         // verify
         assertThat(sut.state.value?.containerState)
-            .isEqualTo(MainActivityState.Init(QueryType.TweetQueryType.Timeline()))
+            .isEqualTo(
+                MainNavHostState.Timeline(
+                    QueryType.TweetQueryType.Timeline(),
+                    MainNavHostState.Cause.INIT
+                )
+            )
         assertThat(sut.state.value?.fabVisible).isTrue()
     }
 }

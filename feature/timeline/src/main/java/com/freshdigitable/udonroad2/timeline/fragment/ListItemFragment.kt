@@ -81,14 +81,14 @@ class ListItemFragment : Fragment() {
     companion object {
         private val ownerIdGen = AtomicInteger(0)
 
-        fun newInstance(query: QueryType): ListItemFragment {
+        fun newInstance(query: QueryType, label: String = ""): ListItemFragment {
             return ListItemFragment().apply {
-                arguments = bundle(query)
+                arguments = bundle(query, label)
             }
         }
 
-        fun bundle(query: QueryType): Bundle {
-            return ListItemFragmentArgs(query, ownerIdGen.getAndIncrement()).toBundle()
+        fun bundle(query: QueryType, label: String): Bundle {
+            return ListItemFragmentArgs(query, ownerIdGen.getAndIncrement(), label).toBundle()
         }
     }
 }

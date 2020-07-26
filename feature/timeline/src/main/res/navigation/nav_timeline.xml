@@ -25,6 +25,7 @@
     <fragment
         android:id="@+id/fragment_timeline"
         android:name="com.freshdigitable.udonroad2.timeline.fragment.ListItemFragment"
+        android:label="{label}"
         tools:layout="@layout/fragment_timeline"
         >
         <argument
@@ -34,6 +35,10 @@
         <argument
             android:name="owner_id"
             app:argType="integer"
+            />
+        <argument
+            android:name="label"
+            app:argType="string"
             />
 
         <action
@@ -45,6 +50,7 @@
     <fragment
         android:id="@+id/fragment_detail"
         android:name="com.freshdigitable.udonroad2.timeline.fragment.TweetDetailFragment"
+        android:label="@string/title_detail"
         tools:layout="@layout/fragment_detail"
         >
         <argument

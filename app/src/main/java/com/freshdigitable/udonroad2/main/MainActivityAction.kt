@@ -16,7 +16,6 @@
 
 package com.freshdigitable.udonroad2.main
 
-import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.TweetingUser
 import com.freshdigitable.udonroad2.model.app.di.ActivityScope
@@ -45,10 +44,10 @@ class MainActivityAction @Inject constructor(
         filterByType<OauthEvent.OauthRequested>()
     }
 
-    val showTimeline: AppAction<QueryType> = dispatcher.toAction {
+    val showTimeline: AppAction<NavigationEvent> = dispatcher.toAction {
         AppAction.merge(
-            filterByType<OauthEvent.Init>().map { QueryType.Oauth },
-            filterByType<TimelineEvent.Init>().map { QueryType.TweetQueryType.Timeline() }
+            filterByType<OauthEvent.Init>(),
+            filterByType<TimelineEvent.Init>()
         )
     }
 

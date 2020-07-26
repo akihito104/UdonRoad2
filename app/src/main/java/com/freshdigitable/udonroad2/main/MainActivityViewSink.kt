@@ -35,14 +35,12 @@ class MainActivityViewSink @Inject constructor(
     val state: LiveData<MainActivityViewState> = AppViewState.combineLatest(
         listOf(
             stateModel.containerState,
-            stateModel.title,
             stateModel.selectedItemId,
             stateModel.isFabVisible
         )
-    ) { (containerState, title, selectedItemId, isFabVisible) ->
+    ) { (containerState, selectedItemId, isFabVisible) ->
         MainActivityViewState(
-            containerState = containerState as MainActivityState,
-            title = title as String,
+            containerState = containerState as MainNavHostState,
             selectedItem = (selectedItemId as StateHolder<SelectedItemId>).value,
             fabVisible = isFabVisible as Boolean
         )
@@ -54,8 +52,7 @@ class MainActivityViewSink @Inject constructor(
 }
 
 data class MainActivityViewState(
-    val title: String,
     val selectedItem: SelectedItemId?,
     val fabVisible: Boolean,
-    override val containerState: MainActivityState
+    override val containerState: MainNavHostState
 ) : ViewState

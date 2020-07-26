@@ -43,7 +43,6 @@ class MainActivityStateModelTest {
         // setup
         every { tokenRepository.getCurrentUserId() } returns null
         val testContainerState = sut.containerState.test()
-        val testTitle = sut.title.test()
         val testSelectedItemId = sut.selectedItemId.test()
 
         // exercise
@@ -51,11 +50,14 @@ class MainActivityStateModelTest {
 
         // verify
         testContainerState.assertOf {
-            it.assertValueSequenceOnly(listOf(MainActivityState.Init(QueryType.Oauth)))
-            it.assertNotComplete()
-        }
-        testTitle.assertOf {
-            it.assertValue("Welcome")
+            it.assertValueSequenceOnly(
+                listOf(
+                    MainNavHostState.Timeline(
+                        QueryType.Oauth,
+                        MainNavHostState.Cause.INIT
+                    )
+                )
+            )
             it.assertNotComplete()
         }
         testSelectedItemId.assertOf {
@@ -69,7 +71,6 @@ class MainActivityStateModelTest {
         every { tokenRepository.getCurrentUserId() } returns 10000
         every { tokenRepository.login(10000) } just runs
         val testContainerState = sut.containerState.test()
-        val testTitle = sut.title.test()
         val testSelectedItemId = sut.selectedItemId.test()
         val testFabVisible = sut.isFabVisible.test()
 
@@ -90,11 +91,14 @@ class MainActivityStateModelTest {
         }
         testContainerState.assertOf {
             it.assertNotComplete()
-            it.assertValueSequenceOnly(listOf(MainActivityState.Init(QueryType.TweetQueryType.Timeline())))
-        }
-        testTitle.assertOf {
-            it.assertNotComplete()
-            it.assertValue("Home")
+            it.assertValueSequenceOnly(
+                listOf(
+                    MainNavHostState.Timeline(
+                        QueryType.TweetQueryType.Timeline(),
+                        MainNavHostState.Cause.INIT
+                    )
+                )
+            )
         }
         testSelectedItemId.assertOf {
             it.assertNotComplete()
