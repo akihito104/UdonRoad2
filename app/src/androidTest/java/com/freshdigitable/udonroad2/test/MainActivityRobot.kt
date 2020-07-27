@@ -44,10 +44,6 @@ interface ActivityRobot {
     }
 
     interface VerifyRobot {
-        fun actionBarTitle(title: String) {
-            actionBarTitle.check(matches(withText(title)))
-        }
-
         fun actionBarTitle(@StringRes titleRes: Int) {
             actionBarTitle.check(matches(withText(titleRes)))
         }
@@ -74,10 +70,6 @@ class MainActivityRobot : ActivityRobot {
 
     fun checkFabIsDisplayed() {
         verifyRobot.fabIsDisplayed()
-    }
-
-    fun checkActionBarTitle(title: String) {
-        verifyRobot.actionBarTitle(title)
     }
 
     fun checkActionBarTitle(@StringRes titleRes: Int) {

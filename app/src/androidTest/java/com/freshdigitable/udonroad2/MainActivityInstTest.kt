@@ -80,7 +80,7 @@ class MainActivityInstTest {
 
             // verify
             verify {
-                actionBarTitle("Home")
+                actionBarTitle(R.string.title_home)
             }
         }
     }
@@ -135,7 +135,7 @@ class MainActivityInstTest {
             // verify
             verify {
                 fabIsNotDisplayed()
-                actionBarTitle("Tweet")
+                actionBarTitle(R.string.title_detail)
             }
         }
 
