@@ -51,7 +51,7 @@ import kotlin.reflect.KClass
 class TimelineViewModel(
     private val owner: ListOwner<TweetQueryType>,
     private val navigator: NavigationDispatcher,
-    viewSink: FragmentContainerViewSink,
+    viewStateModel: FragmentContainerViewStateModel,
     private val homeRepository: ListRepository<TweetQueryType>,
     pagedListProvider: PagedListProvider<TweetQueryType, TweetListItem>
 ) : ListItemLoadable<TweetQueryType, TweetListItem>,
@@ -80,7 +80,7 @@ class TimelineViewModel(
         homeRepository.clear(owner.value)
     }
 
-    override val selectedItemId: LiveData<SelectedItemId?> = viewSink.containerState
+    override val selectedItemId: LiveData<SelectedItemId?> = viewStateModel.selectedItemId
 
     override fun onBodyItemClicked(item: TweetListItem) {
         Timber.tag("TimelineViewModel").d("onBodyItemClicked: ${item.body.id}")
@@ -105,8 +105,8 @@ class TimelineViewModel(
     }
 }
 
-interface FragmentContainerViewSink {
-    val containerState: LiveData<SelectedItemId?>
+interface FragmentContainerViewStateModel {
+    val selectedItemId: LiveData<SelectedItemId?>
 }
 
 @Module
@@ -116,7 +116,7 @@ interface TimelineViewModelModule {
         fun provideTimelineViewModel(
             owner: ListOwner<*>,
             navigator: NavigationDispatcher,
-            viewSink: FragmentContainerViewSink,
+            viewStateModel: FragmentContainerViewStateModel,
             localListDataSourceProvider: LocalListDataSourceProvider,
             remoteListDataSourceProvider: RemoteListDataSourceProvider,
             pagedListDataSourceFactoryProvider: PagedListDataSourceFactoryProvider,
@@ -135,7 +135,7 @@ interface TimelineViewModelModule {
                     repository,
                     executor
                 )
-            return TimelineViewModel(o, navigator, viewSink, repository, pagedListProvider)
+            return TimelineViewModel(o, navigator, viewStateModel, repository, pagedListProvider)
         }
 
         @Provides

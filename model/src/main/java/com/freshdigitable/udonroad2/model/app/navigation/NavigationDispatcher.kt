@@ -3,10 +3,13 @@ package com.freshdigitable.udonroad2.model.app.navigation
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.OnLifecycleEvent
 import androidx.lifecycle.observe
+import androidx.lifecycle.toLiveData
 import com.freshdigitable.udonroad2.model.app.di.ActivityScope
+import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
 import io.reactivex.Observable
 import io.reactivex.disposables.Disposable
@@ -26,7 +29,7 @@ class NavigationDispatcher @Inject constructor() {
 }
 
 typealias AppAction<T> = Observable<T>
-typealias AppViewState<T> = Observable<T>
+typealias AppViewState<T> = LiveData<T>
 
 data class StateHolder<T>(val value: T?)
 
@@ -39,11 +42,13 @@ inline fun <T> NavigationDispatcher.toAction(
 }
 
 inline fun <T, reified E> AppAction<T>.toViewState(
-    block: AppAction<T>.() -> AppViewState<E> = { cast(E::class.java) }
+    block: AppAction<T>.() -> Observable<E> = { cast(E::class.java) }
 ): AppViewState<E> {
     return BehaviorSubject.create<E>().also { action ->
         this.block().subscribe(action)
     }
+        .toFlowable(BackpressureStrategy.BUFFER)
+        .toLiveData()
 }
 
 inline fun <reified T> Observable<NavigationEvent>.filterByType(): Observable<T> {

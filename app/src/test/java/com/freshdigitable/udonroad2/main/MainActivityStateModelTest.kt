@@ -16,6 +16,7 @@
 
 package com.freshdigitable.udonroad2.main
 
+import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
 import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
 import com.freshdigitable.udonroad2.model.ListOwner
@@ -23,13 +24,17 @@ import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationDispatcher
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
+import com.google.common.truth.Truth.assertThat
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
+import org.junit.Rule
 import org.junit.Test
 
 class MainActivityStateModelTest {
+    @get:Rule
+    val rule = InstantTaskExecutorRule()
     private val dispatcher = NavigationDispatcher()
     private val tokenRepository = mockk<OAuthTokenRepository>()
     private val sut = MainActivityStateModel(
@@ -42,25 +47,17 @@ class MainActivityStateModelTest {
     fun containerState_dispatchSetupEvent_then_showOauth() {
         // setup
         every { tokenRepository.getCurrentUserId() } returns null
-        val testContainerState = sut.containerState.test()
-        val testSelectedItemId = sut.selectedItemId.test()
+        sut.containerState.observeForever {}
+        sut.selectedItemId.observeForever {}
 
         // exercise
         dispatcher.postEvent(TimelineEvent.Setup)
 
         // verify
-        testContainerState.assertOf {
-            it.assertValueCount(1)
-            it.assertValueAt(0) { actual ->
-                (actual as MainNavHostState.Timeline).run {
-                    owner.query == QueryType.Oauth && cause == MainNavHostState.Cause.INIT
-                }
-            }
-            it.assertNotComplete()
-        }
-        testSelectedItemId.assertOf {
-            it.assertValue { actual -> actual.value?.originalId == null }
-        }
+        val actualContainerState = sut.containerState.value as MainNavHostState.Timeline
+        assertThat(actualContainerState.owner.query).isEqualTo(QueryType.Oauth)
+        assertThat(actualContainerState.cause).isEqualTo(MainNavHostState.Cause.INIT)
+        assertThat(sut.selectedItemId.value).isEqualTo(null)
     }
 
     @Test
@@ -68,9 +65,9 @@ class MainActivityStateModelTest {
         // setup
         every { tokenRepository.getCurrentUserId() } returns 10000
         every { tokenRepository.login(10000) } just runs
-        val testContainerState = sut.containerState.test()
-        val testSelectedItemId = sut.selectedItemId.test()
-        val testFabVisible = sut.isFabVisible.test()
+        sut.containerState.observeForever { }
+        sut.selectedItemId.observeForever { }
+        sut.isFabVisible.observeForever { }
 
         // exercise
         dispatcher.postEvent(TimelineEvent.Setup)
@@ -83,25 +80,10 @@ class MainActivityStateModelTest {
         )
 
         // verify
-        testFabVisible.assertOf {
-            it.assertNotComplete()
-            it.assertValueSequenceOnly(listOf(false, true))
-        }
-        testContainerState.assertOf {
-            it.assertNotComplete()
-            it.assertValueCount(1)
-            it.assertValueAt(0) { actual ->
-                (actual as MainNavHostState.Timeline).run {
-                    owner.query == QueryType.TweetQueryType.Timeline() &&
-                        cause == MainNavHostState.Cause.INIT
-                }
-            }
-        }
-        testSelectedItemId.assertOf {
-            it.assertNotComplete()
-            it.assertValueCount(2)
-            it.assertValueAt(0) { actual -> actual.value?.originalId == null }
-            it.assertValueAt(1) { actual -> actual.value?.originalId == 200L }
-        }
+        assertThat(sut.isFabVisible.value).isTrue()
+        val actualContainerState = sut.containerState.value as MainNavHostState.Timeline
+        assertThat(actualContainerState.owner.query).isEqualTo(QueryType.TweetQueryType.Timeline())
+        assertThat(actualContainerState.cause).isEqualTo(MainNavHostState.Cause.INIT)
+        assertThat(sut.selectedItemId.value?.originalId).isEqualTo(200L)
     }
 }

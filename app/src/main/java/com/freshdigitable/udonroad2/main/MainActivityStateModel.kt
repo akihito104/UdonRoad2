@@ -16,6 +16,8 @@
 
 package com.freshdigitable.udonroad2.main
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.map
 import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
 import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
 import com.freshdigitable.udonroad2.model.QueryType
@@ -24,10 +26,12 @@ import com.freshdigitable.udonroad2.model.app.di.ActivityScope
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.AppViewState
 import com.freshdigitable.udonroad2.model.app.navigation.StateHolder
+import com.freshdigitable.udonroad2.model.app.navigation.ViewState
 import com.freshdigitable.udonroad2.model.app.navigation.toViewState
 import com.freshdigitable.udonroad2.oauth.OauthEvent
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragment
+import com.freshdigitable.udonroad2.timeline.viewmodel.FragmentContainerViewStateModel
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -36,28 +40,25 @@ class MainActivityStateModel @Inject constructor(
     action: MainActivityAction,
     tokenRepository: OAuthTokenRepository,
     selectedItemRepository: SelectedItemRepository
-) {
-    private val firstContainerState: AppViewState<out MainNavHostState> =
-        action.showFirstView.toViewState {
-            map {
-                Timber.tag("StateModel").d("firstContainerState: $it")
-                when {
-                    tokenRepository.getCurrentUserId() != null -> {
-                        tokenRepository.login()
-                        MainNavHostState.Timeline(
-                            ListItemFragment.listOwner(QueryType.TweetQueryType.Timeline()),
-                            MainNavHostState.Cause.INIT
-                        )
-                    }
-                    else -> MainNavHostState.Timeline(
-                        ListItemFragment.listOwner(QueryType.Oauth),
-                        MainNavHostState.Cause.INIT
-                    )
-                }
+) : FragmentContainerViewStateModel {
+    private val firstContainerState: AppAction<out MainNavHostState> = action.showFirstView.map {
+        Timber.tag("StateModel").d("firstContainerState: $it")
+        when {
+            tokenRepository.getCurrentUserId() != null -> {
+                tokenRepository.login()
+                MainNavHostState.Timeline(
+                    ListItemFragment.listOwner(QueryType.TweetQueryType.Timeline()),
+                    MainNavHostState.Cause.INIT
+                )
             }
+            else -> MainNavHostState.Timeline(
+                ListItemFragment.listOwner(QueryType.Oauth),
+                MainNavHostState.Cause.INIT
+            )
         }
+    }
 
-    val containerState: AppViewState<MainNavHostState> = AppAction.merge(
+    private val containerAction: AppAction<MainNavHostState> = AppAction.merge(
         firstContainerState,
         action.showTimeline.map {
             when (it) {
@@ -73,10 +74,11 @@ class MainActivityStateModel @Inject constructor(
             }
         },
         action.showTweetDetail.map { MainNavHostState.TweetDetail(it.tweetId) },
-        action.popUp.map { it.state }
-    ).toViewState()
+        action.popUp.map { it.state as MainNavHostState }
+    )
 
-    val selectedItemId: AppViewState<StateHolder<SelectedItemId>> = AppAction.merge(
+    val containerState: AppViewState<out MainNavHostState> = containerAction.toViewState()
+    private val selectedItemHolder: AppViewState<StateHolder<SelectedItemId>> = AppAction.merge(
         action.changeItemSelectState.map {
             selectedItemRepository.put(it.selectedItemId)
             StateHolder(selectedItemRepository.find(it.selectedItemId.owner))
@@ -89,7 +91,7 @@ class MainActivityStateModel @Inject constructor(
             }
             StateHolder(selectedItemRepository.find(it.item.owner))
         },
-        containerState.map {
+        containerAction.map {
             if (it is MainNavHostState.Timeline) {
                 StateHolder(selectedItemRepository.find(it.owner))
             } else {
@@ -98,7 +100,26 @@ class MainActivityStateModel @Inject constructor(
         }
     ).toViewState()
 
-    val isFabVisible: AppViewState<Boolean> = selectedItemId.toViewState {
-        map { item -> item.value != null }
-    }
+    override val selectedItemId: LiveData<SelectedItemId?> = selectedItemHolder.map { it.value }
+
+    val isFabVisible: AppViewState<Boolean> = selectedItemId.map { item -> item != null }
+
+    val current: MainActivityViewState?
+        get() {
+            return if (containerState.value == null) {
+                null
+            } else {
+                MainActivityViewState(
+                    containerState = containerState.value!!,
+                    selectedItem = selectedItemId.value,
+                    fabVisible = isFabVisible.value ?: false
+                )
+            }
+        }
 }
+
+data class MainActivityViewState(
+    val selectedItem: SelectedItemId?,
+    val fabVisible: Boolean,
+    override val containerState: MainNavHostState
+) : ViewState

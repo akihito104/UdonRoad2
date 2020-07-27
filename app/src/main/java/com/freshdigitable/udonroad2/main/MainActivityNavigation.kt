@@ -2,11 +2,10 @@ package com.freshdigitable.udonroad2.main
 
 import android.content.Intent
 import android.net.Uri
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.distinctUntilChanged
-import androidx.lifecycle.map
 import androidx.lifecycle.observe
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
@@ -29,7 +28,7 @@ import javax.inject.Inject
 class MainActivityNavigation @Inject constructor(
     activity: MainActivity,
     actions: MainActivityAction,
-    viewSink: MainActivityViewSink
+    state: MainActivityStateModel
 ) : LifecycleEventObserver {
 
     private val navController: NavController by lazy {
@@ -57,31 +56,32 @@ class MainActivityNavigation @Inject constructor(
         }.addTo(disposables)
         activity.lifecycle.addObserver(this)
 
-        viewSink.state.map { it.containerState }.distinctUntilChanged().observe(activity) {
-            when (val containerState = it) {
-                is MainNavHostState.Timeline -> {
-                    when (containerState.cause) {
-                        MainNavHostState.Cause.INIT -> {
-                            navController.setGraph(
-                                R.navigation.nav_main,
-                                ListItemFragment.bundle(
-                                    containerState.owner,
-                                    activity.getString(containerState.label)
-                                )
-                            )
-                            activity.setupActionBarWithNavController(navController)
-                        }
-                        MainNavHostState.Cause.NAVIGATION -> TODO()
-                        MainNavHostState.Cause.BACK -> {
-                            navController.popBackStack()
-                        }
-                    }
-                }
-                is MainNavHostState.TweetDetail -> {
-                    navController.navigate(
-                        ListItemFragmentDirections.actionTimelineToDetail(containerState.tweetId)
-                    )
-                }
+        state.containerState.observe(activity) { activity.navigateTo(it) }
+    }
+
+    private fun AppCompatActivity.navigateTo(containerState: MainNavHostState) {
+        when (containerState) {
+            is MainNavHostState.Timeline -> toTimeline(containerState)
+            is MainNavHostState.TweetDetail -> {
+                navController.navigate(
+                    ListItemFragmentDirections.actionTimelineToDetail(containerState.tweetId)
+                )
+            }
+        }
+    }
+
+    private fun AppCompatActivity.toTimeline(containerState: MainNavHostState.Timeline) {
+        when (containerState.cause) {
+            MainNavHostState.Cause.INIT -> {
+                navController.setGraph(
+                    R.navigation.nav_main,
+                    ListItemFragment.bundle(containerState.owner, getString(containerState.label))
+                )
+                setupActionBarWithNavController(navController)
+            }
+            MainNavHostState.Cause.NAVIGATION -> TODO()
+            MainNavHostState.Cause.BACK -> {
+                navController.popBackStack()
             }
         }
     }

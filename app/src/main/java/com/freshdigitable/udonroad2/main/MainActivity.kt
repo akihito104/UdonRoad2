@@ -25,8 +25,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
-import androidx.lifecycle.distinctUntilChanged
-import androidx.lifecycle.map
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.databinding.ActivityMainBinding
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
@@ -115,11 +113,10 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
 
 class MainViewModel(
     private val navigator: NavigationDispatcher,
-    private val viewSink: MainActivityViewSink
+    private val viewState: MainActivityStateModel
 ) : ViewModel() {
 
-    private val state: LiveData<MainActivityViewState> = viewSink.state
-    val isFabVisible: LiveData<Boolean> = state.map { it.fabVisible }.distinctUntilChanged()
+    val isFabVisible: LiveData<Boolean> = viewState.isFabVisible
 
     internal fun initialEvent() {
         navigator.postEvent(TimelineEvent.Setup)
@@ -128,7 +125,7 @@ class MainViewModel(
     fun onFabMenuSelected(item: MenuItem) {
         Timber.tag("MainViewModel").d("onFabSelected: $item")
         val selected =
-            requireNotNull(viewSink.state.value?.selectedItem) { "selectedItem should not be null." }
+            requireNotNull(viewState.current?.selectedItem) { "selectedItem should not be null." }
         when (item.itemId) {
             com.freshdigitable.udonroad2.timeline.R.id.iffabMenu_main_detail -> {
                 navigator.postEvent(
@@ -141,7 +138,7 @@ class MainViewModel(
     }
 
     fun onBackPressed(prevNavHostState: MainNavHostState?) {
-        navigator.postEvent(CommonEvent.Back(viewSink.state.value, prevNavHostState))
+        navigator.postEvent(CommonEvent.Back(viewState.current, prevNavHostState))
     }
 }
 
@@ -164,9 +161,9 @@ interface MainActivityModule {
         @Provides
         fun provideMainViewModel(
             navigator: NavigationDispatcher,
-            viewSink: MainActivityViewSink
+            viewState: MainActivityStateModel
         ): MainViewModel {
-            return MainViewModel(navigator, viewSink)
+            return MainViewModel(navigator, viewState)
         }
     }
 }
