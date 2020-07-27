@@ -50,14 +50,12 @@ class MainActivityStateModelTest {
 
         // verify
         testContainerState.assertOf {
-            it.assertValueSequenceOnly(
-                listOf(
-                    MainNavHostState.Timeline(
-                        QueryType.Oauth,
-                        MainNavHostState.Cause.INIT
-                    )
-                )
-            )
+            it.assertValueCount(1)
+            it.assertValueAt(0) { actual ->
+                (actual as MainNavHostState.Timeline).run {
+                    owner.query == QueryType.Oauth && cause == MainNavHostState.Cause.INIT
+                }
+            }
             it.assertNotComplete()
         }
         testSelectedItemId.assertOf {
@@ -91,14 +89,13 @@ class MainActivityStateModelTest {
         }
         testContainerState.assertOf {
             it.assertNotComplete()
-            it.assertValueSequenceOnly(
-                listOf(
-                    MainNavHostState.Timeline(
-                        QueryType.TweetQueryType.Timeline(),
-                        MainNavHostState.Cause.INIT
-                    )
-                )
-            )
+            it.assertValueCount(1)
+            it.assertValueAt(0) { actual ->
+                (actual as MainNavHostState.Timeline).run {
+                    owner.query == QueryType.TweetQueryType.Timeline() &&
+                        cause == MainNavHostState.Cause.INIT
+                }
+            }
         }
         testSelectedItemId.assertOf {
             it.assertNotComplete()

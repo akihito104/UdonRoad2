@@ -56,8 +56,9 @@ class MainActivityViewSinkTest {
         dispatcher.postEvent(TimelineEvent.Setup)
 
         // verify
-        assertThat(sut.state.value?.containerState)
-            .isEqualTo(MainNavHostState.Timeline(QueryType.Oauth, MainNavHostState.Cause.INIT))
+        val actualContainerState = sut.state.value?.containerState as MainNavHostState.Timeline
+        assertThat(actualContainerState.owner.query).isEqualTo(QueryType.Oauth)
+        assertThat(actualContainerState.cause).isEqualTo(MainNavHostState.Cause.INIT)
     }
 
     @Test
@@ -78,13 +79,9 @@ class MainActivityViewSinkTest {
         )
 
         // verify
-        assertThat(sut.state.value?.containerState)
-            .isEqualTo(
-                MainNavHostState.Timeline(
-                    QueryType.TweetQueryType.Timeline(),
-                    MainNavHostState.Cause.INIT
-                )
-            )
+        val actualContainerState = sut.state.value?.containerState as MainNavHostState.Timeline
+        assertThat(actualContainerState.owner.query).isEqualTo(QueryType.TweetQueryType.Timeline())
+        assertThat(actualContainerState.cause).isEqualTo(MainNavHostState.Cause.INIT)
         assertThat(sut.state.value?.fabVisible).isTrue()
     }
 }

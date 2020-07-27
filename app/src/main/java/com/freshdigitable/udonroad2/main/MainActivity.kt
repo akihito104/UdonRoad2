@@ -94,7 +94,7 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
     }
 
     override fun onBackPressed() {
-        viewModel.onBackPressed()
+        viewModel.onBackPressed(navigation.prevNavHostState)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -140,8 +140,8 @@ class MainViewModel(
         }
     }
 
-    fun onBackPressed() {
-        navigator.postEvent(CommonEvent.Back(viewSink.state.value))
+    fun onBackPressed(prevNavHostState: MainNavHostState?) {
+        navigator.postEvent(CommonEvent.Back(viewSink.state.value, prevNavHostState))
     }
 }
 

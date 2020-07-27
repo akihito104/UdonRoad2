@@ -27,6 +27,7 @@ import com.freshdigitable.udonroad2.model.app.navigation.StateHolder
 import com.freshdigitable.udonroad2.model.app.navigation.toViewState
 import com.freshdigitable.udonroad2.oauth.OauthEvent
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
+import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragment
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -44,11 +45,14 @@ class MainActivityStateModel @Inject constructor(
                     tokenRepository.getCurrentUserId() != null -> {
                         tokenRepository.login()
                         MainNavHostState.Timeline(
-                            QueryType.TweetQueryType.Timeline(),
+                            ListItemFragment.listOwner(QueryType.TweetQueryType.Timeline()),
                             MainNavHostState.Cause.INIT
                         )
                     }
-                    else -> MainNavHostState.Timeline(QueryType.Oauth, MainNavHostState.Cause.INIT)
+                    else -> MainNavHostState.Timeline(
+                        ListItemFragment.listOwner(QueryType.Oauth),
+                        MainNavHostState.Cause.INIT
+                    )
                 }
             }
         }
@@ -58,17 +62,18 @@ class MainActivityStateModel @Inject constructor(
         action.showTimeline.map {
             when (it) {
                 is OauthEvent.Init -> MainNavHostState.Timeline(
-                    QueryType.Oauth,
+                    ListItemFragment.listOwner(QueryType.Oauth),
                     MainNavHostState.Cause.INIT
                 )
                 is TimelineEvent.Init -> MainNavHostState.Timeline(
-                    QueryType.TweetQueryType.Timeline(),
+                    ListItemFragment.listOwner(QueryType.TweetQueryType.Timeline()),
                     MainNavHostState.Cause.INIT
                 )
                 else -> TODO("not implemented")
             }
         },
-        action.showTweetDetail.map { MainNavHostState.TweetDetail(it.tweetId) }
+        action.showTweetDetail.map { MainNavHostState.TweetDetail(it.tweetId) },
+        action.popUp.map { it.state }
     ).toViewState()
 
     val selectedItemId: AppViewState<StateHolder<SelectedItemId>> = AppAction.merge(
@@ -84,7 +89,13 @@ class MainActivityStateModel @Inject constructor(
             }
             StateHolder(selectedItemRepository.find(it.item.owner))
         },
-        containerState.map { StateHolder(null) }
+        containerState.map {
+            if (it is MainNavHostState.Timeline) {
+                StateHolder(selectedItemRepository.find(it.owner))
+            } else {
+                StateHolder(null)
+            }
+        }
     ).toViewState()
 
     val isFabVisible: AppViewState<Boolean> = selectedItemId.toViewState {

@@ -3,12 +3,15 @@ package com.freshdigitable.udonroad2.timeline
 import com.freshdigitable.udonroad2.model.MemberListItem
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.TweetingUser
+import com.freshdigitable.udonroad2.model.app.navigation.FragmentContainerState
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 
 sealed class TimelineEvent : NavigationEvent {
     object Setup : TimelineEvent()
 
     object Init : TimelineEvent()
+
+    data class PopUpTo(val state: FragmentContainerState) : NavigationEvent
 
     data class TweetDetailRequested(val tweetId: Long) : TimelineEvent()
 

@@ -12,6 +12,7 @@ import io.reactivex.Observable
 import io.reactivex.disposables.Disposable
 import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.PublishSubject
+import timber.log.Timber
 import javax.inject.Inject
 
 @ActivityScope
@@ -19,6 +20,7 @@ class NavigationDispatcher @Inject constructor() {
     val emitter = PublishSubject.create<NavigationEvent>()
 
     fun postEvent(event: NavigationEvent) {
+        Timber.tag("NavigationDispatcher").d("postEvent: $event")
         emitter.onNext(event)
     }
 }
@@ -61,7 +63,10 @@ interface ViewState {
 }
 
 sealed class CommonEvent : NavigationEvent {
-    data class Back(val currentState: ViewState?) : CommonEvent()
+    data class Back(
+        val currentState: ViewState?,
+        val prevContainerState: FragmentContainerState? = null
+    ) : CommonEvent()
 }
 
 abstract class Navigation<T : FragmentContainerState>(

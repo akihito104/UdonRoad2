@@ -83,12 +83,16 @@ class ListItemFragment : Fragment() {
 
         fun newInstance(query: QueryType, label: String = ""): ListItemFragment {
             return ListItemFragment().apply {
-                arguments = bundle(query, label)
+                arguments = bundle(listOwner(query), label)
             }
         }
 
-        fun bundle(query: QueryType, label: String): Bundle {
-            return ListItemFragmentArgs(query, ownerIdGen.getAndIncrement(), label).toBundle()
+        fun listOwner(query: QueryType): ListOwner<*> {
+            return ListOwner(ownerIdGen.getAndIncrement(), query)
+        }
+
+        fun bundle(owner: ListOwner<*>, label: String): Bundle {
+            return ListItemFragmentArgs(owner.query, owner.id, label).toBundle()
         }
     }
 }

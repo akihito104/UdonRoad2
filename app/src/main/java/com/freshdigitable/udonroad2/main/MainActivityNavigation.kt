@@ -8,15 +8,19 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.map
 import androidx.lifecycle.observe
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.ui.setupActionBarWithNavController
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.media.MediaActivityArgs
+import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.app.navigation.FragmentContainerState
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragment
+import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentArgs
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentDirections
+import com.freshdigitable.udonroad2.timeline.fragment.TweetDetailFragmentArgs
 import com.freshdigitable.udonroad2.user.UserActivityDirections
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
@@ -61,7 +65,7 @@ class MainActivityNavigation @Inject constructor(
                             navController.setGraph(
                                 R.navigation.nav_main,
                                 ListItemFragment.bundle(
-                                    containerState.type,
+                                    containerState.owner,
                                     activity.getString(containerState.label)
                                 )
                             )
@@ -82,6 +86,9 @@ class MainActivityNavigation @Inject constructor(
         }
     }
 
+    val prevNavHostState: MainNavHostState?
+        get() = MainNavHostState.create(navController.previousBackStackEntry)
+
     override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
         if (event == Lifecycle.Event.ON_DESTROY) {
             disposables.clear()
@@ -94,8 +101,11 @@ class MainActivityNavigation @Inject constructor(
 }
 
 sealed class MainNavHostState : FragmentContainerState {
-    data class Timeline(val type: QueryType, override val cause: Cause) : MainNavHostState() {
-        val label: Int = when (type) {
+    data class Timeline(
+        val owner: ListOwner<*>,
+        override val cause: Cause
+    ) : MainNavHostState() {
+        val label: Int = when (val type = owner.query) {
             QueryType.Oauth -> R.string.title_oauth
             is QueryType.TweetQueryType.Timeline -> {
                 if (type.userId == null) R.string.title_home else 0
@@ -104,10 +114,33 @@ sealed class MainNavHostState : FragmentContainerState {
         }
     }
 
-    data class TweetDetail(val tweetId: Long, override val cause: Cause = Cause.NAVIGATION) :
-        MainNavHostState()
+    data class TweetDetail(
+        val tweetId: Long,
+        override val cause: Cause = Cause.NAVIGATION
+    ) : MainNavHostState()
 
     abstract val cause: Cause
 
     enum class Cause { INIT, NAVIGATION, BACK }
+
+    companion object
+}
+
+fun MainNavHostState.Companion.create(backStackEntry: NavBackStackEntry?): MainNavHostState? {
+    return when (backStackEntry?.destination?.id) {
+        R.id.fragment_timeline -> {
+            val args =
+                ListItemFragmentArgs.fromBundle(requireNotNull(backStackEntry.arguments))
+            MainNavHostState.Timeline(
+                ListOwner(args.ownerId, args.query),
+                MainNavHostState.Cause.BACK
+            )
+        }
+        R.id.fragment_detail -> {
+            val args =
+                TweetDetailFragmentArgs.fromBundle(requireNotNull(backStackEntry.arguments))
+            MainNavHostState.TweetDetail(args.tweetId, MainNavHostState.Cause.BACK)
+        }
+        else -> null
+    }
 }

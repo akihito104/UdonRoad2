@@ -61,6 +61,9 @@ class MainActivityAction @Inject constructor(
                         SelectedItemId(currentState.selectedItem.owner, null)
                     )
                 }
+                it.prevContainerState != null -> {
+                    TimelineEvent.PopUpTo(requireNotNull(it.prevContainerState))
+                }
                 else -> it
             }
         }
@@ -74,6 +77,8 @@ class MainActivityAction @Inject constructor(
         dispatcher.toAction {
             filterByType<TimelineEvent.ToggleTweetItemSelectedState>()
         }
+
+    val popUp: AppAction<TimelineEvent.PopUpTo> = backDispatched.filterByType()
 
     val showTweetDetail: AppAction<TimelineEvent.TweetDetailRequested> = dispatcher.toAction {
         filterByType<TimelineEvent.TweetDetailRequested>()
