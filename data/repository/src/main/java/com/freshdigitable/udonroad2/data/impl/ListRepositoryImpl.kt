@@ -59,8 +59,6 @@ internal class ListRepositoryImpl<Q : QueryType, E>(
         }
     }
 
-    override var selectedItemId: SelectedItemId? = null
-
     override fun clear(owner: String) {
         executor.launchIO {
             localDataSource.clean(owner)
