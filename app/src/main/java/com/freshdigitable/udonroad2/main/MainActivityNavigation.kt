@@ -52,7 +52,7 @@ class MainActivityNavigation @Inject constructor(
             )
         }.addTo(disposables)
         actions.rollbackViewState.subscribe {
-            navController.popBackStack()
+            activity.onBackPressedDispatcher.onBackPressed()
         }.addTo(disposables)
         activity.lifecycle.addObserver(this)
 
