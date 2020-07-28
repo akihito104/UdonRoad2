@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.annotation.NonNull
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
@@ -23,7 +24,8 @@ import dagger.multibindings.IntoMap
 
 class TimelineAdapter(
     private val clickListener: TweetListItemClickListener,
-    private val eventListener: TweetListEventListener
+    private val eventListener: TweetListEventListener,
+    private val lifecycleOwner: LifecycleOwner
 ) : PagedListAdapter<TweetListItem, TimelineAdapter.ViewHolder>(diffUtil) {
 
     init {
@@ -46,6 +48,7 @@ class TimelineAdapter(
         val item = getItem(position) ?: return
 
         holder.binding.tweet = item
+        holder.binding.lifecycleOwner = lifecycleOwner
         if (item.quoted != null) {
             ensureQuotedView(holder).tweet = item
         } else {
@@ -92,6 +95,7 @@ class TimelineAdapter(
             ?: getQuotedViewBinding(holder.root).also {
                 holder.root.addView(it.root, createQuotedItemLayoutParams(it.root.context))
                 holder.quotedView = it
+                it.lifecycleOwner = lifecycleOwner
             }
     }
 
@@ -157,8 +161,11 @@ object TimelineAdapterModule {
     @Provides
     @IntoMap
     @ViewModelKey(TimelineViewModel::class)
-    fun provideTimelineAdapter(viewModel: ViewModel): PagedListAdapter<out Any, *> {
+    fun provideTimelineAdapter(
+        viewModel: ViewModel,
+        lifecycleOwner: LifecycleOwner
+    ): PagedListAdapter<out Any, *> {
         val vm = viewModel as TimelineViewModel
-        return TimelineAdapter(vm, vm)
+        return TimelineAdapter(vm, vm, lifecycleOwner)
     }
 }

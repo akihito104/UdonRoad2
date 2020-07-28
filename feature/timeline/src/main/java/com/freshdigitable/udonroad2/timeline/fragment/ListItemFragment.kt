@@ -14,12 +14,12 @@ import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.app.di.FragmentScope
 import com.freshdigitable.udonroad2.timeline.ListItemAdapterComponent
 import com.freshdigitable.udonroad2.timeline.ListItemLoadable
 import com.freshdigitable.udonroad2.timeline.ListItemViewModelComponent
-import com.freshdigitable.udonroad2.timeline.ListOwner
 import com.freshdigitable.udonroad2.timeline.databinding.FragmentTimelineBinding
 import com.freshdigitable.udonroad2.timeline.viewModel
 import dagger.Module
@@ -81,14 +81,18 @@ class ListItemFragment : Fragment() {
     companion object {
         private val ownerIdGen = AtomicInteger(0)
 
-        fun newInstance(query: QueryType): ListItemFragment {
+        fun newInstance(query: QueryType, label: String = ""): ListItemFragment {
             return ListItemFragment().apply {
-                arguments = bundle(query)
+                arguments = bundle(listOwner(query), label)
             }
         }
 
-        fun bundle(query: QueryType): Bundle {
-            return ListItemFragmentArgs(query, ownerIdGen.getAndIncrement()).toBundle()
+        fun listOwner(query: QueryType): ListOwner<*> {
+            return ListOwner(ownerIdGen.getAndIncrement(), query)
+        }
+
+        fun bundle(owner: ListOwner<*>, label: String): Bundle {
+            return ListItemFragmentArgs(owner.query, owner.id, label).toBundle()
         }
     }
 }

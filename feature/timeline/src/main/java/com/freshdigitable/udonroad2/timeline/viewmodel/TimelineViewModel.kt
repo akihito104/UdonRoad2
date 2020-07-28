@@ -16,7 +16,6 @@
 
 package com.freshdigitable.udonroad2.timeline.viewmodel
 
-import androidx.databinding.ObservableField
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.paging.PagedList
@@ -27,9 +26,11 @@ import com.freshdigitable.udonroad2.data.db.PagedListDataSourceFactoryProvider
 import com.freshdigitable.udonroad2.data.impl.AppExecutor
 import com.freshdigitable.udonroad2.data.impl.create
 import com.freshdigitable.udonroad2.data.restclient.RemoteListDataSourceProvider
+import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.ListQuery
 import com.freshdigitable.udonroad2.model.PageOption
 import com.freshdigitable.udonroad2.model.QueryType.TweetQueryType
+import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.Tweet
 import com.freshdigitable.udonroad2.model.TweetListItem
 import com.freshdigitable.udonroad2.model.TweetingUser
@@ -37,8 +38,6 @@ import com.freshdigitable.udonroad2.model.app.di.QueryTypeKey
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationDispatcher
 import com.freshdigitable.udonroad2.timeline.ListItemLoadable
-import com.freshdigitable.udonroad2.timeline.ListOwner
-import com.freshdigitable.udonroad2.timeline.SelectedItemId
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.TweetListEventListener
 import com.freshdigitable.udonroad2.timeline.TweetListItemClickListener
@@ -52,6 +51,7 @@ import kotlin.reflect.KClass
 class TimelineViewModel(
     private val owner: ListOwner<TweetQueryType>,
     private val navigator: NavigationDispatcher,
+    viewStateModel: FragmentContainerViewStateModel,
     private val homeRepository: ListRepository<TweetQueryType>,
     pagedListProvider: PagedListProvider<TweetQueryType, TweetListItem>
 ) : ListItemLoadable<TweetQueryType, TweetListItem>,
@@ -63,8 +63,7 @@ class TimelineViewModel(
             PageOption.OnTail(i.originalId - 1)
         }
 
-    override val loading: LiveData<Boolean>
-        get() = homeRepository.loading
+    override val loading: LiveData<Boolean> = homeRepository.loading
 
     override fun onRefresh() {
         val items = timeline.value
@@ -77,32 +76,25 @@ class TimelineViewModel(
     }
 
     override fun onCleared() {
+        Timber.tag("TimelineViewModel").d("onCleared: $owner")
         super.onCleared()
         homeRepository.clear(owner.value)
     }
 
-    override val selectedItemId: ObservableField<SelectedItemId?> = ObservableField()
-
-    private fun updateSelectedItem(selected: SelectedItemId) {
-        when (selected) {
-            selectedItemId.get() -> selectedItemId.set(null)
-            else -> selectedItemId.set(selected)
-        }
-        navigator.postEvent(
-            TimelineEvent.TweetItemSelected(selectedItemId.get())
-        )
-    }
+    override val selectedItemId: LiveData<SelectedItemId?> = viewStateModel.selectedItemId
 
     override fun onBodyItemClicked(item: TweetListItem) {
         Timber.tag("TimelineViewModel").d("onBodyItemClicked: ${item.body.id}")
-        updateSelectedItem(SelectedItemId(item.originalId))
+        updateSelectedItem(SelectedItemId(owner, item.originalId))
     }
 
     override fun onQuoteItemClicked(item: TweetListItem) {
         Timber.tag("TimelineViewModel").d("onQuoteItemClicked: ${item.quoted?.id}")
-        updateSelectedItem(
-            SelectedItemId(item.originalId, item.quoted?.id)
-        )
+        updateSelectedItem(SelectedItemId(owner, item.originalId, item.quoted?.id))
+    }
+
+    private fun updateSelectedItem(selected: SelectedItemId) {
+        navigator.postEvent(TimelineEvent.ToggleTweetItemSelectedState(selected))
     }
 
     override fun onUserIconClicked(user: TweetingUser) {
@@ -110,9 +102,12 @@ class TimelineViewModel(
     }
 
     override fun onMediaItemClicked(originalId: Long, item: Tweet, index: Int) {
-        updateSelectedItem(SelectedItemId(originalId, item.id))
         navigator.postEvent(TimelineEvent.MediaItemClicked(item.id, index))
     }
+}
+
+interface FragmentContainerViewStateModel {
+    val selectedItemId: LiveData<SelectedItemId?>
 }
 
 @Module
@@ -122,6 +117,7 @@ interface TimelineViewModelModule {
         fun provideTimelineViewModel(
             owner: ListOwner<*>,
             navigator: NavigationDispatcher,
+            viewStateModel: FragmentContainerViewStateModel,
             localListDataSourceProvider: LocalListDataSourceProvider,
             remoteListDataSourceProvider: RemoteListDataSourceProvider,
             pagedListDataSourceFactoryProvider: PagedListDataSourceFactoryProvider,
@@ -140,7 +136,7 @@ interface TimelineViewModelModule {
                     repository,
                     executor
                 )
-            return TimelineViewModel(o, navigator, repository, pagedListProvider)
+            return TimelineViewModel(o, navigator, viewStateModel, repository, pagedListProvider)
         }
 
         @Provides

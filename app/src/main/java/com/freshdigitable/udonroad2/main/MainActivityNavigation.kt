@@ -1,131 +1,147 @@
 package com.freshdigitable.udonroad2.main
 
 import android.content.Intent
-import android.content.Intent.ACTION_VIEW
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.observe
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
+import androidx.navigation.ui.setupActionBarWithNavController
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.media.MediaActivityArgs
+import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.app.navigation.FragmentContainerState
-import com.freshdigitable.udonroad2.model.app.navigation.Navigation
-import com.freshdigitable.udonroad2.model.app.navigation.NavigationDispatcher
-import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
-import com.freshdigitable.udonroad2.oauth.OauthEvent
-import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragment
+import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentArgs
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentDirections
+import com.freshdigitable.udonroad2.timeline.fragment.TweetDetailFragmentArgs
 import com.freshdigitable.udonroad2.user.UserActivityDirections
-import timber.log.Timber
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.disposables.Disposable
+import java.io.Serializable
+import javax.inject.Inject
 
-class MainActivityNavigation(
-    dispatcher: NavigationDispatcher,
-    activity: AppCompatActivity,
-    viewModelProvider: ViewModelProvider
-) : Navigation<MainActivityState>(dispatcher, activity) {
+class MainActivityNavigation @Inject constructor(
+    activity: MainActivity,
+    actions: MainActivityAction,
+    state: MainActivityStateModel
+) : LifecycleEventObserver {
 
     private val navController: NavController by lazy {
         activity.findNavController(R.id.main_nav_host)
     }
-    val viewModel = viewModelProvider[MainViewModel::class.java]
 
-    override fun onEvent(event: NavigationEvent): MainActivityState? {
-        Timber.tag("MainActivityNav").d("onEvent: $event")
-        return when (event) {
-            TimelineEvent.Init -> {
-                navController.setGraph(
-                    R.navigation.nav_main,
-                    ListItemFragment.bundle(QueryType.TweetQueryType.Timeline())
-                )
-                MainActivityState.MainTimeline
-            }
-            is TimelineEvent.UserIconClicked -> {
-                navController.navigate(UserActivityDirections.actionTimelineToActivityUser(event.user))
-                null
-            }
-            is TimelineEvent.TweetDetailRequested -> {
-                navController.navigate(ListItemFragmentDirections.actionTimelineToDetail(event.tweetId))
-                MainActivityState.TweetDetail(event.tweetId)
-            }
-            is TimelineEvent.RetweetUserClicked -> {
-                navController.navigate(UserActivityDirections.actionTimelineToActivityUser(event.user))
-                null
-            }
-            is TimelineEvent.TweetItemSelected -> {
-                viewModel.setSelectedItemId(event.selectedItemId)
-                null
-            }
-            is TimelineEvent.MediaItemClicked -> {
+    private val disposables = CompositeDisposable()
+
+    init {
+        actions.authApp.subscribe {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(it.authUrl))
+            activity.startActivity(intent)
+        }.addTo(disposables)
+        actions.launchUserInfo.subscribe {
+            navController.navigate(UserActivityDirections.actionTimelineToActivityUser(it))
+        }.addTo(disposables)
+        actions.launchMediaViewer.subscribe {
+            navController.navigate(
+                R.id.action_global_toMedia,
+                MediaActivityArgs(it.tweetId, it.index).toBundle()
+            )
+        }.addTo(disposables)
+        actions.rollbackViewState.subscribe {
+            activity.onBackPressedDispatcher.onBackPressed()
+        }.addTo(disposables)
+        activity.lifecycle.addObserver(this)
+
+        state.containerState.observe(activity) { activity.navigateTo(it) }
+    }
+
+    private fun AppCompatActivity.navigateTo(containerState: MainNavHostState) {
+        when (containerState) {
+            is MainNavHostState.Timeline -> toTimeline(containerState)
+            is MainNavHostState.TweetDetail -> {
                 navController.navigate(
-                    R.id.action_global_toMedia,
-                    MediaActivityArgs(event.tweetId, event.index).toBundle()
+                    ListItemFragmentDirections.actionTimelineToDetail(containerState.tweetId)
                 )
-                null
             }
-            OauthEvent.Init -> {
-                navController.setGraph(
-                    R.navigation.nav_main,
-                    ListItemFragment.bundle(QueryType.Oauth)
-                )
-                MainActivityState.Oauth
-            }
-            is OauthEvent.OauthRequested -> {
-                val intent = Intent(ACTION_VIEW, Uri.parse(event.authUrl))
-                activity.startActivity(intent)
-                null
-            }
-            is OauthEvent.OauthSucceeded -> {
-                navController.setGraph(
-                    R.navigation.nav_main,
-                    ListItemFragment.bundle(QueryType.TweetQueryType.Timeline())
-                )
-                MainActivityState.MainTimeline
-            }
-            TimelineEvent.Back -> {
-                if (currentState is MainActivityState.TweetDetail) {
-                    navController.popBackStack()
-                    MainActivityState.MainTimeline
-                } else if (currentState is MainActivityState.MainTimeline &&
-                    viewModel.isFabVisible.value == true
-                ) {
-                    viewModel.setFabVisible(false)
-                    null
-                } else {
-                    MainActivityState.Halt
-                }
-            }
-            else -> null
         }
     }
 
-    override fun navigate(s: MainActivityState?) {
-        when (s) {
-            is MainActivityState.MainTimeline -> {
-                viewModel.setFabVisible(true)
-                activity.supportActionBar?.title = "Home"
+    private fun AppCompatActivity.toTimeline(containerState: MainNavHostState.Timeline) {
+        when (containerState.cause) {
+            MainNavHostState.Cause.INIT -> {
+                navController.setGraph(
+                    R.navigation.nav_main,
+                    ListItemFragment.bundle(containerState.owner, getString(containerState.label))
+                )
+                setupActionBarWithNavController(navController)
             }
-            is MainActivityState.TweetDetail -> {
-                viewModel.setFabVisible(false)
-                activity.supportActionBar?.title = "Tweet"
+            MainNavHostState.Cause.NAVIGATION -> TODO()
+            MainNavHostState.Cause.BACK -> {
+                navController.popBackStack()
             }
-            is MainActivityState.Oauth -> {
-                viewModel.setFabVisible(false)
-                activity.supportActionBar?.title = "Welcome"
-            }
-            MainActivityState.Halt -> activity.finish()
         }
+    }
+
+    val prevNavHostState: MainNavHostState?
+        get() = MainNavHostState.create(navController.previousBackStackEntry)
+
+    override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
+        if (event == Lifecycle.Event.ON_DESTROY) {
+            disposables.clear()
+        }
+    }
+
+    private fun Disposable.addTo(compositeDisposable: CompositeDisposable) {
+        compositeDisposable.add(this)
     }
 }
 
-sealed class MainActivityState : FragmentContainerState {
-    object MainTimeline : MainActivityState()
+sealed class MainNavHostState : FragmentContainerState, Serializable {
+    data class Timeline(
+        val owner: ListOwner<*>,
+        override val cause: Cause
+    ) : MainNavHostState() {
+        val label: Int = when (val type = owner.query) {
+            QueryType.Oauth -> R.string.title_oauth
+            is QueryType.TweetQueryType.Timeline -> {
+                if (type.userId == null) R.string.title_home else 0
+            }
+            else -> TODO()
+        }
+    }
 
-    data class TweetDetail(val tweetId: Long) : MainActivityState()
+    data class TweetDetail(
+        val tweetId: Long,
+        override val cause: Cause = Cause.NAVIGATION
+    ) : MainNavHostState()
 
-    object Oauth : MainActivityState()
+    abstract val cause: Cause
 
-    object Halt : MainActivityState()
+    enum class Cause { INIT, NAVIGATION, BACK }
+
+    companion object
+}
+
+fun MainNavHostState.Companion.create(backStackEntry: NavBackStackEntry?): MainNavHostState? {
+    return when (backStackEntry?.destination?.id) {
+        R.id.fragment_timeline -> {
+            val args =
+                ListItemFragmentArgs.fromBundle(requireNotNull(backStackEntry.arguments))
+            MainNavHostState.Timeline(
+                ListOwner(args.ownerId, args.query),
+                MainNavHostState.Cause.BACK
+            )
+        }
+        R.id.fragment_detail -> {
+            val args =
+                TweetDetailFragmentArgs.fromBundle(requireNotNull(backStackEntry.arguments))
+            MainNavHostState.TweetDetail(args.tweetId, MainNavHostState.Cause.BACK)
+        }
+        else -> null
+    }
 }

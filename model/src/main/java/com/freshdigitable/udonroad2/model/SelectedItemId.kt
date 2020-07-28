@@ -14,13 +14,17 @@
  * limitations under the License.
  */
 
-package com.freshdigitable.udonroad2.timeline
+package com.freshdigitable.udonroad2.model
 
-import com.freshdigitable.udonroad2.model.QueryType
+import java.io.Serializable
 
-data class ListOwner<Q : QueryType>(
-    val id: Int,
-    val query: Q
-) {
-    val value: String = "$id"
+data class SelectedItemId(
+    val owner: ListOwner<*>,
+    val originalId: Long?,
+    val quoteId: Long? = null
+) : Serializable {
+    @JvmOverloads
+    fun equalsTo(originalId: Long, quoteId: Long? = null): Boolean {
+        return this.originalId == originalId && this.quoteId == quoteId
+    }
 }

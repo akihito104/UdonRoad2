@@ -9,9 +9,9 @@ import androidx.lifecycle.switchMap
 import com.freshdigitable.udonroad2.data.impl.RelationshipRepository
 import com.freshdigitable.udonroad2.data.impl.UserRepository
 import com.freshdigitable.udonroad2.model.Relationship
+import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.User
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
-import com.freshdigitable.udonroad2.timeline.SelectedItemId
 import dagger.Binds
 import dagger.Module
 import dagger.Provides

@@ -15,7 +15,7 @@
   -->
 
 <resources>
-    <string name="title_oauth">welcome</string>
+    <string name="title_oauth">Welcome</string>
 
     <string name="oauth_login">Login Twitter</string>
 

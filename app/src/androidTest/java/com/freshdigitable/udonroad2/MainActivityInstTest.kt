@@ -62,7 +62,7 @@ class MainActivityInstTest {
             twitterRobot.setupGetHomeTimeline(response = emptyList())
 
             intentsTestRule.launchActivity(null)
-            checkActionBarTitle("Welcome")
+            checkActionBarTitle(R.string.title_oauth)
             oauth { checkSendPinIsDisabled() }
             intendingToAuthorizationUrl(requestToken.authorizationURL)
 
@@ -80,7 +80,7 @@ class MainActivityInstTest {
 
             // verify
             verify {
-                actionBarTitle("Home")
+                actionBarTitle(R.string.title_home)
             }
         }
     }
@@ -118,7 +118,7 @@ class MainActivityInstTest {
             countingIdlingResource.increment()
             IdlingRegistry.getInstance().register(countingIdlingResource)
             intentsTestRule.launchActivity(null)
-            checkActionBarTitle("Home")
+            checkActionBarTitle(R.string.title_home)
         }
 
         @Test
@@ -135,7 +135,7 @@ class MainActivityInstTest {
             // verify
             verify {
                 fabIsNotDisplayed()
-                actionBarTitle("Tweet")
+                actionBarTitle(R.string.title_detail)
             }
         }
 

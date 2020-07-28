@@ -3,26 +3,76 @@ package com.freshdigitable.udonroad2.model.app.navigation
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.OnLifecycleEvent
 import androidx.lifecycle.observe
+import androidx.lifecycle.toLiveData
 import com.freshdigitable.udonroad2.model.app.di.ActivityScope
+import io.reactivex.BackpressureStrategy
+import io.reactivex.Flowable
+import io.reactivex.Observable
 import io.reactivex.disposables.Disposable
+import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.PublishSubject
+import timber.log.Timber
 import javax.inject.Inject
 
 @ActivityScope
 class NavigationDispatcher @Inject constructor() {
-    internal val emitter = PublishSubject.create<NavigationEvent>()
+    val emitter = PublishSubject.create<NavigationEvent>()
 
     fun postEvent(event: NavigationEvent) {
+        Timber.tag("NavigationDispatcher").d("postEvent: $event")
         emitter.onNext(event)
     }
+}
+
+typealias AppAction<T> = Observable<T>
+typealias AppViewState<T> = LiveData<T>
+
+data class StateHolder<T>(val value: T?)
+
+inline fun <T> NavigationDispatcher.toAction(
+    block: PublishSubject<NavigationEvent>.() -> AppAction<T>
+): AppAction<T> {
+    return PublishSubject.create<T>().also { action ->
+        this.emitter.block().subscribe(action)
+    }
+}
+
+inline fun <T, reified E> AppAction<T>.toViewState(
+    block: AppAction<T>.() -> Observable<E> = { cast(E::class.java) }
+): AppViewState<E> {
+    return BehaviorSubject.create<E>().also { action ->
+        this.block().subscribe(action)
+    }
+        .toFlowable(BackpressureStrategy.BUFFER)
+        .toLiveData()
+}
+
+inline fun <reified T> Observable<NavigationEvent>.filterByType(): Observable<T> {
+    return this.filter { it is T }.cast(T::class.java)
+}
+
+inline fun <reified T> Flowable<NavigationEvent>.filterByType(): Flowable<T> {
+    return this.filter { it is T }.cast(T::class.java)
 }
 
 interface NavigationEvent
 
 interface FragmentContainerState
+
+interface ViewState {
+    val containerState: FragmentContainerState
+}
+
+sealed class CommonEvent : NavigationEvent {
+    data class Back(
+        val currentState: ViewState?,
+        val prevContainerState: FragmentContainerState? = null
+    ) : CommonEvent()
+}
 
 abstract class Navigation<T : FragmentContainerState>(
     val navigator: NavigationDispatcher,
