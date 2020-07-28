@@ -5,9 +5,10 @@ import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.TweetingUser
 import com.freshdigitable.udonroad2.model.app.navigation.FragmentContainerState
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
+import java.io.Serializable
 
 sealed class TimelineEvent : NavigationEvent {
-    object Setup : TimelineEvent()
+    data class Setup(val savedState: Serializable? = null) : TimelineEvent()
 
     object Init : TimelineEvent()
 

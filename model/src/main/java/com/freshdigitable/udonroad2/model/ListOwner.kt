@@ -16,9 +16,11 @@
 
 package com.freshdigitable.udonroad2.model
 
+import java.io.Serializable
+
 data class ListOwner<Q : QueryType>(
     val id: Int,
     val query: Q
-) {
+) : Serializable {
     val value: String = "$id"
 }

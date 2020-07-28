@@ -51,7 +51,7 @@ class MainActivityStateModelTest {
         sut.selectedItemId.observeForever {}
 
         // exercise
-        dispatcher.postEvent(TimelineEvent.Setup)
+        dispatcher.postEvent(TimelineEvent.Setup())
 
         // verify
         val actualContainerState = sut.containerState.value as MainNavHostState.Timeline
@@ -70,7 +70,7 @@ class MainActivityStateModelTest {
         sut.isFabVisible.observeForever { }
 
         // exercise
-        dispatcher.postEvent(TimelineEvent.Setup)
+        dispatcher.postEvent(TimelineEvent.Setup())
         dispatcher.postEvent(
             TimelineEvent.ToggleTweetItemSelectedState(
                 SelectedItemId(

@@ -33,6 +33,7 @@ import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragment
 import com.freshdigitable.udonroad2.timeline.viewmodel.FragmentContainerViewStateModel
 import timber.log.Timber
+import java.io.Serializable
 import javax.inject.Inject
 
 @ActivityScope
@@ -44,6 +45,7 @@ class MainActivityStateModel @Inject constructor(
     private val firstContainerState: AppAction<out MainNavHostState> = action.showFirstView.map {
         Timber.tag("StateModel").d("firstContainerState: $it")
         when {
+            it.savedState != null -> (it.savedState as MainActivityViewState).containerState
             tokenRepository.getCurrentUserId() != null -> {
                 tokenRepository.login()
                 MainNavHostState.Timeline(
@@ -78,6 +80,7 @@ class MainActivityStateModel @Inject constructor(
     )
 
     val containerState: AppViewState<out MainNavHostState> = containerAction.toViewState()
+
     private val selectedItemHolder: AppViewState<StateHolder<SelectedItemId>> = AppAction.merge(
         action.changeItemSelectState.map {
             selectedItemRepository.put(it.selectedItemId)
@@ -106,11 +109,12 @@ class MainActivityStateModel @Inject constructor(
 
     val current: MainActivityViewState?
         get() {
-            return if (containerState.value == null) {
+            val containerState = containerState.value
+            return if (containerState == null) {
                 null
             } else {
                 MainActivityViewState(
-                    containerState = containerState.value!!,
+                    containerState = containerState,
                     selectedItem = selectedItemId.value,
                     fabVisible = isFabVisible.value ?: false
                 )
@@ -122,4 +126,4 @@ data class MainActivityViewState(
     val selectedItem: SelectedItemId?,
     val fabVisible: Boolean,
     override val containerState: MainNavHostState
-) : ViewState
+) : ViewState, Serializable

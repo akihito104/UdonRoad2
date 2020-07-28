@@ -36,7 +36,7 @@ class MainActivityAction @Inject constructor(
     val showFirstView: AppAction<TimelineEvent.Setup> = dispatcher.toAction {
         AppAction.merge(
             filterByType<TimelineEvent.Setup>(),
-            filterByType<OauthEvent.OauthSucceeded>().map { TimelineEvent.Setup }
+            filterByType<OauthEvent.OauthSucceeded>().map { TimelineEvent.Setup() }
         )
     }
 
@@ -54,7 +54,7 @@ class MainActivityAction @Inject constructor(
     private val backDispatched: AppAction<NavigationEvent> = dispatcher.emitter
         .filterByType<CommonEvent.Back>()
         .map {
-            val currentState = it.currentState as MainActivityViewState
+            val currentState = it.currentState as? MainActivityViewState ?: return@map it
             when {
                 currentState.selectedItem != null -> {
                     TimelineEvent.TweetItemSelected(

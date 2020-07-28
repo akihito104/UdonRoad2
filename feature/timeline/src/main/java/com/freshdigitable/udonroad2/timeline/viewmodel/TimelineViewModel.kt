@@ -76,6 +76,7 @@ class TimelineViewModel(
     }
 
     override fun onCleared() {
+        Timber.tag("TimelineViewModel").d("onCleared: $owner")
         super.onCleared()
         homeRepository.clear(owner.value)
     }

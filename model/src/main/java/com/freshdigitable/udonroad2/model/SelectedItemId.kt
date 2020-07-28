@@ -16,11 +16,13 @@
 
 package com.freshdigitable.udonroad2.model
 
+import java.io.Serializable
+
 data class SelectedItemId(
     val owner: ListOwner<*>,
     val originalId: Long?,
     val quoteId: Long? = null
-) {
+) : Serializable {
     @JvmOverloads
     fun equalsTo(originalId: Long, quoteId: Long? = null): Boolean {
         return this.originalId == originalId && this.quoteId == quoteId

@@ -23,6 +23,7 @@ import com.freshdigitable.udonroad2.timeline.fragment.TweetDetailFragmentArgs
 import com.freshdigitable.udonroad2.user.UserActivityDirections
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
+import java.io.Serializable
 import javax.inject.Inject
 
 class MainActivityNavigation @Inject constructor(
@@ -100,7 +101,7 @@ class MainActivityNavigation @Inject constructor(
     }
 }
 
-sealed class MainNavHostState : FragmentContainerState {
+sealed class MainNavHostState : FragmentContainerState, Serializable {
     data class Timeline(
         val owner: ListOwner<*>,
         override val cause: Cause

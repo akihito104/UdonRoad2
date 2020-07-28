@@ -34,12 +34,12 @@ class MainActivityActionTest {
         val test = mainActivityAction.showFirstView.test()
 
         // exercise
-        navigationDispatcher.postEvent(TimelineEvent.Setup)
+        navigationDispatcher.postEvent(TimelineEvent.Setup())
 
         // verify
         test.assertOf {
             it.assertNoErrors()
-            it.assertValueSequence(listOf(TimelineEvent.Setup))
+            it.assertValueSequence(listOf(TimelineEvent.Setup()))
         }
     }
 
@@ -49,7 +49,7 @@ class MainActivityActionTest {
         val test = mainActivityAction.showTimeline.test()
 
         // exercise
-        navigationDispatcher.postEvent(TimelineEvent.Setup)
+        navigationDispatcher.postEvent(TimelineEvent.Setup())
         navigationDispatcher.postEvent(TimelineEvent.Init)
 
         // verify
@@ -70,7 +70,7 @@ class MainActivityActionTest {
         // verify
         test.assertOf {
             it.assertNoErrors()
-            it.assertValueSequence(listOf(TimelineEvent.Setup))
+            it.assertValueSequence(listOf(TimelineEvent.Setup()))
         }
     }
 
@@ -79,7 +79,7 @@ class MainActivityActionTest {
         val testShowFirstView = mainActivityAction.showFirstView.test()
         val testToggleSelectedItem = mainActivityAction.toggleSelectedItem.test()
 
-        navigationDispatcher.postEvent(TimelineEvent.Setup)
+        navigationDispatcher.postEvent(TimelineEvent.Setup())
         navigationDispatcher.postEvent(
             TimelineEvent.ToggleTweetItemSelectedState(
                 SelectedItemId(

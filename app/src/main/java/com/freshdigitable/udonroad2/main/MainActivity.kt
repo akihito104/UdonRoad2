@@ -18,6 +18,7 @@ package com.freshdigitable.udonroad2.main
 
 import android.os.Bundle
 import android.view.MenuItem
+import android.view.View
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
@@ -57,14 +58,14 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
         super.onCreate(savedInstanceState)
-        val binding = DataBindingUtil.setContentView<ActivityMainBinding>(
-            this, R.layout.activity_main
-        )
+        val binding: ActivityMainBinding = findViewById<View>(R.id.main_drawer)?.let {
+            DataBindingUtil.findBinding<ActivityMainBinding>(it)
+        } ?: DataBindingUtil.setContentView(this, R.layout.activity_main)
 
         binding.lifecycleOwner = this
         binding.viewModel = viewModel
 
-        viewModel.initialEvent()
+        viewModel.initialEvent(savedInstanceState?.savedViewState)
 
         supportActionBar?.apply {
             setDisplayHomeAsUpEnabled(true)
@@ -91,6 +92,11 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
         }
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.saveViewState(viewModel.currentState)
+    }
+
     override fun onBackPressed() {
         viewModel.onBackPressed(navigation.prevNavHostState)
     }
@@ -109,6 +115,17 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
     lateinit var androidInjector: DispatchingAndroidInjector<Any>
 
     override fun androidInjector(): AndroidInjector<Any> = androidInjector
+
+    companion object {
+        private const val KEY_VIEW_STATE: String = "main_activity_view_state"
+
+        private val Bundle?.savedViewState: MainActivityViewState?
+            get() = this?.getSerializable(KEY_VIEW_STATE) as? MainActivityViewState
+
+        private fun Bundle.saveViewState(viewState: MainActivityViewState?) {
+            putSerializable(KEY_VIEW_STATE, viewState)
+        }
+    }
 }
 
 class MainViewModel(
@@ -118,8 +135,8 @@ class MainViewModel(
 
     val isFabVisible: LiveData<Boolean> = viewState.isFabVisible
 
-    internal fun initialEvent() {
-        navigator.postEvent(TimelineEvent.Setup)
+    internal fun initialEvent(savedState: MainActivityViewState?) {
+        navigator.postEvent(TimelineEvent.Setup(savedState))
     }
 
     fun onFabMenuSelected(item: MenuItem) {
@@ -140,6 +157,9 @@ class MainViewModel(
     fun onBackPressed(prevNavHostState: MainNavHostState?) {
         navigator.postEvent(CommonEvent.Back(viewState.current, prevNavHostState))
     }
+
+    val currentState: MainActivityViewState?
+        get() = viewState.current
 }
 
 @Module(
