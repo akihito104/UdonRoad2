@@ -67,10 +67,18 @@ class MainActivityAction @Inject constructor(
                 else -> it
             }
         }
+
+    val launchMediaViewer: AppAction<TimelineEvent.MediaItemClicked> = dispatcher.toAction {
+        filterByType<TimelineEvent.MediaItemClicked>()
+    }
+
     val changeItemSelectState: AppAction<TimelineEvent.TweetItemSelected> = dispatcher.toAction {
         AppAction.merge(
             filterByType<TimelineEvent.TweetItemSelected>(),
-            backDispatched.filterByType<TimelineEvent.TweetItemSelected>()
+            backDispatched.filterByType<TimelineEvent.TweetItemSelected>(),
+            launchMediaViewer
+                .filter { it.selectedItemId != null }
+                .map { TimelineEvent.TweetItemSelected(requireNotNull(it.selectedItemId)) }
         )
     }
     val toggleSelectedItem: AppAction<TimelineEvent.ToggleTweetItemSelectedState> =
@@ -91,9 +99,5 @@ class MainActivityAction @Inject constructor(
             filterByType<TimelineEvent.UserIconClicked>().map { it.user },
             filterByType<TimelineEvent.RetweetUserClicked>().map { it.user }
         )
-    }
-
-    val launchMediaViewer: AppAction<TimelineEvent.MediaItemClicked> = dispatcher.toAction {
-        filterByType<TimelineEvent.MediaItemClicked>()
     }
 }

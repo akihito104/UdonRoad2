@@ -80,6 +80,26 @@ class MainActivityStateModelTest {
         assertThat(actualContainerState.cause).isEqualTo(MainNavHostState.Cause.INIT)
         assertThat(sut.selectedItemId.value?.originalId).isEqualTo(200L)
     }
+
+    @Test
+    fun selectedItemId_dispatchMediaItemClickedEvent_then_selectedItemIdHasValue(): Unit =
+        with(rule) {
+            // setup
+            setupCurrentUserId(10000)
+
+            // exercise
+            dispatchEvents(
+                TimelineEvent.Setup(),
+                TimelineEvent.MediaItemClicked(
+                    1000,
+                    0,
+                    SelectedItemId(ListOwner(0, QueryType.TweetQueryType.Timeline()), 1000)
+                )
+            )
+
+            // verify
+            assertThat(sut.selectedItemId.value?.originalId).isEqualTo(1000L)
+        }
 }
 
 class MainActivityStateModelTestRule : TestWatcher() {
