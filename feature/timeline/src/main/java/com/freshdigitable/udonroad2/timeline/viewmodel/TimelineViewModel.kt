@@ -106,7 +106,7 @@ class TimelineViewModel(
             TimelineEvent.MediaItemClicked(
                 item.id,
                 index,
-                SelectedItemId(owner, originalId, item.id)
+                SelectedItemId(owner, originalId, if (originalId == item.id) null else item.id)
             )
         )
     }
