@@ -61,6 +61,9 @@ class MainActivityNavigation @Inject constructor(
     }
 
     private fun AppCompatActivity.navigateTo(containerState: MainNavHostState) {
+        if (navController.currentDestination?.id == containerState.fragmentId) {
+            return
+        }
         when (containerState) {
             is MainNavHostState.Timeline -> toTimeline(containerState)
             is MainNavHostState.TweetDetail -> {
@@ -113,13 +116,18 @@ sealed class MainNavHostState : FragmentContainerState, Serializable {
             }
             else -> TODO()
         }
+
+        override val fragmentId: Int = R.id.fragment_timeline
     }
 
     data class TweetDetail(
         val tweetId: Long,
         override val cause: Cause = Cause.NAVIGATION
-    ) : MainNavHostState()
+    ) : MainNavHostState() {
+        override val fragmentId: Int = R.id.fragment_detail
+    }
 
+    abstract val fragmentId: Int
     abstract val cause: Cause
 
     enum class Cause { INIT, NAVIGATION, BACK }
