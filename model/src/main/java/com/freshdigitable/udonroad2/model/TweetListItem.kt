@@ -17,6 +17,7 @@
 package com.freshdigitable.udonroad2.model
 
 import org.threeten.bp.Instant
+import java.io.Serializable
 
 interface TweetListItem {
 
@@ -54,3 +55,5 @@ interface Tweet {
 
     val mediaItems: List<MediaItem>
 }
+
+data class TweetId(val value: Long) : Serializable
