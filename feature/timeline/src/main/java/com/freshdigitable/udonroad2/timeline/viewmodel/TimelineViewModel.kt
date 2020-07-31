@@ -32,6 +32,7 @@ import com.freshdigitable.udonroad2.model.PageOption
 import com.freshdigitable.udonroad2.model.QueryType.TweetQueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.Tweet
+import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.TweetListItem
 import com.freshdigitable.udonroad2.model.TweetingUser
 import com.freshdigitable.udonroad2.model.app.di.QueryTypeKey
@@ -101,12 +102,17 @@ class TimelineViewModel(
         navigator.postEvent(TimelineEvent.UserIconClicked(user))
     }
 
-    override fun onMediaItemClicked(originalId: Long, item: Tweet, index: Int) {
+    override fun onMediaItemClicked(
+        originalId: TweetId,
+        quotedId: TweetId?,
+        item: Tweet,
+        index: Int
+    ) {
         navigator.postEvent(
             TimelineEvent.MediaItemClicked(
                 item.id,
                 index,
-                SelectedItemId(owner, originalId, if (originalId == item.id) null else item.id)
+                SelectedItemId(owner, originalId, quotedId)
             )
         )
     }
