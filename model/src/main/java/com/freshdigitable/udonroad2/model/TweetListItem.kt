@@ -21,7 +21,7 @@ import java.io.Serializable
 
 interface TweetListItem {
 
-    val originalId: Long
+    val originalId: TweetId
 
     val originalUser: TweetingUser
 
@@ -39,7 +39,7 @@ interface TweetListItem {
 
 interface Tweet {
 
-    val id: Long
+    val id: TweetId
 
     val text: String
 

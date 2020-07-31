@@ -24,12 +24,12 @@ class TweetDetailViewModel @Inject constructor(
     private val repository: TweetRepository
 ) : TweetListItemClickListener, ViewModel() {
 
-    private val targetId: MutableLiveData<Long> = MutableLiveData()
+    private val targetId: MutableLiveData<TweetId> = MutableLiveData()
     val tweetItem: LiveData<TweetListItem?> = targetId.switchMap {
         repository.getTweetItem(it)
     }
 
-    internal fun showTweetItem(id: Long) {
+    internal fun showTweetItem(id: TweetId) {
         targetId.value = id
     }
 

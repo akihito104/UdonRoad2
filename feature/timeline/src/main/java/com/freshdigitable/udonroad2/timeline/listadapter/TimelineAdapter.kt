@@ -88,7 +88,7 @@ class TimelineAdapter(
     override fun getItemViewType(position: Int): Int =
         R.layout.view_tweet_list_item
 
-    override fun getItemId(position: Int): Long = getItem(position)?.originalId ?: -1
+    override fun getItemId(position: Int): Long = getItem(position)?.originalId?.value ?: -1
 
     private fun ensureQuotedView(holder: ViewHolder): ViewTweetListQuotedItemBinding {
         return holder.quotedView

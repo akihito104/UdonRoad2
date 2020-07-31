@@ -37,12 +37,12 @@ internal class OauthListAdapter internal constructor(
 ) : PagedListAdapter<OauthItem, OauthViewHolder>(diffUtil) {
 
     override fun getItemId(position: Int): Long {
-        return getItem(position)?.originalId ?: throw IllegalStateException()
+        return requireNotNull(getItem(position)?.originalId?.value)
     }
 
     override fun getItemViewType(position: Int): Int {
         val item = getItem(position)
-        return when (item?.originalId) {
+        return when (item?.originalId?.value) {
             1L -> R.layout.view_oauth_input
             2L -> R.layout.view_tweet_list_item
             else -> throw IllegalStateException()

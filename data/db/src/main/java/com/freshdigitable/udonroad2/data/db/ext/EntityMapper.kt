@@ -50,7 +50,7 @@ internal fun TweetEntity.toStructuredTweet(): StructuredTweetEntity {
 internal fun TweetEntity.toListEntity(owner: String): TweetListEntity {
     return TweetListEntity(
         originalId = id,
-        order = id,
+        order = id.value,
         owner = owner
     )
 }

@@ -21,6 +21,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.freshdigitable.udonroad2.model.TweetId
 import org.threeten.bp.Instant
 
 @Entity(
@@ -47,7 +48,7 @@ import org.threeten.bp.Instant
 internal class TweetEntityDb(
     @PrimaryKey
     @ColumnInfo(name = "id")
-    val id: Long,
+    val id: TweetId,
 
     @ColumnInfo(name = "text")
     val text: String,
@@ -62,13 +63,13 @@ internal class TweetEntityDb(
     val userId: Long,
 
     @ColumnInfo(name = "retweeted_tweet_id")
-    val retweetedTweetId: Long?,
+    val retweetedTweetId: TweetId?,
 
     @ColumnInfo(name = "quoted_tweet_id")
-    val quotedTweetId: Long?,
+    val quotedTweetId: TweetId?,
 
     @ColumnInfo(name = "in_reply_to_tweet_id")
-    val inReplyToTweetId: Long?,
+    val inReplyToTweetId: TweetId?,
 
     @ColumnInfo(name = "is_retweeted")
     val isRetweeted: Boolean,

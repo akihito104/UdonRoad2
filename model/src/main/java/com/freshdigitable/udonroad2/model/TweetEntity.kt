@@ -8,7 +8,7 @@ interface TweetEntity : Tweet {
 
     val quotedTweet: TweetEntity?
 
-    val inReplyToTweetId: Long?
+    val inReplyToTweetId: TweetId?
 
     val isRetweeted: Boolean
 

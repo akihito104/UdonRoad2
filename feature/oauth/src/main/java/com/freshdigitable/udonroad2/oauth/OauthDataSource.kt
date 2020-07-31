@@ -18,6 +18,7 @@ package com.freshdigitable.udonroad2.oauth
 
 import android.content.Context
 import androidx.paging.PositionalDataSource
+import com.freshdigitable.udonroad2.model.TweetId
 
 internal class OauthDataSource(context: Context) : PositionalDataSource<OauthItem>() {
 
@@ -29,10 +30,10 @@ internal class OauthDataSource(context: Context) : PositionalDataSource<OauthIte
     )
     private val items = listOf(
         OauthItem(
-            originalId = 2,
+            originalId = TweetId(2),
             originalUser = user,
             body = OauthTweet(
-                id = 2,
+                id = TweetId(2),
                 user = user,
                 text = context.getString(R.string.oauth_demo_tweet),
                 retweetCount = 0,
@@ -41,10 +42,10 @@ internal class OauthDataSource(context: Context) : PositionalDataSource<OauthIte
             )
         ),
         OauthItem(
-            originalId = 1,
+            originalId = TweetId(1),
             originalUser = user,
             body = OauthTweet(
-                id = 1,
+                id = TweetId(1),
                 user = user,
                 text = "",
                 retweetCount = 0,

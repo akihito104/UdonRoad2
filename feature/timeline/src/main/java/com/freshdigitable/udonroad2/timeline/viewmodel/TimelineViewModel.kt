@@ -61,7 +61,7 @@ class TimelineViewModel(
 
     override val timeline: LiveData<PagedList<TweetListItem>> =
         pagedListProvider.getList(owner.query, owner.value) { i ->
-            PageOption.OnTail(i.originalId - 1)
+            PageOption.OnTail(i.originalId.value - 1)
         }
 
     override val loading: LiveData<Boolean> = homeRepository.loading
@@ -69,7 +69,7 @@ class TimelineViewModel(
     override fun onRefresh() {
         val items = timeline.value
         val query = if (items?.isNotEmpty() == true) {
-            ListQuery(owner.query, PageOption.OnHead(items.first().originalId + 1))
+            ListQuery(owner.query, PageOption.OnHead(items.first().originalId.value + 1))
         } else {
             ListQuery(owner.query, PageOption.OnInit)
         }
