@@ -29,6 +29,7 @@ import com.freshdigitable.udonroad2.model.MediaId
 import com.freshdigitable.udonroad2.model.MediaItem
 import com.freshdigitable.udonroad2.model.MediaType
 import com.freshdigitable.udonroad2.model.MemberList
+import com.freshdigitable.udonroad2.model.MemberListId
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.user.UserId
@@ -81,7 +82,7 @@ internal fun User.toEntity(): UserEntityRest {
 
 internal fun UserList.toEntity(): MemberList {
     return MemberListImpl(
-        id = this.id,
+        id = MemberListId(this.id),
         name = name,
         description = description,
         user = user.toEntity(),

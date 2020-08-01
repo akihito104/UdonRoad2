@@ -53,7 +53,7 @@ class MemberListListAdapter(
     override fun getItemViewType(position: Int): Int =
         R.layout.view_tweet_list_item
 
-    override fun getItemId(position: Int): Long = getItem(position)?.id ?: -1
+    override fun getItemId(position: Int): Long = getItem(position)?.id?.value ?: -1
 }
 
 private val diffUtil = object : DiffUtil.ItemCallback<MemberListItem>() {

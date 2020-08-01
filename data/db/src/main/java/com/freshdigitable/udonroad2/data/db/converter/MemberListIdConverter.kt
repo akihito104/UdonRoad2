@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019. Matsuda, Akihit (akihito104)
+ * Copyright (c) 2020. Matsuda, Akihit (akihito104)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,18 +14,15 @@
  * limitations under the License.
  */
 
-package com.freshdigitable.udonroad2.data.restclient.data
+package com.freshdigitable.udonroad2.data.db.converter
 
-import com.freshdigitable.udonroad2.model.MemberList
+import androidx.room.TypeConverter
 import com.freshdigitable.udonroad2.model.MemberListId
-import com.freshdigitable.udonroad2.model.user.User
 
-internal data class MemberListImpl(
-    override val user: User,
-    override val id: MemberListId,
-    override val name: String,
-    override val description: String,
-    override val memberCount: Int,
-    override val followerCount: Int,
-    override val isPublic: Boolean
-) : MemberList
+internal class MemberListIdConverter {
+    @TypeConverter
+    fun toDb(id: MemberListId?): Long? = id?.value
+
+    @TypeConverter
+    fun toObject(value: Long?): MemberListId? = MemberListId.create(value)
+}

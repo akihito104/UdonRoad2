@@ -15,6 +15,7 @@ import com.freshdigitable.udonroad2.data.db.dbview.MemberListDbView
 import com.freshdigitable.udonroad2.data.db.entity.MemberListEntity
 import com.freshdigitable.udonroad2.data.db.ext.toEntity
 import com.freshdigitable.udonroad2.model.MemberList
+import com.freshdigitable.udonroad2.model.MemberListId
 
 @Dao
 abstract class MemberListDao(
@@ -69,7 +70,7 @@ abstract class MemberListDao(
 )
 internal data class MemberListListEntity(
     @ColumnInfo(name = "member_list_id", index = true)
-    val memberListId: Long,
+    val memberListId: MemberListId,
 
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "order")
