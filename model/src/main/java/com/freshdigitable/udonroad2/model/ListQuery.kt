@@ -1,5 +1,6 @@
 package com.freshdigitable.udonroad2.model
 
+import com.freshdigitable.udonroad2.model.user.UserId
 import java.io.Serializable
 
 data class ListQuery<T : QueryType>(
@@ -8,18 +9,18 @@ data class ListQuery<T : QueryType>(
 )
 
 sealed class QueryType(
-    open val userId: Long?
+    open val userId: UserId?
 ) : Serializable {
 
     sealed class TweetQueryType(
-        userId: Long?
+        userId: UserId?
     ) : QueryType(userId) {
         data class Timeline(
-            override val userId: Long? = null
+            override val userId: UserId? = null
         ) : TweetQueryType(userId)
 
         data class Fav(
-            override val userId: Long? = null
+            override val userId: UserId? = null
         ) : TweetQueryType(userId)
 
         data class Media(
@@ -31,19 +32,19 @@ sealed class QueryType(
     }
 
     sealed class UserQueryType(
-        userId: Long?
+        userId: UserId?
     ) : QueryType(userId) {
         data class Follower(
-            override val userId: Long
+            override val userId: UserId
         ) : UserQueryType(userId)
 
         data class Following(
-            override val userId: Long
+            override val userId: UserId
         ) : UserQueryType(userId)
     }
 
     data class UserListMembership(
-        override val userId: Long
+        override val userId: UserId
     ) : QueryType(userId)
 
     object Oauth : QueryType(null)

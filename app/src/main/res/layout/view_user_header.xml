@@ -1,17 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android"
+<layout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools">
+    xmlns:tools="http://schemas.android.com/tools"
+    >
 
     <data>
+
         <import type="android.view.View" />
+
         <variable
             name="item"
-            type="com.freshdigitable.udonroad2.model.User"
+            type="com.freshdigitable.udonroad2.model.user.User"
             />
+
         <variable
             name="relationship"
-            type="com.freshdigitable.udonroad2.model.Relationship"
+            type="com.freshdigitable.udonroad2.model.user.Relationship"
             />
     </data>
 
@@ -21,6 +26,7 @@
         android:paddingBottom="4dp"
         tools:background="#888"
         >
+
         <ImageView
             android:id="@+id/userHeader_banner"
             android:layout_width="0dp"
@@ -34,6 +40,7 @@
             app:bindUserIcon="@{item.profileBannerImageUrl}"
             tools:background="#800"
             />
+
         <Space
             android:id="@+id/userHeader_space"
             android:layout_width="1dp"
@@ -42,6 +49,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintVertical_bias="1"
             />
+
         <ImageView
             android:id="@+id/userHeader_icon"
             android:layout_width="60dp"
@@ -63,6 +71,7 @@
             tools:background="#8fff"
             tools:src="@tools:sample/avatars"
             />
+
         <TextView
             android:id="@+id/userHeader_following"
             android:layout_width="0dp"
@@ -79,6 +88,7 @@
             android:gravity="center"
             android:visibility="@{safeUnbox(relationship.following) ? View.VISIBLE : View.GONE}"
             />
+
         <TextView
             android:id="@+id/userHeader_screenName"
             android:layout_width="wrap_content"
@@ -97,6 +107,7 @@
             android:background="#8fff"
             tools:text="\@screen_name"
             />
+
         <TextView
             android:id="@+id/userHeader_name"
             android:layout_width="wrap_content"
@@ -116,6 +127,7 @@
             android:background="#8fff"
             tools:text="name"
             />
+
         <TextView
             android:id="@+id/userHeader_bio"
             android:layout_width="0dp"
@@ -130,6 +142,7 @@
             android:text="@{item.description}"
             tools:text="@tools:sample/lorem"
             />
+
         <TextView
             android:id="@+id/userHeader_location"
             android:layout_width="0dp"
@@ -148,6 +161,7 @@
             app:visibility_goneIfNullOrEmpty="@{item.location}"
             tools:text="tokyo, jp"
             />
+
         <TextView
             android:id="@+id/userHeader_link"
             android:layout_width="0dp"

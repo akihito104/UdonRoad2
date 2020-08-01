@@ -5,13 +5,13 @@ import com.freshdigitable.udonroad2.data.LocalListDataSource
 import com.freshdigitable.udonroad2.data.PagedListProvider
 import com.freshdigitable.udonroad2.data.db.ext.toEntity
 import com.freshdigitable.udonroad2.model.ListQuery
-import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.MemberList
 import com.freshdigitable.udonroad2.model.MemberListItem
-import com.freshdigitable.udonroad2.model.TweetEntity
-import com.freshdigitable.udonroad2.model.TweetListItem
-import com.freshdigitable.udonroad2.model.User
-import com.freshdigitable.udonroad2.model.UserListItem
+import com.freshdigitable.udonroad2.model.QueryType
+import com.freshdigitable.udonroad2.model.tweet.TweetEntity
+import com.freshdigitable.udonroad2.model.tweet.TweetListItem
+import com.freshdigitable.udonroad2.model.user.User
+import com.freshdigitable.udonroad2.model.user.UserListItem
 
 class TweetListDao(
     private val dao: TweetDao

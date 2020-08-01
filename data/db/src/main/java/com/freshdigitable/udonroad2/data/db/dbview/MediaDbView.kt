@@ -27,8 +27,8 @@ import com.freshdigitable.udonroad2.data.db.entity.VideoValiantEntity
 import com.freshdigitable.udonroad2.model.MediaId
 import com.freshdigitable.udonroad2.model.MediaItem
 import com.freshdigitable.udonroad2.model.MediaType
-import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.UrlItem
+import com.freshdigitable.udonroad2.model.tweet.TweetId
 
 @DatabaseView(
     """

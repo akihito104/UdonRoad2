@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019. Matsuda, Akihit (akihito104)
+ * Copyright (c) 2020. Matsuda, Akihit (akihito104)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-package com.freshdigitable.udonroad2.model
+package com.freshdigitable.udonroad2.model.tweet
 
+import com.freshdigitable.udonroad2.model.MediaItem
+import com.freshdigitable.udonroad2.model.user.TweetingUser
 import org.threeten.bp.Instant
 import java.io.Serializable
 

@@ -17,10 +17,12 @@
 package com.freshdigitable.udonroad2.data.restclient.data
 
 import com.freshdigitable.udonroad2.model.MemberList
+import com.freshdigitable.udonroad2.model.MemberListId
+import com.freshdigitable.udonroad2.model.user.User
 
 internal data class MemberListImpl(
-    override val user: com.freshdigitable.udonroad2.model.User,
-    override val id: Long,
+    override val user: User,
+    override val id: MemberListId,
     override val name: String,
     override val description: String,
     override val memberCount: Int,

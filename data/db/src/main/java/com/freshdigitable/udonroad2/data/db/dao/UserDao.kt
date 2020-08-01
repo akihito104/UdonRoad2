@@ -30,7 +30,8 @@ import androidx.room.Query
 import androidx.room.Transaction
 import com.freshdigitable.udonroad2.data.db.dbview.UserListDbView
 import com.freshdigitable.udonroad2.data.db.entity.UserEntity
-import com.freshdigitable.udonroad2.model.User
+import com.freshdigitable.udonroad2.model.user.User
+import com.freshdigitable.udonroad2.model.user.UserId
 
 @Dao
 abstract class UserDao {
@@ -38,9 +39,9 @@ abstract class UserDao {
     internal abstract suspend fun addUsers(users: List<UserEntity>)
 
     @Query("SELECT * FROM user WHERE id = :id")
-    internal abstract fun getUser(id: Long): LiveData<UserEntity?>
+    internal abstract fun getUser(id: UserId): LiveData<UserEntity?>
 
-    open fun getUserById(id: Long): LiveData<User?> = getUser(id).map { it }
+    open fun getUserById(id: UserId): LiveData<User?> = getUser(id).map { it }
 
     @Transaction
     internal open suspend fun addUsers(entities: List<UserEntity>, owner: String? = null) {
@@ -86,7 +87,7 @@ internal data class UserListEntity(
     val id: Int = 0,
 
     @ColumnInfo(name = "user_id", index = true)
-    val userId: Long,
+    val userId: UserId,
 
     @ColumnInfo(name = "owner")
     val owner: String

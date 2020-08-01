@@ -19,6 +19,7 @@ package com.freshdigitable.udonroad2.data.impl
 import android.content.SharedPreferences
 import androidx.core.content.edit
 import com.freshdigitable.udonroad2.model.AccessTokenEntity
+import com.freshdigitable.udonroad2.model.user.UserId
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -28,14 +29,14 @@ class SharedPreferenceDataSource @Inject constructor(
 ) {
     fun storeAccessToken(token: AccessTokenEntity) {
         val userId = token.userId
-        check(userId >= 0) { "invalid token: $token" }
+        check(userId.isValid) { "invalid token: $token" }
         val authenticatedUsers = prefs.getStringSet(AUTHENTICATED_USERS, HashSet()) ?: HashSet()
-        authenticatedUsers.add("$userId")
+        authenticatedUsers.add("${userId.value}")
 
         prefs.edit {
             putStringSet(AUTHENTICATED_USERS, authenticatedUsers)
-            putString("$ACCESS_TOKEN_PREFIX$userId", token.token)
-            putString("$TOKEN_SECRET_PREFIX$userId", token.tokenSecret)
+            putString("$ACCESS_TOKEN_PREFIX${userId.value}", token.token)
+            putString("$TOKEN_SECRET_PREFIX${userId.value}", token.tokenSecret)
         }
     }
 
@@ -49,34 +50,32 @@ class SharedPreferenceDataSource @Inject constructor(
         return prefs.getLong(TWITTER_API_CONFIG_DATE, -1)
     }
 
-    fun getCurrentUserId(): Long? {
+    fun getCurrentUserId(): UserId? {
         val userId = prefs.getLong(CURRENT_USER_ID, -1)
-        return if (userId != -1L) userId else null
+        return if (userId != -1L) UserId(userId) else null
     }
 
     fun getCurrentUserAccessToken(): AccessTokenEntity? {
         val currentUserId = getCurrentUserId() ?: return null
-        val token = prefs.getString("$ACCESS_TOKEN_PREFIX$currentUserId", null)
-        val secret = prefs.getString("$TOKEN_SECRET_PREFIX$currentUserId", null)
-        return if (token == null || secret == null) {
-            null
-        } else {
-            AccessTokenEntity.create(
-                currentUserId,
-                token,
-                secret
-            )
-        }
+        val token =
+            prefs.getString("$ACCESS_TOKEN_PREFIX${currentUserId.value}", null) ?: return null
+        val secret =
+            prefs.getString("$TOKEN_SECRET_PREFIX${currentUserId.value}", null) ?: return null
+        return AccessTokenEntity.create(
+            currentUserId,
+            token,
+            secret
+        )
     }
 
-    fun isAuthenticatedUser(userId: Long): Boolean {
+    fun isAuthenticatedUser(userId: UserId): Boolean {
         val userIds = prefs.getStringSet(AUTHENTICATED_USERS, emptySet()) ?: return false
-        return userIds.any { it == "$userId" }
+        return userIds.any { it == "${userId.value}" }
     }
 
-    fun setCurrentUserId(userId: Long) {
+    fun setCurrentUserId(userId: UserId) {
         prefs.edit {
-            putLong(CURRENT_USER_ID, userId)
+            putLong(CURRENT_USER_ID, userId.value)
         }
     }
 

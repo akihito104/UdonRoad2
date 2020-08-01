@@ -18,16 +18,17 @@ package com.freshdigitable.udonroad2.data.db.dbview
 
 import androidx.room.ColumnInfo
 import androidx.room.DatabaseView
-import com.freshdigitable.udonroad2.model.TweetingUser
+import com.freshdigitable.udonroad2.model.user.TweetingUser
+import com.freshdigitable.udonroad2.model.user.UserId
 
 @DatabaseView(
     viewName = "view_user_in_tweet",
     value =
-        """SELECT id, name, screen_name, icon_url FROM user"""
+    """SELECT id, name, screen_name, icon_url FROM user"""
 )
 internal data class TweetingUser(
     @ColumnInfo(name = "id")
-    override val id: Long,
+    override val id: UserId,
 
     @ColumnInfo(name = "name")
     override val name: String,

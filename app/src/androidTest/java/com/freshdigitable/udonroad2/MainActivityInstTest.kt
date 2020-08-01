@@ -23,6 +23,7 @@ import androidx.test.espresso.intent.rule.IntentsTestRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.freshdigitable.udonroad2.main.MainActivity
 import com.freshdigitable.udonroad2.model.AccessTokenEntity
+import com.freshdigitable.udonroad2.model.user.UserId
 import com.freshdigitable.udonroad2.test.intendingToAuthorizationUrl
 import com.freshdigitable.udonroad2.test.mainList
 import com.freshdigitable.udonroad2.test.oauth
@@ -98,8 +99,8 @@ class MainActivityInstTest {
             val sp = ApplicationProvider.getApplicationContext<TestApplicationBase>()
                 .component
                 .sharedPreferencesDao
-            sp.storeAccessToken(AccessTokenEntity.create(10000, "token", "tokensecret"))
-            sp.setCurrentUserId(10000)
+            sp.storeAccessToken(AccessTokenEntity.create(UserId(10000), "token", "tokensecret"))
+            sp.setCurrentUserId(UserId(10000))
 
             val countingIdlingResource = CountingIdlingResource("load_timeline")
             twitterRobot.setupSetOAuthAccessToken { any() }

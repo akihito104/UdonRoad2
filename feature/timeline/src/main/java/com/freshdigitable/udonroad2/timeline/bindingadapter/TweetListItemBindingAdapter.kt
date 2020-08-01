@@ -32,7 +32,7 @@ import com.freshdigitable.udonroad2.media.MediaThumbnailContainer
 import com.freshdigitable.udonroad2.media.mediaViews
 import com.freshdigitable.udonroad2.model.MediaItem
 import com.freshdigitable.udonroad2.model.MediaType
-import com.freshdigitable.udonroad2.model.TweetingUser
+import com.freshdigitable.udonroad2.model.user.TweetingUser
 import com.freshdigitable.udonroad2.timeline.R
 import org.threeten.bp.Duration
 import org.threeten.bp.Instant

@@ -8,10 +8,11 @@ import androidx.lifecycle.map
 import androidx.lifecycle.switchMap
 import com.freshdigitable.udonroad2.data.impl.RelationshipRepository
 import com.freshdigitable.udonroad2.data.impl.UserRepository
-import com.freshdigitable.udonroad2.model.Relationship
 import com.freshdigitable.udonroad2.model.SelectedItemId
-import com.freshdigitable.udonroad2.model.User
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
+import com.freshdigitable.udonroad2.model.user.Relationship
+import com.freshdigitable.udonroad2.model.user.User
+import com.freshdigitable.udonroad2.model.user.UserId
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -22,13 +23,13 @@ class UserViewModel(
     private val repository: UserRepository,
     private val relationshipRepository: RelationshipRepository
 ) : ViewModel() {
-    private val userId: MutableLiveData<Long> = MutableLiveData()
+    private val userId: MutableLiveData<UserId> = MutableLiveData()
     val user: LiveData<User?> = userId.switchMap { repository.getUser(it) }
     val relationship: LiveData<Relationship?> = userId.switchMap {
         relationshipRepository.findRelationship(it)
     }
 
-    fun setUserId(id: Long) {
+    fun setUserId(id: UserId) {
         userId.value = id
     }
 

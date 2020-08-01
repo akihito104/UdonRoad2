@@ -29,8 +29,10 @@ import com.freshdigitable.udonroad2.model.MediaId
 import com.freshdigitable.udonroad2.model.MediaItem
 import com.freshdigitable.udonroad2.model.MediaType
 import com.freshdigitable.udonroad2.model.MemberList
-import com.freshdigitable.udonroad2.model.TweetEntity
-import com.freshdigitable.udonroad2.model.TweetId
+import com.freshdigitable.udonroad2.model.MemberListId
+import com.freshdigitable.udonroad2.model.tweet.TweetEntity
+import com.freshdigitable.udonroad2.model.tweet.TweetId
+import com.freshdigitable.udonroad2.model.user.UserId
 import org.threeten.bp.Instant
 import twitter4j.MediaEntity
 import twitter4j.PagableResponseList
@@ -59,7 +61,7 @@ internal fun Status.toEntity(): TweetEntity {
 
 internal fun User.toEntity(): UserEntityRest {
     return UserEntityRest(
-        id = id,
+        id = UserId(id),
         name = name,
         screenName = screenName,
         description = description,
@@ -80,7 +82,7 @@ internal fun User.toEntity(): UserEntityRest {
 
 internal fun UserList.toEntity(): MemberList {
     return MemberListImpl(
-        id = this.id,
+        id = MemberListId(this.id),
         name = name,
         description = description,
         user = user.toEntity(),
@@ -90,7 +92,7 @@ internal fun UserList.toEntity(): MemberList {
     )
 }
 
-internal fun PagableResponseList<User>.toUserPagedList(): PagedResponseList<com.freshdigitable.udonroad2.model.User> {
+internal fun PagableResponseList<User>.toUserPagedList(): PagedResponseList<com.freshdigitable.udonroad2.model.user.User> {
     return PagedResponseList(
         list = this.map(User::toEntity),
         nextCursor = if (hasNext()) this.nextCursor else 0

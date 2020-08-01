@@ -9,9 +9,9 @@ import com.freshdigitable.udonroad2.data.db.entity.UrlEntity
 import com.freshdigitable.udonroad2.data.db.entity.UserEntity
 import com.freshdigitable.udonroad2.model.MediaItem
 import com.freshdigitable.udonroad2.model.MemberList
-import com.freshdigitable.udonroad2.model.TweetEntity
 import com.freshdigitable.udonroad2.model.UrlItem
-import com.freshdigitable.udonroad2.model.User
+import com.freshdigitable.udonroad2.model.tweet.TweetEntity
+import com.freshdigitable.udonroad2.model.user.User
 
 internal fun User.toEntity(): UserEntity {
     return if (this is UserEntity) {

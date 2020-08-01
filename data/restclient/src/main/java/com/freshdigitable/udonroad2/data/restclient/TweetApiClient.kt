@@ -1,8 +1,8 @@
 package com.freshdigitable.udonroad2.data.restclient
 
 import com.freshdigitable.udonroad2.data.restclient.ext.toEntity
-import com.freshdigitable.udonroad2.model.TweetEntity
-import com.freshdigitable.udonroad2.model.TweetId
+import com.freshdigitable.udonroad2.model.tweet.TweetId
+import com.freshdigitable.udonroad2.model.tweet.TweetEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import twitter4j.Twitter

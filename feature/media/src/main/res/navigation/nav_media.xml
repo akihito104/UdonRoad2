@@ -28,7 +28,7 @@
         >
         <argument
             android:name="id"
-            app:argType="com.freshdigitable.udonroad2.model.TweetId"
+            app:argType="com.freshdigitable.udonroad2.model.tweet.TweetId"
             />
         <argument
             android:name="index"

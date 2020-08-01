@@ -14,15 +14,13 @@
  * limitations under the License.
  */
 
-package com.freshdigitable.udonroad2.data.db.converter
+package com.freshdigitable.udonroad2.model.user
 
-import androidx.room.TypeConverter
-import com.freshdigitable.udonroad2.model.tweet.TweetId
-
-internal class TweetIdConverter {
-    @TypeConverter
-    fun toDb(id: TweetId?): Long? = id?.value
-
-    @TypeConverter
-    fun toObject(value: Long?): TweetId? = if (value != null) TweetId(value) else null
+interface Relationship {
+    val userId: UserId
+    val following: Boolean
+    val blocking: Boolean
+    val muting: Boolean
+    val wantRetweets: Boolean
+    val notificationsEnabled: Boolean
 }

@@ -5,7 +5,8 @@ import androidx.lifecycle.MediatorLiveData
 import com.freshdigitable.udonroad2.data.db.DaoModule
 import com.freshdigitable.udonroad2.data.db.dao.RelationshipDao
 import com.freshdigitable.udonroad2.data.restclient.FriendshipRestClient
-import com.freshdigitable.udonroad2.model.Relationship
+import com.freshdigitable.udonroad2.model.user.Relationship
+import com.freshdigitable.udonroad2.model.user.UserId
 import dagger.Module
 import dagger.Provides
 import javax.inject.Inject
@@ -15,7 +16,7 @@ class RelationshipRepository @Inject constructor(
     private val restClient: FriendshipRestClient,
     private val executor: AppExecutor
 ) {
-    fun findRelationship(targetUserId: Long): LiveData<Relationship?> {
+    fun findRelationship(targetUserId: UserId): LiveData<Relationship?> {
         val res = MediatorLiveData<Relationship?>()
         res.addSource(dao.findRelationship(targetUserId)) { r ->
             when {
@@ -26,14 +27,14 @@ class RelationshipRepository @Inject constructor(
         return res
     }
 
-    private fun fetchFriendship(targetUserId: Long) {
+    private fun fetchFriendship(targetUserId: UserId) {
         executor.launchIO {
             val f = restClient.fetchFriendship(targetUserId)
             dao.addRelationship(f)
         }
     }
 
-    fun updateFollowingStatus(targetUserId: Long, isFollowing: Boolean) {
+    fun updateFollowingStatus(targetUserId: UserId, isFollowing: Boolean) {
         executor.launchIO {
             val user = if (isFollowing) {
                 restClient.createFriendship(targetUserId)
@@ -44,7 +45,7 @@ class RelationshipRepository @Inject constructor(
         }
     }
 
-    fun updateMutingStatus(targetUserId: Long, isMuting: Boolean) {
+    fun updateMutingStatus(targetUserId: UserId, isMuting: Boolean) {
         executor.launchIO {
             val user = when {
                 isMuting -> restClient.createMute(targetUserId)
@@ -54,7 +55,7 @@ class RelationshipRepository @Inject constructor(
         }
     }
 
-    fun updateBlockingStatus(targetUserId: Long, isBlocking: Boolean) {
+    fun updateBlockingStatus(targetUserId: UserId, isBlocking: Boolean) {
         executor.launchIO {
             val user = when {
                 isBlocking -> restClient.createBlock(targetUserId)
@@ -75,7 +76,7 @@ class RelationshipRepository @Inject constructor(
         }
     }
 
-    fun reportSpam(userId: Long) {
+    fun reportSpam(userId: UserId) {
         executor.launchIO {
             val user = restClient.reportSpam(userId)
             dao.updateBlockingStatus(user.id, false)

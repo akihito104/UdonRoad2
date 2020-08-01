@@ -3,6 +3,7 @@ package com.freshdigitable.udonroad2.data.db.dbview
 import androidx.room.ColumnInfo
 import androidx.room.DatabaseView
 import androidx.room.Embedded
+import com.freshdigitable.udonroad2.model.MemberListId
 import com.freshdigitable.udonroad2.model.MemberListItem
 
 @DatabaseView(
@@ -19,7 +20,7 @@ import com.freshdigitable.udonroad2.model.MemberListItem
 )
 internal data class MemberListDbView(
     @ColumnInfo(name = "id")
-    override val id: Long,
+    override val id: MemberListId,
 
     @ColumnInfo(name = "name")
     override val name: String,

@@ -22,9 +22,10 @@ import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
-import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
+import com.freshdigitable.udonroad2.model.tweet.TweetId
+import com.freshdigitable.udonroad2.model.user.UserId
 import com.freshdigitable.udonroad2.test.MockVerified
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.google.common.truth.Truth.assertThat
@@ -114,11 +115,12 @@ class MainActivityStateModelTestRule : TestWatcher() {
     )
 
     fun setupCurrentUserId(userId: Long?) {
-        every { tokenRepository.getCurrentUserId() } returns userId
+        val id = UserId.create(userId)
+        every { tokenRepository.getCurrentUserId() } returns id
         mockVerified.expected { verify { tokenRepository.getCurrentUserId() } }
-        if (userId != null) {
-            every { tokenRepository.login(userId) } just runs
-            mockVerified.expected { verify { tokenRepository.login(userId) } }
+        if (id != null) {
+            every { tokenRepository.login(id) } just runs
+            mockVerified.expected { verify { tokenRepository.login(id) } }
         }
     }
 

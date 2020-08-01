@@ -38,8 +38,8 @@ import com.freshdigitable.udonroad2.data.db.ext.toDbEntity
 import com.freshdigitable.udonroad2.data.db.ext.toEntity
 import com.freshdigitable.udonroad2.data.db.ext.toListEntity
 import com.freshdigitable.udonroad2.data.db.ext.toStructuredTweet
-import com.freshdigitable.udonroad2.model.TweetEntity
-import com.freshdigitable.udonroad2.model.TweetId
+import com.freshdigitable.udonroad2.model.tweet.TweetEntity
+import com.freshdigitable.udonroad2.model.tweet.TweetId
 
 @Dao
 abstract class TweetDao(
@@ -63,7 +63,8 @@ abstract class TweetDao(
 
     open fun findTweetItemById(
         id: TweetId
-    ): LiveData<com.freshdigitable.udonroad2.model.TweetListItem?> = findTweetItem(id).map { it }
+    ): LiveData<com.freshdigitable.udonroad2.model.tweet.TweetListItem?> =
+        findTweetItem(id).map { it }
 
     suspend fun addTweet(tweet: TweetEntity, owner: String? = null) {
         addTweets(listOf(tweet), owner)

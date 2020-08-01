@@ -17,12 +17,12 @@
 package com.freshdigitable.udonroad2.data.db.converter
 
 import androidx.room.TypeConverter
-import com.freshdigitable.udonroad2.model.tweet.TweetId
+import com.freshdigitable.udonroad2.model.MemberListId
 
-internal class TweetIdConverter {
+internal class MemberListIdConverter {
     @TypeConverter
-    fun toDb(id: TweetId?): Long? = id?.value
+    fun toDb(id: MemberListId?): Long? = id?.value
 
     @TypeConverter
-    fun toObject(value: Long?): TweetId? = if (value != null) TweetId(value) else null
+    fun toObject(value: Long?): MemberListId? = MemberListId.create(value)
 }

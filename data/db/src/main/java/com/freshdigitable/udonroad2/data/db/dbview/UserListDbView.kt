@@ -2,12 +2,13 @@ package com.freshdigitable.udonroad2.data.db.dbview
 
 import androidx.room.ColumnInfo
 import androidx.room.DatabaseView
-import com.freshdigitable.udonroad2.model.UserListItem
+import com.freshdigitable.udonroad2.model.user.UserId
+import com.freshdigitable.udonroad2.model.user.UserListItem
 
 @DatabaseView(
     viewName = "user_list_item",
     value =
-        """
+    """
      SELECT id, name, screen_name, icon_url, description,
       follower_count, following_count, verified, is_protected
      FROM user
@@ -15,7 +16,7 @@ import com.freshdigitable.udonroad2.model.UserListItem
 )
 internal data class UserListDbView(
     @ColumnInfo(name = "id")
-    override val id: Long,
+    override val id: UserId,
 
     @ColumnInfo(name = "name")
     override val name: String,

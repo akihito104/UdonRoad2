@@ -21,7 +21,7 @@ import com.freshdigitable.udonroad2.data.restclient.ext.toEntity
 import com.freshdigitable.udonroad2.model.ListQuery
 import com.freshdigitable.udonroad2.model.PageOption
 import com.freshdigitable.udonroad2.model.QueryType
-import com.freshdigitable.udonroad2.model.TweetEntity
+import com.freshdigitable.udonroad2.model.tweet.TweetEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import twitter4j.Paging
@@ -38,7 +38,7 @@ class HomeTimelineDataSource @Inject constructor(
         query: ListQuery<QueryType.TweetQueryType.Timeline>
     ): List<TweetEntity> = withContext(Dispatchers.IO) {
         (
-            query.type.userId?.let { id ->
+            query.type.userId?.value?.let { id ->
                 when (query.pageOption) {
                     PageOption.OnInit -> twitter.getUserTimeline(id)
                     else -> twitter.getUserTimeline(id, query.pageOption.toPaging())
@@ -59,7 +59,7 @@ class FavTimelineDataSource @Inject constructor(
         query: ListQuery<QueryType.TweetQueryType.Fav>
     ): List<TweetEntity> = withContext(Dispatchers.IO) {
         (
-            query.type.userId?.let { id ->
+            query.type.userId?.value?.let { id ->
                 when (query.pageOption) {
                     PageOption.OnInit -> twitter.getFavorites(id)
                     else -> twitter.getFavorites(id, query.pageOption.toPaging())

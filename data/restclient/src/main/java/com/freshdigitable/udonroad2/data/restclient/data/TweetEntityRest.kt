@@ -1,9 +1,9 @@
 package com.freshdigitable.udonroad2.data.restclient.data
 
 import com.freshdigitable.udonroad2.model.MediaItem
-import com.freshdigitable.udonroad2.model.TweetEntity
-import com.freshdigitable.udonroad2.model.TweetId
-import com.freshdigitable.udonroad2.model.User
+import com.freshdigitable.udonroad2.model.tweet.TweetId
+import com.freshdigitable.udonroad2.model.user.User
+import com.freshdigitable.udonroad2.model.tweet.TweetEntity
 import org.threeten.bp.Instant
 
 internal class TweetEntityRest(

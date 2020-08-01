@@ -18,6 +18,7 @@ package com.freshdigitable.udonroad2.data.restclient
 
 import com.freshdigitable.udonroad2.model.AccessTokenEntity
 import com.freshdigitable.udonroad2.model.RequestTokenItem
+import com.freshdigitable.udonroad2.model.user.UserId
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import twitter4j.Twitter
@@ -51,7 +52,7 @@ class OAuthApiClient @Inject constructor(
     private fun RequestToken.toItem(): RequestTokenItem = RequestTokenItemImpl(this)
 
     private fun AccessToken.toEntity(): AccessTokenEntity =
-        AccessTokenEntity.create(userId, token, tokenSecret)
+        AccessTokenEntity.create(UserId(userId), token, tokenSecret)
 }
 
 private data class RequestTokenItemImpl(override val token: RequestToken) : RequestTokenItem {

@@ -16,6 +16,7 @@
 
 package com.freshdigitable.udonroad2.model
 
+import com.freshdigitable.udonroad2.model.user.UserId
 import java.io.Serializable
 
 interface RequestTokenItem : Serializable {
@@ -24,13 +25,13 @@ interface RequestTokenItem : Serializable {
 }
 
 interface AccessTokenEntity {
-    val userId: Long
+    val userId: UserId
     val token: String
     val tokenSecret: String
 
     companion object {
         fun create(
-            userId: Long,
+            userId: UserId,
             token: String,
             tokenSecret: String
         ): AccessTokenEntity = AccessTokenEntityImpl(
@@ -42,7 +43,7 @@ interface AccessTokenEntity {
 }
 
 private data class AccessTokenEntityImpl(
-    override val userId: Long,
+    override val userId: UserId,
     override val token: String,
     override val tokenSecret: String
 ) : AccessTokenEntity

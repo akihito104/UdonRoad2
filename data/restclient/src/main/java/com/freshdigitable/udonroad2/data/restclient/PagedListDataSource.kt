@@ -7,7 +7,7 @@ import com.freshdigitable.udonroad2.model.ListQuery
 import com.freshdigitable.udonroad2.model.MemberList
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.QueryType.UserQueryType
-import com.freshdigitable.udonroad2.model.User
+import com.freshdigitable.udonroad2.model.user.User
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import twitter4j.Twitter
@@ -39,7 +39,7 @@ class FollowerListDataSource @Inject constructor(
 ) : PagedListDataSource<UserQueryType.Follower, User>(twitter) {
 
     override val fetchBlock: suspend Twitter.(ListQuery<UserQueryType.Follower>) -> PagedResponseList<User>
-        get() = { query -> getFollowersList(query.type.userId, nextCursor).toUserPagedList() }
+        get() = { query -> getFollowersList(query.type.userId.value, nextCursor).toUserPagedList() }
 }
 
 class FollowingListDataSource @Inject constructor(
@@ -47,7 +47,7 @@ class FollowingListDataSource @Inject constructor(
 ) : PagedListDataSource<UserQueryType.Following, User>(twitter) {
 
     override val fetchBlock: suspend Twitter.(ListQuery<UserQueryType.Following>) -> PagedResponseList<User>
-        get() = { query -> getFriendsList(query.type.userId, nextCursor).toUserPagedList() }
+        get() = { query -> getFriendsList(query.type.userId.value, nextCursor).toUserPagedList() }
 }
 
 class ListMembershipListDataSource @Inject constructor(
@@ -57,7 +57,7 @@ class ListMembershipListDataSource @Inject constructor(
     override val fetchBlock: suspend Twitter.(ListQuery<QueryType.UserListMembership>) -> PagedResponseList<MemberList>
         get() = { query ->
             getUserListMemberships(
-                query.type.userId,
+                query.type.userId.value,
                 query.pageOption.count,
                 nextCursor
             ).toUserListPagedList()

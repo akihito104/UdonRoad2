@@ -19,6 +19,7 @@ package com.freshdigitable.udonroad2.data.impl
 import com.freshdigitable.udonroad2.data.restclient.OAuthApiClient
 import com.freshdigitable.udonroad2.model.AccessTokenEntity
 import com.freshdigitable.udonroad2.model.RequestTokenItem
+import com.freshdigitable.udonroad2.model.user.UserId
 import dagger.Module
 import dagger.Provides
 
@@ -26,9 +27,9 @@ class OAuthTokenRepository(
     private val apiClient: OAuthApiClient,
     private val prefs: SharedPreferenceDataSource
 ) {
-    fun login(userId: Long = requireNotNull(getCurrentUserId())) {
+    fun login(userId: UserId = requireNotNull(getCurrentUserId())) {
         setCurrentUserId(userId)
-        val oauthAccessToken = getCurrentUserAccessToken() ?: throw IllegalStateException()
+        val oauthAccessToken = requireNotNull(getCurrentUserAccessToken())
         apiClient.login(oauthAccessToken)
     }
 
@@ -52,17 +53,17 @@ class OAuthTokenRepository(
 
     private fun getCurrentUserAccessToken(): AccessTokenEntity? {
         val currentUserId = prefs.getCurrentUserId() ?: return null
-        if (currentUserId < 0) {
+        if (!currentUserId.isValid) {
             return null
         }
         return prefs.getCurrentUserAccessToken()
     }
 
-    fun getCurrentUserId(): Long? {
+    fun getCurrentUserId(): UserId? {
         return prefs.getCurrentUserId()
     }
 
-    private fun setCurrentUserId(userId: Long) {
+    private fun setCurrentUserId(userId: UserId) {
         require(prefs.isAuthenticatedUser(userId)) { "unregistered userId: $userId" }
         prefs.setCurrentUserId(userId)
     }

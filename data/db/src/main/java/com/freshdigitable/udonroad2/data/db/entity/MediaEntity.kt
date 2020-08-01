@@ -23,7 +23,7 @@ import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 import com.freshdigitable.udonroad2.model.MediaId
 import com.freshdigitable.udonroad2.model.MediaItem
-import com.freshdigitable.udonroad2.model.TweetId
+import com.freshdigitable.udonroad2.model.tweet.TweetId
 
 @Entity(
     tableName = "media",
