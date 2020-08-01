@@ -27,6 +27,7 @@ import androidx.lifecycle.map
 import androidx.lifecycle.switchMap
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
 import com.freshdigitable.udonroad2.model.MediaItem
+import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.TweetListItem
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
 import com.freshdigitable.udonroad2.model.app.ext.merge
@@ -68,7 +69,7 @@ class MediaViewModel(
         }
     }
 
-    private val id: MutableLiveData<Long?> = MutableLiveData()
+    private val id: MutableLiveData<TweetId?> = MutableLiveData()
     internal val tweet: LiveData<TweetListItem?> = id.switchMap {
         if (it != null) tweetRepository.getTweetItem(it)
         else MutableLiveData()
@@ -77,7 +78,7 @@ class MediaViewModel(
         it?.body?.mediaItems ?: listOf()
     }
 
-    internal fun setTweetId(id: Long) {
+    internal fun setTweetId(id: TweetId) {
         this.id.value = id
     }
 

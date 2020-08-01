@@ -2,6 +2,7 @@ package com.freshdigitable.udonroad2.timeline
 
 import com.freshdigitable.udonroad2.model.MemberListItem
 import com.freshdigitable.udonroad2.model.SelectedItemId
+import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.TweetingUser
 import com.freshdigitable.udonroad2.model.app.navigation.FragmentContainerState
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
@@ -14,7 +15,7 @@ sealed class TimelineEvent : NavigationEvent {
 
     data class PopUpTo(val state: FragmentContainerState) : NavigationEvent
 
-    data class TweetDetailRequested(val tweetId: Long) : TimelineEvent()
+    data class TweetDetailRequested(val tweetId: TweetId) : TimelineEvent()
 
     data class UserIconClicked(val user: TweetingUser) : TimelineEvent()
 
@@ -27,7 +28,7 @@ sealed class TimelineEvent : NavigationEvent {
     data class MemberListClicked(val memberList: MemberListItem) : TimelineEvent()
 
     data class MediaItemClicked(
-        val tweetId: Long,
+        val tweetId: TweetId,
         val index: Int = 0,
         val selectedItemId: SelectedItemId? = null
     ) : TimelineEvent()

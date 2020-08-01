@@ -22,6 +22,7 @@ import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
+import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.test.MockVerified
@@ -68,7 +69,7 @@ class MainActivityStateModelTest {
             TimelineEvent.Setup(),
             TimelineEvent.ToggleTweetItemSelectedState(
                 SelectedItemId(
-                    ListOwner(0, QueryType.TweetQueryType.Timeline()), 200
+                    ListOwner(0, QueryType.TweetQueryType.Timeline()), TweetId(200)
                 )
             )
         )
@@ -78,7 +79,7 @@ class MainActivityStateModelTest {
         val actualContainerState = sut.containerState.value as MainNavHostState.Timeline
         assertThat(actualContainerState.owner.query).isEqualTo(QueryType.TweetQueryType.Timeline())
         assertThat(actualContainerState.cause).isEqualTo(MainNavHostState.Cause.INIT)
-        assertThat(sut.selectedItemId.value?.originalId).isEqualTo(200L)
+        assertThat(sut.selectedItemId.value?.originalId).isEqualTo(TweetId(200L))
     }
 
     @Test
@@ -91,14 +92,14 @@ class MainActivityStateModelTest {
             dispatchEvents(
                 TimelineEvent.Setup(),
                 TimelineEvent.MediaItemClicked(
-                    1000,
+                    TweetId(1000),
                     0,
-                    SelectedItemId(ListOwner(0, QueryType.TweetQueryType.Timeline()), 1000)
+                    SelectedItemId(ListOwner(0, QueryType.TweetQueryType.Timeline()), TweetId(1000))
                 )
             )
 
             // verify
-            assertThat(sut.selectedItemId.value?.originalId).isEqualTo(1000L)
+            assertThat(sut.selectedItemId.value?.originalId).isEqualTo(TweetId(1000L))
         }
 }
 

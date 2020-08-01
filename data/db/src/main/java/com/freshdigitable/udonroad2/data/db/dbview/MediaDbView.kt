@@ -27,6 +27,7 @@ import com.freshdigitable.udonroad2.data.db.entity.VideoValiantEntity
 import com.freshdigitable.udonroad2.model.MediaId
 import com.freshdigitable.udonroad2.model.MediaItem
 import com.freshdigitable.udonroad2.model.MediaType
+import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.UrlItem
 
 @DatabaseView(
@@ -75,7 +76,7 @@ internal data class MediaDbView(
     val videoDurationMillis: Long?,
 
     @ColumnInfo(name = "tweet_id")
-    val tweetId: Long
+    val tweetId: TweetId
 )
 
 internal data class MediaItemDb(
@@ -84,24 +85,34 @@ internal data class MediaItemDb(
 ) : MediaItem {
     @Ignore
     override val id: MediaId = mediaDbView.id
+
     @Ignore
     override val mediaUrl: String = mediaDbView.mediaUrl
+
     @Ignore
     override val url: UrlItem = mediaDbView.url
+
     @Ignore
     override val type: MediaType = mediaDbView.type
+
     @Ignore
     override val largeSize: MediaItem.Size? = mediaDbView.largeSize
+
     @Ignore
     override val mediumSize: MediaItem.Size? = mediaDbView.mediumSize
+
     @Ignore
     override val smallSize: MediaItem.Size? = mediaDbView.smallSize
+
     @Ignore
     override val thumbSize: MediaItem.Size? = mediaDbView.thumbSize
+
     @Ignore
     override val videoAspectRatioWidth: Int? = mediaDbView.videoAspectRatioWidth
+
     @Ignore
     override val videoAspectRatioHeight: Int? = mediaDbView.videoAspectRatioHeight
+
     @Ignore
     override val videoDurationMillis: Long? = mediaDbView.videoDurationMillis
 

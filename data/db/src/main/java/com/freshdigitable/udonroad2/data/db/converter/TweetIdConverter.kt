@@ -14,17 +14,15 @@
  * limitations under the License.
  */
 
-package com.freshdigitable.udonroad2.model
+package com.freshdigitable.udonroad2.data.db.converter
 
-import java.io.Serializable
+import androidx.room.TypeConverter
+import com.freshdigitable.udonroad2.model.TweetId
 
-data class SelectedItemId(
-    val owner: ListOwner<*>,
-    val originalId: TweetId?,
-    val quoteId: TweetId? = null
-) : Serializable {
-    @JvmOverloads
-    fun equalsTo(originalId: TweetId, quoteId: TweetId? = null): Boolean {
-        return this.originalId == originalId && this.quoteId == quoteId
-    }
+internal class TweetIdConverter {
+    @TypeConverter
+    fun toDb(id: TweetId?): Long? = id?.value
+
+    @TypeConverter
+    fun toObject(value: Long?): TweetId? = if (value != null) TweetId(value) else null
 }

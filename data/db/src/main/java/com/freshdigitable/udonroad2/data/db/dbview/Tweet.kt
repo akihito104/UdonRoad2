@@ -23,13 +23,14 @@ import androidx.room.Ignore
 import androidx.room.Relation
 import com.freshdigitable.udonroad2.model.MediaItem
 import com.freshdigitable.udonroad2.model.Tweet
+import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.TweetListItem
 import org.threeten.bp.Instant
 
 @DatabaseView(
     viewName = "view_tweet",
     value =
-        """
+    """
     SELECT
      t.id, text, created_at, retweet_count, favorite_count, source,
      u.id AS user_id,
@@ -42,7 +43,7 @@ import org.threeten.bp.Instant
 )
 internal data class TweetDbView(
     @ColumnInfo(name = "id")
-    val id: Long,
+    val id: TweetId,
 
     @ColumnInfo(name = "text")
     val text: String,
@@ -68,17 +69,23 @@ internal data class Tweet(
     val tweet: TweetDbView
 ) : Tweet {
     @Ignore
-    override val id: Long = tweet.id
+    override val id: TweetId = tweet.id
+
     @Ignore
     override val text: String = tweet.text
+
     @Ignore
     override val retweetCount: Int = tweet.retweetCount
+
     @Ignore
     override val favoriteCount: Int = tweet.favoriteCount
+
     @Ignore
     override val user: com.freshdigitable.udonroad2.model.TweetingUser = tweet.user
+
     @Ignore
     override val source: String = tweet.source
+
     @Ignore
     override val createdAt: Instant = tweet.createdAt
 
@@ -91,7 +98,7 @@ internal data class Tweet(
 @DatabaseView(
     viewName = "tweet_list_item",
     value =
-        """
+    """
     WITH
     original AS (
     SELECT
@@ -128,7 +135,7 @@ internal data class Tweet(
 )
 internal data class TweetListItemDbView(
     @ColumnInfo(name = "original_id")
-    val originalId: Long,
+    val originalId: TweetId,
 
     @Embedded(prefix = "original_user_")
     val originalUser: TweetingUser,
@@ -145,7 +152,8 @@ internal data class TweetListItem(
     val tweetListItem: TweetListItemDbView
 ) : TweetListItem {
     @Ignore
-    override val originalId: Long = tweetListItem.originalId
+    override val originalId: TweetId = tweetListItem.originalId
+
     @Ignore
     override val originalUser: com.freshdigitable.udonroad2.model.TweetingUser =
         tweetListItem.originalUser

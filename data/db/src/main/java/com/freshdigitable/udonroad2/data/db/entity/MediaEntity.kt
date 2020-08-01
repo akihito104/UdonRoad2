@@ -23,6 +23,7 @@ import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 import com.freshdigitable.udonroad2.model.MediaId
 import com.freshdigitable.udonroad2.model.MediaItem
+import com.freshdigitable.udonroad2.model.TweetId
 
 @Entity(
     tableName = "media",
@@ -124,7 +125,7 @@ internal data class VideoValiantEntity(
 )
 internal data class TweetMediaRelation(
     @ColumnInfo(name = "tweet_id")
-    val tweetId: Long,
+    val tweetId: TweetId,
 
     @ColumnInfo(name = "media_id", index = true)
     val mediaId: MediaId

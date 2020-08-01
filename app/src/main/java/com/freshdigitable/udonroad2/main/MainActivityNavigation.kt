@@ -15,6 +15,7 @@ import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.media.MediaActivityArgs
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.QueryType
+import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.app.navigation.FragmentContainerState
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragment
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentArgs
@@ -121,7 +122,7 @@ sealed class MainNavHostState : FragmentContainerState, Serializable {
     }
 
     data class TweetDetail(
-        val tweetId: Long,
+        val tweetId: TweetId,
         override val cause: Cause = Cause.NAVIGATION
     ) : MainNavHostState() {
         override val fragmentId: Int = R.id.fragment_detail

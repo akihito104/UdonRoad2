@@ -24,6 +24,7 @@ import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.observe
 import androidx.viewpager2.widget.ViewPager2
 import com.freshdigitable.udonroad2.media.databinding.ActivityMediaBinding
+import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.app.di.FragmentScope
 import dagger.Binds
 import dagger.Module
@@ -93,7 +94,7 @@ class MediaActivity : AppCompatActivity(), HasAndroidInjector {
     private val args: MediaActivityArgs by lazy {
         MediaActivityArgs.fromBundle(requireNotNull(intent.extras))
     }
-    private val tweetId: Long get() = args.id
+    private val tweetId: TweetId get() = args.id
     private val index: Int get() = args.index
 
     @Inject

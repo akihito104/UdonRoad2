@@ -6,6 +6,7 @@
     >
 
     <data>
+
         <import type="android.view.View" />
 
         <variable
@@ -19,6 +20,7 @@
         android:layout_height="match_parent"
         android:padding="8dp"
         >
+
         <TextView
             android:id="@+id/detail_rtBy"
             android:layout_width="wrap_content"
@@ -40,6 +42,7 @@
             tools:text="RT: @account"
             tools:visibility="visible"
             />
+
         <ImageView
             android:id="@+id/detail_icon"
             android:layout_width="48dp"
@@ -57,6 +60,7 @@
             android:onClick="@{v -> viewModel.onBodyUserClicked()}"
             tools:background="#000"
             />
+
         <View
             android:id="@+id/detail_twitter"
             android:layout_width="40dp"
@@ -65,6 +69,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             android:background="#00f"
             />
+
         <TextView
             android:id="@+id/detail_name"
             android:layout_width="0dp"
@@ -79,6 +84,7 @@
             android:onClick="@{v -> viewModel.onBodyUserClicked()}"
             tools:text="Name"
             />
+
         <TextView
             android:id="@+id/detail_screenName"
             android:layout_width="wrap_content"
@@ -91,6 +97,7 @@
             android:onClick="@{v -> viewModel.onBodyUserClicked()}"
             tools:text="\@screen_name"
             />
+
         <TextView
             android:id="@+id/detail_tweet"
             android:layout_width="0dp"
@@ -104,6 +111,7 @@
             android:textSize="18sp"
             tools:text="tweet body\nlorem ipsum"
             />
+
         <com.freshdigitable.udonroad2.media.MediaThumbnailContainer
             android:id="@+id/detail_mediaContainer"
             android:layout_width="0dp"
@@ -118,6 +126,7 @@
             app:itemClickListener="@{(v, i) -> viewModel.onMediaItemClicked(viewModel.tweetItem.originalId, viewModel.tweetItem.body, i)}"
             tools:visibility="visible"
             />
+
         <TextView
             android:id="@+id/detail_date"
             android:layout_width="wrap_content"
@@ -128,6 +137,7 @@
             app:bindCreatedAtAbsolute="@{viewModel.tweetItem.body.createdAt}"
             tools:text="2019/5/1 20:30"
             />
+
         <TextView
             android:id="@+id/detail_via"
             android:layout_width="wrap_content"
@@ -142,6 +152,7 @@
             android:ellipsize="end"
             tools:text="via Twitter web client"
             />
+
         <LinearLayout
             android:id="@+id/detail_reactionContainer"
             android:layout_width="0dp"
@@ -153,6 +164,7 @@
             app:layout_constraintEnd_toStartOf="@id/detail_via"
             app:layout_constraintHorizontal_chainStyle="spread_inside"
             />
+
         <include
             android:id="@+id/detail_quote"
             layout="@layout/view_tweet_list_quoted_item"

@@ -39,6 +39,7 @@ import com.freshdigitable.udonroad2.data.db.ext.toEntity
 import com.freshdigitable.udonroad2.data.db.ext.toListEntity
 import com.freshdigitable.udonroad2.data.db.ext.toStructuredTweet
 import com.freshdigitable.udonroad2.model.TweetEntity
+import com.freshdigitable.udonroad2.model.TweetId
 
 @Dao
 abstract class TweetDao(
@@ -58,10 +59,10 @@ abstract class TweetDao(
 
     @Transaction
     @Query("SELECT * FROM tweet_list_item WHERE original_id = :id")
-    internal abstract fun findTweetItem(id: Long): LiveData<TweetListItem?>
+    internal abstract fun findTweetItem(id: TweetId): LiveData<TweetListItem?>
 
     open fun findTweetItemById(
-        id: Long
+        id: TweetId
     ): LiveData<com.freshdigitable.udonroad2.model.TweetListItem?> = findTweetItem(id).map { it }
 
     suspend fun addTweet(tweet: TweetEntity, owner: String? = null) {
@@ -165,13 +166,13 @@ abstract class TweetDao(
 internal class StructuredTweetEntity(
     @PrimaryKey
     @ColumnInfo(name = "original_id")
-    val originalId: Long,
+    val originalId: TweetId,
 
     @ColumnInfo(name = "body_item_id")
-    val bodyTweetId: Long,
+    val bodyTweetId: TweetId,
 
     @ColumnInfo(name = "quoted_item_id")
-    val quotedTweetId: Long?
+    val quotedTweetId: TweetId?
 )
 
 @Entity(
@@ -194,7 +195,7 @@ internal class StructuredTweetEntity(
 )
 internal class TweetListEntity(
     @ColumnInfo(name = "original_id")
-    val originalId: Long,
+    val originalId: TweetId,
 
     @ColumnInfo(name = "order")
     val order: Long,

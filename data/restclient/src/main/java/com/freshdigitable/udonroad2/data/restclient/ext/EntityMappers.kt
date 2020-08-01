@@ -30,6 +30,7 @@ import com.freshdigitable.udonroad2.model.MediaItem
 import com.freshdigitable.udonroad2.model.MediaType
 import com.freshdigitable.udonroad2.model.MemberList
 import com.freshdigitable.udonroad2.model.TweetEntity
+import com.freshdigitable.udonroad2.model.TweetId
 import org.threeten.bp.Instant
 import twitter4j.MediaEntity
 import twitter4j.PagableResponseList
@@ -39,14 +40,14 @@ import twitter4j.UserList
 
 internal fun Status.toEntity(): TweetEntity {
     return TweetEntityRest(
-        id = id,
+        id = TweetId(id),
         text = text,
         retweetCount = retweetCount,
         favoriteCount = favoriteCount,
         user = user.toEntity(),
         retweetedTweet = retweetedStatus?.toEntity(),
         quotedTweet = quotedStatus?.toEntity(),
-        inReplyToTweetId = inReplyToStatusId,
+        inReplyToTweetId = TweetId(inReplyToStatusId),
         isRetweeted = isRetweeted,
         isFavorited = isFavorited,
         possiblySensitive = isPossiblySensitive,

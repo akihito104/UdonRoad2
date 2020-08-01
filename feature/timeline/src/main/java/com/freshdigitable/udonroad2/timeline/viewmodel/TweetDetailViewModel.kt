@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.switchMap
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
 import com.freshdigitable.udonroad2.model.Tweet
+import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.TweetListItem
 import com.freshdigitable.udonroad2.model.app.di.FragmentScope
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
@@ -23,12 +24,12 @@ class TweetDetailViewModel @Inject constructor(
     private val repository: TweetRepository
 ) : TweetListItemClickListener, ViewModel() {
 
-    private val targetId: MutableLiveData<Long> = MutableLiveData()
+    private val targetId: MutableLiveData<TweetId> = MutableLiveData()
     val tweetItem: LiveData<TweetListItem?> = targetId.switchMap {
         repository.getTweetItem(it)
     }
 
-    internal fun showTweetItem(id: Long) {
+    internal fun showTweetItem(id: TweetId) {
         targetId.value = id
     }
 
@@ -44,7 +45,12 @@ class TweetDetailViewModel @Inject constructor(
         navigator.postEvent(TimelineEvent.UserIconClicked(user))
     }
 
-    override fun onMediaItemClicked(originalId: Long, item: Tweet, index: Int) {
+    override fun onMediaItemClicked(
+        originalId: TweetId,
+        quotedId: TweetId?,
+        item: Tweet,
+        index: Int
+    ) {
         navigator.postEvent(TimelineEvent.MediaItemClicked(item.id, index))
     }
 }

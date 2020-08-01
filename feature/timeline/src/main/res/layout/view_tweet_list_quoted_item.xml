@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ Copyright (c) 2018. Matsuda, Akihit (akihito104)
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,20 +14,26 @@
   ~ limitations under the License.
   -->
 
-<layout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools">
+<layout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    >
 
     <data>
+
         <import type="android.view.View" />
+
         <variable
             name="tweet"
             type="com.freshdigitable.udonroad2.model.TweetListItem"
             />
+
         <variable
             name="clickListener"
             type="com.freshdigitable.udonroad2.timeline.TweetListItemClickListener"
             />
+
         <variable
             name="eventListener"
             type="com.freshdigitable.udonroad2.timeline.TweetListEventListener"
@@ -43,6 +48,7 @@
         android:onClick="@{v -> clickListener.onQuoteItemClicked(tweet)}"
         app:selected="@{eventListener.selectedItemId.equalsTo(tweet.originalId, tweet.quoted.id)}"
         >
+
         <ImageView
             android:id="@+id/quotedItem_icon"
             android:layout_width="16dp"
@@ -55,6 +61,7 @@
             app:layout_constraintEnd_toStartOf="@id/quotedItem_names"
             app:bindUserIcon="@{tweet.quoted.user.iconUrl}"
             />
+
         <TextView
             android:id="@+id/quotedItem_names"
             android:layout_width="0dp"
@@ -71,6 +78,7 @@
             android:ellipsize="end"
             tools:text="NAME @screen_name"
             />
+
         <TextView
             android:id="@+id/quotedItem_createdAt"
             android:layout_width="wrap_content"
@@ -85,6 +93,7 @@
             android:textSize="12sp"
             tools:text="now"
             />
+
         <TextView
             android:id="@+id/quotedItem_text"
             android:layout_width="0dp"
@@ -97,6 +106,7 @@
             android:text="@{tweet.quoted.text}"
             tools:text="tweet body"
             />
+
         <com.freshdigitable.udonroad2.media.MediaThumbnailContainer
             android:id="@+id/quotedItem_mediaContainer"
             android:layout_width="0dp"
@@ -108,7 +118,7 @@
             app:layout_constraintBottom_toTopOf="@id/quotedItem_via"
             android:visibility="@{tweet.quoted.mediaItems.isEmpty() ? View.GONE : View.VISIBLE}"
             app:bindMedia="@{tweet.quoted.mediaItems}"
-            app:itemClickListener="@{(v, i) -> clickListener.onMediaItemClicked(tweet.originalId, tweet.quoted, i)}"
+            app:itemClickListener="@{(v, i) -> clickListener.onMediaItemClicked(tweet.originalId, tweet.quoted.id, tweet.quoted, i)}"
             tools:visibility="visible"
             />
 
@@ -129,6 +139,7 @@
             android:lines="1"
             tools:text="RT:100"
             />
+
         <TextView
             android:id="@+id/quotedItem_favorite"
             android:layout_width="wrap_content"
@@ -142,6 +153,7 @@
             android:lines="1"
             tools:text="fav:100"
             />
+
         <TextView
             android:id="@+id/quotedItem_via"
             android:layout_width="wrap_content"

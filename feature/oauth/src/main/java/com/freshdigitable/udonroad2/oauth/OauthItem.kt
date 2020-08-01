@@ -18,12 +18,13 @@ package com.freshdigitable.udonroad2.oauth
 
 import com.freshdigitable.udonroad2.model.MediaItem
 import com.freshdigitable.udonroad2.model.Tweet
+import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.TweetListItem
 import com.freshdigitable.udonroad2.model.TweetingUser
 import org.threeten.bp.Instant
 
 data class OauthItem(
-    override val originalId: Long,
+    override val originalId: TweetId,
     override val originalUser: TweetingUser,
     override val body: Tweet,
     override val quoted: Tweet? = null
@@ -37,7 +38,7 @@ data class OauthUser(
 ) : TweetingUser
 
 data class OauthTweet(
-    override val id: Long,
+    override val id: TweetId,
     override val text: String,
     override val retweetCount: Int,
     override val favoriteCount: Int,
