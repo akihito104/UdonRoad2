@@ -21,8 +21,8 @@ import com.freshdigitable.udonroad2.model.TweetId
 
 internal class TweetIdConverter {
     @TypeConverter
-    fun toDb(id: TweetId): Long = id.value
+    fun toDb(id: TweetId?): Long? = id?.value
 
     @TypeConverter
-    fun toObject(value: Long): TweetId = TweetId(value)
+    fun toObject(value: Long?): TweetId? = if (value != null) TweetId(value) else null
 }
