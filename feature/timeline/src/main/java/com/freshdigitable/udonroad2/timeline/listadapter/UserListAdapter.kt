@@ -6,8 +6,8 @@ import androidx.lifecycle.ViewModel
 import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.freshdigitable.udonroad2.model.UserListItem
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
+import com.freshdigitable.udonroad2.model.user.UserListItem
 import com.freshdigitable.udonroad2.timeline.ListItemClickListener
 import com.freshdigitable.udonroad2.timeline.R
 import com.freshdigitable.udonroad2.timeline.databinding.ViewUserListItemBinding
@@ -49,7 +49,7 @@ class UserListAdapter(
 
     override fun getItemViewType(position: Int): Int = R.layout.view_tweet_list_item
 
-    override fun getItemId(position: Int): Long = getItem(position)?.id ?: -1
+    override fun getItemId(position: Int): Long = getItem(position)?.id?.value ?: -1
 }
 
 private val diffUtil = object : DiffUtil.ItemCallback<UserListItem>() {

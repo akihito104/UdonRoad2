@@ -18,12 +18,13 @@ package com.freshdigitable.udonroad2.oauth
 
 import android.content.Context
 import androidx.paging.PositionalDataSource
-import com.freshdigitable.udonroad2.model.TweetId
+import com.freshdigitable.udonroad2.model.tweet.TweetId
+import com.freshdigitable.udonroad2.model.user.UserId
 
 internal class OauthDataSource(context: Context) : PositionalDataSource<OauthItem>() {
 
     private val user = OauthUser(
-        id = 1,
+        id = UserId(1),
         name = "aoeliyakei",
         screenName = "aoeliyakei",
         iconUrl = ""

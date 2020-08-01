@@ -22,9 +22,9 @@ import androidx.room.Embedded
 import androidx.room.Ignore
 import androidx.room.Relation
 import com.freshdigitable.udonroad2.model.MediaItem
-import com.freshdigitable.udonroad2.model.Tweet
-import com.freshdigitable.udonroad2.model.TweetId
-import com.freshdigitable.udonroad2.model.TweetListItem
+import com.freshdigitable.udonroad2.model.tweet.Tweet
+import com.freshdigitable.udonroad2.model.tweet.TweetId
+import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import org.threeten.bp.Instant
 
 @DatabaseView(
@@ -81,7 +81,7 @@ internal data class Tweet(
     override val favoriteCount: Int = tweet.favoriteCount
 
     @Ignore
-    override val user: com.freshdigitable.udonroad2.model.TweetingUser = tweet.user
+    override val user: com.freshdigitable.udonroad2.model.user.TweetingUser = tweet.user
 
     @Ignore
     override val source: String = tweet.source
@@ -155,7 +155,7 @@ internal data class TweetListItem(
     override val originalId: TweetId = tweetListItem.originalId
 
     @Ignore
-    override val originalUser: com.freshdigitable.udonroad2.model.TweetingUser =
+    override val originalUser: com.freshdigitable.udonroad2.model.user.TweetingUser =
         tweetListItem.originalUser
 
     @Relation(entity = MediaDbView::class, parentColumn = "id", entityColumn = "tweet_id")

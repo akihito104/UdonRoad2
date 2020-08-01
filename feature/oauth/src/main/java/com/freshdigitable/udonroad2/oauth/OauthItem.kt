@@ -17,10 +17,11 @@
 package com.freshdigitable.udonroad2.oauth
 
 import com.freshdigitable.udonroad2.model.MediaItem
-import com.freshdigitable.udonroad2.model.Tweet
-import com.freshdigitable.udonroad2.model.TweetId
-import com.freshdigitable.udonroad2.model.TweetListItem
-import com.freshdigitable.udonroad2.model.TweetingUser
+import com.freshdigitable.udonroad2.model.tweet.Tweet
+import com.freshdigitable.udonroad2.model.tweet.TweetId
+import com.freshdigitable.udonroad2.model.tweet.TweetListItem
+import com.freshdigitable.udonroad2.model.user.TweetingUser
+import com.freshdigitable.udonroad2.model.user.UserId
 import org.threeten.bp.Instant
 
 data class OauthItem(
@@ -31,7 +32,7 @@ data class OauthItem(
 ) : TweetListItem
 
 data class OauthUser(
-    override val id: Long,
+    override val id: UserId,
     override val name: String,
     override val screenName: String,
     override val iconUrl: String

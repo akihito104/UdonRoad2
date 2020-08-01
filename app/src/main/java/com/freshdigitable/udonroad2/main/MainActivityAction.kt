@@ -17,7 +17,6 @@
 package com.freshdigitable.udonroad2.main
 
 import com.freshdigitable.udonroad2.model.SelectedItemId
-import com.freshdigitable.udonroad2.model.TweetingUser
 import com.freshdigitable.udonroad2.model.app.di.ActivityScope
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.CommonEvent
@@ -25,6 +24,7 @@ import com.freshdigitable.udonroad2.model.app.navigation.NavigationDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.filterByType
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
+import com.freshdigitable.udonroad2.model.user.TweetingUser
 import com.freshdigitable.udonroad2.oauth.OauthEvent
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import javax.inject.Inject

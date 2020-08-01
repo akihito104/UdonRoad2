@@ -27,10 +27,10 @@ import androidx.lifecycle.map
 import androidx.lifecycle.switchMap
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
 import com.freshdigitable.udonroad2.model.MediaItem
-import com.freshdigitable.udonroad2.model.TweetId
-import com.freshdigitable.udonroad2.model.TweetListItem
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
 import com.freshdigitable.udonroad2.model.app.ext.merge
+import com.freshdigitable.udonroad2.model.tweet.TweetId
+import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import dagger.Binds
 import dagger.Module
 import dagger.Provides

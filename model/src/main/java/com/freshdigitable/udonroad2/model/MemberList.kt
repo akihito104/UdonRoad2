@@ -1,5 +1,8 @@
 package com.freshdigitable.udonroad2.model
 
+import com.freshdigitable.udonroad2.model.user.TweetingUser
+import com.freshdigitable.udonroad2.model.user.User
+
 interface MemberList : MemberListItem {
     override val user: User
 }

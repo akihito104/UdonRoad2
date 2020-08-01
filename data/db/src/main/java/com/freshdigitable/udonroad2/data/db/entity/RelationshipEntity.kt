@@ -4,7 +4,8 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
-import com.freshdigitable.udonroad2.model.Relationship
+import com.freshdigitable.udonroad2.model.user.Relationship
+import com.freshdigitable.udonroad2.model.user.UserId
 
 @Entity(
     tableName = "relationship",
@@ -19,7 +20,7 @@ import com.freshdigitable.udonroad2.model.Relationship
 internal data class RelationshipEntity(
     @PrimaryKey
     @ColumnInfo(name = "user_id", index = true)
-    override val userId: Long,
+    override val userId: UserId,
 
     @ColumnInfo(name = "following")
     override val following: Boolean,

@@ -17,7 +17,7 @@
 package com.freshdigitable.udonroad2.data.db.converter
 
 import androidx.room.TypeConverter
-import com.freshdigitable.udonroad2.model.TweetId
+import com.freshdigitable.udonroad2.model.tweet.TweetId
 
 internal class TweetIdConverter {
     @TypeConverter

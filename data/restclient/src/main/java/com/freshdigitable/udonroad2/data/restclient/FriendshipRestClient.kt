@@ -1,8 +1,9 @@
 package com.freshdigitable.udonroad2.data.restclient
 
 import com.freshdigitable.udonroad2.data.restclient.ext.toEntity
-import com.freshdigitable.udonroad2.model.Relationship
-import com.freshdigitable.udonroad2.model.User
+import com.freshdigitable.udonroad2.model.user.Relationship
+import com.freshdigitable.udonroad2.model.user.User
+import com.freshdigitable.udonroad2.model.user.UserId
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -12,53 +13,53 @@ import javax.inject.Inject
 class FriendshipRestClient @Inject constructor(
     private val twitter: Twitter
 ) {
-    suspend fun fetchFriendship(userId: Long): Relationship = fetch {
+    suspend fun fetchFriendship(userId: UserId): Relationship = fetch {
         val sourceId = twitter.id
-        val friendship = twitter.showFriendship(sourceId, userId)
+        val friendship = twitter.showFriendship(sourceId, userId.value)
         friendship.toEntity()
     }
 
-    suspend fun createFriendship(userId: Long): User = fetch {
-        val user = twitter.createFriendship(userId)
+    suspend fun createFriendship(userId: UserId): User = fetch {
+        val user = twitter.createFriendship(userId.value)
         user.toEntity()
     }
 
-    suspend fun destroyFriendship(userId: Long): User = fetch {
-        val user = twitter.destroyFriendship(userId)
+    suspend fun destroyFriendship(userId: UserId): User = fetch {
+        val user = twitter.destroyFriendship(userId.value)
         user.toEntity()
     }
 
-    suspend fun createMute(userId: Long): User = fetch {
-        val user = twitter.createMute(userId)
+    suspend fun createMute(userId: UserId): User = fetch {
+        val user = twitter.createMute(userId.value)
         user.toEntity()
     }
 
-    suspend fun destroyMute(userId: Long): User = fetch {
-        val user = twitter.destroyMute(userId)
+    suspend fun destroyMute(userId: UserId): User = fetch {
+        val user = twitter.destroyMute(userId.value)
         user.toEntity()
     }
 
-    suspend fun createBlock(userId: Long): User = fetch {
-        val user = twitter.createBlock(userId)
+    suspend fun createBlock(userId: UserId): User = fetch {
+        val user = twitter.createBlock(userId.value)
         user.toEntity()
     }
 
-    suspend fun destroyBlock(userId: Long): User = fetch {
-        val user = twitter.destroyBlock(userId)
+    suspend fun destroyBlock(userId: UserId): User = fetch {
+        val user = twitter.destroyBlock(userId.value)
         user.toEntity()
     }
 
     suspend fun updateFriendship(
-        userId: Long,
+        userId: UserId,
         notificationsEnabled: Boolean,
         wantRetweets: Boolean
     ): Relationship = fetch {
-        val f = twitter.updateFriendship(userId, notificationsEnabled, wantRetweets)
+        val f = twitter.updateFriendship(userId.value, notificationsEnabled, wantRetweets)
         f.toEntity()
     }
 
-    suspend fun reportSpam(userId: Long): User = fetch {
-        val user = twitter.reportSpam(userId)
+    suspend fun reportSpam(userId: UserId): User = fetch {
+        val user = twitter.reportSpam(userId.value)
         user.toEntity()
     }
 
@@ -69,7 +70,7 @@ class FriendshipRestClient @Inject constructor(
 
 private fun twitter4j.Relationship.toEntity(): Relationship {
     return RelationshipEntity(
-        userId = this.targetUserId,
+        userId = UserId(this.targetUserId),
         following = this.isSourceFollowingTarget,
         blocking = this.isSourceBlockingTarget,
         muting = this.isSourceMutingTarget,
@@ -79,7 +80,7 @@ private fun twitter4j.Relationship.toEntity(): Relationship {
 }
 
 private data class RelationshipEntity(
-    override val userId: Long,
+    override val userId: UserId,
     override val following: Boolean,
     override val blocking: Boolean,
     override val muting: Boolean,

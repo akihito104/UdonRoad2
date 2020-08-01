@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019. Matsuda, Akihit (akihito104)
+ * Copyright (c) 2020. Matsuda, Akihit (akihito104)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,13 @@
  * limitations under the License.
  */
 
-package com.freshdigitable.udonroad2.data.restclient.data
+package com.freshdigitable.udonroad2.model.user
 
-import com.freshdigitable.udonroad2.model.MemberList
-import com.freshdigitable.udonroad2.model.user.User
-
-internal data class MemberListImpl(
-    override val user: User,
-    override val id: Long,
-    override val name: String,
-    override val description: String,
-    override val memberCount: Int,
-    override val followerCount: Int,
-    override val isPublic: Boolean
-) : MemberList
+interface Relationship {
+    val userId: UserId
+    val following: Boolean
+    val blocking: Boolean
+    val muting: Boolean
+    val wantRetweets: Boolean
+    val notificationsEnabled: Boolean
+}

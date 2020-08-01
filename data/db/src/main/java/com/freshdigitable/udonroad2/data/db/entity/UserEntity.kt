@@ -19,13 +19,14 @@ package com.freshdigitable.udonroad2.data.db.entity
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.freshdigitable.udonroad2.model.User
+import com.freshdigitable.udonroad2.model.user.User
+import com.freshdigitable.udonroad2.model.user.UserId
 
 @Entity(tableName = "user")
 internal data class UserEntity(
     @PrimaryKey
     @ColumnInfo(name = "id")
-    override val id: Long,
+    override val id: UserId,
 
     @ColumnInfo(name = "name")
     override val name: String,

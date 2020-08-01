@@ -10,8 +10,8 @@ import androidx.lifecycle.ViewModel
 import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.freshdigitable.udonroad2.model.TweetListItem
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
+import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import com.freshdigitable.udonroad2.timeline.R
 import com.freshdigitable.udonroad2.timeline.TweetListEventListener
 import com.freshdigitable.udonroad2.timeline.TweetListItemClickListener

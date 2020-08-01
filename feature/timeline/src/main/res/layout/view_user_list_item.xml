@@ -26,7 +26,7 @@
 
         <variable
             name="user"
-            type="com.freshdigitable.udonroad2.model.UserListItem"
+            type="com.freshdigitable.udonroad2.model.user.UserListItem"
             />
 
         <variable

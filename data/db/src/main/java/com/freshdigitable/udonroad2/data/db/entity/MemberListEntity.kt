@@ -4,6 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
+import com.freshdigitable.udonroad2.model.user.UserId
 
 @Entity(
     tableName = "member_list",
@@ -23,7 +24,7 @@ internal data class MemberListEntity(
     val description: String,
 
     @ColumnInfo(name = "user_id", index = true)
-    val userId: Long,
+    val userId: UserId,
 
     @ColumnInfo(name = "member_count")
     val memberCount: Int,

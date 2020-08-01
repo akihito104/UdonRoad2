@@ -5,12 +5,12 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.switchMap
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
-import com.freshdigitable.udonroad2.model.Tweet
-import com.freshdigitable.udonroad2.model.TweetId
-import com.freshdigitable.udonroad2.model.TweetListItem
 import com.freshdigitable.udonroad2.model.app.di.FragmentScope
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationDispatcher
+import com.freshdigitable.udonroad2.model.tweet.Tweet
+import com.freshdigitable.udonroad2.model.tweet.TweetId
+import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.TweetListItemClickListener
 import dagger.Binds

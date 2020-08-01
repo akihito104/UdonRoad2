@@ -6,7 +6,8 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.freshdigitable.udonroad2.data.db.entity.RelationshipEntity
-import com.freshdigitable.udonroad2.model.Relationship
+import com.freshdigitable.udonroad2.model.user.Relationship
+import com.freshdigitable.udonroad2.model.user.UserId
 
 @Dao
 abstract class RelationshipDao {
@@ -19,7 +20,7 @@ abstract class RelationshipDao {
         insertRelationship(r)
     }
 
-    fun findRelationship(targetUserId: Long): LiveData<out Relationship?> {
+    fun findRelationship(targetUserId: UserId): LiveData<out Relationship?> {
         return findRelationshipByTargetUserId(targetUserId)
     }
 
@@ -27,20 +28,20 @@ abstract class RelationshipDao {
     internal abstract suspend fun insertRelationship(relationship: RelationshipEntity)
 
     @Query("UPDATE relationship SET following = :isFollowing WHERE user_id = :userId")
-    abstract suspend fun updateFollowingStatus(userId: Long, isFollowing: Boolean)
+    abstract suspend fun updateFollowingStatus(userId: UserId, isFollowing: Boolean)
 
     @Query("UPDATE relationship SET muting = :isMuting WHERE user_id = :userId")
-    abstract suspend fun updateMutingStatus(userId: Long, isMuting: Boolean)
+    abstract suspend fun updateMutingStatus(userId: UserId, isMuting: Boolean)
 
     @Query("UPDATE relationship SET blocking = :isBlocking WHERE user_id = :userId")
-    abstract suspend fun updateBlockingStatus(userId: Long, isBlocking: Boolean)
+    abstract suspend fun updateBlockingStatus(userId: UserId, isBlocking: Boolean)
 
     @Query("UPDATE relationship SET want_retweets = :wantRetweets WHERE user_id = :userId")
-    abstract suspend fun updateWantRetweetsStatus(userId: Long, wantRetweets: Boolean)
+    abstract suspend fun updateWantRetweetsStatus(userId: UserId, wantRetweets: Boolean)
 
     @Query("SELECT * FROM relationship WHERE user_id = :userId")
     internal abstract fun findRelationshipByTargetUserId(
-        userId: Long
+        userId: UserId
     ): LiveData<RelationshipEntity?>
 
     private fun Relationship.toEntity(): RelationshipEntity {
