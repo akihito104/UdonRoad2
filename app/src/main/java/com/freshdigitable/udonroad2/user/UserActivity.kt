@@ -174,7 +174,7 @@ class UserActivity : HasAndroidInjector, AppCompatActivity() {
 @Module(
     includes = [
         ListItemFragmentModule::class,
-        UserViewModelModule::class//,
+        UserViewModelModule::class
     ]
 )
 interface UserActivityModule {
