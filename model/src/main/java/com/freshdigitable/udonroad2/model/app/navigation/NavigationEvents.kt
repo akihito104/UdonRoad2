@@ -18,9 +18,7 @@ package com.freshdigitable.udonroad2.model.app.navigation
 
 interface NavigationEvent
 interface FragmentContainerState
-interface ViewState {
-    val containerState: FragmentContainerState
-}
+interface ViewState
 
 sealed class CommonEvent : NavigationEvent {
     data class Back(

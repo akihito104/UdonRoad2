@@ -16,22 +16,30 @@
 
 package com.freshdigitable.udonroad2.main
 
+import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationDispatcher
+import com.freshdigitable.udonroad2.model.user.UserId
 import com.freshdigitable.udonroad2.oauth.OauthEvent
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
+import io.mockk.every
+import io.mockk.just
+import io.mockk.mockk
+import io.mockk.runs
 import org.junit.Test
 
 class MainActivityActionTest {
     private val navigationDispatcher = NavigationDispatcher()
-    private val mainActivityAction = MainActivityAction(navigationDispatcher)
+    private val tokenRepository: OAuthTokenRepository = mockk()
+    private val mainActivityAction = MainActivityAction(navigationDispatcher, tokenRepository)
 
     @Test
-    fun showFirstView_dispatchSetupEvent_then_flowSetupEvent() {
+    fun updateContainer_dispatchSetupEvent_then_flowInitOauthEvent() {
         // setup
-        val test = mainActivityAction.showFirstView.test()
+        every { tokenRepository.getCurrentUserId() } returns null
+        val test = mainActivityAction.updateContainer.test()
 
         // exercise
         navigationDispatcher.postEvent(TimelineEvent.Setup())
@@ -39,30 +47,43 @@ class MainActivityActionTest {
         // verify
         test.assertOf {
             it.assertNoErrors()
-            it.assertValueSequence(listOf(TimelineEvent.Setup()))
+            it.assertValueCount(1)
+            it.assertValueAt(0) { actual ->
+                actual is MainNavHostState.Timeline &&
+                    actual.owner.query is QueryType.Oauth &&
+                    actual.cause == MainNavHostState.Cause.INIT
+            }
         }
     }
 
     @Test
-    fun showTimeline_dispatchTimelineInitEvent_then_TimelineQueryIsFlowing() {
+    fun updateContainer_dispatchSetupEvent_then_TimelineQueryIsFlowing() {
         // setup
-        val test = mainActivityAction.showTimeline.test()
+        every { tokenRepository.getCurrentUserId() } returns UserId(10000)
+        every { tokenRepository.login(UserId(10000)) } just runs
+        val test = mainActivityAction.updateContainer.test()
 
         // exercise
         navigationDispatcher.postEvent(TimelineEvent.Setup())
-        navigationDispatcher.postEvent(TimelineEvent.Init)
 
         // verify
         test.assertOf {
             it.assertNoErrors()
-            it.assertValueSequence(listOf(TimelineEvent.Init))
+            it.assertValueCount(1)
+            it.assertValueAt(0) { actual ->
+                actual is MainNavHostState.Timeline &&
+                    actual.owner.query is QueryType.TweetQueryType.Timeline &&
+                    actual.cause == MainNavHostState.Cause.INIT
+            }
         }
     }
 
     @Test
-    fun showFirstView_dispatchOauthSucceededEvent_then_SetupIsFlowing() {
+    fun updateContainer_dispatchOauthSucceededEvent_then_InitTimelineEventIsFlowing() {
         // setup
-        val test = mainActivityAction.showFirstView.test()
+        every { tokenRepository.getCurrentUserId() } returns UserId(10000)
+        every { tokenRepository.login(UserId(10000)) } just runs
+        val test = mainActivityAction.updateContainer.test()
 
         // exercise
         navigationDispatcher.postEvent(OauthEvent.OauthSucceeded)
@@ -70,13 +91,20 @@ class MainActivityActionTest {
         // verify
         test.assertOf {
             it.assertNoErrors()
-            it.assertValueSequence(listOf(TimelineEvent.Setup()))
+            it.assertValueCount(1)
+            it.assertValueAt(0) { actual ->
+                actual is MainNavHostState.Timeline &&
+                    actual.owner.query is QueryType.TweetQueryType.Timeline &&
+                    actual.cause == MainNavHostState.Cause.INIT
+            }
         }
     }
 
     @Test
     fun dispatch2Events() {
-        val testShowFirstView = mainActivityAction.showFirstView.test()
+        every { tokenRepository.getCurrentUserId() } returns UserId(10000)
+        every { tokenRepository.login(UserId(10000)) } just runs
+        val testShowFirstView = mainActivityAction.updateContainer.test()
         val testToggleSelectedItem = mainActivityAction.toggleSelectedItem.test()
 
         navigationDispatcher.postEvent(TimelineEvent.Setup())

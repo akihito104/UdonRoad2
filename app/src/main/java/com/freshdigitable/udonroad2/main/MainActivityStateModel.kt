@@ -18,9 +18,7 @@ package com.freshdigitable.udonroad2.main
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.map
-import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
 import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
-import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.app.di.ActivityScope
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
@@ -28,58 +26,15 @@ import com.freshdigitable.udonroad2.model.app.navigation.AppViewState
 import com.freshdigitable.udonroad2.model.app.navigation.StateHolder
 import com.freshdigitable.udonroad2.model.app.navigation.ViewState
 import com.freshdigitable.udonroad2.model.app.navigation.toViewState
-import com.freshdigitable.udonroad2.oauth.OauthEvent
-import com.freshdigitable.udonroad2.timeline.TimelineEvent
-import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragment
 import com.freshdigitable.udonroad2.timeline.viewmodel.FragmentContainerViewStateModel
-import timber.log.Timber
 import java.io.Serializable
 import javax.inject.Inject
 
 @ActivityScope
 class MainActivityStateModel @Inject constructor(
     action: MainActivityAction,
-    tokenRepository: OAuthTokenRepository,
     selectedItemRepository: SelectedItemRepository
 ) : FragmentContainerViewStateModel {
-    private val firstContainerState: AppAction<out MainNavHostState> = action.showFirstView.map {
-        Timber.tag("StateModel").d("firstContainerState: $it")
-        when {
-            it.savedState != null -> (it.savedState as MainActivityViewState).containerState
-            tokenRepository.getCurrentUserId() != null -> {
-                tokenRepository.login()
-                MainNavHostState.Timeline(
-                    ListItemFragment.listOwner(QueryType.TweetQueryType.Timeline()),
-                    MainNavHostState.Cause.INIT
-                )
-            }
-            else -> MainNavHostState.Timeline(
-                ListItemFragment.listOwner(QueryType.Oauth),
-                MainNavHostState.Cause.INIT
-            )
-        }
-    }
-
-    private val containerAction: AppAction<MainNavHostState> = AppAction.merge(
-        firstContainerState,
-        action.showTimeline.map {
-            when (it) {
-                is OauthEvent.Init -> MainNavHostState.Timeline(
-                    ListItemFragment.listOwner(QueryType.Oauth),
-                    MainNavHostState.Cause.INIT
-                )
-                is TimelineEvent.Init -> MainNavHostState.Timeline(
-                    ListItemFragment.listOwner(QueryType.TweetQueryType.Timeline()),
-                    MainNavHostState.Cause.INIT
-                )
-                else -> TODO("not implemented")
-            }
-        },
-        action.showTweetDetail.map { MainNavHostState.TweetDetail(it.tweetId) },
-        action.popUp.map { it.state as MainNavHostState }
-    )
-
-    val containerState: AppViewState<out MainNavHostState> = containerAction.toViewState()
 
     private val selectedItemHolder: AppViewState<StateHolder<SelectedItemId>> = AppAction.merge(
         action.changeItemSelectState.map {
@@ -94,7 +49,7 @@ class MainActivityStateModel @Inject constructor(
             }
             StateHolder(selectedItemRepository.find(it.item.owner))
         },
-        containerAction.map {
+        action.updateContainer.map {
             if (it is MainNavHostState.Timeline) {
                 StateHolder(selectedItemRepository.find(it.owner))
             } else {
@@ -109,21 +64,14 @@ class MainActivityStateModel @Inject constructor(
 
     val current: MainActivityViewState?
         get() {
-            val containerState = containerState.value
-            return if (containerState == null) {
-                null
-            } else {
-                MainActivityViewState(
-                    containerState = containerState,
-                    selectedItem = selectedItemId.value,
-                    fabVisible = isFabVisible.value ?: false
-                )
-            }
+            return MainActivityViewState(
+                selectedItem = selectedItemId.value,
+                fabVisible = isFabVisible.value ?: false
+            )
         }
 }
 
 data class MainActivityViewState(
     val selectedItem: SelectedItemId?,
-    val fabVisible: Boolean,
-    override val containerState: MainNavHostState
+    val fabVisible: Boolean
 ) : ViewState, Serializable
