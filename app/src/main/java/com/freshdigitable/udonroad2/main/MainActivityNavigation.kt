@@ -7,7 +7,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
-import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.findNavController
@@ -19,6 +18,7 @@ import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.app.di.ActivityScope
 import com.freshdigitable.udonroad2.model.app.navigation.FragmentContainerState
 import com.freshdigitable.udonroad2.model.tweet.TweetId
+import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragment
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentArgs
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentDirections
@@ -27,6 +27,7 @@ import com.freshdigitable.udonroad2.user.UserActivityDirections
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
 import java.io.Serializable
+import java.lang.ref.WeakReference
 import javax.inject.Inject
 
 @ActivityScope
@@ -35,13 +36,25 @@ class MainActivityNavigation @Inject constructor(
     actions: MainActivityAction
 ) : LifecycleEventObserver {
 
-    private val navController: NavController by lazy {
-        activity.findNavController(R.id.main_nav_host).apply {
-            addOnDestinationChangedListener { _, destination, arguments ->
-                containerState = MainNavHostState.create(destination, arguments)
-            }
-        }
+    private val _navController: WeakReference<NavController> by lazy {
+        WeakReference(activity.findNavController(R.id.main_nav_host))
     }
+    private val navController: NavController
+        get() = requireNotNull(_navController.get())
+
+    private val onDestinationChanged =
+        NavController.OnDestinationChangedListener { _, destination, arguments ->
+            val containerState = requireNotNull(
+                MainNavHostState.create(
+                    destination,
+                    arguments,
+                    MainNavHostState.Cause.DESTINATION_CHANGED
+                )
+            )
+            this@MainActivityNavigation.containerState = containerState
+            actions.dispatcher.postEvent(TimelineEvent.DestinationChanged(containerState))
+        }
+
     private var containerState: MainNavHostState? = null
 
     private val disposables = CompositeDisposable()
@@ -70,7 +83,7 @@ class MainActivityNavigation @Inject constructor(
     }
 
     private fun AppCompatActivity.navigateTo(nextState: MainNavHostState) {
-        if (nextState == this@MainActivityNavigation.containerState) {
+        if (nextState.isDestinationEqualTo(this@MainActivityNavigation.containerState)) {
             return
         }
         when (nextState) {
@@ -93,18 +106,20 @@ class MainActivityNavigation @Inject constructor(
                 setupActionBarWithNavController(navController)
             }
             MainNavHostState.Cause.NAVIGATION -> TODO()
-            MainNavHostState.Cause.BACK -> {
-                navController.popBackStack()
-            }
+            MainNavHostState.Cause.DESTINATION_CHANGED -> Unit
         }
     }
 
-    val prevNavHostState: MainNavHostState?
-        get() = MainNavHostState.create(navController.previousBackStackEntry)
-
     override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
-        if (event == Lifecycle.Event.ON_DESTROY) {
-            disposables.clear()
+        when (event) {
+            Lifecycle.Event.ON_CREATE -> {
+                navController.addOnDestinationChangedListener(onDestinationChanged)
+            }
+            Lifecycle.Event.ON_DESTROY -> {
+                navController.removeOnDestinationChangedListener(onDestinationChanged)
+                disposables.clear()
+            }
+            else -> Unit
         }
     }
 
@@ -127,6 +142,10 @@ sealed class MainNavHostState : FragmentContainerState, Serializable {
         }
 
         override val fragmentId: Int = R.id.fragment_timeline
+
+        override fun isDestinationEqualTo(other: MainNavHostState?): Boolean {
+            return (other as? Timeline)?.owner == this.owner
+        }
     }
 
     data class TweetDetail(
@@ -134,35 +153,34 @@ sealed class MainNavHostState : FragmentContainerState, Serializable {
         override val cause: Cause = Cause.NAVIGATION
     ) : MainNavHostState() {
         override val fragmentId: Int = R.id.fragment_detail
+
+        override fun isDestinationEqualTo(other: MainNavHostState?): Boolean {
+            return (other as? TweetDetail)?.tweetId == this.tweetId
+        }
     }
 
     abstract val fragmentId: Int
     abstract val cause: Cause
+    abstract fun isDestinationEqualTo(other: MainNavHostState?): Boolean
 
-    enum class Cause { INIT, NAVIGATION, BACK }
+    enum class Cause { INIT, NAVIGATION, DESTINATION_CHANGED }
 
     companion object
 }
 
 fun MainNavHostState.Companion.create(
-    backStackEntry: NavBackStackEntry?
-): MainNavHostState? = create(backStackEntry?.destination, backStackEntry?.arguments)
-
-fun MainNavHostState.Companion.create(
     destination: NavDestination?,
-    arguments: Bundle?
+    arguments: Bundle?,
+    cause: MainNavHostState.Cause
 ): MainNavHostState? {
     return when (destination?.id) {
         R.id.fragment_timeline -> {
             val args = ListItemFragmentArgs.fromBundle(requireNotNull(arguments))
-            MainNavHostState.Timeline(
-                ListOwner(args.ownerId, args.query),
-                MainNavHostState.Cause.BACK
-            )
+            MainNavHostState.Timeline(ListOwner(args.ownerId, args.query), cause)
         }
         R.id.fragment_detail -> {
             val args = TweetDetailFragmentArgs.fromBundle(requireNotNull(arguments))
-            MainNavHostState.TweetDetail(args.tweetId, MainNavHostState.Cause.BACK)
+            MainNavHostState.TweetDetail(args.tweetId, cause)
         }
         else -> null
     }

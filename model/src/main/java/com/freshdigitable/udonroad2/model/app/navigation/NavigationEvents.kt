@@ -22,8 +22,7 @@ interface ViewState
 
 sealed class CommonEvent : NavigationEvent {
     data class Back(
-        val currentState: ViewState?,
-        val prevContainerState: FragmentContainerState? = null
+        val currentState: ViewState?
     ) : CommonEvent()
 }
 

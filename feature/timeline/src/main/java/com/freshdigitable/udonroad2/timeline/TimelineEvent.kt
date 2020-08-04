@@ -13,7 +13,7 @@ sealed class TimelineEvent : NavigationEvent {
 
     object Init : TimelineEvent()
 
-    data class PopUpTo(val state: FragmentContainerState) : NavigationEvent
+    data class DestinationChanged(val state: FragmentContainerState) : NavigationEvent
 
     data class TweetDetailRequested(val tweetId: TweetId) : TimelineEvent()
 

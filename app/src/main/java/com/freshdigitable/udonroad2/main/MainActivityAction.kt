@@ -35,7 +35,7 @@ import javax.inject.Inject
 
 @ActivityScope
 class MainActivityAction @Inject constructor(
-    dispatcher: NavigationDispatcher,
+    val dispatcher: NavigationDispatcher,
     tokenRepository: OAuthTokenRepository
 ) {
     private val showFirstView: AppAction<out MainNavHostState> = dispatcher.toAction {
@@ -81,9 +81,6 @@ class MainActivityAction @Inject constructor(
                         SelectedItemId(currentState.selectedItem.owner, null)
                     )
                 }
-                it.prevContainerState != null -> {
-                    TimelineEvent.PopUpTo(requireNotNull(it.prevContainerState))
-                }
                 else -> it
             }
         }
@@ -105,8 +102,6 @@ class MainActivityAction @Inject constructor(
         dispatcher.toAction {
             filterByType<TimelineEvent.ToggleTweetItemSelectedState>()
         }
-
-    private val popUp: AppAction<TimelineEvent.PopUpTo> = backDispatched.filterByType()
 
     private val showTweetDetail: AppAction<TimelineEvent.TweetDetailRequested> =
         dispatcher.toAction {
@@ -131,7 +126,9 @@ class MainActivityAction @Inject constructor(
             }
         },
         showTweetDetail.map { MainNavHostState.TweetDetail(it.tweetId) },
-        popUp.map { it.state as MainNavHostState }
+        dispatcher.emitter.filterByType<TimelineEvent.DestinationChanged>().map {
+            it.state as MainNavHostState
+        }
     )
 
     val launchUserInfo: AppAction<TweetingUser> = dispatcher.toAction {
