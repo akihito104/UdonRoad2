@@ -35,9 +35,10 @@ class MainActivityNavigation @Inject constructor(
     activity: MainActivity,
     actions: MainActivityAction
 ) : LifecycleEventObserver {
+    private val _activity = WeakReference<MainActivity>(activity)
 
     private val _navController: WeakReference<NavController> by lazy {
-        WeakReference(activity.findNavController(R.id.main_nav_host))
+        WeakReference(requireNotNull(_activity.get()).findNavController(R.id.main_nav_host))
     }
     private val navController: NavController
         get() = requireNotNull(_navController.get())
@@ -118,6 +119,7 @@ class MainActivityNavigation @Inject constructor(
             Lifecycle.Event.ON_DESTROY -> {
                 navController.removeOnDestinationChangedListener(onDestinationChanged)
                 disposables.clear()
+                _activity.get()?.lifecycle?.removeObserver(this)
             }
             else -> Unit
         }
