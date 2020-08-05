@@ -4,12 +4,14 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.findNavController
+import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.media.MediaActivityArgs
@@ -32,10 +34,14 @@ import javax.inject.Inject
 
 @ActivityScope
 class MainActivityNavigation @Inject constructor(
-    activity: MainActivity,
+    mainActivity: MainActivity,
     actions: MainActivityAction
 ) : LifecycleEventObserver {
-    private val _activity = WeakReference<MainActivity>(activity)
+    private val _activity = WeakReference<MainActivity>(mainActivity)
+    private val activity: MainActivity get() = requireNotNull(_activity.get())
+    private val _drawerLayout by lazy {
+        WeakReference(_activity.get()?.findViewById<DrawerLayout>(R.id.main_drawer))
+    }
 
     private val _navController: WeakReference<NavController> by lazy {
         WeakReference(requireNotNull(_activity.get()).findNavController(R.id.main_nav_host))
@@ -104,7 +110,10 @@ class MainActivityNavigation @Inject constructor(
                     R.navigation.nav_main,
                     ListItemFragment.bundle(nextState.owner, getString(nextState.label))
                 )
-                setupActionBarWithNavController(navController)
+                setupActionBarWithNavController(
+                    navController,
+                    _drawerLayout.get()
+                )
             }
             MainNavHostState.Cause.NAVIGATION -> TODO()
             MainNavHostState.Cause.DESTINATION_CHANGED -> Unit
@@ -119,11 +128,13 @@ class MainActivityNavigation @Inject constructor(
             Lifecycle.Event.ON_DESTROY -> {
                 navController.removeOnDestinationChangedListener(onDestinationChanged)
                 disposables.clear()
-                _activity.get()?.lifecycle?.removeObserver(this)
+                activity.lifecycle.removeObserver(this)
             }
             else -> Unit
         }
     }
+
+    fun onSupportNavigateUp(): Boolean = navController.navigateUp(_drawerLayout.get())
 
     private fun Disposable.addTo(compositeDisposable: CompositeDisposable) {
         compositeDisposable.add(this)
