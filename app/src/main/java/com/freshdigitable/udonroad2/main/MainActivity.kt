@@ -19,7 +19,6 @@ package com.freshdigitable.udonroad2.main
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
-import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.LiveData
@@ -52,8 +51,7 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
 
     @Inject
     lateinit var viewModelProvider: ViewModelProvider
-    private var actionBarDrawerToggle: ActionBarDrawerToggle? = null
-    val viewModel: MainViewModel by lazy { viewModelProvider[MainViewModel::class.java] }
+    private val viewModel: MainViewModel by lazy { viewModelProvider[MainViewModel::class.java] }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
@@ -72,12 +70,6 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
             setHomeButtonEnabled(true)
         }
 
-        actionBarDrawerToggle = ActionBarDrawerToggle(this, binding.mainDrawer, 0, 0).apply {
-            isDrawerIndicatorEnabled = true
-            syncState()
-
-            binding.mainDrawer.addDrawerListener(this)
-        }
         binding.mainGlobalMenu.setNavigationItemSelectedListener { item ->
             val event = when (item.itemId) {
                 R.id.drawer_menu_home -> TimelineEvent.Init
@@ -98,17 +90,11 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
     }
 
     override fun onBackPressed() {
-        viewModel.onBackPressed(navigation.prevNavHostState)
+        viewModel.onBackPressed()
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return actionBarDrawerToggle?.onOptionsItemSelected(item)
-            ?: super.onOptionsItemSelected(item)
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        actionBarDrawerToggle = null
+    override fun onSupportNavigateUp(): Boolean {
+        return navigation.onSupportNavigateUp() || super.onSupportNavigateUp()
     }
 
     @Inject
@@ -154,8 +140,8 @@ class MainViewModel(
         }
     }
 
-    fun onBackPressed(prevNavHostState: MainNavHostState?) {
-        navigator.postEvent(CommonEvent.Back(viewState.current, prevNavHostState))
+    fun onBackPressed() {
+        navigator.postEvent(CommonEvent.Back(viewState.current))
     }
 
     val currentState: MainActivityViewState?

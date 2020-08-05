@@ -2,21 +2,25 @@ package com.freshdigitable.udonroad2.main
 
 import android.content.Intent
 import android.net.Uri
+import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.observe
-import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
+import androidx.navigation.NavDestination
 import androidx.navigation.findNavController
+import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.media.MediaActivityArgs
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.QueryType
+import com.freshdigitable.udonroad2.model.app.di.ActivityScope
 import com.freshdigitable.udonroad2.model.app.navigation.FragmentContainerState
 import com.freshdigitable.udonroad2.model.tweet.TweetId
+import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragment
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentArgs
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentDirections
@@ -25,17 +29,40 @@ import com.freshdigitable.udonroad2.user.UserActivityDirections
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
 import java.io.Serializable
+import java.lang.ref.WeakReference
 import javax.inject.Inject
 
+@ActivityScope
 class MainActivityNavigation @Inject constructor(
-    activity: MainActivity,
-    actions: MainActivityAction,
-    state: MainActivityStateModel
+    mainActivity: MainActivity,
+    actions: MainActivityAction
 ) : LifecycleEventObserver {
-
-    private val navController: NavController by lazy {
-        activity.findNavController(R.id.main_nav_host)
+    private val _activity = WeakReference<MainActivity>(mainActivity)
+    private val activity: MainActivity get() = requireNotNull(_activity.get())
+    private val _drawerLayout by lazy {
+        WeakReference(_activity.get()?.findViewById<DrawerLayout>(R.id.main_drawer))
     }
+
+    private val _navController: WeakReference<NavController> by lazy {
+        WeakReference(requireNotNull(_activity.get()).findNavController(R.id.main_nav_host))
+    }
+    private val navController: NavController
+        get() = requireNotNull(_navController.get())
+
+    private val onDestinationChanged =
+        NavController.OnDestinationChangedListener { _, destination, arguments ->
+            val containerState = requireNotNull(
+                MainNavHostState.create(
+                    destination,
+                    arguments,
+                    MainNavHostState.Cause.DESTINATION_CHANGED
+                )
+            )
+            this@MainActivityNavigation.containerState = containerState
+            actions.dispatcher.postEvent(TimelineEvent.DestinationChanged(containerState))
+        }
+
+    private var containerState: MainNavHostState? = null
 
     private val disposables = CompositeDisposable()
 
@@ -56,49 +83,58 @@ class MainActivityNavigation @Inject constructor(
         actions.rollbackViewState.subscribe {
             activity.onBackPressedDispatcher.onBackPressed()
         }.addTo(disposables)
+        actions.updateContainer.subscribe {
+            activity.navigateTo(it)
+        }.addTo(disposables)
         activity.lifecycle.addObserver(this)
-
-        state.containerState.observe(activity) { activity.navigateTo(it) }
     }
 
-    private fun AppCompatActivity.navigateTo(containerState: MainNavHostState) {
-        if (navController.currentDestination?.id == containerState.fragmentId) {
+    private fun AppCompatActivity.navigateTo(nextState: MainNavHostState) {
+        if (nextState.isDestinationEqualTo(this@MainActivityNavigation.containerState)) {
             return
         }
-        when (containerState) {
-            is MainNavHostState.Timeline -> toTimeline(containerState)
+        when (nextState) {
+            is MainNavHostState.Timeline -> toTimeline(nextState)
             is MainNavHostState.TweetDetail -> {
                 navController.navigate(
-                    ListItemFragmentDirections.actionTimelineToDetail(containerState.tweetId)
+                    ListItemFragmentDirections.actionTimelineToDetail(nextState.tweetId)
                 )
             }
         }
     }
 
-    private fun AppCompatActivity.toTimeline(containerState: MainNavHostState.Timeline) {
-        when (containerState.cause) {
+    private fun AppCompatActivity.toTimeline(nextState: MainNavHostState.Timeline) {
+        when (nextState.cause) {
             MainNavHostState.Cause.INIT -> {
                 navController.setGraph(
                     R.navigation.nav_main,
-                    ListItemFragment.bundle(containerState.owner, getString(containerState.label))
+                    ListItemFragment.bundle(nextState.owner, getString(nextState.label))
                 )
-                setupActionBarWithNavController(navController)
+                setupActionBarWithNavController(
+                    navController,
+                    _drawerLayout.get()
+                )
             }
             MainNavHostState.Cause.NAVIGATION -> TODO()
-            MainNavHostState.Cause.BACK -> {
-                navController.popBackStack()
-            }
+            MainNavHostState.Cause.DESTINATION_CHANGED -> Unit
         }
     }
-
-    val prevNavHostState: MainNavHostState?
-        get() = MainNavHostState.create(navController.previousBackStackEntry)
 
     override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
-        if (event == Lifecycle.Event.ON_DESTROY) {
-            disposables.clear()
+        when (event) {
+            Lifecycle.Event.ON_CREATE -> {
+                navController.addOnDestinationChangedListener(onDestinationChanged)
+            }
+            Lifecycle.Event.ON_DESTROY -> {
+                navController.removeOnDestinationChangedListener(onDestinationChanged)
+                disposables.clear()
+                activity.lifecycle.removeObserver(this)
+            }
+            else -> Unit
         }
     }
+
+    fun onSupportNavigateUp(): Boolean = navController.navigateUp(_drawerLayout.get())
 
     private fun Disposable.addTo(compositeDisposable: CompositeDisposable) {
         compositeDisposable.add(this)
@@ -119,6 +155,10 @@ sealed class MainNavHostState : FragmentContainerState, Serializable {
         }
 
         override val fragmentId: Int = R.id.fragment_timeline
+
+        override fun isDestinationEqualTo(other: MainNavHostState?): Boolean {
+            return (other as? Timeline)?.owner == this.owner
+        }
     }
 
     data class TweetDetail(
@@ -126,30 +166,34 @@ sealed class MainNavHostState : FragmentContainerState, Serializable {
         override val cause: Cause = Cause.NAVIGATION
     ) : MainNavHostState() {
         override val fragmentId: Int = R.id.fragment_detail
+
+        override fun isDestinationEqualTo(other: MainNavHostState?): Boolean {
+            return (other as? TweetDetail)?.tweetId == this.tweetId
+        }
     }
 
     abstract val fragmentId: Int
     abstract val cause: Cause
+    abstract fun isDestinationEqualTo(other: MainNavHostState?): Boolean
 
-    enum class Cause { INIT, NAVIGATION, BACK }
+    enum class Cause { INIT, NAVIGATION, DESTINATION_CHANGED }
 
     companion object
 }
 
-fun MainNavHostState.Companion.create(backStackEntry: NavBackStackEntry?): MainNavHostState? {
-    return when (backStackEntry?.destination?.id) {
+fun MainNavHostState.Companion.create(
+    destination: NavDestination?,
+    arguments: Bundle?,
+    cause: MainNavHostState.Cause
+): MainNavHostState? {
+    return when (destination?.id) {
         R.id.fragment_timeline -> {
-            val args =
-                ListItemFragmentArgs.fromBundle(requireNotNull(backStackEntry.arguments))
-            MainNavHostState.Timeline(
-                ListOwner(args.ownerId, args.query),
-                MainNavHostState.Cause.BACK
-            )
+            val args = ListItemFragmentArgs.fromBundle(requireNotNull(arguments))
+            MainNavHostState.Timeline(ListOwner(args.ownerId, args.query), cause)
         }
         R.id.fragment_detail -> {
-            val args =
-                TweetDetailFragmentArgs.fromBundle(requireNotNull(backStackEntry.arguments))
-            MainNavHostState.TweetDetail(args.tweetId, MainNavHostState.Cause.BACK)
+            val args = TweetDetailFragmentArgs.fromBundle(requireNotNull(arguments))
+            MainNavHostState.TweetDetail(args.tweetId, cause)
         }
         else -> null
     }

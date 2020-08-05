@@ -54,9 +54,6 @@ class MainActivityStateModelTest {
         dispatchEvents(TimelineEvent.Setup())
 
         // verify
-        val actualContainerState = sut.containerState.value as MainNavHostState.Timeline
-        assertThat(actualContainerState.owner.query).isEqualTo(QueryType.Oauth)
-        assertThat(actualContainerState.cause).isEqualTo(MainNavHostState.Cause.INIT)
         assertThat(sut.selectedItemId.value).isEqualTo(null)
     }
 
@@ -77,9 +74,6 @@ class MainActivityStateModelTest {
 
         // verify
         assertThat(sut.isFabVisible.value).isTrue()
-        val actualContainerState = sut.containerState.value as MainNavHostState.Timeline
-        assertThat(actualContainerState.owner.query).isEqualTo(QueryType.TweetQueryType.Timeline())
-        assertThat(actualContainerState.cause).isEqualTo(MainNavHostState.Cause.INIT)
         assertThat(sut.selectedItemId.value?.originalId).isEqualTo(TweetId(200L))
     }
 
@@ -109,8 +103,7 @@ class MainActivityStateModelTestRule : TestWatcher() {
     private val tokenRepository = mockk<OAuthTokenRepository>()
     val mockVerified = MockVerified(listOf(tokenRepository))
     val sut = MainActivityStateModel(
-        MainActivityAction(dispatcher),
-        tokenRepository,
+        MainActivityAction(dispatcher, tokenRepository),
         SelectedItemRepository()
     )
 
@@ -131,7 +124,6 @@ class MainActivityStateModelTestRule : TestWatcher() {
     override fun starting(description: Description?) {
         super.starting(description)
         listOf(
-            sut.containerState,
             sut.isFabVisible,
             sut.selectedItemId
         ).forEach { it.observeForever {} }
