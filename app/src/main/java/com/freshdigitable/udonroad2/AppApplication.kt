@@ -20,7 +20,6 @@ import android.app.Application
 import com.freshdigitable.udonroad2.di.AppComponent
 import com.freshdigitable.udonroad2.di.DaggerAppComponent
 import com.jakewharton.threetenabp.AndroidThreeTen
-import com.squareup.leakcanary.LeakCanary
 import dagger.Module
 import dagger.Provides
 import dagger.android.AndroidInjector
@@ -60,18 +59,5 @@ typealias AppSetup = () -> Unit
 object AppSetupModule {
     @Provides
     @Singleton
-    fun provideSetup(
-        app: Application
-    ): AppSetup = {
-        app.setupLeakCanary()
-    }
-
-    private fun Application.setupLeakCanary() {
-        if (LeakCanary.isInAnalyzerProcess(this)) {
-            // This process is dedicated to LeakCanary for heap analysis.
-            // You should not init your app in this process.
-            return
-        }
-        LeakCanary.install(this)
-    }
+    fun provideSetup(): AppSetup = {}
 }
