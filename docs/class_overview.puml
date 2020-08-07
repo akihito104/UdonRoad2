@@ -1,0 +1,36 @@
+@startuml
+
+class Activity
+class Fragment
+class ViewModel {
+  dispatcher: EventDispatcher
+  states: ViewStates
+}
+
+class EventDispatcher 
+class Actions {
+  dispatcher: EventDispatcher
+}
+class ViewStates {
+  actions: Actions
+}
+class NavigationDelegate {
+  navController: NavController
+}
+
+Activity *- Fragment
+Activity -- ViewModel
+Activity *- NavigationDelegate
+Fragment -- ViewModel
+
+EventDispatcher - ViewModel
+EventDispatcher -- Actions : < observe
+
+ViewModel o-- ViewStates : > observe
+Actions - Repository
+
+ViewStates - Actions : > observe
+NavigationDelegate -- Actions : > observe
+
+ViewStates -- Repository
+@enduml

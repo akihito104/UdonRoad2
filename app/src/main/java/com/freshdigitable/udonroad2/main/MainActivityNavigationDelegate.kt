@@ -33,9 +33,9 @@ import java.lang.ref.WeakReference
 import javax.inject.Inject
 
 @ActivityScope
-class MainActivityNavigation @Inject constructor(
+class MainActivityNavigationDelegate @Inject constructor(
     mainActivity: MainActivity,
-    actions: MainActivityAction
+    actions: MainActivityActions
 ) : LifecycleEventObserver {
     private val _activity = WeakReference<MainActivity>(mainActivity)
     private val activity: MainActivity get() = requireNotNull(_activity.get())
@@ -58,7 +58,7 @@ class MainActivityNavigation @Inject constructor(
                     MainNavHostState.Cause.DESTINATION_CHANGED
                 )
             )
-            this@MainActivityNavigation.containerState = containerState
+            this@MainActivityNavigationDelegate.containerState = containerState
             actions.dispatcher.postEvent(TimelineEvent.DestinationChanged(containerState))
         }
 
@@ -90,7 +90,7 @@ class MainActivityNavigation @Inject constructor(
     }
 
     private fun AppCompatActivity.navigateTo(nextState: MainNavHostState) {
-        if (nextState.isDestinationEqualTo(this@MainActivityNavigation.containerState)) {
+        if (nextState.isDestinationEqualTo(this@MainActivityNavigationDelegate.containerState)) {
             return
         }
         when (nextState) {

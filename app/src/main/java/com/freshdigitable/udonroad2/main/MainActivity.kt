@@ -29,7 +29,7 @@ import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.databinding.ActivityMainBinding
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
 import com.freshdigitable.udonroad2.model.app.navigation.CommonEvent
-import com.freshdigitable.udonroad2.model.app.navigation.NavigationDispatcher
+import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.oauth.OauthEvent
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentModule
@@ -47,7 +47,7 @@ import javax.inject.Inject
 
 class MainActivity : AppCompatActivity(), HasAndroidInjector {
     @Inject
-    lateinit var navigation: MainActivityNavigation
+    lateinit var navigation: MainActivityNavigationDelegate
 
     @Inject
     lateinit var viewModelProvider: ViewModelProvider
@@ -115,23 +115,23 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
 }
 
 class MainViewModel(
-    private val navigator: NavigationDispatcher,
-    private val viewState: MainActivityStateModel
+    private val eventDispatcher: EventDispatcher,
+    private val viewStates: MainActivityViewStates
 ) : ViewModel() {
 
-    val isFabVisible: LiveData<Boolean> = viewState.isFabVisible
+    val isFabVisible: LiveData<Boolean> = viewStates.isFabVisible
 
     internal fun initialEvent(savedState: MainActivityViewState?) {
-        navigator.postEvent(TimelineEvent.Setup(savedState))
+        eventDispatcher.postEvent(TimelineEvent.Setup(savedState))
     }
 
     fun onFabMenuSelected(item: MenuItem) {
         Timber.tag("MainViewModel").d("onFabSelected: $item")
         val selected =
-            requireNotNull(viewState.current?.selectedItem) { "selectedItem should not be null." }
+            requireNotNull(viewStates.current?.selectedItem) { "selectedItem should not be null." }
         when (item.itemId) {
             com.freshdigitable.udonroad2.timeline.R.id.iffabMenu_main_detail -> {
-                navigator.postEvent(
+                eventDispatcher.postEvent(
                     TimelineEvent.TweetDetailRequested(
                         selected.quoteId ?: requireNotNull(selected.originalId)
                     )
@@ -141,11 +141,11 @@ class MainViewModel(
     }
 
     fun onBackPressed() {
-        navigator.postEvent(CommonEvent.Back(viewState.current))
+        eventDispatcher.postEvent(CommonEvent.Back(viewStates.current))
     }
 
     val currentState: MainActivityViewState?
-        get() = viewState.current
+        get() = viewStates.current
 }
 
 @Module(
@@ -166,8 +166,8 @@ interface MainActivityModule {
     companion object {
         @Provides
         fun provideMainViewModel(
-            navigator: NavigationDispatcher,
-            viewState: MainActivityStateModel
+            navigator: EventDispatcher,
+            viewState: MainActivityViewStates
         ): MainViewModel {
             return MainViewModel(navigator, viewState)
         }

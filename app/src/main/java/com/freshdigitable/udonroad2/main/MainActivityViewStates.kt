@@ -31,17 +31,17 @@ import java.io.Serializable
 import javax.inject.Inject
 
 @ActivityScope
-class MainActivityStateModel @Inject constructor(
-    action: MainActivityAction,
+class MainActivityViewStates @Inject constructor(
+    actions: MainActivityActions,
     selectedItemRepository: SelectedItemRepository
 ) : FragmentContainerViewStateModel {
 
     private val selectedItemHolder: AppViewState<StateHolder<SelectedItemId>> = AppAction.merge(
-        action.changeItemSelectState.map {
+        actions.changeItemSelectState.map {
             selectedItemRepository.put(it.selectedItemId)
             StateHolder(selectedItemRepository.find(it.selectedItemId.owner))
         },
-        action.toggleSelectedItem.map {
+        actions.toggleSelectedItem.map {
             val current = selectedItemRepository.find(it.item.owner)
             when (it.item) {
                 current -> selectedItemRepository.remove(it.item.owner)
@@ -49,7 +49,7 @@ class MainActivityStateModel @Inject constructor(
             }
             StateHolder(selectedItemRepository.find(it.item.owner))
         },
-        action.updateContainer.map {
+        actions.updateContainer.map {
             if (it is MainNavHostState.Timeline) {
                 StateHolder(selectedItemRepository.find(it.owner))
             } else {

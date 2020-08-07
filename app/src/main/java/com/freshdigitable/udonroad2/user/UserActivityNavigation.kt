@@ -1,14 +1,14 @@
 package com.freshdigitable.udonroad2.user
 
 import androidx.lifecycle.ViewModelProvider
+import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.FragmentContainerState
 import com.freshdigitable.udonroad2.model.app.navigation.Navigation
-import com.freshdigitable.udonroad2.model.app.navigation.NavigationDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 
 class UserActivityNavigation(
-    navigator: NavigationDispatcher,
+    navigator: EventDispatcher,
     activity: UserActivity,
     viewModelProvider: ViewModelProvider
 ) : Navigation<UserActivityState>(navigator, activity) {

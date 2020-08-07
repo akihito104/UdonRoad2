@@ -20,7 +20,7 @@ import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
-import com.freshdigitable.udonroad2.model.app.navigation.NavigationDispatcher
+import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.user.UserId
 import com.freshdigitable.udonroad2.oauth.OauthEvent
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
@@ -30,10 +30,10 @@ import io.mockk.mockk
 import io.mockk.runs
 import org.junit.Test
 
-class MainActivityActionTest {
-    private val navigationDispatcher = NavigationDispatcher()
+class MainActivityActionsTest {
+    private val navigationDispatcher = EventDispatcher()
     private val tokenRepository: OAuthTokenRepository = mockk()
-    private val mainActivityAction = MainActivityAction(navigationDispatcher, tokenRepository)
+    private val mainActivityAction = MainActivityActions(navigationDispatcher, tokenRepository)
 
     @Test
     fun updateContainer_dispatchSetupEvent_then_flowInitOauthEvent() {

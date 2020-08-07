@@ -13,7 +13,7 @@ import timber.log.Timber
 import javax.inject.Inject
 
 @ActivityScope
-class NavigationDispatcher @Inject constructor() {
+class EventDispatcher @Inject constructor() {
     val emitter = PublishSubject.create<NavigationEvent>()
 
     fun postEvent(event: NavigationEvent) {
@@ -25,7 +25,7 @@ class NavigationDispatcher @Inject constructor() {
 typealias AppAction<T> = Observable<T>
 typealias AppViewState<T> = LiveData<T>
 
-inline fun <T> NavigationDispatcher.toAction(
+inline fun <T> EventDispatcher.toAction(
     block: PublishSubject<NavigationEvent>.() -> AppAction<T>
 ): AppAction<T> {
     return PublishSubject.create<T>().also { action ->

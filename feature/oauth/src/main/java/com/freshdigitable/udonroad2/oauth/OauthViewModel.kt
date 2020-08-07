@@ -31,7 +31,7 @@ import com.freshdigitable.udonroad2.model.RequestTokenItem
 import com.freshdigitable.udonroad2.model.app.di.QueryTypeKey
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
 import com.freshdigitable.udonroad2.model.app.ext.merge
-import com.freshdigitable.udonroad2.model.app.navigation.NavigationDispatcher
+import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.timeline.ListItemLoadable
 import dagger.Binds
@@ -44,7 +44,7 @@ import kotlin.reflect.KClass
 class OauthViewModel(
     dataSource: DataSource<Int, OauthItem>,
     private val repository: OAuthTokenRepository,
-    private val navigator: NavigationDispatcher,
+    private val eventDispatcher: EventDispatcher,
     handle: SavedStateHandle
 ) : ViewModel(), ListItemLoadable<QueryType.Oauth, OauthItem> {
 
@@ -79,7 +79,7 @@ class OauthViewModel(
         viewModelScope.launch {
             repository.getRequestTokenItem().also {
                 requestToken.value = it
-                navigator.postEvent(OauthEvent.OauthRequested(it.authorizationUrl))
+                eventDispatcher.postEvent(OauthEvent.OauthRequested(it.authorizationUrl))
             }
         }
     }
@@ -100,7 +100,7 @@ class OauthViewModel(
             val t = repository.getAccessToken(requestToken.value!!, pin.value.toString())
             repository.login(t.userId)
             requestToken.value = null
-            navigator.postEvent(OauthEvent.OauthSucceeded)
+            eventDispatcher.postEvent(OauthEvent.OauthSucceeded)
         }
     }
 
@@ -127,10 +127,10 @@ interface OauthViewModelModule {
         fun provideOauthViewModel(
             dataSource: DataSource<Int, OauthItem>,
             oAuthTokenRepository: OAuthTokenRepository,
-            navigator: NavigationDispatcher,
+            eventDispatcher: EventDispatcher,
             handle: SavedStateHandle
         ): OauthViewModel {
-            return OauthViewModel(dataSource, oAuthTokenRepository, navigator, handle)
+            return OauthViewModel(dataSource, oAuthTokenRepository, eventDispatcher, handle)
         }
 
         @Provides

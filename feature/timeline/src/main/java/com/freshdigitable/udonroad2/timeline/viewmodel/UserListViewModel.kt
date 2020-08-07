@@ -16,7 +16,7 @@ import com.freshdigitable.udonroad2.model.PageOption
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.app.di.QueryTypeKey
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
-import com.freshdigitable.udonroad2.model.app.navigation.NavigationDispatcher
+import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.user.TweetingUser
 import com.freshdigitable.udonroad2.model.user.UserListItem
 import com.freshdigitable.udonroad2.timeline.ListItemClickListener
@@ -31,7 +31,7 @@ import kotlin.reflect.KClass
 
 class UserListViewModel(
     private val owner: ListOwner<QueryType.UserQueryType>,
-    private val navigator: NavigationDispatcher,
+    private val eventDispatcher: EventDispatcher,
     private val repository: ListRepository<QueryType.UserQueryType>,
     pagedListProvider: PagedListProvider<QueryType.UserQueryType, UserListItem>
 ) : ListItemLoadable<QueryType.UserQueryType, UserListItem>, ListItemClickListener<UserListItem>,
@@ -59,11 +59,11 @@ class UserListViewModel(
 
     override fun onBodyItemClicked(item: UserListItem) {
         Timber.tag("TimelineViewModel").d("onBodyItemClicked: ${item.id}")
-        navigator.postEvent(TimelineEvent.UserIconClicked(item))
+        eventDispatcher.postEvent(TimelineEvent.UserIconClicked(item))
     }
 
     override fun onUserIconClicked(user: TweetingUser) {
-        navigator.postEvent(TimelineEvent.UserIconClicked(user))
+        eventDispatcher.postEvent(TimelineEvent.UserIconClicked(user))
     }
 }
 
@@ -73,7 +73,7 @@ interface UserListViewModelModule {
         @Provides
         fun provideUserListViewModel(
             owner: ListOwner<*>,
-            navigator: NavigationDispatcher,
+            eventDispatcher: EventDispatcher,
             localListDataSourceProvider: LocalListDataSourceProvider,
             remoteListDataSourceProvider: RemoteListDataSourceProvider,
             pagedListDataSourceFactoryProvider: PagedListDataSourceFactoryProvider,
@@ -92,7 +92,7 @@ interface UserListViewModelModule {
                     repository,
                     executor
                 )
-            return UserListViewModel(o, navigator, repository, pagedListProvider)
+            return UserListViewModel(o, eventDispatcher, repository, pagedListProvider)
         }
 
         @Provides
