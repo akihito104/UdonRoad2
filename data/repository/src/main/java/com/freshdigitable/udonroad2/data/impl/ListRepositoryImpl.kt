@@ -71,11 +71,7 @@ class SelectedItemRepository @Inject constructor() {
     private val selectedItems: MutableMap<ListOwner<*>, SelectedItemId> = mutableMapOf()
 
     fun put(itemId: SelectedItemId) {
-        if (itemId.originalId == null) {
-            remove(itemId.owner)
-        } else {
-            selectedItems[itemId.owner] = itemId
-        }
+        selectedItems[itemId.owner] = itemId
     }
 
     fun remove(owner: ListOwner<*>) {

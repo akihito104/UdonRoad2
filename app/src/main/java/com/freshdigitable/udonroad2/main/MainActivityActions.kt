@@ -18,7 +18,6 @@ package com.freshdigitable.udonroad2.main
 
 import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
 import com.freshdigitable.udonroad2.model.QueryType
-import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.app.di.ActivityScope
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.CommonEvent
@@ -29,6 +28,7 @@ import com.freshdigitable.udonroad2.model.app.navigation.toAction
 import com.freshdigitable.udonroad2.model.user.TweetingUser
 import com.freshdigitable.udonroad2.oauth.OauthEvent
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
+import com.freshdigitable.udonroad2.timeline.TimelineEvent.TweetItemSelection
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragment
 import timber.log.Timber
 import javax.inject.Inject
@@ -77,9 +77,7 @@ class MainActivityActions @Inject constructor(
             val currentState = it.currentState as? MainActivityViewState ?: return@map it
             when {
                 currentState.selectedItem != null -> {
-                    TimelineEvent.TweetItemSelected(
-                        SelectedItemId(currentState.selectedItem.owner, null)
-                    )
+                    TweetItemSelection.Unselected(currentState.selectedItem.owner)
                 }
                 else -> it
             }
@@ -89,19 +87,18 @@ class MainActivityActions @Inject constructor(
         filterByType<TimelineEvent.MediaItemClicked>()
     }
 
-    val changeItemSelectState: AppAction<TimelineEvent.TweetItemSelected> = dispatcher.toAction {
+    val selectItem: AppAction<TweetItemSelection.Selected> = dispatcher.toAction {
         AppAction.merge(
-            filterByType<TimelineEvent.TweetItemSelected>(),
-            backDispatched.filterByType<TimelineEvent.TweetItemSelected>(),
+            filterByType<TweetItemSelection.Selected>(),
             launchMediaViewer
                 .filter { it.selectedItemId != null }
-                .map { TimelineEvent.TweetItemSelected(requireNotNull(it.selectedItemId)) }
+                .map { TweetItemSelection.Selected(requireNotNull(it.selectedItemId)) }
         )
     }
-    val toggleSelectedItem: AppAction<TimelineEvent.ToggleTweetItemSelectedState> =
-        dispatcher.toAction {
-            filterByType<TimelineEvent.ToggleTweetItemSelectedState>()
-        }
+    val unselectItem: AppAction<TweetItemSelection.Unselected> = backDispatched.filterByType()
+    val toggleItem: AppAction<TweetItemSelection.Toggle> = dispatcher.toAction {
+        filterByType<TweetItemSelection.Toggle>()
+    }
 
     private val showTweetDetail: AppAction<TimelineEvent.TweetDetailRequested> =
         dispatcher.toAction {

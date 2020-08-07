@@ -95,7 +95,7 @@ class TimelineViewModel(
     }
 
     private fun updateSelectedItem(selected: SelectedItemId) {
-        eventDispatcher.postEvent(TimelineEvent.ToggleTweetItemSelectedState(selected))
+        eventDispatcher.postEvent(TimelineEvent.TweetItemSelection.Toggle(selected))
     }
 
     override fun onUserIconClicked(user: TweetingUser) {

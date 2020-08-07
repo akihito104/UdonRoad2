@@ -21,7 +21,7 @@ import java.io.Serializable
 
 data class SelectedItemId(
     val owner: ListOwner<*>,
-    val originalId: TweetId?,
+    val originalId: TweetId,
     val quoteId: TweetId? = null
 ) : Serializable {
     @JvmOverloads

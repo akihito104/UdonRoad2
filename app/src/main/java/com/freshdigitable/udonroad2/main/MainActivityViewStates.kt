@@ -37,11 +37,15 @@ class MainActivityViewStates @Inject constructor(
 ) : FragmentContainerViewStateModel {
 
     private val selectedItemHolder: AppViewState<StateHolder<SelectedItemId>> = AppAction.merge(
-        actions.changeItemSelectState.map {
+        actions.selectItem.map {
             selectedItemRepository.put(it.selectedItemId)
             StateHolder(selectedItemRepository.find(it.selectedItemId.owner))
         },
-        actions.toggleSelectedItem.map {
+        actions.unselectItem.map {
+            selectedItemRepository.remove(it.owner)
+            StateHolder(selectedItemRepository.find(it.owner))
+        },
+        actions.toggleItem.map {
             val current = selectedItemRepository.find(it.item.owner)
             when (it.item) {
                 current -> selectedItemRepository.remove(it.item.owner)

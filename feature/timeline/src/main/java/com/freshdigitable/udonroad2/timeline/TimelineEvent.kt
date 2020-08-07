@@ -1,5 +1,6 @@
 package com.freshdigitable.udonroad2.timeline
 
+import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.MemberListItem
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.app.navigation.FragmentContainerState
@@ -21,9 +22,11 @@ sealed class TimelineEvent : NavigationEvent {
 
     data class RetweetUserClicked(val user: TweetingUser) : TimelineEvent()
 
-    data class TweetItemSelected(val selectedItemId: SelectedItemId) : TimelineEvent()
-
-    data class ToggleTweetItemSelectedState(val item: SelectedItemId) : TimelineEvent()
+    sealed class TweetItemSelection : TimelineEvent() {
+        data class Selected(val selectedItemId: SelectedItemId) : TweetItemSelection()
+        data class Unselected(val owner: ListOwner<*>) : TweetItemSelection()
+        data class Toggle(val item: SelectedItemId) : TweetItemSelection()
+    }
 
     data class MemberListClicked(val memberList: MemberListItem) : TimelineEvent()
 
