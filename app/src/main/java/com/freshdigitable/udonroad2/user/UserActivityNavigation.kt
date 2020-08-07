@@ -17,7 +17,9 @@ class UserActivityNavigation(
 
     override fun onEvent(event: NavigationEvent): UserActivityState? {
         when (event) {
-            is TimelineEvent.TweetItemSelected -> viewModel.setSelectedItemId(event.selectedItemId)
+            is TimelineEvent.TweetItemSelection.Selected -> viewModel.setSelectedItemId(
+                event.selectedItemId
+            )
             is TimelineEvent.UserIconClicked -> UserActivity.start(
                 activity,
                 event.user

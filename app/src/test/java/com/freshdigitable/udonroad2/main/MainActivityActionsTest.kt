@@ -21,6 +21,7 @@ import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
+import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.user.UserId
 import com.freshdigitable.udonroad2.oauth.OauthEvent
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
@@ -105,13 +106,13 @@ class MainActivityActionsTest {
         every { tokenRepository.getCurrentUserId() } returns UserId(10000)
         every { tokenRepository.login(UserId(10000)) } just runs
         val testShowFirstView = mainActivityAction.updateContainer.test()
-        val testToggleSelectedItem = mainActivityAction.toggleSelectedItem.test()
+        val testToggleSelectedItem = mainActivityAction.toggleItem.test()
 
         navigationDispatcher.postEvent(TimelineEvent.Setup())
         navigationDispatcher.postEvent(
-            TimelineEvent.ToggleTweetItemSelectedState(
+            TimelineEvent.TweetItemSelection.Toggle(
                 SelectedItemId(
-                    ListOwner(0, QueryType.TweetQueryType.Timeline()), null
+                    ListOwner(0, QueryType.TweetQueryType.Timeline()), TweetId(100)
                 )
             )
         )

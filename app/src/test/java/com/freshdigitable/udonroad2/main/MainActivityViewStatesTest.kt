@@ -65,7 +65,7 @@ class MainActivityViewStatesTest {
         // exercise
         dispatchEvents(
             TimelineEvent.Setup(),
-            TimelineEvent.ToggleTweetItemSelectedState(
+            TimelineEvent.TweetItemSelection.Toggle(
                 SelectedItemId(
                     ListOwner(0, QueryType.TweetQueryType.Timeline()), TweetId(200)
                 )

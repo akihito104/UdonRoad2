@@ -132,9 +132,7 @@ class MainViewModel(
         when (item.itemId) {
             com.freshdigitable.udonroad2.timeline.R.id.iffabMenu_main_detail -> {
                 eventDispatcher.postEvent(
-                    TimelineEvent.TweetDetailRequested(
-                        selected.quoteId ?: requireNotNull(selected.originalId)
-                    )
+                    TimelineEvent.TweetDetailRequested(selected.quoteId ?: selected.originalId)
                 )
             }
         }
