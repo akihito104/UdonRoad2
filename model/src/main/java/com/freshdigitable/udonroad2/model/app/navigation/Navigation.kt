@@ -24,9 +24,9 @@ import androidx.lifecycle.OnLifecycleEvent
 import androidx.lifecycle.observe
 import io.reactivex.disposables.Disposable
 
-@Deprecated(message = "planned replacing to ActivityNavigation class")
+@Deprecated(message = "planned replacing to NavigationDelegate class")
 abstract class Navigation<T : FragmentContainerState>(
-    val navigator: NavigationDispatcher,
+    val navigator: EventDispatcher,
     protected val activity: AppCompatActivity
 ) : LifecycleObserver {
 

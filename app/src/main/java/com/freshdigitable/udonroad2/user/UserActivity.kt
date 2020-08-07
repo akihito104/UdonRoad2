@@ -14,8 +14,8 @@ import androidx.lifecycle.observe
 import androidx.viewpager.widget.ViewPager
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.databinding.ActivityUserBinding
+import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.Navigation
-import com.freshdigitable.udonroad2.model.app.navigation.NavigationDispatcher
 import com.freshdigitable.udonroad2.model.user.TweetingUser
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentModule
 import com.google.android.material.appbar.AppBarLayout
@@ -185,12 +185,12 @@ interface UserActivityModule {
     companion object {
         @Provides
         fun provideUserActivityNavigation(
-            navigator: NavigationDispatcher,
+            eventDispatcher: EventDispatcher,
             activity: UserActivity,
             viewModelProvider: ViewModelProvider
         ): Navigation<UserActivityState> {
             return UserActivityNavigation(
-                navigator,
+                eventDispatcher,
                 activity,
                 viewModelProvider
             )

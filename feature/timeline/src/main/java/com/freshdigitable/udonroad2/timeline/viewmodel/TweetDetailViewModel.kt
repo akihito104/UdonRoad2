@@ -7,7 +7,7 @@ import androidx.lifecycle.switchMap
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
 import com.freshdigitable.udonroad2.model.app.di.FragmentScope
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
-import com.freshdigitable.udonroad2.model.app.navigation.NavigationDispatcher
+import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.tweet.Tweet
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
@@ -20,7 +20,7 @@ import dagger.multibindings.IntoMap
 import javax.inject.Inject
 
 class TweetDetailViewModel @Inject constructor(
-    private val navigator: NavigationDispatcher,
+    private val eventDispatcher: EventDispatcher,
     private val repository: TweetRepository
 ) : TweetListItemClickListener, ViewModel() {
 
@@ -35,14 +35,14 @@ class TweetDetailViewModel @Inject constructor(
 
     fun onOriginalUserClicked() {
         val user = tweetItem.value?.originalUser ?: return
-        navigator.postEvent(
+        eventDispatcher.postEvent(
             TimelineEvent.RetweetUserClicked(user)
         )
     }
 
     fun onBodyUserClicked() {
         val user = tweetItem.value?.body?.user ?: return
-        navigator.postEvent(TimelineEvent.UserIconClicked(user))
+        eventDispatcher.postEvent(TimelineEvent.UserIconClicked(user))
     }
 
     override fun onMediaItemClicked(
@@ -51,7 +51,7 @@ class TweetDetailViewModel @Inject constructor(
         item: Tweet,
         index: Int
     ) {
-        navigator.postEvent(TimelineEvent.MediaItemClicked(item.id, index))
+        eventDispatcher.postEvent(TimelineEvent.MediaItemClicked(item.id, index))
     }
 }
 
@@ -66,10 +66,10 @@ interface TweetDetailViewModelModule {
         @Provides
         @FragmentScope
         fun provideTweetDetailViewModel(
-            navigator: NavigationDispatcher,
+            eventDispatcher: EventDispatcher,
             tweetRepository: TweetRepository
         ): TweetDetailViewModel {
-            return TweetDetailViewModel(navigator, tweetRepository)
+            return TweetDetailViewModel(eventDispatcher, tweetRepository)
         }
     }
 }

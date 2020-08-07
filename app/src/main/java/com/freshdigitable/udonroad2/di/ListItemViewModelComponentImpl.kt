@@ -22,7 +22,7 @@ import androidx.lifecycle.ViewModel
 import androidx.paging.PagedListAdapter
 import androidx.savedstate.SavedStateRegistryOwner
 import com.freshdigitable.udonroad2.data.impl.ListRepositoryModule
-import com.freshdigitable.udonroad2.main.MainActivityStateModel
+import com.freshdigitable.udonroad2.main.MainActivityViewStates
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.app.ClassKeyMap
@@ -56,7 +56,9 @@ interface ListItemViewModelModule {
     }
 
     @Binds
-    fun bindMainActivityStateModel(viewSink: MainActivityStateModel): FragmentContainerViewStateModel
+    fun bindMainActivityViewStates(
+        viewStates: MainActivityViewStates
+    ): FragmentContainerViewStateModel
 }
 
 @Subcomponent(

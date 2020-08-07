@@ -22,7 +22,7 @@ import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
-import com.freshdigitable.udonroad2.model.app.navigation.NavigationDispatcher
+import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.user.UserId
@@ -41,7 +41,7 @@ import org.junit.rules.TestWatcher
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
 
-class MainActivityStateModelTest {
+class MainActivityViewStatesTest {
     @get:Rule
     val rule = MainActivityStateModelTestRule()
 
@@ -99,11 +99,11 @@ class MainActivityStateModelTest {
 }
 
 class MainActivityStateModelTestRule : TestWatcher() {
-    private val dispatcher = NavigationDispatcher()
+    private val dispatcher = EventDispatcher()
     private val tokenRepository = mockk<OAuthTokenRepository>()
     val mockVerified = MockVerified(listOf(tokenRepository))
-    val sut = MainActivityStateModel(
-        MainActivityAction(dispatcher, tokenRepository),
+    val sut = MainActivityViewStates(
+        MainActivityActions(dispatcher, tokenRepository),
         SelectedItemRepository()
     )
 

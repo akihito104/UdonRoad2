@@ -17,7 +17,7 @@ import com.freshdigitable.udonroad2.model.PageOption
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.app.di.QueryTypeKey
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
-import com.freshdigitable.udonroad2.model.app.navigation.NavigationDispatcher
+import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.user.TweetingUser
 import com.freshdigitable.udonroad2.timeline.ListItemClickListener
 import com.freshdigitable.udonroad2.timeline.ListItemLoadable
@@ -31,7 +31,7 @@ import kotlin.reflect.KClass
 class MemberListListViewModel(
     private val owner: ListOwner<QueryType.UserListMembership>,
     private val repository: ListRepository<QueryType.UserListMembership>,
-    private val navigator: NavigationDispatcher,
+    private val eventDispatcher: EventDispatcher,
     pagedListProvider: PagedListProvider<QueryType.UserListMembership, MemberListItem>
 ) : ListItemLoadable<QueryType.UserListMembership, MemberListItem>,
     ListItemClickListener<MemberListItem>, ViewModel() {
@@ -51,11 +51,11 @@ class MemberListListViewModel(
         pagedListProvider.getList(owner.query, owner.value)
 
     override fun onUserIconClicked(user: TweetingUser) {
-        navigator.postEvent(TimelineEvent.UserIconClicked(user))
+        eventDispatcher.postEvent(TimelineEvent.UserIconClicked(user))
     }
 
     override fun onBodyItemClicked(item: MemberListItem) {
-        navigator.postEvent(TimelineEvent.MemberListClicked(item))
+        eventDispatcher.postEvent(TimelineEvent.MemberListClicked(item))
     }
 
     override fun onCleared() {
@@ -70,7 +70,7 @@ interface MemberListListViewModelModule {
         @Provides
         fun provideMemberListListViewModel(
             owner: ListOwner<*>,
-            navigator: NavigationDispatcher,
+            eventDispatcher: EventDispatcher,
             localListDataSourceProvider: LocalListDataSourceProvider,
             remoteListDataSourceProvider: RemoteListDataSourceProvider,
             pagedListDataSourceFactoryProvider: PagedListDataSourceFactoryProvider,
@@ -89,7 +89,7 @@ interface MemberListListViewModelModule {
                     repository,
                     executor
                 )
-            return MemberListListViewModel(o, repository, navigator, pagedListProvider)
+            return MemberListListViewModel(o, repository, eventDispatcher, pagedListProvider)
         }
 
         @Provides

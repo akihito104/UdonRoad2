@@ -33,7 +33,7 @@ import com.freshdigitable.udonroad2.model.QueryType.TweetQueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.app.di.QueryTypeKey
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
-import com.freshdigitable.udonroad2.model.app.navigation.NavigationDispatcher
+import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.tweet.Tweet
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
@@ -51,7 +51,7 @@ import kotlin.reflect.KClass
 
 class TimelineViewModel(
     private val owner: ListOwner<TweetQueryType>,
-    private val navigator: NavigationDispatcher,
+    private val eventDispatcher: EventDispatcher,
     viewStateModel: FragmentContainerViewStateModel,
     private val homeRepository: ListRepository<TweetQueryType>,
     pagedListProvider: PagedListProvider<TweetQueryType, TweetListItem>
@@ -95,11 +95,11 @@ class TimelineViewModel(
     }
 
     private fun updateSelectedItem(selected: SelectedItemId) {
-        navigator.postEvent(TimelineEvent.ToggleTweetItemSelectedState(selected))
+        eventDispatcher.postEvent(TimelineEvent.ToggleTweetItemSelectedState(selected))
     }
 
     override fun onUserIconClicked(user: TweetingUser) {
-        navigator.postEvent(TimelineEvent.UserIconClicked(user))
+        eventDispatcher.postEvent(TimelineEvent.UserIconClicked(user))
     }
 
     override fun onMediaItemClicked(
@@ -108,7 +108,7 @@ class TimelineViewModel(
         item: Tweet,
         index: Int
     ) {
-        navigator.postEvent(
+        eventDispatcher.postEvent(
             TimelineEvent.MediaItemClicked(
                 item.id,
                 index,
@@ -128,7 +128,7 @@ interface TimelineViewModelModule {
         @Provides
         fun provideTimelineViewModel(
             owner: ListOwner<*>,
-            navigator: NavigationDispatcher,
+            eventDispatcher: EventDispatcher,
             viewStateModel: FragmentContainerViewStateModel,
             localListDataSourceProvider: LocalListDataSourceProvider,
             remoteListDataSourceProvider: RemoteListDataSourceProvider,
@@ -148,7 +148,13 @@ interface TimelineViewModelModule {
                     repository,
                     executor
                 )
-            return TimelineViewModel(o, navigator, viewStateModel, repository, pagedListProvider)
+            return TimelineViewModel(
+                o,
+                eventDispatcher,
+                viewStateModel,
+                repository,
+                pagedListProvider
+            )
         }
 
         @Provides

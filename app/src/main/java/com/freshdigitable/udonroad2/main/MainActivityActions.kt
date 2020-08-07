@@ -22,7 +22,7 @@ import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.app.di.ActivityScope
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.CommonEvent
-import com.freshdigitable.udonroad2.model.app.navigation.NavigationDispatcher
+import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.filterByType
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
@@ -34,8 +34,8 @@ import timber.log.Timber
 import javax.inject.Inject
 
 @ActivityScope
-class MainActivityAction @Inject constructor(
-    val dispatcher: NavigationDispatcher,
+class MainActivityActions @Inject constructor(
+    val dispatcher: EventDispatcher,
     tokenRepository: OAuthTokenRepository
 ) {
     private val showFirstView: AppAction<out MainNavHostState> = dispatcher.toAction {
