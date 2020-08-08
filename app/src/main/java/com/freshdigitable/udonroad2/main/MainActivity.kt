@@ -32,6 +32,7 @@ import com.freshdigitable.udonroad2.model.app.navigation.CommonEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.oauth.OauthEvent
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
+import com.freshdigitable.udonroad2.timeline.create
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentModule
 import com.freshdigitable.udonroad2.timeline.fragment.TweetDetailFragmentModule
 import dagger.Binds
@@ -129,12 +130,8 @@ class MainViewModel(
         Timber.tag("MainViewModel").d("onFabSelected: $item")
         val selected =
             requireNotNull(viewStates.current?.selectedItem) { "selectedItem should not be null." }
-        when (item.itemId) {
-            com.freshdigitable.udonroad2.timeline.R.id.iffabMenu_main_detail -> {
-                eventDispatcher.postEvent(
-                    TimelineEvent.TweetDetailRequested(selected.quoteId ?: selected.originalId)
-                )
-            }
+        TimelineEvent.SelectedItemShortcut.create(item, selected).forEach {
+            eventDispatcher.postEvent(it)
         }
     }
 

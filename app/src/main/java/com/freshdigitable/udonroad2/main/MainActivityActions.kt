@@ -100,9 +100,9 @@ class MainActivityActions @Inject constructor(
         filterByType<TweetItemSelection.Toggle>()
     }
 
-    private val showTweetDetail: AppAction<TimelineEvent.TweetDetailRequested> =
+    private val showTweetDetail: AppAction<TimelineEvent.SelectedItemShortcut.TweetDetail> =
         dispatcher.toAction {
-            filterByType<TimelineEvent.TweetDetailRequested>()
+            filterByType<TimelineEvent.SelectedItemShortcut.TweetDetail>()
         }
 
     val rollbackViewState: AppAction<CommonEvent.Back> = backDispatched.filterByType()
