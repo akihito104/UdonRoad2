@@ -37,6 +37,7 @@ import io.mockk.verify
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
+import org.junit.rules.TestRule
 import org.junit.rules.TestWatcher
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
@@ -98,15 +99,10 @@ class MainActivityViewStatesTest {
         }
 }
 
-class MainActivityStateModelTestRule : TestWatcher() {
-    private val dispatcher = EventDispatcher()
-    private val tokenRepository = mockk<OAuthTokenRepository>()
-    val mockVerified = MockVerified(listOf(tokenRepository))
-    val sut = MainActivityViewStates(
-        MainActivityActions(dispatcher, tokenRepository),
-        SelectedItemRepository()
-    )
-
+class OAuthTokenRepositoryRule(
+    val tokenRepository: OAuthTokenRepository = mockk(),
+    private val mockVerified: MockVerified = MockVerified(listOf(tokenRepository))
+) : TestRule by mockVerified {
     fun setupCurrentUserId(userId: Long?) {
         val id = UserId.create(userId)
         every { tokenRepository.getCurrentUserId() } returns id
@@ -116,9 +112,22 @@ class MainActivityStateModelTestRule : TestWatcher() {
             mockVerified.expected { verify { tokenRepository.login(id) } }
         }
     }
+}
+
+class MainActivityStateModelTestRule : TestWatcher() {
+    private val dispatcher = EventDispatcher()
+    private val oauthTokenRepositoryMock = OAuthTokenRepositoryRule()
+    val sut = MainActivityViewStates(
+        MainActivityActions(dispatcher, oauthTokenRepositoryMock.tokenRepository),
+        SelectedItemRepository()
+    )
+
+    fun setupCurrentUserId(userId: Long?) {
+        oauthTokenRepositoryMock.setupCurrentUserId(userId)
+    }
 
     fun dispatchEvents(vararg events: NavigationEvent) {
-        events.forEach(dispatcher::postEvent)
+        dispatcher.postEvents(*events)
     }
 
     override fun starting(description: Description?) {
@@ -131,7 +140,11 @@ class MainActivityStateModelTestRule : TestWatcher() {
 
     override fun apply(base: Statement?, description: Description?): Statement {
         return RuleChain.outerRule(InstantTaskExecutorRule())
-            .around(mockVerified)
+            .around(oauthTokenRepositoryMock)
             .apply(super.apply(base, description), description)
     }
+}
+
+fun EventDispatcher.postEvents(vararg events: NavigationEvent) {
+    events.forEach(this::postEvent)
 }
