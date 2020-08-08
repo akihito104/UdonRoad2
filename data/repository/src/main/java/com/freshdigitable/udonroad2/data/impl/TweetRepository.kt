@@ -5,6 +5,8 @@ import androidx.lifecycle.MediatorLiveData
 import com.freshdigitable.udonroad2.data.db.DaoModule
 import com.freshdigitable.udonroad2.data.db.dao.TweetDao
 import com.freshdigitable.udonroad2.data.restclient.TweetApiClient
+import com.freshdigitable.udonroad2.model.app.navigation.AppAction
+import com.freshdigitable.udonroad2.model.tweet.TweetEntity
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import dagger.Module
@@ -31,6 +33,26 @@ class TweetRepository @Inject constructor(
         executor.launchIO {
             val tweet = restClient.fetchTweet(id)
             dao.addTweet(tweet)
+        }
+    }
+
+    fun postLike(id: TweetId): AppAction<TweetEntity> {
+        return AppAction.create {
+            executor.launchIO {
+                val liked = restClient.postLike(id)
+                dao.addTweet(liked)
+                it.onNext(liked)
+            }
+        }
+    }
+
+    fun postRetweet(id: TweetId): AppAction<TweetEntity> {
+        return AppAction.create {
+            executor.launchIO {
+                val retweeted = restClient.postRetweet(id)
+                dao.addTweet(retweeted)
+                it.onNext(retweeted)
+            }
         }
     }
 }

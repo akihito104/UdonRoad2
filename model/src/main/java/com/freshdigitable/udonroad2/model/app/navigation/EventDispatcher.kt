@@ -5,7 +5,6 @@ import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.toLiveData
 import com.freshdigitable.udonroad2.model.app.di.ActivityScope
 import io.reactivex.BackpressureStrategy
-import io.reactivex.Flowable
 import io.reactivex.Observable
 import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.PublishSubject
@@ -44,10 +43,6 @@ inline fun <T, reified E> AppAction<T>.toViewState(
         .distinctUntilChanged()
 }
 
-inline fun <reified T> Observable<NavigationEvent>.filterByType(): Observable<T> {
-    return this.filter { it is T }.cast(T::class.java)
-}
-
-inline fun <reified T> Flowable<NavigationEvent>.filterByType(): Flowable<T> {
+inline fun <reified T> AppAction<out NavigationEvent>.filterByType(): AppAction<T> {
     return this.filter { it is T }.cast(T::class.java)
 }

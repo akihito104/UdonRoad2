@@ -28,8 +28,10 @@ import androidx.lifecycle.ViewModelStoreOwner
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.databinding.ActivityMainBinding
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
+import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.CommonEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
+import com.freshdigitable.udonroad2.model.tweet.TweetEntity
 import com.freshdigitable.udonroad2.oauth.OauthEvent
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.create
@@ -43,6 +45,7 @@ import dagger.android.AndroidInjector
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasAndroidInjector
 import dagger.multibindings.IntoMap
+import io.reactivex.disposables.CompositeDisposable
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -53,6 +56,7 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
     @Inject
     lateinit var viewModelProvider: ViewModelProvider
     private val viewModel: MainViewModel by lazy { viewModelProvider[MainViewModel::class.java] }
+    private val compositeDisposable = CompositeDisposable()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
@@ -83,6 +87,12 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
             }
             return@setNavigationItemSelectedListener event != null
         }
+
+        compositeDisposable.add(
+            viewModel.feedbackMessage.subscribe {
+                Timber.tag("MainActivity").d("feedbackMessage: $it")
+            }
+        )
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -96,6 +106,11 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
 
     override fun onSupportNavigateUp(): Boolean {
         return navigation.onSupportNavigateUp() || super.onSupportNavigateUp()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        compositeDisposable.clear()
     }
 
     @Inject
@@ -138,6 +153,8 @@ class MainViewModel(
     fun onBackPressed() {
         eventDispatcher.postEvent(CommonEvent.Back(viewStates.current))
     }
+
+    val feedbackMessage: AppAction<TweetEntity> = viewStates.updateTweet
 
     val currentState: MainActivityViewState?
         get() = viewStates.current

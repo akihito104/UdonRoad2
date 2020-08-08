@@ -19,11 +19,14 @@ package com.freshdigitable.udonroad2.main
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
 import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
+import com.freshdigitable.udonroad2.data.impl.TweetRepository
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
+import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
+import com.freshdigitable.udonroad2.model.tweet.TweetEntity
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.user.UserId
 import com.freshdigitable.udonroad2.test.MockVerified
@@ -97,6 +100,56 @@ class MainActivityViewStatesTest {
             // verify
             assertThat(sut.selectedItemId.value?.originalId).isEqualTo(TweetId(1000L))
         }
+
+    @Test
+    fun updateTweet_dispatchLikeEvent_then_likeDispatched(): Unit = with(rule) {
+        // setup
+        setupCurrentUserId(10000)
+        val liked: TweetEntity = mockk()
+        every { tweetRepository.postLike(TweetId(200)) } returns AppAction.just(liked)
+        val updateTweetObserver = sut.updateTweet.test()
+
+        // exercise
+        dispatchEvents(
+            TimelineEvent.Setup(),
+            TimelineEvent.TweetItemSelection.Selected(
+                SelectedItemId(
+                    ListOwner(0, QueryType.TweetQueryType.Timeline()), TweetId(200)
+                )
+            ),
+            TimelineEvent.SelectedItemShortcut.Like(TweetId(200))
+        )
+
+        // verify
+        assertThat(sut.isFabVisible.value).isTrue()
+        assertThat(sut.selectedItemId.value?.originalId).isEqualTo(TweetId(200L))
+        updateTweetObserver.assertValueAt(0) { it == liked }
+    }
+
+    @Test
+    fun updateTweet_dispatchRetweetEvent_then_retweetDispatched(): Unit = with(rule) {
+        // setup
+        setupCurrentUserId(10000)
+        val retweeted: TweetEntity = mockk()
+        every { tweetRepository.postRetweet(TweetId(200)) } returns AppAction.just(retweeted)
+        val updateTweetObserver = sut.updateTweet.test()
+
+        // exercise
+        dispatchEvents(
+            TimelineEvent.Setup(),
+            TimelineEvent.TweetItemSelection.Selected(
+                SelectedItemId(
+                    ListOwner(0, QueryType.TweetQueryType.Timeline()), TweetId(200)
+                )
+            ),
+            TimelineEvent.SelectedItemShortcut.Retweet(TweetId(200))
+        )
+
+        // verify
+        assertThat(sut.isFabVisible.value).isTrue()
+        assertThat(sut.selectedItemId.value?.originalId).isEqualTo(TweetId(200L))
+        updateTweetObserver.assertValueAt(0) { it == retweeted }
+    }
 }
 
 class OAuthTokenRepositoryRule(
@@ -117,9 +170,11 @@ class OAuthTokenRepositoryRule(
 class MainActivityStateModelTestRule : TestWatcher() {
     private val dispatcher = EventDispatcher()
     private val oauthTokenRepositoryMock = OAuthTokenRepositoryRule()
+    val tweetRepository: TweetRepository = mockk()
     val sut = MainActivityViewStates(
         MainActivityActions(dispatcher, oauthTokenRepositoryMock.tokenRepository),
-        SelectedItemRepository()
+        SelectedItemRepository(),
+        tweetRepository
     )
 
     fun setupCurrentUserId(userId: Long?) {

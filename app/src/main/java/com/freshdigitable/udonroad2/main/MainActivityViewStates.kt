@@ -19,13 +19,17 @@ package com.freshdigitable.udonroad2.main
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.map
 import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
+import com.freshdigitable.udonroad2.data.impl.TweetRepository
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.app.di.ActivityScope
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.AppViewState
 import com.freshdigitable.udonroad2.model.app.navigation.StateHolder
 import com.freshdigitable.udonroad2.model.app.navigation.ViewState
+import com.freshdigitable.udonroad2.model.app.navigation.filterByType
 import com.freshdigitable.udonroad2.model.app.navigation.toViewState
+import com.freshdigitable.udonroad2.model.tweet.TweetEntity
+import com.freshdigitable.udonroad2.timeline.TimelineEvent.SelectedItemShortcut
 import com.freshdigitable.udonroad2.timeline.viewmodel.FragmentContainerViewStateModel
 import java.io.Serializable
 import javax.inject.Inject
@@ -33,7 +37,8 @@ import javax.inject.Inject
 @ActivityScope
 class MainActivityViewStates @Inject constructor(
     actions: MainActivityActions,
-    selectedItemRepository: SelectedItemRepository
+    selectedItemRepository: SelectedItemRepository,
+    tweetRepository: TweetRepository
 ) : FragmentContainerViewStateModel {
 
     private val selectedItemHolder: AppViewState<StateHolder<SelectedItemId>> = AppAction.merge(
@@ -73,6 +78,15 @@ class MainActivityViewStates @Inject constructor(
                 fabVisible = isFabVisible.value ?: false
             )
         }
+
+    val updateTweet: AppAction<TweetEntity> = AppAction.merge(
+        actions.updateTweet.filterByType<SelectedItemShortcut.Like>().flatMap {
+            tweetRepository.postLike(it.tweetId)
+        },
+        actions.updateTweet.filterByType<SelectedItemShortcut.Retweet>().flatMap {
+            tweetRepository.postRetweet(it.tweetId)
+        }
+    )
 }
 
 data class MainActivityViewState(
