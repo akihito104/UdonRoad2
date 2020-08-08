@@ -121,4 +121,66 @@ class MainActivityActionsTest {
             it.assertValueCount(1)
         }
     }
+
+    @Test
+    fun updateTweet_dispatchLikeEvent_then_LikeEventDispatched() {
+        // setup
+        val test = sut.updateTweet.test()
+
+        // exercise
+        eventDispatcher.postEvents(
+            TimelineEvent.SelectedItemShortcut.Like(TweetId(1000))
+        )
+
+        // verify
+        test.assertNotComplete()
+        test.assertValueCount(1)
+        test.assertValueAt(0) {
+            it is TimelineEvent.SelectedItemShortcut.Like &&
+                it.tweetId == TweetId(1000)
+        }
+    }
+
+    @Test
+    fun updateTweet_dispatchRetweetEvent_then_RetweetEventDispatched() {
+        // setup
+        val test = sut.updateTweet.test()
+
+        // exercise
+        eventDispatcher.postEvents(
+            TimelineEvent.SelectedItemShortcut.Retweet(TweetId(1000))
+        )
+
+        // verify
+        test.assertNotComplete()
+        test.assertValueCount(1)
+        test.assertValueAt(0) {
+            it is TimelineEvent.SelectedItemShortcut.Retweet &&
+                it.tweetId == TweetId(1000)
+        }
+    }
+
+    @Test
+    fun updateTweet_dispatchLikeAndRetweetEvent_then_2EventsDispatched() {
+        // setup
+        val test = sut.updateTweet.test()
+
+        // exercise
+        eventDispatcher.postEvents(
+            TimelineEvent.SelectedItemShortcut.Like(TweetId(1000)),
+            TimelineEvent.SelectedItemShortcut.Retweet(TweetId(1000))
+        )
+
+        // verify
+        test.assertNotComplete()
+        test.assertValueCount(2)
+        test.assertValueAt(0) {
+            it is TimelineEvent.SelectedItemShortcut.Like &&
+                it.tweetId == TweetId(1000)
+        }
+        test.assertValueAt(1) {
+            it is TimelineEvent.SelectedItemShortcut.Retweet &&
+                it.tweetId == TweetId(1000)
+        }
+    }
 }

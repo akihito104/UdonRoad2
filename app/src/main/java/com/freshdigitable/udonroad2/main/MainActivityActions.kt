@@ -104,6 +104,12 @@ class MainActivityActions @Inject constructor(
         dispatcher.toAction {
             filterByType<TimelineEvent.SelectedItemShortcut.TweetDetail>()
         }
+    val updateTweet: AppAction<out TimelineEvent.SelectedItemShortcut> = dispatcher.toAction {
+        AppAction.merge(
+            filterByType<TimelineEvent.SelectedItemShortcut.Like>(),
+            filterByType<TimelineEvent.SelectedItemShortcut.Retweet>()
+        )
+    }
 
     val rollbackViewState: AppAction<CommonEvent.Back> = backDispatched.filterByType()
 
