@@ -23,7 +23,9 @@ import com.freshdigitable.udonroad2.data.impl.TweetRepository
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.app.di.ActivityScope
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
+import com.freshdigitable.udonroad2.model.app.navigation.AppResult
 import com.freshdigitable.udonroad2.model.app.navigation.AppViewState
+import com.freshdigitable.udonroad2.model.app.navigation.EventResult
 import com.freshdigitable.udonroad2.model.app.navigation.StateHolder
 import com.freshdigitable.udonroad2.model.app.navigation.ViewState
 import com.freshdigitable.udonroad2.model.app.navigation.filterByType
@@ -79,12 +81,14 @@ class MainActivityViewStates @Inject constructor(
             )
         }
 
-    val updateTweet: AppAction<TweetEntity> = AppAction.merge(
-        actions.updateTweet.filterByType<SelectedItemShortcut.Like>().flatMap {
-            tweetRepository.postLike(it.tweetId)
+    val updateTweet: AppResult<TweetEntity> = AppAction.merge(
+        actions.updateTweet.filterByType<SelectedItemShortcut.Like>().flatMap { event ->
+            tweetRepository.postLike(event.tweetId).map { EventResult(event, it) }
         },
-        actions.updateTweet.filterByType<SelectedItemShortcut.Retweet>().flatMap {
-            tweetRepository.postRetweet(it.tweetId)
+        actions.updateTweet.filterByType<SelectedItemShortcut.Retweet>().flatMap { event ->
+            tweetRepository.postRetweet(event.tweetId).map {
+                EventResult.success(event, it)
+            }
         }
     )
 }

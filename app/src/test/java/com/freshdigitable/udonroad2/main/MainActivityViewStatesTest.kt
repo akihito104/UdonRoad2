@@ -20,6 +20,7 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
 import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
+import com.freshdigitable.udonroad2.data.restclient.AppTwitterException
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
@@ -102,11 +103,11 @@ class MainActivityViewStatesTest {
         }
 
     @Test
-    fun updateTweet_dispatchLikeEvent_then_likeDispatched(): Unit = with(rule) {
+    fun updateTweet_dispatchLikeIsSuccessed_then_likeDispatched(): Unit = with(rule) {
         // setup
         setupCurrentUserId(10000)
         val liked: TweetEntity = mockk()
-        every { tweetRepository.postLike(TweetId(200)) } returns AppAction.just(liked)
+        every { tweetRepository.postLike(TweetId(200)) } returns AppAction.just(Result.success(liked))
         val updateTweetObserver = sut.updateTweet.test()
 
         // exercise
@@ -123,7 +124,42 @@ class MainActivityViewStatesTest {
         // verify
         assertThat(sut.isFabVisible.value).isTrue()
         assertThat(sut.selectedItemId.value?.originalId).isEqualTo(TweetId(200L))
-        updateTweetObserver.assertValueAt(0) { it == liked }
+        updateTweetObserver.assertValueCount(1)
+        updateTweetObserver.assertValueAt(0) { it.value == liked }
+    }
+
+    @Test
+    fun updateTweet_dispatchLikeIsFailure_then_likeDispatchedWithError(): Unit = with(rule) {
+        // setup
+        setupCurrentUserId(10000)
+        every { tweetRepository.postLike(TweetId(200)) } returns AppAction.just(
+            Result.failure(
+                mockk<AppTwitterException>().apply {
+                    every { statusCode } returns 403
+                    every { errorCode } returns 139
+                }
+            )
+        )
+        val updateTweetObserver = sut.updateTweet.test()
+
+        // exercise
+        dispatchEvents(
+            TimelineEvent.Setup(),
+            TimelineEvent.TweetItemSelection.Selected(
+                SelectedItemId(
+                    ListOwner(0, QueryType.TweetQueryType.Timeline()), TweetId(200)
+                )
+            ),
+            TimelineEvent.SelectedItemShortcut.Like(TweetId(200))
+        )
+
+        // verify
+        assertThat(sut.isFabVisible.value).isTrue()
+        assertThat(sut.selectedItemId.value?.originalId).isEqualTo(TweetId(200L))
+        updateTweetObserver.assertValueCount(1)
+        updateTweetObserver.assertValueAt(0) {
+            it.event is TimelineEvent.SelectedItemShortcut.Like && it.value == null
+        }
     }
 
     @Test
@@ -148,7 +184,8 @@ class MainActivityViewStatesTest {
         // verify
         assertThat(sut.isFabVisible.value).isTrue()
         assertThat(sut.selectedItemId.value?.originalId).isEqualTo(TweetId(200L))
-        updateTweetObserver.assertValueAt(0) { it == retweeted }
+        updateTweetObserver.assertValueCount(1)
+        updateTweetObserver.assertValueAt(0) { it.value == retweeted }
     }
 }
 

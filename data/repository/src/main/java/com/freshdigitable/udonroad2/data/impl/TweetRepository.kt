@@ -4,6 +4,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import com.freshdigitable.udonroad2.data.db.DaoModule
 import com.freshdigitable.udonroad2.data.db.dao.TweetDao
+import com.freshdigitable.udonroad2.data.restclient.AppTwitterException
+import com.freshdigitable.udonroad2.data.restclient.AppTwitterException.Companion.isAlreadyLiked
 import com.freshdigitable.udonroad2.data.restclient.TweetApiClient
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
@@ -36,12 +38,21 @@ class TweetRepository @Inject constructor(
         }
     }
 
-    fun postLike(id: TweetId): AppAction<TweetEntity> {
+    fun postLike(id: TweetId): AppAction<Result<TweetEntity>> {
         return AppAction.create {
             executor.launchIO {
-                val liked = restClient.postLike(id)
-                dao.addTweet(liked)
-                it.onNext(liked)
+                try {
+                    val liked = restClient.postLike(id)
+                    dao.addTweet(liked)
+                    it.onNext(Result.success(liked))
+                } catch (ex: AppTwitterException) {
+                    if (ex.isAlreadyLiked) {
+                        // TODO: update liked status
+                        it.onNext(Result.failure(ex))
+                    } else {
+                        it.onError(ex)
+                    }
+                }
             }
         }
     }

@@ -28,7 +28,7 @@ import androidx.lifecycle.ViewModelStoreOwner
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.databinding.ActivityMainBinding
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
-import com.freshdigitable.udonroad2.model.app.navigation.AppAction
+import com.freshdigitable.udonroad2.model.app.navigation.AppResult
 import com.freshdigitable.udonroad2.model.app.navigation.CommonEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
@@ -154,7 +154,7 @@ class MainViewModel(
         eventDispatcher.postEvent(CommonEvent.Back(viewStates.current))
     }
 
-    val feedbackMessage: AppAction<TweetEntity> = viewStates.updateTweet
+    val feedbackMessage: AppResult<TweetEntity> = viewStates.updateTweet
 
     val currentState: MainActivityViewState?
         get() = viewStates.current
