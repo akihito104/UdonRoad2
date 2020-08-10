@@ -32,11 +32,25 @@ class TweetApiClient @Inject constructor(
 class AppTwitterException constructor(exception: TwitterException) : Exception(exception) {
     val statusCode: Int = exception.statusCode
     val errorCode: Int = exception.errorCode
+    val errorType: ErrorType? = findByCode(statusCode, errorCode)
     val exceptionCode: String = exception.exceptionCode
 
     companion object {
+        private const val STATUS_FORBIDDEN: Int = 403
+
+        private fun findByCode(statusCode: Int, errorCode: Int): ErrorType? {
+            return ErrorType.values().first {
+                it.statusCode == statusCode && it.errorCode == errorCode
+            }
+        }
+    }
+
+    enum class ErrorType(
+        val statusCode: Int,
+        val errorCode: Int
+    ) {
         // https://developer.twitter.com/ja/docs/basics/response-codes
-        val AppTwitterException.isAlreadyLiked: Boolean
-            get() = statusCode == 403 && errorCode == 139
+        ALREADY_FAVORITED(STATUS_FORBIDDEN, 139),
+        ALREADY_RETWEETED(STATUS_FORBIDDEN, 327),
     }
 }

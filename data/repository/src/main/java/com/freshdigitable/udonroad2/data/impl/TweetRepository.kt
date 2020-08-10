@@ -5,7 +5,6 @@ import androidx.lifecycle.MediatorLiveData
 import com.freshdigitable.udonroad2.data.db.DaoModule
 import com.freshdigitable.udonroad2.data.db.dao.TweetDao
 import com.freshdigitable.udonroad2.data.restclient.AppTwitterException
-import com.freshdigitable.udonroad2.data.restclient.AppTwitterException.Companion.isAlreadyLiked
 import com.freshdigitable.udonroad2.data.restclient.TweetApiClient
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
@@ -46,7 +45,7 @@ class TweetRepository @Inject constructor(
                     dao.addTweet(liked)
                     it.onNext(Result.success(liked))
                 } catch (ex: AppTwitterException) {
-                    if (ex.isAlreadyLiked) {
+                    if (ex.errorType == AppTwitterException.ErrorType.ALREADY_FAVORITED) {
                         dao.updateFav(id, true)
                         it.onNext(Result.failure(ex))
                     } else {
@@ -65,7 +64,7 @@ class TweetRepository @Inject constructor(
                     dao.addTweet(retweeted)
                     it.onNext(Result.success(retweeted))
                 } catch (ex: AppTwitterException) {
-                    if (ex.statusCode == 403 && ex.errorCode == 327) {
+                    if (ex.errorType == AppTwitterException.ErrorType.ALREADY_RETWEETED) {
                         dao.updateRetweeted(id, true)
                         it.onNext(Result.failure(ex))
                     } else {
