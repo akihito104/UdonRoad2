@@ -25,6 +25,10 @@ class TweetApiClient @Inject constructor(
     }
 
     suspend fun postRetweet(id: TweetId): TweetEntity = withContext(Dispatchers.IO) {
-        twitter.retweetStatus(id.value).toEntity()
+        try {
+            twitter.retweetStatus(id.value).toEntity()
+        } catch (ex: TwitterException) {
+            throw AppTwitterException(ex)
+        }
     }
 }
