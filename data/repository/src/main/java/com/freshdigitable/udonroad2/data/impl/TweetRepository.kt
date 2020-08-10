@@ -47,7 +47,7 @@ class TweetRepository @Inject constructor(
                     it.onNext(Result.success(liked))
                 } catch (ex: AppTwitterException) {
                     if (ex.isAlreadyLiked) {
-                        // TODO: update liked status
+                        dao.updateFav(id, true)
                         it.onNext(Result.failure(ex))
                     } else {
                         it.onError(ex)

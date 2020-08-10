@@ -70,6 +70,9 @@ abstract class TweetDao(
         addTweets(listOf(tweet), owner)
     }
 
+    @Query("UPDATE tweet SET is_favorited = :isFavorited WHERE id = :tweetId")
+    abstract suspend fun updateFav(tweetId: TweetId, isFavorited: Boolean)
+
     @Transaction
     internal open suspend fun addTweets(
         tweet: List<TweetEntity>,
