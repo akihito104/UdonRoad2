@@ -103,7 +103,7 @@ class MainActivityViewStatesTest {
         }
 
     @Test
-    fun updateTweet_dispatchLikeIsSuccessed_then_likeDispatched(): Unit = with(rule) {
+    fun updateTweet_dispatchLikeIsSuccess_then_likeDispatched(): Unit = with(rule) {
         // setup
         setupCurrentUserId(10000)
         val liked: TweetEntity = mockk()
@@ -167,7 +167,11 @@ class MainActivityViewStatesTest {
         // setup
         setupCurrentUserId(10000)
         val retweeted: TweetEntity = mockk()
-        every { tweetRepository.postRetweet(TweetId(200)) } returns AppAction.just(retweeted)
+        every { tweetRepository.postRetweet(TweetId(200)) } returns AppAction.just(
+            Result.success(
+                retweeted
+            )
+        )
         val updateTweetObserver = sut.updateTweet.test()
 
         // exercise
@@ -185,8 +189,45 @@ class MainActivityViewStatesTest {
         assertThat(sut.isFabVisible.value).isTrue()
         assertThat(sut.selectedItemId.value?.originalId).isEqualTo(TweetId(200L))
         updateTweetObserver.assertValueCount(1)
-        updateTweetObserver.assertValueAt(0) { it.value == retweeted }
+        updateTweetObserver.assertValueAt(0) {
+            it.event is TimelineEvent.SelectedItemShortcut.Retweet && it.value == retweeted
+        }
     }
+
+    @Test
+    fun updateTweet_dispatchRetweetIsFailure_then_retweetResultIsDispatchedWithException(): Unit =
+        with(rule) {
+            // setup
+            setupCurrentUserId(10000)
+            every { tweetRepository.postRetweet(TweetId(200)) } returns AppAction.just(
+                Result.failure(
+                    mockk<AppTwitterException>().apply {
+                        every { statusCode } returns 403
+                        every { errorCode } returns 327
+                    }
+                )
+            )
+            val updateTweetObserver = sut.updateTweet.test()
+
+            // exercise
+            dispatchEvents(
+                TimelineEvent.Setup(),
+                TimelineEvent.TweetItemSelection.Selected(
+                    SelectedItemId(
+                        ListOwner(0, QueryType.TweetQueryType.Timeline()), TweetId(200)
+                    )
+                ),
+                TimelineEvent.SelectedItemShortcut.Retweet(TweetId(200))
+            )
+
+            // verify
+            assertThat(sut.isFabVisible.value).isTrue()
+            assertThat(sut.selectedItemId.value?.originalId).isEqualTo(TweetId(200L))
+            updateTweetObserver.assertValueCount(1)
+            updateTweetObserver.assertValueAt(0) {
+                it.event is TimelineEvent.SelectedItemShortcut.Retweet && it.value == null
+            }
+        }
 }
 
 class OAuthTokenRepositoryRule(

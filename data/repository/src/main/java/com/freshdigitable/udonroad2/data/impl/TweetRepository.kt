@@ -57,12 +57,21 @@ class TweetRepository @Inject constructor(
         }
     }
 
-    fun postRetweet(id: TweetId): AppAction<TweetEntity> {
+    fun postRetweet(id: TweetId): AppAction<Result<TweetEntity>> {
         return AppAction.create {
             executor.launchIO {
-                val retweeted = restClient.postRetweet(id)
-                dao.addTweet(retweeted)
-                it.onNext(retweeted)
+                try {
+                    val retweeted = restClient.postRetweet(id)
+                    dao.addTweet(retweeted)
+                    it.onNext(Result.success(retweeted))
+                } catch (ex: AppTwitterException) {
+                    if (ex.statusCode == 403 && ex.errorCode == 327) {
+                        dao.updateRetweeted(id, true)
+                        it.onNext(Result.failure(ex))
+                    } else {
+                        it.onError(ex)
+                    }
+                }
             }
         }
     }

@@ -86,9 +86,7 @@ class MainActivityViewStates @Inject constructor(
             tweetRepository.postLike(event.tweetId).map { EventResult(event, it) }
         },
         actions.updateTweet.filterByType<SelectedItemShortcut.Retweet>().flatMap { event ->
-            tweetRepository.postRetweet(event.tweetId).map {
-                EventResult.success(event, it)
-            }
+            tweetRepository.postRetweet(event.tweetId).map { EventResult(event, it) }
         }
     )
 }
