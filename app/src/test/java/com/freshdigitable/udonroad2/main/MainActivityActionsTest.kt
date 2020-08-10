@@ -22,28 +22,26 @@ import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.tweet.TweetId
-import com.freshdigitable.udonroad2.model.user.UserId
 import com.freshdigitable.udonroad2.oauth.OauthEvent
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
-import io.mockk.every
-import io.mockk.just
-import io.mockk.mockk
-import io.mockk.runs
+import org.junit.Rule
 import org.junit.Test
 
 class MainActivityActionsTest {
-    private val navigationDispatcher = EventDispatcher()
-    private val tokenRepository: OAuthTokenRepository = mockk()
-    private val mainActivityAction = MainActivityActions(navigationDispatcher, tokenRepository)
+    @get:Rule
+    val rule = OAuthTokenRepositoryRule()
+    private val eventDispatcher = EventDispatcher()
+    private val tokenRepository: OAuthTokenRepository = rule.tokenRepository
+    private val sut = MainActivityActions(eventDispatcher, tokenRepository)
 
     @Test
     fun updateContainer_dispatchSetupEvent_then_flowInitOauthEvent() {
         // setup
-        every { tokenRepository.getCurrentUserId() } returns null
-        val test = mainActivityAction.updateContainer.test()
+        rule.setupCurrentUserId(null)
+        val test = sut.updateContainer.test()
 
         // exercise
-        navigationDispatcher.postEvent(TimelineEvent.Setup())
+        eventDispatcher.postEvent(TimelineEvent.Setup())
 
         // verify
         test.assertOf {
@@ -60,12 +58,11 @@ class MainActivityActionsTest {
     @Test
     fun updateContainer_dispatchSetupEvent_then_TimelineQueryIsFlowing() {
         // setup
-        every { tokenRepository.getCurrentUserId() } returns UserId(10000)
-        every { tokenRepository.login(UserId(10000)) } just runs
-        val test = mainActivityAction.updateContainer.test()
+        rule.setupCurrentUserId(10000)
+        val test = sut.updateContainer.test()
 
         // exercise
-        navigationDispatcher.postEvent(TimelineEvent.Setup())
+        eventDispatcher.postEvent(TimelineEvent.Setup())
 
         // verify
         test.assertOf {
@@ -82,12 +79,11 @@ class MainActivityActionsTest {
     @Test
     fun updateContainer_dispatchOauthSucceededEvent_then_InitTimelineEventIsFlowing() {
         // setup
-        every { tokenRepository.getCurrentUserId() } returns UserId(10000)
-        every { tokenRepository.login(UserId(10000)) } just runs
-        val test = mainActivityAction.updateContainer.test()
+        rule.setupCurrentUserId(10000)
+        val test = sut.updateContainer.test()
 
         // exercise
-        navigationDispatcher.postEvent(OauthEvent.OauthSucceeded)
+        eventDispatcher.postEvent(OauthEvent.OauthSucceeded)
 
         // verify
         test.assertOf {
@@ -103,13 +99,12 @@ class MainActivityActionsTest {
 
     @Test
     fun dispatch2Events() {
-        every { tokenRepository.getCurrentUserId() } returns UserId(10000)
-        every { tokenRepository.login(UserId(10000)) } just runs
-        val testShowFirstView = mainActivityAction.updateContainer.test()
-        val testToggleSelectedItem = mainActivityAction.toggleItem.test()
+        rule.setupCurrentUserId(10000)
+        val testShowFirstView = sut.updateContainer.test()
+        val testToggleSelectedItem = sut.toggleItem.test()
 
-        navigationDispatcher.postEvent(TimelineEvent.Setup())
-        navigationDispatcher.postEvent(
+        eventDispatcher.postEvents(
+            TimelineEvent.Setup(),
             TimelineEvent.TweetItemSelection.Toggle(
                 SelectedItemId(
                     ListOwner(0, QueryType.TweetQueryType.Timeline()), TweetId(100)
@@ -124,6 +119,68 @@ class MainActivityActionsTest {
         testToggleSelectedItem.assertOf {
             it.assertNotComplete()
             it.assertValueCount(1)
+        }
+    }
+
+    @Test
+    fun updateTweet_dispatchLikeEvent_then_LikeEventDispatched() {
+        // setup
+        val test = sut.updateTweet.test()
+
+        // exercise
+        eventDispatcher.postEvents(
+            TimelineEvent.SelectedItemShortcut.Like(TweetId(1000))
+        )
+
+        // verify
+        test.assertNotComplete()
+        test.assertValueCount(1)
+        test.assertValueAt(0) {
+            it is TimelineEvent.SelectedItemShortcut.Like &&
+                it.tweetId == TweetId(1000)
+        }
+    }
+
+    @Test
+    fun updateTweet_dispatchRetweetEvent_then_RetweetEventDispatched() {
+        // setup
+        val test = sut.updateTweet.test()
+
+        // exercise
+        eventDispatcher.postEvents(
+            TimelineEvent.SelectedItemShortcut.Retweet(TweetId(1000))
+        )
+
+        // verify
+        test.assertNotComplete()
+        test.assertValueCount(1)
+        test.assertValueAt(0) {
+            it is TimelineEvent.SelectedItemShortcut.Retweet &&
+                it.tweetId == TweetId(1000)
+        }
+    }
+
+    @Test
+    fun updateTweet_dispatchLikeAndRetweetEvent_then_2EventsDispatched() {
+        // setup
+        val test = sut.updateTweet.test()
+
+        // exercise
+        eventDispatcher.postEvents(
+            TimelineEvent.SelectedItemShortcut.Like(TweetId(1000)),
+            TimelineEvent.SelectedItemShortcut.Retweet(TweetId(1000))
+        )
+
+        // verify
+        test.assertNotComplete()
+        test.assertValueCount(2)
+        test.assertValueAt(0) {
+            it is TimelineEvent.SelectedItemShortcut.Like &&
+                it.tweetId == TweetId(1000)
+        }
+        test.assertValueAt(1) {
+            it is TimelineEvent.SelectedItemShortcut.Retweet &&
+                it.tweetId == TweetId(1000)
         }
     }
 }
