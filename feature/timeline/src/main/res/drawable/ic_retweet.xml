@@ -8,6 +8,7 @@
     android:width="25dp"
     android:viewportHeight="72.0"
     android:viewportWidth="75.0"
+    android:tint="@color/selector_retweet"
     >
     <path
         android:fillColor="#000"
