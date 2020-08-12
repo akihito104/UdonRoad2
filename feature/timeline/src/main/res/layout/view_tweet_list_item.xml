@@ -142,6 +142,7 @@
             android:textSize="12sp"
             android:lines="1"
             app:icon="@drawable/ic_retweet"
+            app:activated="@{tweet.body.retweeted}"
             tools:text="100"
             />
 
@@ -157,6 +158,7 @@
             android:textSize="12sp"
             android:lines="1"
             app:icon="@drawable/ic_like"
+            app:activated="@{tweet.body.favorited}"
             tools:text="100"
             />
 

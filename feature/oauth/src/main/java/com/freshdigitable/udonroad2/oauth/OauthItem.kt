@@ -46,5 +46,7 @@ data class OauthTweet(
     override val user: TweetingUser,
     override val source: String,
     override val createdAt: Instant = Instant.now(),
-    override val mediaItems: List<MediaItem> = listOf()
+    override val mediaItems: List<MediaItem> = listOf(),
+    override val isRetweeted: Boolean = false,
+    override val isFavorited: Boolean = false
 ) : Tweet

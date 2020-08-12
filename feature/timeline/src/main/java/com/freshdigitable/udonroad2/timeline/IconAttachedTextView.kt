@@ -17,8 +17,7 @@
 package com.freshdigitable.udonroad2.timeline
 
 import android.content.Context
-import android.content.res.ColorStateList
-import android.graphics.drawable.Drawable
+import android.content.res.TypedArray
 import android.util.AttributeSet
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.content.res.getResourceIdOrThrow
@@ -37,19 +36,24 @@ class IconAttachedTextView @JvmOverloads constructor(
         context.obtainStyledAttributes(
             attrs, R.styleable.IconAttachedTextView, defStyleAttr, defStyleRes
         ).use { a ->
-            val iconRes = a.getResourceIdOrThrow(R.styleable.IconAttachedTextView_icon)
-            val icon = AppCompatResources.getDrawable(context, iconRes)
-                ?: a.getDrawable(R.styleable.IconAttachedTextView_icon)
-            val iconColor = a.getColorStateList(R.styleable.IconAttachedTextView_tintIcon)
-            setIcon(icon, iconColor)
+            a.setupIcon()
         }
     }
 
-    private fun setIcon(icon: Drawable?, iconColor: ColorStateList?) {
-        val mutated = icon?.mutate() ?: return
+    private fun TypedArray.setupIcon() {
+        val iconRes = getResourceIdOrThrow(R.styleable.IconAttachedTextView_icon)
+        val icon = AppCompatResources.getDrawable(context, iconRes)
+            ?: getDrawable(R.styleable.IconAttachedTextView_icon) ?: return
+
+        val mutated = icon.mutate()
         val width = icon.intrinsicWidth * lineHeight / icon.intrinsicHeight
         mutated.setBounds(0, 0, width, lineHeight)
-        DrawableCompat.setTintList(mutated, iconColor)
+
+        // only setup context: tintIcon is for override ColorStateList but not null
+        val iconColor = getColorStateList(R.styleable.IconAttachedTextView_tintIcon)
+        if (iconColor != null) {
+            DrawableCompat.setTintList(mutated, iconColor)
+        }
         setCompoundDrawables(mutated, null, null, null)
     }
 }

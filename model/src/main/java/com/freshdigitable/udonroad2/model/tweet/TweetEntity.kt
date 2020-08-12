@@ -28,9 +28,5 @@ interface TweetEntity : Tweet {
 
     val inReplyToTweetId: TweetId?
 
-    val isRetweeted: Boolean
-
-    val isFavorited: Boolean
-
     val possiblySensitive: Boolean
 }

@@ -32,7 +32,7 @@ import org.threeten.bp.Instant
     value =
     """
     SELECT
-     t.id, text, created_at, retweet_count, favorite_count, source,
+     t.id, text, created_at, is_retweeted, retweet_count, is_favorited, favorite_count, source, 
      u.id AS user_id,
      u.name AS user_name,
      u.screen_name AS user_screen_name,
@@ -48,8 +48,14 @@ internal data class TweetDbView(
     @ColumnInfo(name = "text")
     val text: String,
 
+    @ColumnInfo(name = "is_retweeted")
+    val isRetweeted: Boolean,
+
     @ColumnInfo(name = "retweet_count")
     val retweetCount: Int,
+
+    @ColumnInfo(name = "is_favorited")
+    val isFavorited: Boolean,
 
     @ColumnInfo(name = "favorite_count")
     val favoriteCount: Int,
@@ -75,7 +81,13 @@ internal data class Tweet(
     override val text: String = tweet.text
 
     @Ignore
+    override val isRetweeted: Boolean = tweet.isRetweeted
+
+    @Ignore
     override val retweetCount: Int = tweet.retweetCount
+
+    @Ignore
+    override val isFavorited: Boolean = tweet.isFavorited
 
     @Ignore
     override val favoriteCount: Int = tweet.favoriteCount
@@ -115,7 +127,9 @@ internal data class Tweet(
      tweet.id AS qt_id,
      text AS qt_text,
      created_at AS qt_created_at,
+     is_retweeted AS qt_is_retweeted,
      retweet_count AS qt_retweet_count,
+     is_favorited AS qt_is_favorited,
      favorite_count AS qt_favorite_count,
      source AS qt_source,
      u.id AS qt_user_id,
