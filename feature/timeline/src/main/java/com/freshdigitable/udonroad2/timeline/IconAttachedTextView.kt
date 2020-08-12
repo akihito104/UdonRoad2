@@ -31,7 +31,7 @@ class IconAttachedTextView @JvmOverloads constructor(
     attrs: AttributeSet? = null,
     defStyleAttr: Int = R.attr.iconAttachedTextViewStyle,
     defStyleRes: Int = R.style.Widget_IconAttachedTextView
-) : MaterialTextView(context, attrs, defStyleAttr) {
+) : MaterialTextView(context, attrs, defStyleAttr, defStyleRes) {
     init {
         context.obtainStyledAttributes(
             attrs, R.styleable.IconAttachedTextView, defStyleAttr, defStyleRes
