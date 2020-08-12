@@ -25,7 +25,6 @@ import androidx.core.content.res.use
 import androidx.core.graphics.drawable.DrawableCompat
 import com.google.android.material.textview.MaterialTextView
 
-
 class IconAttachedTextView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,

@@ -139,6 +139,7 @@
             android:lines="1"
             app:icon="@drawable/ic_retweet"
             app:activated="@{tweet.quoted.retweeted}"
+            app:retweetIconVisibility="@{tweet.quoted}"
             tools:text="100"
             />
 
@@ -155,6 +156,7 @@
             android:lines="1"
             app:icon="@drawable/ic_like"
             app:activated="@{tweet.quoted.favorited}"
+            app:favIconVisibility="@{tweet.quoted}"
             tools:text="100"
             />
 
