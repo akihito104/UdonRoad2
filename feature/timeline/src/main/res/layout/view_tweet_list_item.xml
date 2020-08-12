@@ -126,7 +126,7 @@
             tools:text="tweet body"
             />
 
-        <TextView
+        <com.freshdigitable.udonroad2.timeline.IconAttachedTextView
             android:id="@+id/tweetItem_retweet"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -138,13 +138,16 @@
             app:layout_constraintEnd_toStartOf="@id/tweetItem_favorite"
             app:layout_constraintHorizontal_bias="0"
             app:layout_constraintHorizontal_chainStyle="packed"
-            android:text="@{`RT:` + tweet.body.retweetCount}"
+            android:text="@{`` + tweet.body.retweetCount}"
             android:textSize="12sp"
             android:lines="1"
-            tools:text="RT:100"
+            app:icon="@drawable/ic_retweet"
+            app:activated="@{tweet.body.retweeted}"
+            app:retweetIconVisibility="@{tweet.body}"
+            tools:text="100"
             />
 
-        <TextView
+        <com.freshdigitable.udonroad2.timeline.IconAttachedTextView
             android:id="@+id/tweetItem_favorite"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -152,10 +155,13 @@
             app:layout_constraintBottom_toBottomOf="@id/tweetItem_via"
             app:layout_constraintStart_toEndOf="@id/tweetItem_retweet"
             app:layout_constraintEnd_toStartOf="@id/tweetItem_via"
-            android:text="@{`fav:` + tweet.body.favoriteCount}"
+            android:text="@{`` + tweet.body.favoriteCount}"
             android:textSize="12sp"
             android:lines="1"
-            tools:text="fav:100"
+            app:icon="@drawable/ic_like"
+            app:activated="@{tweet.body.favorited}"
+            app:favIconVisibility="@{tweet.body}"
+            tools:text="100"
             />
 
         <com.freshdigitable.udonroad2.media.MediaThumbnailContainer

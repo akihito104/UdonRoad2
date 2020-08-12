@@ -45,7 +45,11 @@ interface Tweet {
 
     val text: String
 
+    val isRetweeted: Boolean
+
     val retweetCount: Int
+
+    val isFavorited: Boolean
 
     val favoriteCount: Int
 
