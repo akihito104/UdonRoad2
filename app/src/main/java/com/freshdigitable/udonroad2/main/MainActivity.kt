@@ -28,15 +28,16 @@ import androidx.lifecycle.ViewModelStoreOwner
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.databinding.ActivityMainBinding
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
-import com.freshdigitable.udonroad2.model.app.navigation.AppResult
+import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.CommonEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
-import com.freshdigitable.udonroad2.model.tweet.TweetEntity
+import com.freshdigitable.udonroad2.model.app.navigation.addTo
 import com.freshdigitable.udonroad2.oauth.OauthEvent
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.create
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentModule
 import com.freshdigitable.udonroad2.timeline.fragment.TweetDetailFragmentModule
+import com.google.android.material.snackbar.Snackbar
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -87,12 +88,21 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
             }
             return@setNavigationItemSelectedListener event != null
         }
+    }
 
-        compositeDisposable.add(
-            viewModel.feedbackMessage.subscribe {
-                Timber.tag("MainActivity").d("feedbackMessage: $it")
-            }
-        )
+    override fun onStart() {
+        super.onStart()
+
+        val container = requireNotNull(findViewById<View>(R.id.main_container))
+        viewModel.feedbackMessage.subscribe {
+            Timber.tag("MainActivity").d("feedbackMessage: $it")
+            Snackbar.make(container, it.messageRes, Snackbar.LENGTH_SHORT).show()
+        }.addTo(compositeDisposable)
+    }
+
+    override fun onStop() {
+        super.onStop()
+        compositeDisposable.clear()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -154,7 +164,7 @@ class MainViewModel(
         eventDispatcher.postEvent(CommonEvent.Back(viewStates.current))
     }
 
-    val feedbackMessage: AppResult<TweetEntity> = viewStates.updateTweet
+    val feedbackMessage: AppAction<FeedbackMessage> = viewStates.updateTweet
 
     val currentState: MainActivityViewState?
         get() = viewStates.current

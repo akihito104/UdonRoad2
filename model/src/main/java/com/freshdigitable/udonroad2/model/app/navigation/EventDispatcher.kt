@@ -6,6 +6,8 @@ import androidx.lifecycle.toLiveData
 import com.freshdigitable.udonroad2.model.app.di.ActivityScope
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Observable
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.disposables.Disposable
 import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.PublishSubject
 import timber.log.Timber
@@ -53,6 +55,10 @@ data class EventResult<T>(
     private val result: Result<T>
 ) : Serializable {
     val value: T? = result.getOrNull()
+    val isSuccess: Boolean
+        get() = result.isSuccess
+    val exception: Throwable?
+        get() = result.exceptionOrNull()
 
     companion object {
         fun <T> success(event: NavigationEvent, value: T): EventResult<T> {
@@ -66,3 +72,7 @@ data class EventResult<T>(
 }
 
 typealias AppResult<T> = Observable<EventResult<T>>
+
+fun Disposable.addTo(compositeDisposable: CompositeDisposable) {
+    compositeDisposable.add(this)
+}

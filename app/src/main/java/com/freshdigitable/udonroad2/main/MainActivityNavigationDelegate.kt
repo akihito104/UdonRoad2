@@ -19,6 +19,7 @@ import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.app.di.ActivityScope
 import com.freshdigitable.udonroad2.model.app.navigation.FragmentContainerState
+import com.freshdigitable.udonroad2.model.app.navigation.addTo
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragment
@@ -27,7 +28,6 @@ import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentDirections
 import com.freshdigitable.udonroad2.timeline.fragment.TweetDetailFragmentArgs
 import com.freshdigitable.udonroad2.user.UserActivityDirections
 import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.disposables.Disposable
 import java.io.Serializable
 import java.lang.ref.WeakReference
 import javax.inject.Inject
@@ -135,10 +135,6 @@ class MainActivityNavigationDelegate @Inject constructor(
     }
 
     fun onSupportNavigateUp(): Boolean = navController.navigateUp(_drawerLayout.get())
-
-    private fun Disposable.addTo(compositeDisposable: CompositeDisposable) {
-        compositeDisposable.add(this)
-    }
 }
 
 sealed class MainNavHostState : FragmentContainerState, Serializable {

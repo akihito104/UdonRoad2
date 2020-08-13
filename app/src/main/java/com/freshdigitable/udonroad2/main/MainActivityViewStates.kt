@@ -16,21 +16,22 @@
 
 package com.freshdigitable.udonroad2.main
 
+import androidx.annotation.StringRes
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.map
+import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
+import com.freshdigitable.udonroad2.data.restclient.AppTwitterException
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.app.di.ActivityScope
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
-import com.freshdigitable.udonroad2.model.app.navigation.AppResult
 import com.freshdigitable.udonroad2.model.app.navigation.AppViewState
 import com.freshdigitable.udonroad2.model.app.navigation.EventResult
 import com.freshdigitable.udonroad2.model.app.navigation.StateHolder
 import com.freshdigitable.udonroad2.model.app.navigation.ViewState
 import com.freshdigitable.udonroad2.model.app.navigation.filterByType
 import com.freshdigitable.udonroad2.model.app.navigation.toViewState
-import com.freshdigitable.udonroad2.model.tweet.TweetEntity
 import com.freshdigitable.udonroad2.timeline.TimelineEvent.SelectedItemShortcut
 import com.freshdigitable.udonroad2.timeline.viewmodel.FragmentContainerViewStateModel
 import java.io.Serializable
@@ -81,12 +82,36 @@ class MainActivityViewStates @Inject constructor(
             )
         }
 
-    val updateTweet: AppResult<TweetEntity> = AppAction.merge(
+    val updateTweet: AppAction<FeedbackMessage> = AppAction.merge(
         actions.updateTweet.filterByType<SelectedItemShortcut.Like>().flatMap { event ->
             tweetRepository.postLike(event.tweetId).map { EventResult(event, it) }
+        }.map {
+            when {
+                it.isSuccess -> {
+                    FeedbackMessage(R.string.msg_fav_create_success)
+                }
+                (it.exception as? AppTwitterException)?.errorType == AppTwitterException.ErrorType.ALREADY_FAVORITED -> {
+                    FeedbackMessage(R.string.msg_already_fav)
+                }
+                else -> {
+                    FeedbackMessage(R.string.msg_fav_create_failed)
+                }
+            }
         },
         actions.updateTweet.filterByType<SelectedItemShortcut.Retweet>().flatMap { event ->
             tweetRepository.postRetweet(event.tweetId).map { EventResult(event, it) }
+        }.map {
+            when {
+                it.isSuccess -> {
+                    FeedbackMessage(R.string.msg_rt_create_success)
+                }
+                (it.exception as? AppTwitterException)?.errorType == AppTwitterException.ErrorType.ALREADY_RETWEETED -> {
+                    FeedbackMessage(R.string.msg_already_rt)
+                }
+                else -> {
+                    FeedbackMessage(R.string.msg_rt_create_failed)
+                }
+            }
         }
     )
 }
@@ -95,3 +120,7 @@ data class MainActivityViewState(
     val selectedItem: SelectedItemId?,
     val fabVisible: Boolean
 ) : ViewState, Serializable
+
+data class FeedbackMessage(
+    @StringRes val messageRes: Int
+)
