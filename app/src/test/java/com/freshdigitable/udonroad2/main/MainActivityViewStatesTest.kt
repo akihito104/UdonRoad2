@@ -17,6 +17,7 @@
 package com.freshdigitable.udonroad2.main
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
 import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
@@ -26,7 +27,6 @@ import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
-import com.freshdigitable.udonroad2.model.app.navigation.EventResult
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
 import com.freshdigitable.udonroad2.model.tweet.TweetId
@@ -126,7 +126,7 @@ class MainActivityViewStatesTest {
         assertThat(sut.selectedItemId.value?.originalId).isEqualTo(TweetId(200L))
         updateTweetObserver.assertValueCount(1)
         updateTweetObserver.assertValueAt(0) {
-            it.event is TimelineEvent.SelectedItemShortcut.Like
+            it.messageRes == R.string.msg_fav_create_success
         }
     }
 
@@ -154,7 +154,7 @@ class MainActivityViewStatesTest {
         assertThat(sut.selectedItemId.value?.originalId).isEqualTo(TweetId(200L))
         updateTweetObserver.assertValueCount(1)
         updateTweetObserver.assertValueAt(0) {
-            it.event is TimelineEvent.SelectedItemShortcut.Like && it.value == null
+            it.messageRes == R.string.msg_already_fav
         }
     }
 
@@ -180,7 +180,7 @@ class MainActivityViewStatesTest {
         assertThat(sut.selectedItemId.value?.originalId).isEqualTo(TweetId(200L))
         updateTweetObserver.assertValueCount(1)
         updateTweetObserver.assertValueAt(0) {
-            it.event is TimelineEvent.SelectedItemShortcut.Retweet && it.value != null
+            it.messageRes == R.string.msg_rt_create_success
         }
     }
 
@@ -209,7 +209,7 @@ class MainActivityViewStatesTest {
             assertThat(sut.selectedItemId.value?.originalId).isEqualTo(TweetId(200L))
             updateTweetObserver.assertValueCount(1)
             updateTweetObserver.assertValueAt(0) {
-                it.event is TimelineEvent.SelectedItemShortcut.Retweet && it.value == null
+                it.messageRes == R.string.msg_already_rt
             }
         }
 }
@@ -266,6 +266,7 @@ class TweetRepositoryRule(
         return mockk<AppTwitterException>().apply {
             every { statusCode } returns exceptionType.statusCode
             every { errorCode } returns exceptionType.errorCode
+            every { errorType } returns exceptionType
         }
     }
 }
@@ -279,7 +280,7 @@ class MainActivityStateModelTestRule : TestWatcher() {
         SelectedItemRepository(),
         tweetRepositoryMock.tweetRepository
     )
-    val updateTweetObserver: TestObserver<EventResult<TweetEntity>> = sut.updateTweet.test()
+    val updateTweetObserver: TestObserver<FeedbackMessage> = sut.updateTweet.test()
 
     fun dispatchEvents(vararg events: NavigationEvent) {
         dispatcher.postEvents(*events)

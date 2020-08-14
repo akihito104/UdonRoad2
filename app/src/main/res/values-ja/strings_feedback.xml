@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright (c) 2020. Matsuda, Akihit (akihito104)
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<resources>
+    <string name="msg_rt_create_failed">RTできませんでした…</string>
+    <string name="msg_rt_create_success">RTしました</string>
+    <string name="msg_rt_delete_success">RTを消しました</string>
+    <string name="msg_rt_delete_failed">RTを消せませんでした…</string>
+    <string name="msg_fav_create_success">ふぁぼしました</string>
+    <string name="msg_fav_create_failed">ふぁぼできませんでした…</string>
+    <string name="msg_fav_delete_failed">ふぁぼを消せませんでした…</string>
+    <string name="msg_fav_delete_success">ふぁぼを消しました</string>
+    <string name="msg_already_fav">もうふぁぼしてました</string>
+    <string name="msg_tweet_not_download">ツイートをダウンロードできませんでした…</string>
+    <string name="msg_create_friendship_success">フォローしました</string>
+    <string name="msg_create_friendship_failed">フォローできませんでした…</string>
+    <string name="msg_report_spam_success">スパムとして報告しました</string>
+    <string name="msg_report_spam_failed">スパム報告できませんでした…</string>
+    <string name="msg_follower_list_failed">フォロワーを取得できませんでした…</string>
+    <string name="msg_friends_list_failed">フォロー中のユーザを取得できませんでした…</string>
+    <string name="msg_destroy_friendship_success">フォローをやめました</string>
+    <string name="msg_create_mute_failed">ミュートできませんでした…</string>
+    <string name="msg_create_mute_success">ミュートしました</string>
+    <string name="msg_destroy_block_failed">ブロックをやめられませんでした…</string>
+    <string name="msg_destroy_block_success">ブロックをやめました</string>
+    <string name="msg_destroy_friendship_failed">フォローをやめられませんでした…</string>
+    <string name="msg_create_block_failed">ブロックできませんした…</string>
+    <string name="msg_create_block_success">ブロックしました</string>
+    <string name="msg_already_rt">もうRTしてました</string>
+    <string name="msg_destroy_mute_failed">ミュートをやめられませんでした…</string>
+    <string name="msg_destroy_mute_success">ミュートをやめました</string>
+    <string name="msg_block_retweet_failed">RTをブロックできませんでした…</string>
+    <string name="msg_block_retweet_success">RTをブロックしました</string>
+    <string name="msg_unblock_retweet_failed">RTをブロックできませんでした…</string>
+    <string name="msg_unblock_retweet_success">RTをブロックしました</string>
+    <string name="msg_fetch_relationship_failed">このユーザとの関連性を取得できませんでした…</string>
+    <string name="msg_updateStatus_failed">ツイートを送信できませんでした…</string>
+    <string name="msg_updateStatus_success">ツイートしました</string>
+    <string name="msg_faved_by_someone">ふぁぼられました: \@%1$s</string>
+    <string name="msg_followed_by_someone">フォローされました: \@%1$s</string>
+    <string name="msg_retweeted_by_someone">リツイートされました: \@%1$s</string>
+    <string name="msg_userId_failed">ユーザIDを取得できませんでした…</string>
+    <string name="msg_no_next_page">最後まで読みました</string>
+    <string name="msg_fetch_user_list_failed">リストを取得できませんでした…</string>
+    <string name="msg_oauth_fav">これはふぁぼです</string>
+    <string name="msg_oauth_rt">これはRTです</string>
+    <string name="msg_oauth_favRt">ふぁぼとRTが一度にできます</string>
+    <string name="msg_oauth_detail">ツイートの詳細を表示します</string>
+    <string name="msg_oauth_conv">ツイートの返信元を表示します</string>
+    <string name="msg_oauth_reply">このツイートに返信します</string>
+    <string name="msg_oauth_quote">このツイートを引用します</string>
+    <string name="msg_oauth_success">認証に成功しました！</string>
+    <string name="msg_oauth_failed">認証に失敗しました…</string>
+    <string name="msg_oauth_user_icon">ユーザーの情報をみることができます</string>
+    <string name="msg_media_failed_loading">メディアの読み込みに失敗しました…</string>
+    <string name="msg_media_failed_tweetNotFound">元のツイートが削除されたようです…</string>
+    <string name="msg_tweet_delete_success">ツイートを消しました</string>
+    <string name="msg_tweet_delete_failed">ツイートを消せませんでした…</string>
+</resources>
