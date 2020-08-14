@@ -87,30 +87,22 @@ class MainActivityViewStates @Inject constructor(
             tweetRepository.postLike(event.tweetId).map { EventResult(event, it) }
         }.map {
             when {
-                it.isSuccess -> {
-                    FeedbackMessage(R.string.msg_fav_create_success)
+                it.isSuccess -> FeedbackMessage.FavCreateSuccess
+                it.isExceptionTypeOf(AppTwitterException.ErrorType.ALREADY_FAVORITED) -> {
+                    FeedbackMessage.AlreadyFav
                 }
-                (it.exception as? AppTwitterException)?.errorType == AppTwitterException.ErrorType.ALREADY_FAVORITED -> {
-                    FeedbackMessage(R.string.msg_already_fav)
-                }
-                else -> {
-                    FeedbackMessage(R.string.msg_fav_create_failed)
-                }
+                else -> FeedbackMessage.FavCreateFailed
             }
         },
         actions.updateTweet.filterByType<SelectedItemShortcut.Retweet>().flatMap { event ->
             tweetRepository.postRetweet(event.tweetId).map { EventResult(event, it) }
         }.map {
             when {
-                it.isSuccess -> {
-                    FeedbackMessage(R.string.msg_rt_create_success)
+                it.isSuccess -> FeedbackMessage.RtCreateSuccess
+                it.isExceptionTypeOf(AppTwitterException.ErrorType.ALREADY_RETWEETED) -> {
+                    FeedbackMessage.AlreadyRt
                 }
-                (it.exception as? AppTwitterException)?.errorType == AppTwitterException.ErrorType.ALREADY_RETWEETED -> {
-                    FeedbackMessage(R.string.msg_already_rt)
-                }
-                else -> {
-                    FeedbackMessage(R.string.msg_rt_create_failed)
-                }
+                else -> FeedbackMessage.RtCreateFailed
             }
         }
     )
@@ -121,6 +113,18 @@ data class MainActivityViewState(
     val fabVisible: Boolean
 ) : ViewState, Serializable
 
-data class FeedbackMessage(
+sealed class FeedbackMessage(
     @StringRes val messageRes: Int
-)
+) {
+    object FavCreateSuccess : FeedbackMessage(R.string.msg_fav_create_success)
+    object FavCreateFailed : FeedbackMessage(R.string.msg_fav_create_failed)
+    object AlreadyFav : FeedbackMessage(R.string.msg_already_fav)
+
+    object RtCreateSuccess : FeedbackMessage(R.string.msg_rt_create_success)
+    object RtCreateFailed : FeedbackMessage(R.string.msg_rt_create_failed)
+    object AlreadyRt : FeedbackMessage(R.string.msg_already_rt)
+}
+
+fun EventResult<*>.isExceptionTypeOf(type: AppTwitterException.ErrorType): Boolean {
+    return (this.exception as? AppTwitterException)?.errorType == type
+}
