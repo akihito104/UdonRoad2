@@ -1,14 +1,16 @@
 package com.freshdigitable.udonroad2.data.restclient
 
 import com.freshdigitable.udonroad2.data.RemoteListDataSource
-import com.freshdigitable.udonroad2.data.restclient.ext.toUserListPagedList
-import com.freshdigitable.udonroad2.data.restclient.ext.toUserPagedList
+import com.freshdigitable.udonroad2.data.restclient.data.PagedResponseList
+import com.freshdigitable.udonroad2.data.restclient.ext.toEntity
+import com.freshdigitable.udonroad2.data.restclient.ext.toPagedResponseList
 import com.freshdigitable.udonroad2.model.ListQuery
 import com.freshdigitable.udonroad2.model.MemberList
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.QueryType.UserQueryType
 import com.freshdigitable.udonroad2.model.user.User
 import twitter4j.Twitter
+import twitter4j.UserList
 import javax.inject.Inject
 
 private class PagedListDataSource<Q : QueryType, E>(
@@ -28,23 +30,26 @@ private class PagedListDataSource<Q : QueryType, E>(
     }
 }
 
-class PagedResponseList<E>(
-    val list: List<E>,
-    val nextCursor: Long
-) : List<E> by list
-
 class FollowerListDataSource @Inject constructor(
     twitter: AppTwitter
 ) : RemoteListDataSource<UserQueryType.Follower, User> by PagedListDataSource(
     twitter,
-    { query, nextCursor -> getFollowersList(query.type.userId.value, nextCursor).toUserPagedList() }
+    { query, nextCursor ->
+        getFollowersList(query.type.userId.value, nextCursor).toPagedResponseList(
+            twitter4j.User::toEntity
+        )
+    }
 )
 
 class FollowingListDataSource @Inject constructor(
     twitter: AppTwitter
 ) : RemoteListDataSource<UserQueryType.Following, User> by PagedListDataSource(
     twitter,
-    { query, nextCursor -> getFriendsList(query.type.userId.value, nextCursor).toUserPagedList() }
+    { query, nextCursor ->
+        getFriendsList(query.type.userId.value, nextCursor).toPagedResponseList(
+            twitter4j.User::toEntity
+        )
+    }
 )
 
 class ListMembershipListDataSource @Inject constructor(
@@ -53,6 +58,6 @@ class ListMembershipListDataSource @Inject constructor(
     { query, nextCursor ->
         getUserListMemberships(
             query.type.userId.value, query.pageOption.count, nextCursor
-        ).toUserListPagedList()
+        ).toPagedResponseList(UserList::toEntity)
     }
 )
