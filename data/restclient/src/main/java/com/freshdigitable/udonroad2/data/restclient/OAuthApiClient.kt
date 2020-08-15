@@ -19,34 +19,31 @@ package com.freshdigitable.udonroad2.data.restclient
 import com.freshdigitable.udonroad2.model.AccessTokenEntity
 import com.freshdigitable.udonroad2.model.RequestTokenItem
 import com.freshdigitable.udonroad2.model.user.UserId
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import twitter4j.Twitter
 import twitter4j.auth.AccessToken
 import twitter4j.auth.RequestToken
 import javax.inject.Inject
 
 class OAuthApiClient @Inject constructor(
-    private val twitter: Twitter
+    private val twitter: AppTwitter
 ) {
     fun login(oauthAccessToken: AccessTokenEntity) {
-        twitter.oAuthAccessToken = AccessToken(oauthAccessToken.token, oauthAccessToken.tokenSecret)
+        twitter.oauthToken = oauthAccessToken
     }
 
     fun logout() {
-        twitter.oAuthAccessToken = null
+        twitter.oauthToken = null
     }
 
-    suspend fun getRequestToken(): RequestTokenItem = withContext(Dispatchers.IO) {
-        twitter.getOAuthRequestToken("oob").toItem()
+    suspend fun getRequestToken(): RequestTokenItem = twitter.fetch {
+        getOAuthRequestToken("oob").toItem()
     }
 
     suspend fun getOauthAccessToken(
         requestToken: RequestTokenItem,
         verifier: String
-    ): AccessTokenEntity = withContext(Dispatchers.IO) {
+    ): AccessTokenEntity = twitter.fetch {
         val token: RequestToken = (requestToken as RequestTokenItemImpl).token
-        twitter.getOAuthAccessToken(token, verifier).toEntity()
+        getOAuthAccessToken(token, verifier).toEntity()
     }
 
     private fun RequestToken.toItem(): RequestTokenItem = RequestTokenItemImpl(this)

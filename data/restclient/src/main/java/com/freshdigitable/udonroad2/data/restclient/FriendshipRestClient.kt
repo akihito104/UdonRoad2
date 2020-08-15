@@ -4,67 +4,49 @@ import com.freshdigitable.udonroad2.data.restclient.ext.toEntity
 import com.freshdigitable.udonroad2.model.user.Relationship
 import com.freshdigitable.udonroad2.model.user.User
 import com.freshdigitable.udonroad2.model.user.UserId
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import twitter4j.Twitter
 import javax.inject.Inject
 
 class FriendshipRestClient @Inject constructor(
-    private val twitter: Twitter
+    private val twitter: AppTwitter
 ) {
-    suspend fun fetchFriendship(userId: UserId): Relationship = fetch {
-        val sourceId = twitter.id
-        val friendship = twitter.showFriendship(sourceId, userId.value)
-        friendship.toEntity()
+    suspend fun fetchFriendship(userId: UserId): Relationship = twitter.fetch {
+        showFriendship(id, userId.value).toEntity()
     }
 
-    suspend fun createFriendship(userId: UserId): User = fetch {
-        val user = twitter.createFriendship(userId.value)
-        user.toEntity()
+    suspend fun createFriendship(userId: UserId): User = twitter.fetch {
+        createFriendship(userId.value).toEntity()
     }
 
-    suspend fun destroyFriendship(userId: UserId): User = fetch {
-        val user = twitter.destroyFriendship(userId.value)
-        user.toEntity()
+    suspend fun destroyFriendship(userId: UserId): User = twitter.fetch {
+        destroyFriendship(userId.value).toEntity()
     }
 
-    suspend fun createMute(userId: UserId): User = fetch {
-        val user = twitter.createMute(userId.value)
-        user.toEntity()
+    suspend fun createMute(userId: UserId): User = twitter.fetch {
+        createMute(userId.value).toEntity()
     }
 
-    suspend fun destroyMute(userId: UserId): User = fetch {
-        val user = twitter.destroyMute(userId.value)
-        user.toEntity()
+    suspend fun destroyMute(userId: UserId): User = twitter.fetch {
+        destroyMute(userId.value).toEntity()
     }
 
-    suspend fun createBlock(userId: UserId): User = fetch {
-        val user = twitter.createBlock(userId.value)
-        user.toEntity()
+    suspend fun createBlock(userId: UserId): User = twitter.fetch {
+        createBlock(userId.value).toEntity()
     }
 
-    suspend fun destroyBlock(userId: UserId): User = fetch {
-        val user = twitter.destroyBlock(userId.value)
-        user.toEntity()
+    suspend fun destroyBlock(userId: UserId): User = twitter.fetch {
+        destroyBlock(userId.value).toEntity()
     }
 
     suspend fun updateFriendship(
         userId: UserId,
         notificationsEnabled: Boolean,
         wantRetweets: Boolean
-    ): Relationship = fetch {
-        val f = twitter.updateFriendship(userId.value, notificationsEnabled, wantRetweets)
-        f.toEntity()
+    ): Relationship = twitter.fetch {
+        updateFriendship(userId.value, notificationsEnabled, wantRetweets).toEntity()
     }
 
-    suspend fun reportSpam(userId: UserId): User = fetch {
-        val user = twitter.reportSpam(userId.value)
-        user.toEntity()
-    }
-
-    private suspend fun <T> fetch(block: CoroutineScope.() -> T): T = withContext(Dispatchers.IO) {
-        block(this)
+    suspend fun reportSpam(userId: UserId): User = twitter.fetch {
+        reportSpam(userId.value).toEntity()
     }
 }
 

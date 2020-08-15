@@ -17,19 +17,15 @@
 package com.freshdigitable.udonroad2.data.restclient
 
 import com.freshdigitable.udonroad2.model.TwitterApiConfigEntity
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import twitter4j.Twitter
 import twitter4j.TwitterAPIConfiguration
 import javax.inject.Inject
 
 class TwitterConfigApiClient @Inject constructor(
-    private val twitter: Twitter
+    private val twitter: AppTwitter
 ) {
-    suspend fun getTwitterApiConfig(): TwitterApiConfigEntity =
-        withContext(Dispatchers.IO) {
-            twitter.apiConfiguration.toEntity()
-        }
+    suspend fun getTwitterApiConfig(): TwitterApiConfigEntity = twitter.fetch {
+        apiConfiguration.toEntity()
+    }
 
     private fun TwitterAPIConfiguration.toEntity(): TwitterApiConfigEntity {
         return TwitterApiConfigEntity(
