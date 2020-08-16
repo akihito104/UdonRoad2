@@ -31,12 +31,8 @@ import com.freshdigitable.udonroad2.oauth.OauthListAdapterModule
 import com.freshdigitable.udonroad2.oauth.OauthViewModelModule
 import com.freshdigitable.udonroad2.timeline.di.ListItemAdapterComponent
 import com.freshdigitable.udonroad2.timeline.di.ListItemViewModelComponent
-import com.freshdigitable.udonroad2.timeline.di.MemberListListAdapterModule
-import com.freshdigitable.udonroad2.timeline.di.MemberListListViewModelModule
-import com.freshdigitable.udonroad2.timeline.di.TimelineAdapterModule
-import com.freshdigitable.udonroad2.timeline.di.TimelineViewModelModule
-import com.freshdigitable.udonroad2.timeline.di.UserListAdapterModule
-import com.freshdigitable.udonroad2.timeline.di.UserListViewModelModule
+import com.freshdigitable.udonroad2.timeline.di.TimelineAdapterModules
+import com.freshdigitable.udonroad2.timeline.di.TimelineViewModelModules
 import com.freshdigitable.udonroad2.timeline.viewmodel.FragmentContainerViewStateModel
 import dagger.Binds
 import dagger.BindsInstance
@@ -63,9 +59,7 @@ interface ListItemViewModelModule {
 
 @Subcomponent(
     modules = [
-        TimelineViewModelModule::class,
-        MemberListListViewModelModule::class,
-        UserListViewModelModule::class,
+        TimelineViewModelModules::class,
         OauthViewModelModule::class,
         ListRepositoryModule::class,
         SavedStateViewModelModule::class,
@@ -109,9 +103,7 @@ interface ListItemAdapterModule {
 
 @Subcomponent(
     modules = [
-        TimelineAdapterModule::class,
-        UserListAdapterModule::class,
-        MemberListListAdapterModule::class,
+        TimelineAdapterModules::class,
         OauthListAdapterModule::class,
         ListItemAdapterProvider::class
     ]

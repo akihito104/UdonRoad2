@@ -30,8 +30,17 @@ import dagger.Module
 import dagger.Provides
 import dagger.multibindings.IntoMap
 
+@Module(
+    includes = [
+        TimelineAdapterModule::class,
+        UserListAdapterModule::class,
+        MemberListListAdapterModule::class
+    ]
+)
+interface TimelineAdapterModules
+
 @Module
-object TimelineAdapterModule {
+internal object TimelineAdapterModule {
     @Provides
     @IntoMap
     @ViewModelKey(TimelineViewModel::class)
@@ -45,7 +54,7 @@ object TimelineAdapterModule {
 }
 
 @Module
-object UserListAdapterModule {
+internal object UserListAdapterModule {
     @Provides
     @IntoMap
     @ViewModelKey(UserListViewModel::class)
@@ -56,7 +65,7 @@ object UserListAdapterModule {
 }
 
 @Module
-object MemberListListAdapterModule {
+internal object MemberListListAdapterModule {
     @Provides
     @IntoMap
     @ViewModelKey(MemberListListViewModel::class)

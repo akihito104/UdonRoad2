@@ -36,16 +36,26 @@ import com.freshdigitable.udonroad2.timeline.viewmodel.FragmentContainerViewStat
 import com.freshdigitable.udonroad2.timeline.viewmodel.MemberListListViewModel
 import com.freshdigitable.udonroad2.timeline.viewmodel.TimelineViewModel
 import com.freshdigitable.udonroad2.timeline.viewmodel.UserListViewModel
-import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.multibindings.IntoMap
 import kotlin.reflect.KClass
 
+@Module(
+    includes = [
+        TimelineViewModelModule::class,
+        UserListViewModelModule::class,
+        MemberListListViewModelModule::class
+    ]
+)
+interface TimelineViewModelModules
+
 @Module
-interface TimelineViewModelModule {
+internal interface TimelineViewModelModule {
     companion object {
         @Provides
+        @IntoMap
+        @ViewModelKey(TimelineViewModel::class)
         fun provideTimelineViewModel(
             owner: ListOwner<*>,
             eventDispatcher: EventDispatcher,
@@ -54,7 +64,7 @@ interface TimelineViewModelModule {
             remoteListDataSourceProvider: RemoteListDataSourceProvider,
             pagedListDataSourceFactoryProvider: PagedListDataSourceFactoryProvider,
             executor: AppExecutor
-        ): TimelineViewModel {
+        ): ViewModel {
             val o = owner as ListOwner<QueryType.TweetQueryType>
             val repository = ListRepository.create(
                 o.query,
@@ -82,17 +92,14 @@ interface TimelineViewModelModule {
         @QueryTypeKey(QueryType.TweetQueryType::class)
         fun provideTimelineViewModelKClass(): KClass<out ViewModel> = TimelineViewModel::class
     }
-
-    @Binds
-    @IntoMap
-    @ViewModelKey(TimelineViewModel::class)
-    fun bindTimelineViewModel(viewModel: TimelineViewModel): ViewModel
 }
 
 @Module
-interface UserListViewModelModule {
+internal interface UserListViewModelModule {
     companion object {
         @Provides
+        @IntoMap
+        @ViewModelKey(UserListViewModel::class)
         fun provideUserListViewModel(
             owner: ListOwner<*>,
             eventDispatcher: EventDispatcher,
@@ -100,7 +107,7 @@ interface UserListViewModelModule {
             remoteListDataSourceProvider: RemoteListDataSourceProvider,
             pagedListDataSourceFactoryProvider: PagedListDataSourceFactoryProvider,
             executor: AppExecutor
-        ): UserListViewModel {
+        ): ViewModel {
             val o = owner as ListOwner<QueryType.UserQueryType>
             val repository = ListRepository.create(
                 o.query,
@@ -122,17 +129,14 @@ interface UserListViewModelModule {
         @QueryTypeKey(QueryType.UserQueryType::class)
         fun provideUserListViewModelKClass(): KClass<out ViewModel> = UserListViewModel::class
     }
-
-    @Binds
-    @IntoMap
-    @ViewModelKey(UserListViewModel::class)
-    fun bindUserListViewModel(viewModel: UserListViewModel): ViewModel
 }
 
 @Module
-interface MemberListListViewModelModule {
+internal interface MemberListListViewModelModule {
     companion object {
         @Provides
+        @IntoMap
+        @ViewModelKey(MemberListListViewModel::class)
         fun provideMemberListListViewModel(
             owner: ListOwner<*>,
             eventDispatcher: EventDispatcher,
@@ -140,7 +144,7 @@ interface MemberListListViewModelModule {
             remoteListDataSourceProvider: RemoteListDataSourceProvider,
             pagedListDataSourceFactoryProvider: PagedListDataSourceFactoryProvider,
             executor: AppExecutor
-        ): MemberListListViewModel {
+        ): ViewModel {
             val o = owner as ListOwner<QueryType.UserListMembership>
             val repository = ListRepository.create(
                 o.query,
@@ -163,9 +167,4 @@ interface MemberListListViewModelModule {
         fun provideMemberListListViewModelKClass(): KClass<out ViewModel> =
             MemberListListViewModel::class
     }
-
-    @Binds
-    @IntoMap
-    @ViewModelKey(MemberListListViewModel::class)
-    fun bindMemberListListViewModel(viewModel: MemberListListViewModel): ViewModel
 }
