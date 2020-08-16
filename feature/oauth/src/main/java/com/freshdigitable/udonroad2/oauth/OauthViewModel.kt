@@ -16,7 +16,6 @@
 
 package com.freshdigitable.udonroad2.oauth
 
-import android.app.Application
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
@@ -28,18 +27,11 @@ import androidx.paging.PagedList
 import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.RequestTokenItem
-import com.freshdigitable.udonroad2.model.app.di.QueryTypeKey
-import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
 import com.freshdigitable.udonroad2.model.app.ext.merge
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.timeline.ListItemLoadable
-import dagger.Binds
-import dagger.Module
-import dagger.Provides
-import dagger.multibindings.IntoMap
 import kotlinx.coroutines.launch
-import kotlin.reflect.KClass
 
 class OauthViewModel(
     dataSource: DataSource<Int, OauthItem>,
@@ -113,34 +105,4 @@ sealed class OauthEvent : NavigationEvent {
     object Init : OauthEvent()
     data class OauthRequested(val authUrl: String) : OauthEvent()
     object OauthSucceeded : OauthEvent()
-}
-
-@Module
-interface OauthViewModelModule {
-    companion object {
-        @Provides
-        fun provideOauthDataSource(context: Application): DataSource<Int, OauthItem> {
-            return OauthDataSource(context)
-        }
-
-        @Provides
-        fun provideOauthViewModel(
-            dataSource: DataSource<Int, OauthItem>,
-            oAuthTokenRepository: OAuthTokenRepository,
-            eventDispatcher: EventDispatcher,
-            handle: SavedStateHandle
-        ): OauthViewModel {
-            return OauthViewModel(dataSource, oAuthTokenRepository, eventDispatcher, handle)
-        }
-
-        @Provides
-        @IntoMap
-        @QueryTypeKey(QueryType.Oauth::class)
-        fun provideOauthViewModelKClass(): KClass<out ViewModel> = OauthViewModel::class
-    }
-
-    @Binds
-    @IntoMap
-    @ViewModelKey(OauthViewModel::class)
-    fun bindOauthViewModel(viewModel: OauthViewModel): ViewModel
 }

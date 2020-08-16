@@ -27,8 +27,8 @@ import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.app.ClassKeyMap
 import com.freshdigitable.udonroad2.model.app.valueByAssignableClassObject
-import com.freshdigitable.udonroad2.oauth.OauthListAdapterModule
-import com.freshdigitable.udonroad2.oauth.OauthViewModelModule
+import com.freshdigitable.udonroad2.oauth.di.OauthListAdapterModule
+import com.freshdigitable.udonroad2.oauth.di.OauthViewModelModule
 import com.freshdigitable.udonroad2.timeline.di.ListItemAdapterComponent
 import com.freshdigitable.udonroad2.timeline.di.ListItemViewModelComponent
 import com.freshdigitable.udonroad2.timeline.di.TimelineAdapterModules
