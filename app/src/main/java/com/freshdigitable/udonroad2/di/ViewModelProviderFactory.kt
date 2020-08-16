@@ -25,7 +25,7 @@ import androidx.lifecycle.ViewModelStoreOwner
 import androidx.savedstate.SavedStateRegistryOwner
 import com.freshdigitable.udonroad2.model.app.ClassKeyMap
 import com.freshdigitable.udonroad2.model.app.valueByAssignableClass
-import com.freshdigitable.udonroad2.oauth.OauthViewModelModule
+import com.freshdigitable.udonroad2.oauth.di.OauthViewModelModule
 import dagger.Binds
 import dagger.BindsInstance
 import dagger.Module

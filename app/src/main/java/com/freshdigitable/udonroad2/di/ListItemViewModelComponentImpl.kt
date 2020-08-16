@@ -21,23 +21,19 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 import androidx.paging.PagedListAdapter
 import androidx.savedstate.SavedStateRegistryOwner
-import com.freshdigitable.udonroad2.data.impl.ListRepositoryModule
+import com.freshdigitable.udonroad2.data.impl.di.ListRepositoryComponentModule
 import com.freshdigitable.udonroad2.main.MainActivityViewStates
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.app.ClassKeyMap
 import com.freshdigitable.udonroad2.model.app.valueByAssignableClassObject
-import com.freshdigitable.udonroad2.oauth.OauthListAdapterModule
-import com.freshdigitable.udonroad2.oauth.OauthViewModelModule
-import com.freshdigitable.udonroad2.timeline.ListItemAdapterComponent
-import com.freshdigitable.udonroad2.timeline.ListItemViewModelComponent
-import com.freshdigitable.udonroad2.timeline.listadapter.MemberListListAdapterModule
-import com.freshdigitable.udonroad2.timeline.listadapter.TimelineAdapterModule
-import com.freshdigitable.udonroad2.timeline.listadapter.UserListAdapterModule
+import com.freshdigitable.udonroad2.oauth.di.OauthListAdapterModule
+import com.freshdigitable.udonroad2.oauth.di.OauthViewModelModule
+import com.freshdigitable.udonroad2.timeline.di.ListItemAdapterComponent
+import com.freshdigitable.udonroad2.timeline.di.ListItemViewModelComponent
+import com.freshdigitable.udonroad2.timeline.di.TimelineAdapterModules
+import com.freshdigitable.udonroad2.timeline.di.TimelineViewModelModules
 import com.freshdigitable.udonroad2.timeline.viewmodel.FragmentContainerViewStateModel
-import com.freshdigitable.udonroad2.timeline.viewmodel.MemberListListViewModelModule
-import com.freshdigitable.udonroad2.timeline.viewmodel.TimelineViewModelModule
-import com.freshdigitable.udonroad2.timeline.viewmodel.UserListViewModelModule
 import dagger.Binds
 import dagger.BindsInstance
 import dagger.Module
@@ -63,11 +59,9 @@ interface ListItemViewModelModule {
 
 @Subcomponent(
     modules = [
-        TimelineViewModelModule::class,
-        MemberListListViewModelModule::class,
-        UserListViewModelModule::class,
+        TimelineViewModelModules::class,
         OauthViewModelModule::class,
-        ListRepositoryModule::class,
+        ListRepositoryComponentModule::class,
         SavedStateViewModelModule::class,
         ViewModelClassProvider::class
     ]
@@ -109,9 +103,7 @@ interface ListItemAdapterModule {
 
 @Subcomponent(
     modules = [
-        TimelineAdapterModule::class,
-        UserListAdapterModule::class,
-        MemberListListAdapterModule::class,
+        TimelineAdapterModules::class,
         OauthListAdapterModule::class,
         ListItemAdapterProvider::class
     ]
