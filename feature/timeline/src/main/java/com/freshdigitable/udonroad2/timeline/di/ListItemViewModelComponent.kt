@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.freshdigitable.udonroad2.timeline
+package com.freshdigitable.udonroad2.timeline.di
 
 import android.os.Bundle
 import androidx.lifecycle.AbstractSavedStateViewModelFactory

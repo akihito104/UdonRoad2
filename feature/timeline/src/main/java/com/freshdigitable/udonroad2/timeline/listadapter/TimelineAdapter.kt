@@ -3,24 +3,17 @@ package com.freshdigitable.udonroad2.timeline.listadapter
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.annotation.NonNull
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.ViewModel
 import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import com.freshdigitable.udonroad2.timeline.R
 import com.freshdigitable.udonroad2.timeline.TweetListEventListener
 import com.freshdigitable.udonroad2.timeline.TweetListItemClickListener
 import com.freshdigitable.udonroad2.timeline.databinding.ViewTweetListItemBinding
 import com.freshdigitable.udonroad2.timeline.databinding.ViewTweetListQuotedItemBinding
-import com.freshdigitable.udonroad2.timeline.viewmodel.TimelineViewModel
-import dagger.Module
-import dagger.Provides
-import dagger.multibindings.IntoMap
 
 class TimelineAdapter(
     private val clickListener: TweetListItemClickListener,
@@ -121,7 +114,6 @@ class TimelineAdapter(
         }
     }
 
-    @NonNull
     private fun createQuotedItemLayoutParams(context: Context): ViewGroup.LayoutParams {
         return ConstraintLayout.LayoutParams(
             ConstraintLayout.LayoutParams.MATCH_CONSTRAINT,
@@ -154,18 +146,4 @@ private val diffUtil = object : DiffUtil.ItemCallback<TweetListItem>() {
         oldItem: TweetListItem,
         newItem: TweetListItem
     ): Boolean = oldItem == newItem
-}
-
-@Module
-object TimelineAdapterModule {
-    @Provides
-    @IntoMap
-    @ViewModelKey(TimelineViewModel::class)
-    fun provideTimelineAdapter(
-        viewModel: ViewModel,
-        lifecycleOwner: LifecycleOwner
-    ): PagedListAdapter<out Any, *> {
-        val vm = viewModel as TimelineViewModel
-        return TimelineAdapter(vm, vm, lifecycleOwner)
-    }
 }

@@ -16,14 +16,11 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.QueryType
-import com.freshdigitable.udonroad2.model.app.di.FragmentScope
-import com.freshdigitable.udonroad2.timeline.ListItemAdapterComponent
 import com.freshdigitable.udonroad2.timeline.ListItemLoadable
-import com.freshdigitable.udonroad2.timeline.ListItemViewModelComponent
 import com.freshdigitable.udonroad2.timeline.databinding.FragmentTimelineBinding
-import com.freshdigitable.udonroad2.timeline.viewModel
-import dagger.Module
-import dagger.android.ContributesAndroidInjector
+import com.freshdigitable.udonroad2.timeline.di.ListItemAdapterComponent
+import com.freshdigitable.udonroad2.timeline.di.ListItemViewModelComponent
+import com.freshdigitable.udonroad2.timeline.di.viewModel
 import dagger.android.support.AndroidSupportInjection
 import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
@@ -95,11 +92,4 @@ class ListItemFragment : Fragment() {
             return ListItemFragmentArgs(owner.query, owner.id, label).toBundle()
         }
     }
-}
-
-@Module
-interface ListItemFragmentModule {
-    @FragmentScope
-    @ContributesAndroidInjector
-    fun contributeListItemFragment(): ListItemFragment
 }

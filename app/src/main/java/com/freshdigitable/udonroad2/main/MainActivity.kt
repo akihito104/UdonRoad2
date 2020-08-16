@@ -35,8 +35,8 @@ import com.freshdigitable.udonroad2.model.app.navigation.addTo
 import com.freshdigitable.udonroad2.oauth.OauthEvent
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.create
-import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentModule
-import com.freshdigitable.udonroad2.timeline.fragment.TweetDetailFragmentModule
+import com.freshdigitable.udonroad2.timeline.di.ListItemFragmentModule
+import com.freshdigitable.udonroad2.timeline.di.TweetDetailFragmentModule
 import com.google.android.material.snackbar.Snackbar
 import dagger.Binds
 import dagger.Module

@@ -2,19 +2,13 @@ package com.freshdigitable.udonroad2.timeline.listadapter
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.lifecycle.ViewModel
 import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
 import com.freshdigitable.udonroad2.model.user.UserListItem
 import com.freshdigitable.udonroad2.timeline.ListItemClickListener
 import com.freshdigitable.udonroad2.timeline.R
 import com.freshdigitable.udonroad2.timeline.databinding.ViewUserListItemBinding
-import com.freshdigitable.udonroad2.timeline.viewmodel.UserListViewModel
-import dagger.Module
-import dagger.Provides
-import dagger.multibindings.IntoMap
 
 class UserListAdapter(
     private val clickListener: ListItemClickListener<UserListItem>
@@ -68,15 +62,4 @@ class UserListViewHolder(
     internal val binding: ViewUserListItemBinding
 ) : RecyclerView.ViewHolder(binding.root) {
     internal val root: ViewGroup = itemView as ViewGroup
-}
-
-@Module
-object UserListAdapterModule {
-    @Provides
-    @IntoMap
-    @ViewModelKey(UserListViewModel::class)
-    fun provideTimelineAdapter(viewModel: ViewModel): PagedListAdapter<out Any, *> {
-        val vm = viewModel as UserListViewModel
-        return UserListAdapter(vm)
-    }
 }
