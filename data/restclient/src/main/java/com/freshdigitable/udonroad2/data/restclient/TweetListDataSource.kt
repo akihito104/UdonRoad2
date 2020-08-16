@@ -22,69 +22,66 @@ import com.freshdigitable.udonroad2.model.ListQuery
 import com.freshdigitable.udonroad2.model.PageOption
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import twitter4j.Paging
 import twitter4j.Query
 import twitter4j.Status
-import twitter4j.Twitter
 import javax.inject.Inject
 
 class HomeTimelineDataSource @Inject constructor(
-    private val twitter: Twitter
+    private val twitter: AppTwitter
 ) : RemoteListDataSource<QueryType.TweetQueryType.Timeline, TweetEntity> {
 
     override suspend fun getList(
         query: ListQuery<QueryType.TweetQueryType.Timeline>
-    ): List<TweetEntity> = withContext(Dispatchers.IO) {
+    ): List<TweetEntity> = twitter.fetch {
         (
             query.type.userId?.value?.let { id ->
                 when (query.pageOption) {
-                    PageOption.OnInit -> twitter.getUserTimeline(id)
-                    else -> twitter.getUserTimeline(id, query.pageOption.toPaging())
+                    PageOption.OnInit -> getUserTimeline(id)
+                    else -> getUserTimeline(id, query.pageOption.toPaging())
                 }
             } ?: when (query.pageOption) {
-                PageOption.OnInit -> twitter.homeTimeline
-                else -> twitter.getHomeTimeline(query.pageOption.toPaging())
+                PageOption.OnInit -> homeTimeline
+                else -> getHomeTimeline(query.pageOption.toPaging())
             }
             ).map(Status::toEntity)
     }
 }
 
 class FavTimelineDataSource @Inject constructor(
-    private val twitter: Twitter
+    private val twitter: AppTwitter
 ) : RemoteListDataSource<QueryType.TweetQueryType.Fav, TweetEntity> {
 
     override suspend fun getList(
         query: ListQuery<QueryType.TweetQueryType.Fav>
-    ): List<TweetEntity> = withContext(Dispatchers.IO) {
+    ): List<TweetEntity> = twitter.fetch {
         (
             query.type.userId?.value?.let { id ->
                 when (query.pageOption) {
-                    PageOption.OnInit -> twitter.getFavorites(id)
-                    else -> twitter.getFavorites(id, query.pageOption.toPaging())
+                    PageOption.OnInit -> getFavorites(id)
+                    else -> getFavorites(id, query.pageOption.toPaging())
                 }
             } ?: when (query.pageOption) {
-                PageOption.OnInit -> twitter.favorites
-                else -> twitter.getFavorites(query.pageOption.toPaging())
+                PageOption.OnInit -> favorites
+                else -> getFavorites(query.pageOption.toPaging())
             }
             ).map(Status::toEntity)
     }
 }
 
 class MediaTimelineDataSource @Inject constructor(
-    private val twitter: Twitter
+    private val twitter: AppTwitter
 ) : RemoteListDataSource<QueryType.TweetQueryType.Media, TweetEntity> {
     override suspend fun getList(
         query: ListQuery<QueryType.TweetQueryType.Media>
-    ): List<TweetEntity> = withContext(Dispatchers.IO) {
+    ): List<TweetEntity> = twitter.fetch {
         val q = Query(query.type.query).apply {
             maxId = query.pageOption.maxId ?: -1
             sinceId = query.pageOption.sinceId ?: -1
             count = query.pageOption.count
             resultType = Query.ResultType.recent
         }
-        twitter.search(q).tweets.map(Status::toEntity)
+        search(q).tweets.map(Status::toEntity)
     }
 }
 

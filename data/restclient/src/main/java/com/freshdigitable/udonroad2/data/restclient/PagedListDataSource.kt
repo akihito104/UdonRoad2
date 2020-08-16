@@ -1,65 +1,63 @@
 package com.freshdigitable.udonroad2.data.restclient
 
 import com.freshdigitable.udonroad2.data.RemoteListDataSource
-import com.freshdigitable.udonroad2.data.restclient.ext.toUserListPagedList
-import com.freshdigitable.udonroad2.data.restclient.ext.toUserPagedList
+import com.freshdigitable.udonroad2.data.restclient.data.PagedResponseList
+import com.freshdigitable.udonroad2.data.restclient.ext.toEntity
+import com.freshdigitable.udonroad2.data.restclient.ext.toPagedResponseList
 import com.freshdigitable.udonroad2.model.ListQuery
 import com.freshdigitable.udonroad2.model.MemberList
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.QueryType.UserQueryType
 import com.freshdigitable.udonroad2.model.user.User
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import twitter4j.Twitter
+import twitter4j.UserList
 import javax.inject.Inject
 
-abstract class PagedListDataSource<Q : QueryType, E>(
-    private val twitter: Twitter
+private class PagedListDataSource<Q : QueryType, E>(
+    private val twitter: AppTwitter,
+    private val fetchBlock: Twitter.(ListQuery<Q>, Long) -> PagedResponseList<E>
 ) : RemoteListDataSource<Q, E> {
 
-    protected var nextCursor: Long = -1
+    var nextCursor: Long = -1
 
-    protected abstract val fetchBlock: suspend Twitter.(ListQuery<Q>) -> PagedResponseList<E>
-
-    override suspend fun getList(query: ListQuery<Q>): List<E> = withContext(Dispatchers.IO) {
-        when (nextCursor) {
-            0L -> emptyList<E>()
-            else -> fetchBlock(twitter, query).also { nextCursor = it.nextCursor }
+    override suspend fun getList(query: ListQuery<Q>): List<E> {
+        return when (nextCursor) {
+            0L -> emptyList()
+            else -> twitter.fetch {
+                fetchBlock(query, nextCursor).also { nextCursor = it.nextCursor }
+            }
         }
     }
 }
 
-class PagedResponseList<E>(
-    val list: List<E>,
-    val nextCursor: Long
-) : List<E> by list
-
 class FollowerListDataSource @Inject constructor(
-    twitter: Twitter
-) : PagedListDataSource<UserQueryType.Follower, User>(twitter) {
-
-    override val fetchBlock: suspend Twitter.(ListQuery<UserQueryType.Follower>) -> PagedResponseList<User>
-        get() = { query -> getFollowersList(query.type.userId.value, nextCursor).toUserPagedList() }
-}
+    twitter: AppTwitter
+) : RemoteListDataSource<UserQueryType.Follower, User> by PagedListDataSource(
+    twitter,
+    { query, nextCursor ->
+        getFollowersList(query.type.userId.value, nextCursor).toPagedResponseList(
+            twitter4j.User::toEntity
+        )
+    }
+)
 
 class FollowingListDataSource @Inject constructor(
-    twitter: Twitter
-) : PagedListDataSource<UserQueryType.Following, User>(twitter) {
-
-    override val fetchBlock: suspend Twitter.(ListQuery<UserQueryType.Following>) -> PagedResponseList<User>
-        get() = { query -> getFriendsList(query.type.userId.value, nextCursor).toUserPagedList() }
-}
+    twitter: AppTwitter
+) : RemoteListDataSource<UserQueryType.Following, User> by PagedListDataSource(
+    twitter,
+    { query, nextCursor ->
+        getFriendsList(query.type.userId.value, nextCursor).toPagedResponseList(
+            twitter4j.User::toEntity
+        )
+    }
+)
 
 class ListMembershipListDataSource @Inject constructor(
-    twitter: Twitter
-) : PagedListDataSource<QueryType.UserListMembership, MemberList>(twitter) {
-
-    override val fetchBlock: suspend Twitter.(ListQuery<QueryType.UserListMembership>) -> PagedResponseList<MemberList>
-        get() = { query ->
-            getUserListMemberships(
-                query.type.userId.value,
-                query.pageOption.count,
-                nextCursor
-            ).toUserListPagedList()
-        }
-}
+    twitter: AppTwitter
+) : RemoteListDataSource<QueryType.UserListMembership, MemberList> by PagedListDataSource(twitter,
+    { query, nextCursor ->
+        getUserListMemberships(
+            query.type.userId.value, query.pageOption.count, nextCursor
+        ).toPagedResponseList(UserList::toEntity)
+    }
+)

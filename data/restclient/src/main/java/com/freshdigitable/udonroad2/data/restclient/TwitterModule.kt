@@ -16,10 +16,15 @@
 
 package com.freshdigitable.udonroad2.data.restclient
 
+import com.freshdigitable.udonroad2.model.AccessTokenEntity
 import dagger.Module
 import dagger.Provides
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import twitter4j.Twitter
+import twitter4j.TwitterException
 import twitter4j.TwitterFactory
+import twitter4j.auth.AccessToken
 import twitter4j.conf.ConfigurationBuilder
 import javax.inject.Singleton
 
@@ -34,5 +39,33 @@ object TwitterModule {
             .setOAuthConsumerSecret(BuildConfig.CONSUMER_SECRET)
             .build()
         return TwitterFactory(configuration).instance
+    }
+}
+
+@Module
+object AppTwitterModule {
+    @Provides
+    @Singleton
+    fun providesAppTwitter(twitter: Twitter): AppTwitter = AppTwitter(twitter)
+}
+
+class AppTwitter(
+    private val twitter: Twitter
+) {
+    var oauthToken: AccessTokenEntity? = null
+        set(value) {
+            twitter.oAuthAccessToken = when (value) {
+                null -> null
+                else -> AccessToken(value.token, value.tokenSecret)
+            }
+            field = value
+        }
+
+    suspend fun <T> fetch(block: Twitter.() -> T): T = withContext(Dispatchers.IO) {
+        try {
+            block(twitter)
+        } catch (ex: TwitterException) {
+            throw AppTwitterException(ex)
+        }
     }
 }

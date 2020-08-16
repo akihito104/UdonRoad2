@@ -22,6 +22,7 @@ import com.freshdigitable.udonroad2.AppSetup
 import com.freshdigitable.udonroad2.AppSetupModule
 import com.freshdigitable.udonroad2.data.db.DatabaseModule
 import com.freshdigitable.udonroad2.data.impl.RepositoryModule
+import com.freshdigitable.udonroad2.data.restclient.AppTwitterModule
 import com.freshdigitable.udonroad2.data.restclient.TwitterModule
 import dagger.BindsInstance
 import dagger.Component
@@ -38,6 +39,7 @@ import javax.inject.Singleton
         RepositoryModule::class,
         DatabaseModule::class,
         TwitterModule::class,
+        AppTwitterModule::class,
         AppSetupModule::class
     ]
 )

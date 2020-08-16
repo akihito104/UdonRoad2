@@ -17,9 +17,9 @@
 package com.freshdigitable.udonroad2.data.restclient.ext
 
 import android.graphics.Color
-import com.freshdigitable.udonroad2.data.restclient.PagedResponseList
 import com.freshdigitable.udonroad2.data.restclient.data.MediaItemRest
 import com.freshdigitable.udonroad2.data.restclient.data.MemberListImpl
+import com.freshdigitable.udonroad2.data.restclient.data.PagedResponseList
 import com.freshdigitable.udonroad2.data.restclient.data.SizeRest
 import com.freshdigitable.udonroad2.data.restclient.data.TweetEntityRest
 import com.freshdigitable.udonroad2.data.restclient.data.UrlEntityRest
@@ -37,7 +37,7 @@ import org.threeten.bp.Instant
 import twitter4j.MediaEntity
 import twitter4j.PagableResponseList
 import twitter4j.Status
-import twitter4j.User
+import twitter4j.TwitterResponse
 import twitter4j.UserList
 
 internal fun Status.toEntity(): TweetEntity {
@@ -59,7 +59,7 @@ internal fun Status.toEntity(): TweetEntity {
     )
 }
 
-internal fun User.toEntity(): UserEntityRest {
+internal fun twitter4j.User.toEntity(): UserEntityRest {
     return UserEntityRest(
         id = UserId(id),
         name = name,
@@ -92,19 +92,12 @@ internal fun UserList.toEntity(): MemberList {
     )
 }
 
-internal fun PagableResponseList<User>.toUserPagedList(): PagedResponseList<com.freshdigitable.udonroad2.model.user.User> {
-    return PagedResponseList(
-        list = this.map(User::toEntity),
-        nextCursor = if (hasNext()) this.nextCursor else 0
-    )
-}
-
-internal fun PagableResponseList<UserList>.toUserListPagedList(): PagedResponseList<MemberList> {
-    return PagedResponseList(
-        list = this.map { it.toEntity() },
-        nextCursor = if (hasNext()) this.nextCursor else 0
-    )
-}
+internal fun <I : TwitterResponse, O> PagableResponseList<I>.toPagedResponseList(
+    mapper: (I) -> O
+): PagedResponseList<O> = PagedResponseList(
+    list = this.map(mapper),
+    nextCursor = if (this.hasNext()) this.nextCursor else 0
+)
 
 fun MediaEntity.toItem(): MediaItem {
     return MediaItemRest(

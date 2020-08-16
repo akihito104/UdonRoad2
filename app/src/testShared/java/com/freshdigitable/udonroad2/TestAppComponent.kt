@@ -20,6 +20,7 @@ import android.app.Application
 import com.freshdigitable.udonroad2.data.db.DatabaseModule
 import com.freshdigitable.udonroad2.data.impl.RepositoryModule
 import com.freshdigitable.udonroad2.data.impl.SharedPreferenceDataSource
+import com.freshdigitable.udonroad2.data.restclient.AppTwitterModule
 import com.freshdigitable.udonroad2.di.ActivityBuilders
 import com.freshdigitable.udonroad2.di.AppComponent
 import com.freshdigitable.udonroad2.di.ExecutorModule
@@ -38,6 +39,7 @@ import javax.inject.Singleton
         RepositoryModule::class,
         DatabaseModule::class,
         MockTwitterModule::class,
+        AppTwitterModule::class,
         TestSharedPreferencesModule::class,
         MockSetupModule::class
     ]
