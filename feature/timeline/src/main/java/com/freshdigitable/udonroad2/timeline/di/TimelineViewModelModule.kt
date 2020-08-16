@@ -19,9 +19,9 @@ package com.freshdigitable.udonroad2.timeline.di
 import androidx.lifecycle.ViewModel
 import com.freshdigitable.udonroad2.data.ListRepository
 import com.freshdigitable.udonroad2.data.PagedListProvider
-import com.freshdigitable.udonroad2.data.impl.ListRepositoryComponent
-import com.freshdigitable.udonroad2.data.impl.listRepository
-import com.freshdigitable.udonroad2.data.impl.pagedListProvider
+import com.freshdigitable.udonroad2.data.impl.di.ListRepositoryComponent
+import com.freshdigitable.udonroad2.data.impl.di.listRepository
+import com.freshdigitable.udonroad2.data.impl.di.pagedListProvider
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.MemberListItem
 import com.freshdigitable.udonroad2.model.QueryType

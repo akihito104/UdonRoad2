@@ -21,7 +21,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 import androidx.paging.PagedListAdapter
 import androidx.savedstate.SavedStateRegistryOwner
-import com.freshdigitable.udonroad2.data.impl.ListRepositoryComponentModule
+import com.freshdigitable.udonroad2.data.impl.di.ListRepositoryComponentModule
 import com.freshdigitable.udonroad2.main.MainActivityViewStates
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.QueryType
