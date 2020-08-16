@@ -21,7 +21,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 import androidx.paging.PagedListAdapter
 import androidx.savedstate.SavedStateRegistryOwner
-import com.freshdigitable.udonroad2.data.impl.ListRepositoryModule
+import com.freshdigitable.udonroad2.data.impl.ListRepositoryComponentModule
 import com.freshdigitable.udonroad2.main.MainActivityViewStates
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.QueryType
@@ -61,7 +61,7 @@ interface ListItemViewModelModule {
     modules = [
         TimelineViewModelModules::class,
         OauthViewModelModule::class,
-        ListRepositoryModule::class,
+        ListRepositoryComponentModule::class,
         SavedStateViewModelModule::class,
         ViewModelClassProvider::class
     ]

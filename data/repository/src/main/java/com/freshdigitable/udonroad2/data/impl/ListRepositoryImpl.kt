@@ -24,17 +24,11 @@ import com.freshdigitable.udonroad2.data.ListRepository
 import com.freshdigitable.udonroad2.data.LocalListDataSource
 import com.freshdigitable.udonroad2.data.PagedListProvider
 import com.freshdigitable.udonroad2.data.RemoteListDataSource
-import com.freshdigitable.udonroad2.data.db.LocalListDataSourceProvider
-import com.freshdigitable.udonroad2.data.restclient.RemoteListDataSourceProvider
-import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.ListQuery
 import com.freshdigitable.udonroad2.model.PageOption
 import com.freshdigitable.udonroad2.model.QueryType
-import com.freshdigitable.udonroad2.model.SelectedItemId
 import timber.log.Timber
 import java.io.IOException
-import javax.inject.Inject
-import javax.inject.Singleton
 
 internal class ListRepositoryImpl<Q : QueryType, E>(
     private val localDataSource: LocalListDataSource<Q, E>,
@@ -64,35 +58,6 @@ internal class ListRepositoryImpl<Q : QueryType, E>(
             localDataSource.clean(owner)
         }
     }
-}
-
-@Singleton
-class SelectedItemRepository @Inject constructor() {
-    private val selectedItems: MutableMap<ListOwner<*>, SelectedItemId> = mutableMapOf()
-
-    fun put(itemId: SelectedItemId) {
-        selectedItems[itemId.owner] = itemId
-    }
-
-    fun remove(owner: ListOwner<*>) {
-        selectedItems.remove(owner)
-    }
-
-    fun find(owner: ListOwner<*>): SelectedItemId? {
-        return selectedItems[owner]
-    }
-}
-
-fun <Q : QueryType> ListRepository.Factory.create(
-    query: Q,
-    localListDataSourceProvider: LocalListDataSourceProvider,
-    remoteListDataSourceProvider: RemoteListDataSourceProvider,
-    executor: AppExecutor
-): ListRepository<Q> {
-    return ListRepositoryImpl<Q, Any>(
-        localListDataSourceProvider.get(query),
-        remoteListDataSourceProvider.get(query), executor
-    )
 }
 
 internal class PagedListProviderImpl<Q : QueryType, I>(
@@ -130,12 +95,4 @@ internal class PagedListProviderImpl<Q : QueryType, I>(
             })
             .build()
     }
-}
-
-fun <Q : QueryType, I> PagedListProvider.Factory.create(
-    pagedListDataSourceFactory: PagedListProvider.DataSourceFactory<I>,
-    repository: ListRepository<Q>,
-    executor: AppExecutor
-): PagedListProvider<Q, I> {
-    return PagedListProviderImpl(pagedListDataSourceFactory, repository, executor)
 }

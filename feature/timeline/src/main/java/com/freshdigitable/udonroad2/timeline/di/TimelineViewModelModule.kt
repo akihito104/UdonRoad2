@@ -19,11 +19,9 @@ package com.freshdigitable.udonroad2.timeline.di
 import androidx.lifecycle.ViewModel
 import com.freshdigitable.udonroad2.data.ListRepository
 import com.freshdigitable.udonroad2.data.PagedListProvider
-import com.freshdigitable.udonroad2.data.db.LocalListDataSourceProvider
-import com.freshdigitable.udonroad2.data.db.PagedListDataSourceFactoryProvider
-import com.freshdigitable.udonroad2.data.impl.AppExecutor
-import com.freshdigitable.udonroad2.data.impl.create
-import com.freshdigitable.udonroad2.data.restclient.RemoteListDataSourceProvider
+import com.freshdigitable.udonroad2.data.impl.ListRepositoryComponent
+import com.freshdigitable.udonroad2.data.impl.listRepository
+import com.freshdigitable.udonroad2.data.impl.pagedListProvider
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.MemberListItem
 import com.freshdigitable.udonroad2.model.QueryType
@@ -60,31 +58,12 @@ internal interface TimelineViewModelModule {
             owner: ListOwner<*>,
             eventDispatcher: EventDispatcher,
             viewStateModel: FragmentContainerViewStateModel,
-            localListDataSourceProvider: LocalListDataSourceProvider,
-            remoteListDataSourceProvider: RemoteListDataSourceProvider,
-            pagedListDataSourceFactoryProvider: PagedListDataSourceFactoryProvider,
-            executor: AppExecutor
-        ): ViewModel {
-            val o = owner as ListOwner<QueryType.TweetQueryType>
-            val repository = ListRepository.create(
-                o.query,
-                localListDataSourceProvider,
-                remoteListDataSourceProvider,
-                executor
-            )
-            val pagedListProvider: PagedListProvider<QueryType.TweetQueryType, TweetListItem> =
-                PagedListProvider.create(
-                    pagedListDataSourceFactoryProvider.get(o.query),
-                    repository,
-                    executor
-                )
-            return TimelineViewModel(
-                o,
-                eventDispatcher,
-                viewStateModel,
-                repository,
-                pagedListProvider
-            )
+            listRepositoryFactory: ListRepositoryComponent.Factory
+        ): ViewModel = provideViewModel<QueryType.TweetQueryType, TweetListItem>(
+            owner,
+            listRepositoryFactory
+        ) { o, repository, pagedListProvider ->
+            TimelineViewModel(o, eventDispatcher, viewStateModel, repository, pagedListProvider)
         }
 
         @Provides
@@ -103,25 +82,12 @@ internal interface UserListViewModelModule {
         fun provideUserListViewModel(
             owner: ListOwner<*>,
             eventDispatcher: EventDispatcher,
-            localListDataSourceProvider: LocalListDataSourceProvider,
-            remoteListDataSourceProvider: RemoteListDataSourceProvider,
-            pagedListDataSourceFactoryProvider: PagedListDataSourceFactoryProvider,
-            executor: AppExecutor
-        ): ViewModel {
-            val o = owner as ListOwner<QueryType.UserQueryType>
-            val repository = ListRepository.create(
-                o.query,
-                localListDataSourceProvider,
-                remoteListDataSourceProvider,
-                executor
-            )
-            val pagedListProvider: PagedListProvider<QueryType.UserQueryType, UserListItem> =
-                PagedListProvider.create(
-                    pagedListDataSourceFactoryProvider.get(o.query),
-                    repository,
-                    executor
-                )
-            return UserListViewModel(o, eventDispatcher, repository, pagedListProvider)
+            listRepositoryFactory: ListRepositoryComponent.Factory
+        ): ViewModel = provideViewModel<QueryType.UserQueryType, UserListItem>(
+            owner,
+            listRepositoryFactory
+        ) { o, repository, pagedListProvider ->
+            UserListViewModel(o, eventDispatcher, repository, pagedListProvider)
         }
 
         @Provides
@@ -140,25 +106,12 @@ internal interface MemberListListViewModelModule {
         fun provideMemberListListViewModel(
             owner: ListOwner<*>,
             eventDispatcher: EventDispatcher,
-            localListDataSourceProvider: LocalListDataSourceProvider,
-            remoteListDataSourceProvider: RemoteListDataSourceProvider,
-            pagedListDataSourceFactoryProvider: PagedListDataSourceFactoryProvider,
-            executor: AppExecutor
-        ): ViewModel {
-            val o = owner as ListOwner<QueryType.UserListMembership>
-            val repository = ListRepository.create(
-                o.query,
-                localListDataSourceProvider,
-                remoteListDataSourceProvider,
-                executor
-            )
-            val pagedListProvider: PagedListProvider<QueryType.UserListMembership, MemberListItem> =
-                PagedListProvider.create(
-                    pagedListDataSourceFactoryProvider.get(o.query),
-                    repository,
-                    executor
-                )
-            return MemberListListViewModel(o, repository, eventDispatcher, pagedListProvider)
+            listRepositoryFactory: ListRepositoryComponent.Factory
+        ): ViewModel = provideViewModel<QueryType.UserListMembership, MemberListItem>(
+            owner,
+            listRepositoryFactory
+        ) { o, repository, pagedListProvider ->
+            MemberListListViewModel(o, repository, eventDispatcher, pagedListProvider)
         }
 
         @Provides
@@ -167,4 +120,18 @@ internal interface MemberListListViewModelModule {
         fun provideMemberListListViewModelKClass(): KClass<out ViewModel> =
             MemberListListViewModel::class
     }
+}
+
+private inline fun <Q : QueryType, I> provideViewModel(
+    owner: ListOwner<*>,
+    listRepositoryFactory: ListRepositoryComponent.Factory,
+    block: (ListOwner<Q>, ListRepository<Q>, PagedListProvider<Q, I>) -> ViewModel
+): ViewModel {
+    val component = listRepositoryFactory.create(owner.query)
+    val listRepository = component.listRepository<Q>()
+    return block(
+        owner as ListOwner<Q>,
+        listRepository,
+        component.pagedListProvider(listRepository)
+    )
 }

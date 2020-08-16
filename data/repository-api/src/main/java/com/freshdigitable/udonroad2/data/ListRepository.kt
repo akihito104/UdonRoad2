@@ -28,8 +28,6 @@ interface ListRepository<Q : QueryType> {
 
     fun loadList(query: ListQuery<Q>, owner: String)
     fun clear(owner: String)
-
-    companion object Factory
 }
 
 interface PagedListProvider<Q : QueryType, I> {
@@ -42,8 +40,6 @@ interface PagedListProvider<Q : QueryType, I> {
     interface DataSourceFactory<I> {
         fun getDataSourceFactory(owner: String): DataSource.Factory<Int, I>
     }
-
-    companion object Factory
 }
 
 interface LocalListDataSource<Q : QueryType, E> {
