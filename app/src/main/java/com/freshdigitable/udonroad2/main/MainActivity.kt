@@ -17,22 +17,15 @@
 package com.freshdigitable.udonroad2.main
 
 import android.os.Bundle
-import android.view.MenuItem
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.databinding.ActivityMainBinding
-import com.freshdigitable.udonroad2.model.app.navigation.AppAction
-import com.freshdigitable.udonroad2.model.app.navigation.CommonEvent
-import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.addTo
 import com.freshdigitable.udonroad2.oauth.OauthEvent
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
-import com.freshdigitable.udonroad2.timeline.create
 import com.google.android.material.snackbar.Snackbar
 import dagger.android.AndroidInjection
 import dagger.android.AndroidInjector
@@ -130,34 +123,4 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
             putSerializable(KEY_VIEW_STATE, viewState)
         }
     }
-}
-
-class MainViewModel(
-    private val eventDispatcher: EventDispatcher,
-    private val viewStates: MainActivityViewStates
-) : ViewModel() {
-
-    val isFabVisible: LiveData<Boolean> = viewStates.isFabVisible
-
-    internal fun initialEvent(savedState: MainActivityViewState?) {
-        eventDispatcher.postEvent(TimelineEvent.Setup(savedState))
-    }
-
-    fun onFabMenuSelected(item: MenuItem) {
-        Timber.tag("MainViewModel").d("onFabSelected: $item")
-        val selected =
-            requireNotNull(viewStates.current?.selectedItem) { "selectedItem should not be null." }
-        TimelineEvent.SelectedItemShortcut.create(item, selected).forEach {
-            eventDispatcher.postEvent(it)
-        }
-    }
-
-    fun onBackPressed() {
-        eventDispatcher.postEvent(CommonEvent.Back(viewStates.current))
-    }
-
-    val feedbackMessage: AppAction<FeedbackMessage> = viewStates.updateTweet
-
-    val currentState: MainActivityViewState?
-        get() = viewStates.current
 }
