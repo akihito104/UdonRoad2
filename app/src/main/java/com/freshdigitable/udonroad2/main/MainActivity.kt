@@ -17,35 +17,20 @@
 package com.freshdigitable.udonroad2.main
 
 import android.os.Bundle
-import android.view.MenuItem
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelStoreOwner
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.databinding.ActivityMainBinding
-import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
-import com.freshdigitable.udonroad2.model.app.navigation.AppAction
-import com.freshdigitable.udonroad2.model.app.navigation.CommonEvent
-import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.addTo
 import com.freshdigitable.udonroad2.oauth.OauthEvent
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
-import com.freshdigitable.udonroad2.timeline.create
-import com.freshdigitable.udonroad2.timeline.di.ListItemFragmentModule
-import com.freshdigitable.udonroad2.timeline.di.TweetDetailFragmentModule
 import com.google.android.material.snackbar.Snackbar
-import dagger.Binds
-import dagger.Module
-import dagger.Provides
 import dagger.android.AndroidInjection
 import dagger.android.AndroidInjector
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasAndroidInjector
-import dagger.multibindings.IntoMap
 import io.reactivex.disposables.CompositeDisposable
 import timber.log.Timber
 import javax.inject.Inject
@@ -136,62 +121,6 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
 
         private fun Bundle.saveViewState(viewState: MainActivityViewState?) {
             putSerializable(KEY_VIEW_STATE, viewState)
-        }
-    }
-}
-
-class MainViewModel(
-    private val eventDispatcher: EventDispatcher,
-    private val viewStates: MainActivityViewStates
-) : ViewModel() {
-
-    val isFabVisible: LiveData<Boolean> = viewStates.isFabVisible
-
-    internal fun initialEvent(savedState: MainActivityViewState?) {
-        eventDispatcher.postEvent(TimelineEvent.Setup(savedState))
-    }
-
-    fun onFabMenuSelected(item: MenuItem) {
-        Timber.tag("MainViewModel").d("onFabSelected: $item")
-        val selected =
-            requireNotNull(viewStates.current?.selectedItem) { "selectedItem should not be null." }
-        TimelineEvent.SelectedItemShortcut.create(item, selected).forEach {
-            eventDispatcher.postEvent(it)
-        }
-    }
-
-    fun onBackPressed() {
-        eventDispatcher.postEvent(CommonEvent.Back(viewStates.current))
-    }
-
-    val feedbackMessage: AppAction<FeedbackMessage> = viewStates.updateTweet
-
-    val currentState: MainActivityViewState?
-        get() = viewStates.current
-}
-
-@Module(
-    includes = [
-        ListItemFragmentModule::class,
-        TweetDetailFragmentModule::class
-    ]
-)
-interface MainActivityModule {
-    @Binds
-    @IntoMap
-    @ViewModelKey(MainViewModel::class)
-    fun bindMainViewModel(viewModel: MainViewModel): ViewModel
-
-    @Binds
-    fun bindViewModelStoreOwner(activity: MainActivity): ViewModelStoreOwner
-
-    companion object {
-        @Provides
-        fun provideMainViewModel(
-            navigator: EventDispatcher,
-            viewState: MainActivityViewStates
-        ): MainViewModel {
-            return MainViewModel(navigator, viewState)
         }
     }
 }
