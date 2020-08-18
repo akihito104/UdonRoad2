@@ -20,6 +20,7 @@ import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.app.di.ActivityScope
 import com.freshdigitable.udonroad2.model.app.navigation.FragmentContainerState
 import com.freshdigitable.udonroad2.model.app.navigation.addTo
+import com.freshdigitable.udonroad2.model.app.weakRef
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragment
@@ -29,7 +30,6 @@ import com.freshdigitable.udonroad2.timeline.fragment.TweetDetailFragmentArgs
 import com.freshdigitable.udonroad2.user.UserActivityDirections
 import io.reactivex.disposables.CompositeDisposable
 import java.io.Serializable
-import java.lang.ref.WeakReference
 import javax.inject.Inject
 
 @ActivityScope
@@ -37,17 +37,13 @@ class MainActivityNavigationDelegate @Inject constructor(
     mainActivity: MainActivity,
     actions: MainActivityActions
 ) : LifecycleEventObserver {
-    private val _activity = WeakReference<MainActivity>(mainActivity)
-    private val activity: MainActivity get() = requireNotNull(_activity.get())
-    private val _drawerLayout by lazy {
-        WeakReference(_activity.get()?.findViewById<DrawerLayout>(R.id.main_drawer))
+    private val activity: MainActivity by weakRef(mainActivity)
+    private val drawerLayout: DrawerLayout by weakRef(mainActivity) {
+        it.findViewById<DrawerLayout>(R.id.main_drawer)
     }
-
-    private val _navController: WeakReference<NavController> by lazy {
-        WeakReference(requireNotNull(_activity.get()).findNavController(R.id.main_nav_host))
+    private val navController: NavController by weakRef(mainActivity) {
+        it.findNavController(R.id.main_nav_host)
     }
-    private val navController: NavController
-        get() = requireNotNull(_navController.get())
 
     private val onDestinationChanged =
         NavController.OnDestinationChangedListener { _, destination, arguments ->
@@ -67,10 +63,6 @@ class MainActivityNavigationDelegate @Inject constructor(
     private val disposables = CompositeDisposable()
 
     init {
-        actions.authApp.subscribe {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(it.authUrl))
-            activity.startActivity(intent)
-        }.addTo(disposables)
         actions.launchUserInfo.subscribe {
             navController.navigate(UserActivityDirections.actionTimelineToActivityUser(it))
         }.addTo(disposables)
@@ -110,10 +102,7 @@ class MainActivityNavigationDelegate @Inject constructor(
                     R.navigation.nav_main,
                     ListItemFragment.bundle(nextState.owner, getString(nextState.label))
                 )
-                setupActionBarWithNavController(
-                    navController,
-                    _drawerLayout.get()
-                )
+                setupActionBarWithNavController(navController, drawerLayout)
             }
             MainNavHostState.Cause.NAVIGATION -> TODO()
             MainNavHostState.Cause.DESTINATION_CHANGED -> Unit
@@ -134,7 +123,7 @@ class MainActivityNavigationDelegate @Inject constructor(
         }
     }
 
-    fun onSupportNavigateUp(): Boolean = navController.navigateUp(_drawerLayout.get())
+    fun onSupportNavigateUp(): Boolean = navController.navigateUp(drawerLayout)
 }
 
 sealed class MainNavHostState : FragmentContainerState, Serializable {
