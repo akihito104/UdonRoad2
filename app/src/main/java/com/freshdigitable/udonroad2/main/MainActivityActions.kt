@@ -26,7 +26,7 @@ import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.filterByType
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
 import com.freshdigitable.udonroad2.model.user.TweetingUser
-import com.freshdigitable.udonroad2.oauth.OauthEvent
+import com.freshdigitable.udonroad2.oauth.OauthAction
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.TimelineEvent.TweetItemSelection
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragment
@@ -36,12 +36,13 @@ import javax.inject.Inject
 @ActivityScope
 class MainActivityActions @Inject constructor(
     val dispatcher: EventDispatcher,
-    tokenRepository: OAuthTokenRepository
+    tokenRepository: OAuthTokenRepository,
+    oauthAction: OauthAction
 ) {
     private val showFirstView: AppAction<out MainNavHostState> = dispatcher.toAction {
         AppAction.merge(
             filterByType<TimelineEvent.Setup>(),
-            filterByType<OauthEvent.OauthSucceeded>().map { TimelineEvent.Setup() }
+            oauthAction.authSuccess.map { TimelineEvent.Setup() }
         ).map {
             Timber.tag("Action").d("showFirstView: $it")
             when {
@@ -60,15 +61,8 @@ class MainActivityActions @Inject constructor(
         }
     }
 
-    val authApp: AppAction<OauthEvent.OauthRequested> = dispatcher.toAction {
-        filterByType<OauthEvent.OauthRequested>()
-    }
-
-    private val showTimeline: AppAction<NavigationEvent> = dispatcher.toAction {
-        AppAction.merge(
-            filterByType<OauthEvent.Init>(),
-            filterByType<TimelineEvent.Init>()
-        )
+    private val showTimeline: AppAction<TimelineEvent.Init> = dispatcher.toAction {
+        filterByType<TimelineEvent.Init>()
     }
 
     private val backDispatched: AppAction<NavigationEvent> = dispatcher.emitter
@@ -114,24 +108,25 @@ class MainActivityActions @Inject constructor(
     val rollbackViewState: AppAction<CommonEvent.Back> = backDispatched.filterByType()
 
     val updateContainer: AppAction<MainNavHostState> = AppAction.merge(
-        showFirstView,
-        showTimeline.map {
-            when (it) {
-                is OauthEvent.Init -> MainNavHostState.Timeline(
+        listOf(
+            showFirstView,
+            oauthAction.showAuth.map {
+                MainNavHostState.Timeline(
                     ListItemFragment.listOwner(QueryType.Oauth),
                     MainNavHostState.Cause.INIT
                 )
-                is TimelineEvent.Init -> MainNavHostState.Timeline(
+            },
+            showTimeline.map {
+                MainNavHostState.Timeline(
                     ListItemFragment.listOwner(QueryType.TweetQueryType.Timeline()),
                     MainNavHostState.Cause.INIT
                 )
-                else -> TODO("not implemented")
+            },
+            showTweetDetail.map { MainNavHostState.TweetDetail(it.tweetId) },
+            dispatcher.emitter.filterByType<TimelineEvent.DestinationChanged>().map {
+                it.state as MainNavHostState
             }
-        },
-        showTweetDetail.map { MainNavHostState.TweetDetail(it.tweetId) },
-        dispatcher.emitter.filterByType<TimelineEvent.DestinationChanged>().map {
-            it.state as MainNavHostState
-        }
+        )
     )
 
     val launchUserInfo: AppAction<TweetingUser> = dispatcher.toAction {

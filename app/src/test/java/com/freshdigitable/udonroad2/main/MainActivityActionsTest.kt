@@ -22,6 +22,7 @@ import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.tweet.TweetId
+import com.freshdigitable.udonroad2.oauth.OauthAction
 import com.freshdigitable.udonroad2.oauth.OauthEvent
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import org.junit.Rule
@@ -32,7 +33,8 @@ class MainActivityActionsTest {
     val rule = OAuthTokenRepositoryRule()
     private val eventDispatcher = EventDispatcher()
     private val tokenRepository: OAuthTokenRepository = rule.tokenRepository
-    private val sut = MainActivityActions(eventDispatcher, tokenRepository)
+    private val sut =
+        MainActivityActions(eventDispatcher, tokenRepository, OauthAction(eventDispatcher))
 
     @Test
     fun updateContainer_dispatchSetupEvent_then_flowInitOauthEvent() {

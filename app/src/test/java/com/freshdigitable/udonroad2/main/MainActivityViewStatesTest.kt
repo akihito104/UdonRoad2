@@ -31,6 +31,7 @@ import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.user.UserId
+import com.freshdigitable.udonroad2.oauth.OauthAction
 import com.freshdigitable.udonroad2.test.MockVerified
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.google.common.truth.Truth.assertThat
@@ -276,7 +277,11 @@ class MainActivityStateModelTestRule : TestWatcher() {
     val oauthTokenRepositoryMock = OAuthTokenRepositoryRule()
     val tweetRepositoryMock = TweetRepositoryRule()
     val sut = MainActivityViewStates(
-        MainActivityActions(dispatcher, oauthTokenRepositoryMock.tokenRepository),
+        MainActivityActions(
+            dispatcher,
+            oauthTokenRepositoryMock.tokenRepository,
+            OauthAction(dispatcher)
+        ),
         SelectedItemRepository(),
         tweetRepositoryMock.tweetRepository
     )
