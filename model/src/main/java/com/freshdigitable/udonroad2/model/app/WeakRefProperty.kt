@@ -26,3 +26,17 @@ private class WeakRefProperty<T : Any>(t: T) : ReadOnlyProperty<Any, T> {
     private val _t: WeakReference<T> = WeakReference(t)
     override fun getValue(thisRef: Any, property: KProperty<*>): T = requireNotNull(_t.get())
 }
+
+fun <T : Any, R : Any> weakRef(
+    t: T,
+    lazyBlock: (T) -> R
+): ReadOnlyProperty<Any, R> = WeakRefPropertyWithLazy(t, lazyBlock)
+
+private class WeakRefPropertyWithLazy<R : Any, T : Any>(
+    r: R,
+    lazyBlock: (R) -> T
+) : ReadOnlyProperty<Any, T> {
+    val rRef: R by weakRef(r)
+    val tRef: WeakReference<T> by lazy { WeakReference(lazyBlock(rRef)) }
+    override fun getValue(thisRef: Any, property: KProperty<*>): T = requireNotNull(tRef.get())
+}
