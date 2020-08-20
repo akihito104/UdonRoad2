@@ -24,6 +24,7 @@ import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.viewModelScope
 import androidx.paging.DataSource
 import androidx.paging.PagedList
+import com.freshdigitable.udonroad2.data.impl.DispatcherProvider
 import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.RequestTokenItem
@@ -37,11 +38,12 @@ class OauthViewModel(
     dataSource: DataSource<Int, OauthItem>,
     private val repository: OAuthTokenRepository,
     private val eventDispatcher: EventDispatcher,
-    handle: SavedStateHandle
+    private val savedState: OauthSavedStates,
+    private val coroutineDispatchers: DispatcherProvider = DispatcherProvider()
 ) : ViewModel(), ListItemLoadable<QueryType.Oauth, OauthItem> {
 
     override val loading: LiveData<Boolean> = MutableLiveData(false)
-    private val livePagedList: MutableLiveData<PagedList<OauthItem>>
+    override val timeline: LiveData<PagedList<OauthItem>>
 
     init {
         val config = PagedList.Config.Builder()
@@ -51,7 +53,7 @@ class OauthViewModel(
             .setEnablePlaceholders(false)
             .setInitialLoadSizeHint(10)
             .build()
-        livePagedList = MutableLiveData(
+        timeline = MutableLiveData(
             PagedList.Builder(dataSource, config)
                 .setNotifyExecutor {}
                 .setFetchExecutor {}
@@ -59,18 +61,14 @@ class OauthViewModel(
         )
     }
 
-    override val timeline: LiveData<PagedList<OauthItem>> = livePagedList
-
     override fun onRefresh() {}
 
-    private val requestToken: MutableLiveData<RequestTokenItem?> = handle.getLiveData(
-        SAVED_STATE_REQUEST_TOKEN
-    )
+    private val requestToken: LiveData<RequestTokenItem?> = savedState.requestTokenItem
 
     fun onLoginClicked() {
-        viewModelScope.launch {
+        viewModelScope.launch(coroutineDispatchers.mainContext) {
             repository.getRequestTokenItem().also {
-                requestToken.value = it
+                savedState.setToken(it)
                 eventDispatcher.postEvent(OauthEvent.OauthRequested(it.authorizationUrl))
             }
         }
@@ -88,21 +86,33 @@ class OauthViewModel(
     }
 
     fun onSendPinClicked() {
-        viewModelScope.launch {
+        viewModelScope.launch(coroutineDispatchers.mainContext) {
             val t = repository.getAccessToken(requestToken.value!!, pin.value.toString())
             repository.login(t.userId)
-            requestToken.value = null
+            savedState.setToken(null)
             eventDispatcher.postEvent(OauthEvent.OauthSucceeded)
         }
     }
 
-    companion object {
-        private const val SAVED_STATE_REQUEST_TOKEN = "saveState_requestToken"
-    }
 }
 
 sealed class OauthEvent : NavigationEvent {
     object Init : OauthEvent()
     data class OauthRequested(val authUrl: String) : OauthEvent()
     object OauthSucceeded : OauthEvent()
+}
+
+class OauthSavedStates(handle: SavedStateHandle) {
+    private val _requestTokenItem: MutableLiveData<RequestTokenItem?> = handle.getLiveData(
+        SAVED_STATE_REQUEST_TOKEN
+    )
+    val requestTokenItem: LiveData<RequestTokenItem?> = _requestTokenItem
+
+    fun setToken(token: RequestTokenItem?) {
+        _requestTokenItem.value = token
+    }
+
+    companion object {
+        private const val SAVED_STATE_REQUEST_TOKEN = "saveState_requestToken"
+    }
 }

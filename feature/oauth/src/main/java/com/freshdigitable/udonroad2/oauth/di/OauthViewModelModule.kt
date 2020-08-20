@@ -27,6 +27,7 @@ import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.oauth.OauthDataSource
 import com.freshdigitable.udonroad2.oauth.OauthItem
+import com.freshdigitable.udonroad2.oauth.OauthSavedStates
 import com.freshdigitable.udonroad2.oauth.OauthViewModel
 import dagger.Module
 import dagger.Provides
@@ -42,15 +43,19 @@ interface OauthViewModelModule {
         }
 
         @Provides
+        fun provideOauthSavedStates(handle: SavedStateHandle): OauthSavedStates =
+            OauthSavedStates(handle)
+
+        @Provides
         @IntoMap
         @ViewModelKey(OauthViewModel::class)
         fun provideOauthViewModel(
             dataSource: DataSource<Int, OauthItem>,
             oAuthTokenRepository: OAuthTokenRepository,
             eventDispatcher: EventDispatcher,
-            handle: SavedStateHandle
+            savedStates: OauthSavedStates
         ): ViewModel {
-            return OauthViewModel(dataSource, oAuthTokenRepository, eventDispatcher, handle)
+            return OauthViewModel(dataSource, oAuthTokenRepository, eventDispatcher, savedStates)
         }
 
         @Provides
