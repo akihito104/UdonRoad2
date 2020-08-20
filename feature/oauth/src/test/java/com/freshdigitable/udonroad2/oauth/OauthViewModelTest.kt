@@ -16,13 +16,16 @@
 
 package com.freshdigitable.udonroad2.oauth
 
-import androidx.lifecycle.MutableLiveData
+import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.lifecycle.SavedStateHandle
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.freshdigitable.udonroad2.data.impl.DispatcherProvider
 import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
+import com.freshdigitable.udonroad2.model.AccessTokenEntity
 import com.freshdigitable.udonroad2.model.RequestTokenItem
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
+import com.freshdigitable.udonroad2.model.user.UserId
 import com.google.common.truth.Truth.assertThat
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -52,49 +55,26 @@ class OauthViewModelTest {
     @get:Rule
     val coroutineRule = CoroutineTestRule()
 
-    @Test
-    fun notNull() {
-        val dataSource = OauthDataSource(ApplicationProvider.getApplicationContext())
-        val repository = mockk<OAuthTokenRepository>()
-        val dispatcher = EventDispatcher()
-        val handle = mockk<OauthSavedStates>().apply {
-            every { requestTokenItem } returns MutableLiveData()
-        }
-        val sut = OauthViewModel(
-            dataSource,
-            repository,
-            dispatcher,
-            handle,
-            coroutineRule.coroutineContextProvider
-        )
+    @get:Rule
+    val taskRule = InstantTaskExecutorRule()
 
-        assertThat(sut).isNotNull()
-    }
+    private val dataSource = OauthDataSource(ApplicationProvider.getApplicationContext())
+    private val repository = mockk<OAuthTokenRepository>()
+    private val dispatcher = EventDispatcher()
+    private val savedStates = OauthSavedStates(SavedStateHandle())
+    private val sut = OauthViewModel(
+        dataSource, repository, dispatcher, savedStates, coroutineRule.coroutineContextProvider
+    )
 
     @Test
     fun onLoginClicked(): Unit = coroutineRule.runBlockingTest {
         // setup
-        val dataSource = OauthDataSource(ApplicationProvider.getApplicationContext())
-        val repository = mockk<OAuthTokenRepository>().apply {
-            val token = object : RequestTokenItem {
-                override val token: Serializable
-                    get() = TODO("Not yet implemented")
-                override val authorizationUrl: String = "http://localhost"
-            }
-            coEvery { getRequestTokenItem() } returns token
+        val token = object : RequestTokenItem {
+            override val token: Serializable
+                get() = TODO("Not yet implemented")
+            override val authorizationUrl: String = "http://localhost"
         }
-        val dispatcher = EventDispatcher()
-        val handle = mockk<OauthSavedStates>().apply {
-            every { requestTokenItem } returns MutableLiveData()
-            every { setToken(match { it.authorizationUrl == "http://localhost" }) } just runs
-        }
-        val sut = OauthViewModel(
-            dataSource,
-            repository,
-            dispatcher,
-            handle,
-            coroutineRule.coroutineContextProvider
-        )
+        coEvery { repository.getRequestTokenItem() } returns token
         val test = dispatcher.emitter.test()
 
         // exercise
@@ -103,10 +83,68 @@ class OauthViewModelTest {
         // verify
         assertThat(sut).isNotNull()
         coVerify { repository.getRequestTokenItem() }
-        verify { handle.setToken(match { it.authorizationUrl == "http://localhost" }) }
         test.assertOf {
             it.assertValueAt(0) { actual -> actual is OauthEvent.OauthRequested }
         }
+    }
+
+    @Test
+    fun onAfterPinTextChanged(): Unit = coroutineRule.runBlockingTest {
+        // setup
+        val token = object : RequestTokenItem {
+            override val token: Serializable
+                get() = TODO("Not yet implemented")
+            override val authorizationUrl: String = "http://localhost"
+        }
+        coEvery { repository.getRequestTokenItem() } returns token
+        val dispatcherObserver = dispatcher.emitter.test()
+        sut.sendPinButtonEnabled.observeForever { }
+
+        sut.onLoginClicked()
+        assertThat(sut.sendPinButtonEnabled.value).isFalse()
+
+        // exercise
+        sut.onAfterPinTextChanged("012345")
+
+        // verify
+        coVerify { repository.getRequestTokenItem() }
+        dispatcherObserver.assertOf {
+            it.assertValueAt(0) { actual -> actual is OauthEvent.OauthRequested }
+        }
+        assertThat(sut.sendPinButtonEnabled.value).isTrue()
+    }
+
+    @Test
+    fun onSendPinClicked(): Unit = coroutineRule.runBlockingTest {
+        // setup
+        val token = object : RequestTokenItem {
+            override val token: Serializable
+                get() = TODO("Not yet implemented")
+            override val authorizationUrl: String = "http://localhost"
+        }
+        coEvery { repository.getRequestTokenItem() } returns token
+        coEvery { repository.getAccessToken(any(), "012345") } returns AccessTokenEntity.create(
+            UserId(100), "token", "tokenSecret"
+        )
+        every { repository.login(UserId(100)) } just runs
+        val dispatcherObserver = dispatcher.emitter.test()
+        sut.sendPinButtonEnabled.observeForever { }
+
+        sut.onLoginClicked()
+        sut.onAfterPinTextChanged("012345")
+
+        // exercise
+        sut.onSendPinClicked()
+
+        // verify
+        coVerify { repository.getRequestTokenItem() }
+        coVerify { repository.getAccessToken(any(), any()) }
+        verify { repository.login(UserId(100)) }
+        dispatcherObserver.assertOf {
+            it.assertValueAt(0) { actual -> actual is OauthEvent.OauthRequested }
+            it.assertValueAt(1) { actual -> actual is OauthEvent.OauthSucceeded }
+        }
+        assertThat(sut.sendPinButtonEnabled.value).isFalse()
     }
 }
 
