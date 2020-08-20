@@ -105,11 +105,6 @@ class MainViewModelTestRule(
         stateModelRule.dispatchEvents(*events)
     }
 
-    override fun starting(description: Description?) {
-        super.starting(description)
-        stateModelRule.setup()
-    }
-
     override fun apply(base: Statement?, description: Description?): Statement {
         return RuleChain.outerRule(stateModelRule)
             .apply(super.apply(base, description), description)

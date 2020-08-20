@@ -272,11 +272,12 @@ class TweetRepositoryRule(
 }
 
 class MainActivityStateModelTestRule : TestWatcher() {
-    val dispatcher = EventDispatcher()
-    val oauthTokenRepositoryMock = OAuthTokenRepositoryRule()
+    private val actionsTestRule = MainActivityActionsTestRule()
+    val dispatcher = actionsTestRule.dispatcher
+    val oauthTokenRepositoryMock = actionsTestRule.oauthTokenRepositoryMock
     val tweetRepositoryMock = TweetRepositoryRule()
     val sut = MainActivityViewStates(
-        MainActivityActions(dispatcher, oauthTokenRepositoryMock.tokenRepository),
+        actionsTestRule.sut,
         SelectedItemRepository(),
         tweetRepositoryMock.tweetRepository
     )
@@ -286,21 +287,17 @@ class MainActivityStateModelTestRule : TestWatcher() {
         dispatcher.postEvents(*events)
     }
 
-    fun setup() {
+    override fun starting(description: Description?) {
+        super.starting(description)
         listOf(
             sut.isFabVisible,
             sut.selectedItemId
         ).forEach { it.observeForever {} }
     }
 
-    override fun starting(description: Description?) {
-        super.starting(description)
-        setup()
-    }
-
     override fun apply(base: Statement?, description: Description?): Statement {
         return RuleChain.outerRule(InstantTaskExecutorRule())
-            .around(oauthTokenRepositoryMock)
+            .around(actionsTestRule)
             .around(tweetRepositoryMock)
             .apply(super.apply(base, description), description)
     }
