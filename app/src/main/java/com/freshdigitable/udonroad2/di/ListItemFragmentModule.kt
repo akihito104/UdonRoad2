@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.freshdigitable.udonroad2.timeline.di
+package com.freshdigitable.udonroad2.di
 
 import com.freshdigitable.udonroad2.model.app.di.FragmentScope
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragment
@@ -26,7 +26,12 @@ import dagger.android.ContributesAndroidInjector
 @Module
 interface ListItemFragmentModule {
     @FragmentScope
-    @ContributesAndroidInjector
+    @ContributesAndroidInjector(
+        modules = [
+            ListItemViewModelModule::class,
+            ListItemAdapterModule::class
+        ]
+    )
     fun contributeListItemFragment(): ListItemFragment
 }
 

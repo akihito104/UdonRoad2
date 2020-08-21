@@ -14,10 +14,10 @@ import androidx.lifecycle.observe
 import androidx.viewpager.widget.ViewPager
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.databinding.ActivityUserBinding
+import com.freshdigitable.udonroad2.di.ListItemFragmentModule
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.Navigation
 import com.freshdigitable.udonroad2.model.user.TweetingUser
-import com.freshdigitable.udonroad2.timeline.di.ListItemFragmentModule
 import com.google.android.material.appbar.AppBarLayout
 import dagger.Binds
 import dagger.Module
