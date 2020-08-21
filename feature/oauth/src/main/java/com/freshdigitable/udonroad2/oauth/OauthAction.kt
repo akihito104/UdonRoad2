@@ -31,6 +31,9 @@ class OauthAction @Inject constructor(
     internal val authApp: AppAction<OauthEvent.LoginClicked> = dispatcher.toAction {
         filterByType()
     }
+    internal val inputPin: AppAction<OauthEvent.PinTextChanged> = dispatcher.toAction {
+        filterByType()
+    }
     val authSuccess: AppAction<OauthEvent.OauthSucceeded> = dispatcher.toAction {
         filterByType()
     }

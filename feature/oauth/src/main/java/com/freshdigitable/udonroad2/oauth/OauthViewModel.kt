@@ -20,7 +20,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.viewModelScope
 import androidx.paging.DataSource
 import androidx.paging.PagedList
@@ -31,8 +30,10 @@ import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.RequestTokenItem
 import com.freshdigitable.udonroad2.model.app.ext.merge
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
+import com.freshdigitable.udonroad2.model.app.navigation.AppViewState
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
+import com.freshdigitable.udonroad2.model.app.navigation.toViewState
 import com.freshdigitable.udonroad2.timeline.ListItemLoadable
 import kotlinx.coroutines.launch
 
@@ -72,15 +73,11 @@ class OauthViewModel(
         eventDispatcher.postEvent(OauthEvent.LoginClicked)
     }
 
-    private val _pin = MutableLiveData("")
-    val pin: LiveData<String> = _pin.distinctUntilChanged()
-
-    val sendPinButtonEnabled: LiveData<Boolean> = merge(requestToken, pin) { token, p ->
-        token != null && !p.isNullOrEmpty()
-    }
+    val pin: LiveData<CharSequence> = viewStates.pinText
+    val sendPinButtonEnabled: LiveData<Boolean> = viewStates.sendPinEnabled
 
     fun onAfterPinTextChanged(pin: CharSequence) {
-        _pin.value = pin.toString()
+        eventDispatcher.postEvent(OauthEvent.PinTextChanged(pin))
     }
 
     fun onSendPinClicked() {
@@ -97,6 +94,7 @@ class OauthViewModel(
 sealed class OauthEvent : NavigationEvent {
     object Init : OauthEvent()
     object LoginClicked : OauthEvent()
+    data class PinTextChanged(val text: CharSequence) : OauthEvent()
     object OauthSucceeded : OauthEvent()
 }
 
@@ -132,6 +130,14 @@ class OauthViewStates(
         }
     }
     internal val requestToken: LiveData<RequestTokenItem?> = savedState.requestTokenItem
+
+    internal val pinText: LiveData<CharSequence> = actions.inputPin.map {
+        it.text
+    }.toViewState()
+
+    internal val sendPinEnabled: AppViewState<Boolean> = merge(requestToken, pinText) { t, p ->
+        t != null && p?.isNotEmpty() == true
+    }
 
     init {
         navDelegate.subscribeWith(_requestToken) { launchTwitterOauth(it.authorizationUrl) }

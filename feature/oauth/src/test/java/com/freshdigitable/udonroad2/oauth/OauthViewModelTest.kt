@@ -156,7 +156,8 @@ class OauthViewModelTest {
         verify { repository.login(UserId(100)) }
         dispatcherObserver.assertOf {
             it.assertValueAt(0) { actual -> actual is OauthEvent.LoginClicked }
-            it.assertValueAt(1) { actual -> actual is OauthEvent.OauthSucceeded }
+            it.assertValueAt(1) { actual -> actual is OauthEvent.PinTextChanged }
+            it.assertValueAt(2) { actual -> actual is OauthEvent.OauthSucceeded }
         }
         assertThat(sut.sendPinButtonEnabled.value).isFalse()
     }
