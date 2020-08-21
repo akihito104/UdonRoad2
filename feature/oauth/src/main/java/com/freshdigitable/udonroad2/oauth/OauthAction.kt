@@ -23,7 +23,7 @@ import com.freshdigitable.udonroad2.model.app.navigation.toAction
 import javax.inject.Inject
 
 class OauthAction @Inject constructor(
-    dispatcher: EventDispatcher
+    internal val dispatcher: EventDispatcher
 ) {
     val showAuth: AppAction<OauthEvent.Init> = dispatcher.toAction {
         filterByType()
@@ -32,6 +32,9 @@ class OauthAction @Inject constructor(
         filterByType()
     }
     internal val inputPin: AppAction<OauthEvent.PinTextChanged> = dispatcher.toAction {
+        filterByType()
+    }
+    internal val sendPin: AppAction<OauthEvent.SendPinClicked> = dispatcher.toAction {
         filterByType()
     }
     val authSuccess: AppAction<OauthEvent.OauthSucceeded> = dispatcher.toAction {

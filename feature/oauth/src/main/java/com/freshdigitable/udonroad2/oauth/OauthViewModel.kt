@@ -20,11 +20,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import androidx.paging.DataSource
 import androidx.paging.PagedList
 import com.freshdigitable.udonroad2.data.impl.AppExecutor
-import com.freshdigitable.udonroad2.data.impl.DispatcherProvider
 import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.RequestTokenItem
@@ -39,15 +37,14 @@ import kotlinx.coroutines.launch
 
 class OauthViewModel(
     dataSource: DataSource<Int, OauthItem>,
-    private val repository: OAuthTokenRepository,
     private val eventDispatcher: EventDispatcher,
-    private val savedState: OauthSavedStates,
     viewStates: OauthViewStates,
-    private val coroutineDispatchers: DispatcherProvider = DispatcherProvider()
 ) : ViewModel(), ListItemLoadable<QueryType.Oauth, OauthItem> {
 
     override val loading: LiveData<Boolean> = MutableLiveData(false)
     override val timeline: LiveData<PagedList<OauthItem>>
+    val pin: LiveData<CharSequence> = viewStates.pinText
+    val sendPinButtonEnabled: LiveData<Boolean> = viewStates.sendPinEnabled
 
     init {
         val config = PagedList.Config.Builder()
@@ -67,26 +64,16 @@ class OauthViewModel(
 
     override fun onRefresh() {}
 
-    private val requestToken: LiveData<RequestTokenItem?> = viewStates.requestToken
-
     fun onLoginClicked() {
         eventDispatcher.postEvent(OauthEvent.LoginClicked)
     }
-
-    val pin: LiveData<CharSequence> = viewStates.pinText
-    val sendPinButtonEnabled: LiveData<Boolean> = viewStates.sendPinEnabled
 
     fun onAfterPinTextChanged(pin: CharSequence) {
         eventDispatcher.postEvent(OauthEvent.PinTextChanged(pin))
     }
 
     fun onSendPinClicked() {
-        viewModelScope.launch(coroutineDispatchers.mainContext) {
-            val t = repository.getAccessToken(requestToken.value!!, pin.value.toString())
-            repository.login(t.userId)
-            savedState.setToken(null)
-            eventDispatcher.postEvent(OauthEvent.OauthSucceeded)
-        }
+        eventDispatcher.postEvent(OauthEvent.SendPinClicked)
     }
 
 }
@@ -95,6 +82,7 @@ sealed class OauthEvent : NavigationEvent {
     object Init : OauthEvent()
     object LoginClicked : OauthEvent()
     data class PinTextChanged(val text: CharSequence) : OauthEvent()
+    object SendPinClicked : OauthEvent()
     object OauthSucceeded : OauthEvent()
 }
 
@@ -129,7 +117,7 @@ class OauthViewStates(
             }
         }
     }
-    internal val requestToken: LiveData<RequestTokenItem?> = savedState.requestTokenItem
+    private val requestToken: LiveData<RequestTokenItem?> = savedState.requestTokenItem
 
     internal val pinText: LiveData<CharSequence> = actions.inputPin.map {
         it.text
@@ -139,7 +127,21 @@ class OauthViewStates(
         t != null && p?.isNotEmpty() == true
     }
 
+    private val sendPin: AppAction<OauthEvent.OauthSucceeded> = actions.sendPin.flatMap {
+        val token = requireNotNull(requestToken.value)
+        val verifier = pinText.value.toString()
+        AppAction.create { emitter ->
+            appExecutor.launch {
+                val t = repository.getAccessToken(token, verifier)
+                repository.login(t.userId)
+                savedState.setToken(null)
+                emitter.onNext(OauthEvent.OauthSucceeded)
+            }
+        }
+    }
+
     init {
         navDelegate.subscribeWith(_requestToken) { launchTwitterOauth(it.authorizationUrl) }
+        navDelegate.subscribeWith(sendPin) { actions.dispatcher.postEvent(it) }
     }
 }

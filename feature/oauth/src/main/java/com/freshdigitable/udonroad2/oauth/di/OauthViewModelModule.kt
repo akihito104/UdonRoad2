@@ -66,18 +66,10 @@ interface OauthViewModelModule {
         @ViewModelKey(OauthViewModel::class)
         fun provideOauthViewModel(
             dataSource: DataSource<Int, OauthItem>,
-            oAuthTokenRepository: OAuthTokenRepository,
             eventDispatcher: EventDispatcher,
-            savedStates: OauthSavedStates,
             viewStates: OauthViewStates,
         ): ViewModel {
-            return OauthViewModel(
-                dataSource,
-                oAuthTokenRepository,
-                eventDispatcher,
-                savedStates,
-                viewStates
-            )
+            return OauthViewModel(dataSource, eventDispatcher, viewStates)
         }
 
         @Provides
