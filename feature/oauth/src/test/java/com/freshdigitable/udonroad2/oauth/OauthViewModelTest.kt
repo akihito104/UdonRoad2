@@ -20,10 +20,12 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.SavedStateHandle
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.freshdigitable.udonroad2.data.impl.AppExecutor
 import com.freshdigitable.udonroad2.data.impl.DispatcherProvider
 import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
 import com.freshdigitable.udonroad2.model.AccessTokenEntity
 import com.freshdigitable.udonroad2.model.RequestTokenItem
+import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.user.UserId
 import com.google.common.truth.Truth.assertThat
@@ -62,8 +64,19 @@ class OauthViewModelTest {
     private val repository = mockk<OAuthTokenRepository>()
     private val dispatcher = EventDispatcher()
     private val savedStates = OauthSavedStates(SavedStateHandle())
+    private val navDelegate: OauthNavigationDelegate = mockk<OauthNavigationDelegate>().apply {
+        every { subscribeWith(any<AppAction<*>>(), any()) } answers {
+            (this.arg(0) as AppAction<*>).subscribe()
+        }
+    }
     private val sut = OauthViewModel(
-        dataSource, repository, dispatcher, savedStates, coroutineRule.coroutineContextProvider
+        dataSource, repository, dispatcher, savedStates, OauthViewStates(
+            OauthAction(dispatcher),
+            navDelegate,
+            repository,
+            savedStates,
+            AppExecutor(dispatcher = coroutineRule.coroutineContextProvider)
+        ), coroutineRule.coroutineContextProvider
     )
 
     @Test
@@ -76,16 +89,17 @@ class OauthViewModelTest {
         }
         coEvery { repository.getRequestTokenItem() } returns token
         val test = dispatcher.emitter.test()
+        sut.sendPinButtonEnabled.observeForever { }
 
         // exercise
         sut.onLoginClicked()
 
         // verify
-        assertThat(sut).isNotNull()
-        coVerify { repository.getRequestTokenItem() }
         test.assertOf {
-            it.assertValueAt(0) { actual -> actual is OauthEvent.OauthRequested }
+            it.assertValueAt(0) { actual -> actual is OauthEvent.LoginClicked }
         }
+        coVerify { repository.getRequestTokenItem() }
+        assertThat(sut.sendPinButtonEnabled.value).isFalse()
     }
 
     @Test
@@ -109,7 +123,7 @@ class OauthViewModelTest {
         // verify
         coVerify { repository.getRequestTokenItem() }
         dispatcherObserver.assertOf {
-            it.assertValueAt(0) { actual -> actual is OauthEvent.OauthRequested }
+            it.assertValueAt(0) { actual -> actual is OauthEvent.LoginClicked }
         }
         assertThat(sut.sendPinButtonEnabled.value).isTrue()
     }
@@ -141,7 +155,7 @@ class OauthViewModelTest {
         coVerify { repository.getAccessToken(any(), any()) }
         verify { repository.login(UserId(100)) }
         dispatcherObserver.assertOf {
-            it.assertValueAt(0) { actual -> actual is OauthEvent.OauthRequested }
+            it.assertValueAt(0) { actual -> actual is OauthEvent.LoginClicked }
             it.assertValueAt(1) { actual -> actual is OauthEvent.OauthSucceeded }
         }
         assertThat(sut.sendPinButtonEnabled.value).isFalse()
