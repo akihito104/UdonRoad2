@@ -24,8 +24,6 @@ import com.freshdigitable.udonroad2.main.MainActivityViewStates
 import com.freshdigitable.udonroad2.main.MainViewModel
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
-import com.freshdigitable.udonroad2.timeline.di.ListItemFragmentModule
-import com.freshdigitable.udonroad2.timeline.di.TweetDetailFragmentModule
 import dagger.Binds
 import dagger.Module
 import dagger.Provides

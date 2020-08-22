@@ -36,9 +36,7 @@ interface ActivityBuilders {
     @ContributesAndroidInjector(
         modules = [
             MainActivityModule::class,
-            ViewModelModule::class,
-            ListItemViewModelModule::class,
-            ListItemAdapterModule::class
+            ViewModelModule::class
         ]
     )
     fun contributesMainActivity(): MainActivity
@@ -47,9 +45,7 @@ interface ActivityBuilders {
     @ContributesAndroidInjector(
         modules = [
             UserActivityModule::class,
-            ViewModelModule::class,
-            ListItemViewModelModule::class,
-            ListItemAdapterModule::class
+            ViewModelModule::class
         ]
     )
     fun contributeUserActivity(): UserActivity
