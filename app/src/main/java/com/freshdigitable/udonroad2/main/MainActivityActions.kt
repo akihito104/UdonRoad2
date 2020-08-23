@@ -26,8 +26,8 @@ import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.filterByType
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
-import com.freshdigitable.udonroad2.model.user.TweetingUser
 import com.freshdigitable.udonroad2.oauth.OauthAction
+import com.freshdigitable.udonroad2.timeline.TimelineActions
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.TimelineEvent.TweetItemSelection
 import timber.log.Timber
@@ -37,8 +37,9 @@ import javax.inject.Inject
 class MainActivityActions @Inject constructor(
     val dispatcher: EventDispatcher,
     tokenRepository: OAuthTokenRepository,
-    oauthAction: OauthAction,
-    listOwnerGenerator: ListOwnerGenerator
+    listOwnerGenerator: ListOwnerGenerator,
+    timelineActions: TimelineActions,
+    oauthAction: OauthAction
 ) {
     private val showFirstView: AppAction<out MainNavHostState> = dispatcher.toAction {
         AppAction.merge(
@@ -62,10 +63,6 @@ class MainActivityActions @Inject constructor(
         }
     }
 
-    private val showTimeline: AppAction<TimelineEvent.Init> = dispatcher.toAction {
-        filterByType<TimelineEvent.Init>()
-    }
-
     private val backDispatched: AppAction<NavigationEvent> = dispatcher.emitter
         .filterByType<CommonEvent.Back>()
         .map {
@@ -78,33 +75,7 @@ class MainActivityActions @Inject constructor(
             }
         }
 
-    val launchMediaViewer: AppAction<TimelineEvent.MediaItemClicked> = dispatcher.toAction {
-        filterByType<TimelineEvent.MediaItemClicked>()
-    }
-
-    val selectItem: AppAction<TweetItemSelection.Selected> = dispatcher.toAction {
-        AppAction.merge(
-            filterByType<TweetItemSelection.Selected>(),
-            launchMediaViewer
-                .filter { it.selectedItemId != null }
-                .map { TweetItemSelection.Selected(requireNotNull(it.selectedItemId)) }
-        )
-    }
     val unselectItem: AppAction<TweetItemSelection.Unselected> = backDispatched.filterByType()
-    val toggleItem: AppAction<TweetItemSelection.Toggle> = dispatcher.toAction {
-        filterByType<TweetItemSelection.Toggle>()
-    }
-
-    private val showTweetDetail: AppAction<TimelineEvent.SelectedItemShortcut.TweetDetail> =
-        dispatcher.toAction {
-            filterByType<TimelineEvent.SelectedItemShortcut.TweetDetail>()
-        }
-    val updateTweet: AppAction<out TimelineEvent.SelectedItemShortcut> = dispatcher.toAction {
-        AppAction.merge(
-            filterByType<TimelineEvent.SelectedItemShortcut.Like>(),
-            filterByType<TimelineEvent.SelectedItemShortcut.Retweet>()
-        )
-    }
 
     val rollbackViewState: AppAction<CommonEvent.Back> = backDispatched.filterByType()
 
@@ -117,23 +88,16 @@ class MainActivityActions @Inject constructor(
                     MainNavHostState.Cause.INIT
                 )
             },
-            showTimeline.map {
+            timelineActions.showTimeline.map {
                 MainNavHostState.Timeline(
                     listOwnerGenerator.create(QueryType.TweetQueryType.Timeline()),
                     MainNavHostState.Cause.INIT
                 )
             },
-            showTweetDetail.map { MainNavHostState.TweetDetail(it.tweetId) },
+            timelineActions.showTweetDetail.map { MainNavHostState.TweetDetail(it.tweetId) },
             dispatcher.emitter.filterByType<TimelineEvent.DestinationChanged>().map {
                 it.state as MainNavHostState
             }
         )
     )
-
-    val launchUserInfo: AppAction<TweetingUser> = dispatcher.toAction {
-        AppAction.merge(
-            filterByType<TimelineEvent.UserIconClicked>().map { it.user },
-            filterByType<TimelineEvent.RetweetUserClicked>().map { it.user }
-        )
-    }
 }

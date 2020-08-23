@@ -26,12 +26,13 @@ import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
-import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
+import com.freshdigitable.udonroad2.model.app.navigation.postEvents
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.user.UserId
 import com.freshdigitable.udonroad2.test.MockVerified
+import com.freshdigitable.udonroad2.timeline.TimelineActions
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.google.common.truth.Truth.assertThat
 import io.mockk.every
@@ -278,6 +279,7 @@ class MainActivityStateModelTestRule : TestWatcher() {
     val tweetRepositoryMock = TweetRepositoryRule()
     val sut = MainActivityViewStates(
         actionsTestRule.sut,
+        TimelineActions(dispatcher),
         SelectedItemRepository(),
         tweetRepositoryMock.tweetRepository
     )
@@ -301,8 +303,4 @@ class MainActivityStateModelTestRule : TestWatcher() {
             .around(tweetRepositoryMock)
             .apply(super.apply(base, description), description)
     }
-}
-
-fun EventDispatcher.postEvents(vararg events: NavigationEvent) {
-    events.forEach(this::postEvent)
 }

@@ -21,9 +21,11 @@ import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
+import com.freshdigitable.udonroad2.model.app.navigation.postEvents
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.oauth.OauthAction
 import com.freshdigitable.udonroad2.oauth.OauthEvent
+import com.freshdigitable.udonroad2.timeline.TimelineActions
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import io.reactivex.observers.TestObserver
 import org.junit.Rule
@@ -123,76 +125,23 @@ class MainActivityActionsTest {
             it.assertValueCount(1)
         }
     }
-
-    @Test
-    fun updateTweet_dispatchLikeEvent_then_LikeEventDispatched(): Unit = with(rule) {
-        // exercise
-        dispatcher.postEvents(
-            TimelineEvent.SelectedItemShortcut.Like(TweetId(1000))
-        )
-
-        // verify
-        updateTweetObserver.assertOf {
-            it.assertNotComplete()
-            it.assertValueCount(1)
-            it.assertValueAt(0, TimelineEvent.SelectedItemShortcut.Like(TweetId(1000)))
-        }
-    }
-
-    @Test
-    fun updateTweet_dispatchRetweetEvent_then_RetweetEventDispatched(): Unit = with(rule) {
-        // exercise
-        dispatcher.postEvents(
-            TimelineEvent.SelectedItemShortcut.Retweet(TweetId(1000))
-        )
-
-        // verify
-        updateTweetObserver.assertOf {
-            it.assertNotComplete()
-            it.assertValueCount(1)
-            it.assertValueAt(0, TimelineEvent.SelectedItemShortcut.Retweet(TweetId(1000)))
-        }
-    }
-
-    @Test
-    fun updateTweet_dispatchLikeAndRetweetEvent_then_2EventsDispatched(): Unit = with(rule) {
-        // exercise
-        dispatcher.postEvents(
-            TimelineEvent.SelectedItemShortcut.Like(TweetId(1000)),
-            TimelineEvent.SelectedItemShortcut.Retweet(TweetId(1000))
-        )
-
-        // verify
-        updateTweetObserver.assertOf {
-            it.assertNotComplete()
-            it.assertValueCount(2)
-            it.assertValueAt(0, TimelineEvent.SelectedItemShortcut.Like(TweetId(1000)))
-            it.assertValueAt(1, TimelineEvent.SelectedItemShortcut.Retweet(TweetId(1000)))
-        }
-    }
 }
 
 class MainActivityActionsTestRule : TestWatcher() {
     val dispatcher = EventDispatcher()
     val oauthTokenRepositoryMock = OAuthTokenRepositoryRule()
+    private val timelineActions = TimelineActions(dispatcher)
     val sut: MainActivityActions = MainActivityActions(
         dispatcher,
         oauthTokenRepositoryMock.tokenRepository,
-        OauthAction(dispatcher),
-        ListOwnerGenerator()
+        ListOwnerGenerator(),
+        timelineActions,
+        OauthAction(dispatcher)
     )
     val updateContainerObserver: TestObserver<MainNavHostState> = sut.updateContainer.test()
-    val updateTweetObserver: TestObserver<out TimelineEvent.SelectedItemShortcut> =
-        sut.updateTweet.test()
-    val toggleItemObserver: TestObserver<TimelineEvent.TweetItemSelection.Toggle> =
-        sut.toggleItem.test()
 
-    fun TestObserver<out TimelineEvent.SelectedItemShortcut>.assertValueAt(
-        index: Int,
-        expected: TimelineEvent.SelectedItemShortcut
-    ) {
-        assertValueAt(index) { it == expected }
-    }
+    val toggleItemObserver: TestObserver<TimelineEvent.TweetItemSelection.Toggle> =
+        timelineActions.toggleItem.test()
 
     override fun apply(base: Statement?, description: Description?): Statement {
         return RuleChain.outerRule(oauthTokenRepositoryMock)

@@ -20,6 +20,7 @@ import com.freshdigitable.udonroad2.model.app.navigation.FragmentContainerState
 import com.freshdigitable.udonroad2.model.app.navigation.addTo
 import com.freshdigitable.udonroad2.model.app.weakRef
 import com.freshdigitable.udonroad2.model.tweet.TweetId
+import com.freshdigitable.udonroad2.timeline.TimelineActions
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragment
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentArgs
@@ -33,7 +34,8 @@ import javax.inject.Inject
 @ActivityScope
 class MainActivityNavigationDelegate @Inject constructor(
     mainActivity: MainActivity,
-    actions: MainActivityActions
+    actions: MainActivityActions,
+    timelineActions: TimelineActions
 ) : LifecycleEventObserver {
     private val activity: MainActivity by weakRef(mainActivity)
     private val drawerLayout: DrawerLayout by weakRef(mainActivity) {
@@ -61,10 +63,10 @@ class MainActivityNavigationDelegate @Inject constructor(
     private val disposables = CompositeDisposable()
 
     init {
-        actions.launchUserInfo.subscribe {
+        timelineActions.launchUserInfo.subscribe {
             navController.navigate(UserActivityDirections.actionTimelineToActivityUser(it))
         }.addTo(disposables)
-        actions.launchMediaViewer.subscribe {
+        timelineActions.launchMediaViewer.subscribe {
             navController.navigate(
                 R.id.action_global_toMedia,
                 MediaActivityArgs(it.tweetId, it.index).toBundle()

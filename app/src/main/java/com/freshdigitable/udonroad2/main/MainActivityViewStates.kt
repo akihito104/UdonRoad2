@@ -32,9 +32,8 @@ import com.freshdigitable.udonroad2.model.app.navigation.AppViewState
 import com.freshdigitable.udonroad2.model.app.navigation.EventResult
 import com.freshdigitable.udonroad2.model.app.navigation.StateHolder
 import com.freshdigitable.udonroad2.model.app.navigation.ViewState
-import com.freshdigitable.udonroad2.model.app.navigation.filterByType
 import com.freshdigitable.udonroad2.model.app.navigation.toViewState
-import com.freshdigitable.udonroad2.timeline.TimelineEvent.SelectedItemShortcut
+import com.freshdigitable.udonroad2.timeline.TimelineActions
 import com.freshdigitable.udonroad2.timeline.viewmodel.FragmentContainerViewStateModel
 import java.io.Serializable
 import javax.inject.Inject
@@ -42,8 +41,9 @@ import javax.inject.Inject
 @ActivityScope
 class MainActivityViewStates @Inject constructor(
     actions: MainActivityActions,
+    timelineActions: TimelineActions,
     selectedItemRepository: SelectedItemRepository,
-    tweetRepository: TweetRepository
+    tweetRepository: TweetRepository,
 ) : FragmentContainerViewStateModel {
 
     private val container: AppViewState<MainNavHostState> = actions.updateContainer.toViewState()
@@ -55,7 +55,7 @@ class MainActivityViewStates @Inject constructor(
                     AppAction.just(container).map {
                         StateHolder(selectedItemRepository.find(it.owner))
                     },
-                    actions.selectItem.map {
+                    timelineActions.selectItem.map {
                         if (container.owner == it.owner) {
                             selectedItemRepository.put(it.selectedItemId)
                             StateHolder(selectedItemRepository.find(it.owner))
@@ -71,7 +71,7 @@ class MainActivityViewStates @Inject constructor(
                             throw IllegalStateException()
                         }
                     },
-                    actions.toggleItem.map {
+                    timelineActions.toggleItem.map {
                         if (container.owner == it.owner) {
                             val current = selectedItemRepository.find(it.item.owner)
                             when (it.item) {
@@ -100,7 +100,7 @@ class MainActivityViewStates @Inject constructor(
         }
 
     val updateTweet: AppAction<FeedbackMessage> = AppAction.merge(
-        actions.updateTweet.filterByType<SelectedItemShortcut.Like>().flatMap { event ->
+        timelineActions.favTweet.flatMap { event ->
             tweetRepository.postLike(event.tweetId).map { EventResult(event, it) }
         }.map {
             when {
@@ -111,7 +111,7 @@ class MainActivityViewStates @Inject constructor(
                 else -> FeedbackMessage.FavCreateFailed
             }
         },
-        actions.updateTweet.filterByType<SelectedItemShortcut.Retweet>().flatMap { event ->
+        timelineActions.retweet.flatMap { event ->
             tweetRepository.postRetweet(event.tweetId).map { EventResult(event, it) }
         }.map {
             when {

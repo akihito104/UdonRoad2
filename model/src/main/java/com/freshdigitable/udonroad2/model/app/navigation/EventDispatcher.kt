@@ -24,6 +24,10 @@ class EventDispatcher @Inject constructor() {
     }
 }
 
+fun EventDispatcher.postEvents(vararg events: NavigationEvent) {
+    events.forEach(this::postEvent)
+}
+
 typealias AppAction<T> = Observable<T>
 typealias AppViewState<T> = LiveData<T>
 
