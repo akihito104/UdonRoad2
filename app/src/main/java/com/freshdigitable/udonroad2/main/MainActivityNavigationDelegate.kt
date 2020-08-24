@@ -20,7 +20,6 @@ import com.freshdigitable.udonroad2.model.app.navigation.FragmentContainerState
 import com.freshdigitable.udonroad2.model.app.navigation.addTo
 import com.freshdigitable.udonroad2.model.app.weakRef
 import com.freshdigitable.udonroad2.model.tweet.TweetId
-import com.freshdigitable.udonroad2.oauth.OauthNavigationDelegate
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragment
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentArgs
@@ -34,7 +33,6 @@ import javax.inject.Inject
 @ActivityScope
 class MainActivityNavigationDelegate @Inject constructor(
     mainActivity: MainActivity,
-    private val oauthNavigation: OauthNavigationDelegate,
     actions: MainActivityActions
 ) : LifecycleEventObserver {
     private val activity: MainActivity by weakRef(mainActivity)

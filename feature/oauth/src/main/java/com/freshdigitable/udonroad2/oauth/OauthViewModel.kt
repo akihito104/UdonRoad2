@@ -18,32 +18,24 @@ package com.freshdigitable.udonroad2.oauth
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.distinctUntilChanged
-import androidx.lifecycle.viewModelScope
 import androidx.paging.DataSource
 import androidx.paging.PagedList
-import com.freshdigitable.udonroad2.data.impl.DispatcherProvider
-import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
 import com.freshdigitable.udonroad2.model.QueryType
-import com.freshdigitable.udonroad2.model.RequestTokenItem
-import com.freshdigitable.udonroad2.model.app.ext.merge
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.timeline.ListItemLoadable
-import kotlinx.coroutines.launch
 
 class OauthViewModel(
     dataSource: DataSource<Int, OauthItem>,
-    private val repository: OAuthTokenRepository,
     private val eventDispatcher: EventDispatcher,
-    private val savedState: OauthSavedStates,
-    private val coroutineDispatchers: DispatcherProvider = DispatcherProvider()
+    viewStates: OauthViewStates,
 ) : ViewModel(), ListItemLoadable<QueryType.Oauth, OauthItem> {
 
     override val loading: LiveData<Boolean> = MutableLiveData(false)
     override val timeline: LiveData<PagedList<OauthItem>>
+    val pin: LiveData<CharSequence> = viewStates.pinText
+    val sendPinButtonEnabled: LiveData<Boolean> = viewStates.sendPinEnabled
 
     init {
         val config = PagedList.Config.Builder()
@@ -63,56 +55,24 @@ class OauthViewModel(
 
     override fun onRefresh() {}
 
-    private val requestToken: LiveData<RequestTokenItem?> = savedState.requestTokenItem
-
     fun onLoginClicked() {
-        viewModelScope.launch(coroutineDispatchers.mainContext) {
-            repository.getRequestTokenItem().also {
-                savedState.setToken(it)
-                eventDispatcher.postEvent(OauthEvent.OauthRequested(it.authorizationUrl))
-            }
-        }
-    }
-
-    private val _pin = MutableLiveData("")
-    val pin: LiveData<String> = _pin.distinctUntilChanged()
-
-    val sendPinButtonEnabled: LiveData<Boolean> = merge(requestToken, pin) { token, p ->
-        token != null && !p.isNullOrEmpty()
+        eventDispatcher.postEvent(OauthEvent.LoginClicked)
     }
 
     fun onAfterPinTextChanged(pin: CharSequence) {
-        _pin.value = pin.toString()
+        eventDispatcher.postEvent(OauthEvent.PinTextChanged(pin))
     }
 
     fun onSendPinClicked() {
-        viewModelScope.launch(coroutineDispatchers.mainContext) {
-            val t = repository.getAccessToken(requestToken.value!!, pin.value.toString())
-            repository.login(t.userId)
-            savedState.setToken(null)
-            eventDispatcher.postEvent(OauthEvent.OauthSucceeded)
-        }
+        eventDispatcher.postEvent(OauthEvent.SendPinClicked)
     }
 
 }
 
 sealed class OauthEvent : NavigationEvent {
     object Init : OauthEvent()
-    data class OauthRequested(val authUrl: String) : OauthEvent()
+    object LoginClicked : OauthEvent()
+    data class PinTextChanged(val text: CharSequence) : OauthEvent()
+    object SendPinClicked : OauthEvent()
     object OauthSucceeded : OauthEvent()
-}
-
-class OauthSavedStates(handle: SavedStateHandle) {
-    private val _requestTokenItem: MutableLiveData<RequestTokenItem?> = handle.getLiveData(
-        SAVED_STATE_REQUEST_TOKEN
-    )
-    val requestTokenItem: LiveData<RequestTokenItem?> = _requestTokenItem
-
-    fun setToken(token: RequestTokenItem?) {
-        _requestTokenItem.value = token
-    }
-
-    companion object {
-        private const val SAVED_STATE_REQUEST_TOKEN = "saveState_requestToken"
-    }
 }
