@@ -18,7 +18,9 @@ package com.freshdigitable.udonroad2.main
 
 import androidx.annotation.StringRes
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.map
+import androidx.lifecycle.switchMap
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
@@ -44,33 +46,48 @@ class MainActivityViewStates @Inject constructor(
     tweetRepository: TweetRepository
 ) : FragmentContainerViewStateModel {
 
-    private val selectedItemHolder: AppViewState<StateHolder<SelectedItemId>> = AppAction.merge(
-        actions.selectItem.map {
-            selectedItemRepository.put(it.selectedItemId)
-            StateHolder(selectedItemRepository.find(it.selectedItemId.owner))
-        },
-        actions.unselectItem.map {
-            selectedItemRepository.remove(it.owner)
-            StateHolder(selectedItemRepository.find(it.owner))
-        },
-        actions.toggleItem.map {
-            val current = selectedItemRepository.find(it.item.owner)
-            when (it.item) {
-                current -> selectedItemRepository.remove(it.item.owner)
-                else -> selectedItemRepository.put(it.item)
-            }
-            StateHolder(selectedItemRepository.find(it.item.owner))
-        },
-        actions.updateContainer.map {
-            if (it is MainNavHostState.Timeline) {
-                StateHolder(selectedItemRepository.find(it.owner))
-            } else {
-                StateHolder(null)
-            }
-        }
-    ).toViewState()
+    private val container: AppViewState<MainNavHostState> = actions.updateContainer.toViewState()
 
-    override val selectedItemId: LiveData<SelectedItemId?> = selectedItemHolder.map { it.value }
+    override val selectedItemId: LiveData<SelectedItemId?> = container.switchMap { container ->
+        when (container) {
+            is MainNavHostState.Timeline -> {
+                AppAction.merge(
+                    AppAction.just(container).map {
+                        StateHolder(selectedItemRepository.find(it.owner))
+                    },
+                    actions.selectItem.map {
+                        if (container.owner == it.owner) {
+                            selectedItemRepository.put(it.selectedItemId)
+                            StateHolder(selectedItemRepository.find(it.owner))
+                        } else {
+                            throw IllegalStateException()
+                        }
+                    },
+                    actions.unselectItem.map {
+                        if (container.owner == it.owner) {
+                            selectedItemRepository.remove(it.owner)
+                            StateHolder(null)
+                        } else {
+                            throw IllegalStateException()
+                        }
+                    },
+                    actions.toggleItem.map {
+                        if (container.owner == it.owner) {
+                            val current = selectedItemRepository.find(it.item.owner)
+                            when (it.item) {
+                                current -> selectedItemRepository.remove(it.item.owner)
+                                else -> selectedItemRepository.put(it.item)
+                            }
+                            StateHolder(selectedItemRepository.find(it.owner))
+                        } else {
+                            throw IllegalStateException()
+                        }
+                    }
+                ).toViewState()
+            }
+            else -> MutableLiveData(StateHolder(null))
+        }
+    }.map { it.value }
 
     val isFabVisible: AppViewState<Boolean> = selectedItemId.map { item -> item != null }
 

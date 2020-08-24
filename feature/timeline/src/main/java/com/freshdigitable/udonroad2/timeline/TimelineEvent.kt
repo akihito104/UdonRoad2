@@ -23,9 +23,16 @@ sealed class TimelineEvent : NavigationEvent {
     data class RetweetUserClicked(val user: TweetingUser) : TimelineEvent()
 
     sealed class TweetItemSelection : TimelineEvent() {
-        data class Selected(val selectedItemId: SelectedItemId) : TweetItemSelection()
-        data class Unselected(val owner: ListOwner<*>) : TweetItemSelection()
-        data class Toggle(val item: SelectedItemId) : TweetItemSelection()
+        data class Selected(val selectedItemId: SelectedItemId) : TweetItemSelection() {
+            override val owner: ListOwner<*> get() = selectedItemId.owner
+        }
+
+        data class Unselected(override val owner: ListOwner<*>) : TweetItemSelection()
+        data class Toggle(val item: SelectedItemId) : TweetItemSelection() {
+            override val owner: ListOwner<*> get() = item.owner
+        }
+
+        abstract val owner: ListOwner<*>
     }
 
     sealed class SelectedItemShortcut : TimelineEvent() {
