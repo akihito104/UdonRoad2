@@ -15,14 +15,12 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.freshdigitable.udonroad2.model.ListOwner
-import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.timeline.ListItemLoadable
 import com.freshdigitable.udonroad2.timeline.databinding.FragmentTimelineBinding
 import com.freshdigitable.udonroad2.timeline.di.ListItemAdapterComponent
 import com.freshdigitable.udonroad2.timeline.di.ListItemViewModelComponent
 import com.freshdigitable.udonroad2.timeline.di.viewModel
 import dagger.android.support.AndroidSupportInjection
-import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
 
 class ListItemFragment : Fragment() {
@@ -76,16 +74,10 @@ class ListItemFragment : Fragment() {
     private val listOwner: ListOwner<*> get() = ListOwner(ownerId, args.query)
 
     companion object {
-        private val ownerIdGen = AtomicInteger(0)
-
-        fun newInstance(query: QueryType, label: String = ""): ListItemFragment {
+        fun newInstance(owner: ListOwner<*>, label: String = ""): ListItemFragment {
             return ListItemFragment().apply {
-                arguments = bundle(listOwner(query), label)
+                arguments = bundle(owner, label)
             }
-        }
-
-        fun listOwner(query: QueryType): ListOwner<*> {
-            return ListOwner(ownerIdGen.getAndIncrement(), query)
         }
 
         fun bundle(owner: ListOwner<*>, label: String): Bundle {
