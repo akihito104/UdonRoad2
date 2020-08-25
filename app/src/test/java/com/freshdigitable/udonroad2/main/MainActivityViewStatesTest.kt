@@ -69,56 +69,30 @@ class MainActivityViewStatesTest {
     fun fabVisible_dispatchToggleSelectedItemEvent_then_fabVisibleIsTrue(): Unit = with(rule) {
         // setup
         oauthTokenRepositoryMock.setupCurrentUserId(10000)
-
-        // exercise
-        dispatchEvents(
-            TimelineEvent.Setup(),
-            TimelineEvent.TweetItemSelection.Toggle(
-                SelectedItemId(
-                    ListOwner(0, QueryType.TweetQueryType.Timeline()), TweetId(200)
-                )
+        dispatchEvents(TimelineEvent.Setup())
+        selectedItemRepository.put(
+            SelectedItemId(
+                ListOwner(0, QueryType.TweetQueryType.Timeline()), TweetId(200)
             )
         )
 
         // verify
-        assertThat(sut.isFabVisible.value).isTrue()
         assertThat(sut.selectedItemId.value?.originalId).isEqualTo(TweetId(200L))
+        assertThat(sut.isFabVisible.value).isTrue()
     }
-
-    @Test
-    fun selectedItemId_dispatchMediaItemClickedEvent_then_selectedItemIdHasValue(): Unit =
-        with(rule) {
-            // setup
-            oauthTokenRepositoryMock.setupCurrentUserId(10000)
-
-            // exercise
-            dispatchEvents(
-                TimelineEvent.Setup(),
-                TimelineEvent.MediaItemClicked(
-                    TweetId(1000),
-                    0,
-                    SelectedItemId(ListOwner(0, QueryType.TweetQueryType.Timeline()), TweetId(1000))
-                )
-            )
-
-            // verify
-            assertThat(sut.selectedItemId.value?.originalId).isEqualTo(TweetId(1000L))
-        }
 
     @Test
     fun updateTweet_dispatchLikeIsSuccess_then_likeDispatched(): Unit = with(rule) {
         // setup
         oauthTokenRepositoryMock.setupCurrentUserId(10000)
         tweetRepositoryMock.setupPostLikeForSuccess(TweetId(200))
+        dispatchEvents(TimelineEvent.Setup())
+        selectedItemRepository.put(
+            SelectedItemId(ListOwner(0, QueryType.TweetQueryType.Timeline()), TweetId(200))
+        )
 
         // exercise
         dispatchEvents(
-            TimelineEvent.Setup(),
-            TimelineEvent.TweetItemSelection.Selected(
-                SelectedItemId(
-                    ListOwner(0, QueryType.TweetQueryType.Timeline()), TweetId(200)
-                )
-            ),
             TimelineEvent.SelectedItemShortcut.Like(TweetId(200))
         )
 
@@ -138,15 +112,13 @@ class MainActivityViewStatesTest {
         tweetRepositoryMock.setupPostLikeForFailure(
             TweetId(200), AppTwitterException.ErrorType.ALREADY_FAVORITED
         )
+        dispatchEvents(TimelineEvent.Setup())
+        selectedItemRepository.put(
+            SelectedItemId(ListOwner(0, QueryType.TweetQueryType.Timeline()), TweetId(200))
+        )
 
         // exercise
         dispatchEvents(
-            TimelineEvent.Setup(),
-            TimelineEvent.TweetItemSelection.Selected(
-                SelectedItemId(
-                    ListOwner(0, QueryType.TweetQueryType.Timeline()), TweetId(200)
-                )
-            ),
             TimelineEvent.SelectedItemShortcut.Like(TweetId(200))
         )
 
@@ -164,15 +136,13 @@ class MainActivityViewStatesTest {
         // setup
         oauthTokenRepositoryMock.setupCurrentUserId(10000)
         tweetRepositoryMock.setupPostRetweetForSuccess(TweetId(200))
+        dispatchEvents(TimelineEvent.Setup())
+        selectedItemRepository.put(
+            SelectedItemId(ListOwner(0, QueryType.TweetQueryType.Timeline()), TweetId(200))
+        )
 
         // exercise
         dispatchEvents(
-            TimelineEvent.Setup(),
-            TimelineEvent.TweetItemSelection.Selected(
-                SelectedItemId(
-                    ListOwner(0, QueryType.TweetQueryType.Timeline()), TweetId(200)
-                )
-            ),
             TimelineEvent.SelectedItemShortcut.Retweet(TweetId(200))
         )
 
@@ -193,15 +163,13 @@ class MainActivityViewStatesTest {
             tweetRepositoryMock.setupPostRetweetForFailure(
                 TweetId(200), AppTwitterException.ErrorType.ALREADY_RETWEETED
             )
+            dispatchEvents(TimelineEvent.Setup())
+            selectedItemRepository.put(
+                SelectedItemId(ListOwner(0, QueryType.TweetQueryType.Timeline()), TweetId(200))
+            )
 
             // exercise
             dispatchEvents(
-                TimelineEvent.Setup(),
-                TimelineEvent.TweetItemSelection.Selected(
-                    SelectedItemId(
-                        ListOwner(0, QueryType.TweetQueryType.Timeline()), TweetId(200)
-                    )
-                ),
                 TimelineEvent.SelectedItemShortcut.Retweet(TweetId(200))
             )
 
@@ -277,10 +245,12 @@ class MainActivityStateModelTestRule : TestWatcher() {
     val dispatcher = actionsTestRule.dispatcher
     val oauthTokenRepositoryMock = actionsTestRule.oauthTokenRepositoryMock
     val tweetRepositoryMock = TweetRepositoryRule()
+    val selectedItemRepository = SelectedItemRepository()
+    val timelineActions = TimelineActions(dispatcher)
     val sut = MainActivityViewStates(
         actionsTestRule.sut,
-        TimelineActions(dispatcher),
-        SelectedItemRepository(),
+        timelineActions,
+        selectedItemRepository,
         tweetRepositoryMock.tweetRepository
     )
     val updateTweetObserver: TestObserver<FeedbackMessage> = sut.updateTweet.test()

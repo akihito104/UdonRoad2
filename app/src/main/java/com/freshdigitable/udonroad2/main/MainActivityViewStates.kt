@@ -17,7 +17,6 @@
 package com.freshdigitable.udonroad2.main
 
 import androidx.annotation.StringRes
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.map
 import androidx.lifecycle.switchMap
@@ -30,11 +29,9 @@ import com.freshdigitable.udonroad2.model.app.di.ActivityScope
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.AppViewState
 import com.freshdigitable.udonroad2.model.app.navigation.EventResult
-import com.freshdigitable.udonroad2.model.app.navigation.StateHolder
 import com.freshdigitable.udonroad2.model.app.navigation.ViewState
 import com.freshdigitable.udonroad2.model.app.navigation.toViewState
 import com.freshdigitable.udonroad2.timeline.TimelineActions
-import com.freshdigitable.udonroad2.timeline.viewmodel.FragmentContainerViewStateModel
 import java.io.Serializable
 import javax.inject.Inject
 
@@ -44,52 +41,17 @@ class MainActivityViewStates @Inject constructor(
     timelineActions: TimelineActions,
     selectedItemRepository: SelectedItemRepository,
     tweetRepository: TweetRepository,
-) : FragmentContainerViewStateModel {
-
+) {
     private val container: AppViewState<MainNavHostState> = actions.updateContainer.toViewState()
 
-    override val selectedItemId: LiveData<SelectedItemId?> = container.switchMap { container ->
-        when (container) {
-            is MainNavHostState.Timeline -> {
-                AppAction.merge(
-                    AppAction.just(container).map {
-                        StateHolder(selectedItemRepository.find(it.owner))
-                    },
-                    timelineActions.selectItem.map {
-                        if (container.owner == it.owner) {
-                            selectedItemRepository.put(it.selectedItemId)
-                            StateHolder(selectedItemRepository.find(it.owner))
-                        } else {
-                            throw IllegalStateException()
-                        }
-                    },
-                    timelineActions.unselectItem.map {
-                        if (container.owner == it.owner) {
-                            selectedItemRepository.remove(it.owner)
-                            StateHolder(null)
-                        } else {
-                            throw IllegalStateException()
-                        }
-                    },
-                    timelineActions.toggleItem.map {
-                        if (container.owner == it.owner) {
-                            val current = selectedItemRepository.find(it.item.owner)
-                            when (it.item) {
-                                current -> selectedItemRepository.remove(it.item.owner)
-                                else -> selectedItemRepository.put(it.item)
-                            }
-                            StateHolder(selectedItemRepository.find(it.owner))
-                        } else {
-                            throw IllegalStateException()
-                        }
-                    }
-                ).toViewState()
-            }
-            else -> MutableLiveData(StateHolder(null))
+    val selectedItemId: AppViewState<SelectedItemId?> = container.switchMap {
+        when (it) {
+            is MainNavHostState.Timeline -> selectedItemRepository.observe(it.owner)
+            else -> MutableLiveData(null)
         }
-    }.map { it.value }
+    }
 
-    val isFabVisible: AppViewState<Boolean> = selectedItemId.map { item -> item != null }
+    val isFabVisible: AppViewState<Boolean> = selectedItemId.map { it != null }
 
     val current: MainActivityViewState?
         get() {

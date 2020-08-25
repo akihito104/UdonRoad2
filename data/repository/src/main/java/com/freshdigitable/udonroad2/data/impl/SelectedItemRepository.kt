@@ -16,6 +16,9 @@
 
 package com.freshdigitable.udonroad2.data.impl
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.map
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import javax.inject.Inject
@@ -24,16 +27,24 @@ import javax.inject.Singleton
 @Singleton
 class SelectedItemRepository @Inject constructor() {
     private val selectedItems: MutableMap<ListOwner<*>, SelectedItemId> = mutableMapOf()
+    private val selectedItemsSource =
+        MutableLiveData<Map<ListOwner<*>, SelectedItemId>>(selectedItems)
 
     fun put(itemId: SelectedItemId) {
         selectedItems[itemId.owner] = itemId
+        selectedItemsSource.value = selectedItems
     }
 
     fun remove(owner: ListOwner<*>) {
         selectedItems.remove(owner)
+        selectedItemsSource.value = selectedItems
     }
 
     fun find(owner: ListOwner<*>): SelectedItemId? {
         return selectedItems[owner]
+    }
+
+    fun observe(owner: ListOwner<*>): LiveData<SelectedItemId?> {
+        return selectedItemsSource.map { it[owner] }
     }
 }

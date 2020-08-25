@@ -21,9 +21,7 @@ import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
-import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.tweet.TweetId
-import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.google.common.truth.Truth.assertThat
 import io.mockk.every
 import io.mockk.mockk
@@ -64,11 +62,9 @@ class MainViewModelTest {
         fun setup(): Unit = with(rule) {
             stateModelRule.oauthTokenRepositoryMock.setupCurrentUserId(200)
             sut.initialEvent(null)
-            dispatchEvents(
-                TimelineEvent.TweetItemSelection.Selected(
-                    SelectedItemId(
-                        ListOwner(0, QueryType.TweetQueryType.Timeline()), TweetId(200)
-                    )
+            stateModelRule.selectedItemRepository.put(
+                SelectedItemId(
+                    ListOwner(0, QueryType.TweetQueryType.Timeline()), TweetId(200)
                 )
             )
         }
@@ -83,15 +79,22 @@ class MainViewModelTest {
 
             // verify
             assertThat(sut.isFabVisible.value).isTrue()
+            stateModelRule.updateTweetObserver.assertOf {
+                it.assertValueCount(1)
+            }
         }
 
         @Test
-        fun onBackPressed_then_fabVisibleIsFalse(): Unit = with(rule) {
+        fun onBackPressed_then_UnselectedEventDispatched(): Unit = with(rule) {
+            val unselectedObserver = stateModelRule.timelineActions.unselectItem.test()
             // exercise
             sut.onBackPressed()
 
             // verify
-            assertThat(sut.isFabVisible.value).isFalse()
+            unselectedObserver.assertOf {
+                it.assertValueCount(1)
+                it.assertValueAt(0) { actual -> actual.owner.id == 0 }
+            }
         }
     }
 }
@@ -100,10 +103,6 @@ class MainViewModelTestRule(
     val stateModelRule: MainActivityStateModelTestRule = MainActivityStateModelTestRule()
 ) : TestWatcher() {
     val sut: MainViewModel = MainViewModel(stateModelRule.dispatcher, stateModelRule.sut)
-
-    fun dispatchEvents(vararg events: NavigationEvent) {
-        stateModelRule.dispatchEvents(*events)
-    }
 
     override fun apply(base: Statement?, description: Description?): Statement {
         return RuleChain.outerRule(stateModelRule)

@@ -33,6 +33,7 @@ import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import com.freshdigitable.udonroad2.model.user.TweetingUser
 import com.freshdigitable.udonroad2.timeline.ListItemLoadable
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
+import com.freshdigitable.udonroad2.timeline.TimelineViewState
 import com.freshdigitable.udonroad2.timeline.TweetListEventListener
 import com.freshdigitable.udonroad2.timeline.TweetListItemClickListener
 import timber.log.Timber
@@ -40,7 +41,7 @@ import timber.log.Timber
 class TimelineViewModel(
     private val owner: ListOwner<TweetQueryType>,
     private val eventDispatcher: EventDispatcher,
-    viewStateModel: FragmentContainerViewStateModel,
+    viewStates: TimelineViewState,
     private val homeRepository: ListRepository<TweetQueryType>,
     pagedListProvider: PagedListProvider<TweetQueryType, TweetListItem>
 ) : ListItemLoadable<TweetQueryType, TweetListItem>,
@@ -70,7 +71,7 @@ class TimelineViewModel(
         homeRepository.clear(owner.value)
     }
 
-    override val selectedItemId: LiveData<SelectedItemId?> = viewStateModel.selectedItemId
+    override val selectedItemId: LiveData<SelectedItemId?> = viewStates.selectedItemId
 
     override fun onBodyItemClicked(item: TweetListItem) {
         Timber.tag("TimelineViewModel").d("onBodyItemClicked: ${item.body.id}")
@@ -104,8 +105,4 @@ class TimelineViewModel(
             )
         )
     }
-}
-
-interface FragmentContainerViewStateModel {
-    val selectedItemId: LiveData<SelectedItemId?>
 }
