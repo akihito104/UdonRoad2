@@ -24,8 +24,11 @@ import com.freshdigitable.udonroad2.data.db.DatabaseModule
 import com.freshdigitable.udonroad2.data.impl.di.RepositoryModule
 import com.freshdigitable.udonroad2.data.restclient.AppTwitterModule
 import com.freshdigitable.udonroad2.data.restclient.TwitterModule
+import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import dagger.BindsInstance
 import dagger.Component
+import dagger.Module
+import dagger.Provides
 import dagger.android.support.AndroidSupportInjectionModule
 import javax.inject.Singleton
 
@@ -40,7 +43,8 @@ import javax.inject.Singleton
         DatabaseModule::class,
         TwitterModule::class,
         AppTwitterModule::class,
-        AppSetupModule::class
+        AppSetupModule::class,
+        ListOwnerGeneratorProvider::class
     ]
 )
 interface AppComponent {
@@ -57,4 +61,11 @@ interface AppComponent {
     val setup: AppSetup
 
     fun inject(instance: AppApplication)
+}
+
+@Module
+object ListOwnerGeneratorProvider {
+    @Singleton
+    @Provides
+    fun provideListOwnerGenerator(): ListOwnerGenerator = ListOwnerGenerator()
 }

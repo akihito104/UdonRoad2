@@ -17,6 +17,7 @@
 package com.freshdigitable.udonroad2.main
 
 import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
+import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.app.di.ActivityScope
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
@@ -29,7 +30,6 @@ import com.freshdigitable.udonroad2.model.user.TweetingUser
 import com.freshdigitable.udonroad2.oauth.OauthAction
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.TimelineEvent.TweetItemSelection
-import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragment
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -37,7 +37,8 @@ import javax.inject.Inject
 class MainActivityActions @Inject constructor(
     val dispatcher: EventDispatcher,
     tokenRepository: OAuthTokenRepository,
-    oauthAction: OauthAction
+    oauthAction: OauthAction,
+    listOwnerGenerator: ListOwnerGenerator
 ) {
     private val showFirstView: AppAction<out MainNavHostState> = dispatcher.toAction {
         AppAction.merge(
@@ -49,12 +50,12 @@ class MainActivityActions @Inject constructor(
                 tokenRepository.getCurrentUserId() != null -> {
                     tokenRepository.login()
                     MainNavHostState.Timeline(
-                        ListItemFragment.listOwner(QueryType.TweetQueryType.Timeline()),
+                        listOwnerGenerator.create(QueryType.TweetQueryType.Timeline()),
                         MainNavHostState.Cause.INIT
                     )
                 }
                 else -> MainNavHostState.Timeline(
-                    ListItemFragment.listOwner(QueryType.Oauth),
+                    listOwnerGenerator.create(QueryType.Oauth),
                     MainNavHostState.Cause.INIT
                 )
             }
@@ -112,13 +113,13 @@ class MainActivityActions @Inject constructor(
             showFirstView,
             oauthAction.showAuth.map {
                 MainNavHostState.Timeline(
-                    ListItemFragment.listOwner(QueryType.Oauth),
+                    listOwnerGenerator.create(QueryType.Oauth),
                     MainNavHostState.Cause.INIT
                 )
             },
             showTimeline.map {
                 MainNavHostState.Timeline(
-                    ListItemFragment.listOwner(QueryType.TweetQueryType.Timeline()),
+                    listOwnerGenerator.create(QueryType.TweetQueryType.Timeline()),
                     MainNavHostState.Cause.INIT
                 )
             },

@@ -15,6 +15,7 @@ import androidx.viewpager.widget.ViewPager
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.databinding.ActivityUserBinding
 import com.freshdigitable.udonroad2.di.ListItemFragmentModule
+import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.Navigation
 import com.freshdigitable.udonroad2.model.user.TweetingUser
@@ -35,7 +36,11 @@ class UserActivity : HasAndroidInjector, AppCompatActivity() {
 
     @Inject
     lateinit var navigation: Navigation<UserActivityState>
-    private lateinit var viewModel: UserViewModel
+
+    @Inject
+    lateinit var listOwnerGenerator: ListOwnerGenerator
+
+    private val viewModel: UserViewModel by lazy { viewModelProvider[UserViewModel::class.java] }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
@@ -44,9 +49,7 @@ class UserActivity : HasAndroidInjector, AppCompatActivity() {
             this,
             R.layout.activity_user
         )
-        viewModel = viewModelProvider[UserViewModel::class.java]
-        val adapter =
-            UserFragmentPagerAdapter(supportFragmentManager, user)
+        val adapter = UserFragmentPagerAdapter(supportFragmentManager, user, listOwnerGenerator)
 
         binding.setup(viewModel, adapter)
         viewModel.setUserId(user.id)

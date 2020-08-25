@@ -17,6 +17,7 @@
 package com.freshdigitable.udonroad2.main
 
 import com.freshdigitable.udonroad2.model.ListOwner
+import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
@@ -177,7 +178,8 @@ class MainActivityActionsTestRule : TestWatcher() {
     val sut: MainActivityActions = MainActivityActions(
         dispatcher,
         oauthTokenRepositoryMock.tokenRepository,
-        OauthAction(dispatcher)
+        OauthAction(dispatcher),
+        ListOwnerGenerator()
     )
     val updateContainerObserver: TestObserver<MainNavHostState> = sut.updateContainer.test()
     val updateTweetObserver: TestObserver<out TimelineEvent.SelectedItemShortcut> =
