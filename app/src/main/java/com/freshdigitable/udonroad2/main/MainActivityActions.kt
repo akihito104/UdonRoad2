@@ -23,13 +23,11 @@ import com.freshdigitable.udonroad2.model.app.di.ActivityScope
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.CommonEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
-import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.filterByType
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
 import com.freshdigitable.udonroad2.oauth.OauthAction
 import com.freshdigitable.udonroad2.timeline.TimelineActions
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
-import com.freshdigitable.udonroad2.timeline.TimelineEvent.TweetItemSelection
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -63,21 +61,9 @@ class MainActivityActions @Inject constructor(
         }
     }
 
-    private val backDispatched: AppAction<NavigationEvent> = dispatcher.emitter
-        .filterByType<CommonEvent.Back>()
-        .map {
-            val currentState = it.currentState as? MainActivityViewState ?: return@map it
-            when {
-                currentState.selectedItem != null -> {
-                    TweetItemSelection.Unselected(currentState.selectedItem.owner)
-                }
-                else -> it
-            }
-        }
-
-    val unselectItem: AppAction<TweetItemSelection.Unselected> = backDispatched.filterByType()
-
-    val rollbackViewState: AppAction<CommonEvent.Back> = backDispatched.filterByType()
+    val rollbackViewState: AppAction<CommonEvent.Back> = dispatcher.toAction {
+        filterByType()
+    }
 
     val updateContainer: AppAction<MainNavHostState> = AppAction.merge(
         listOf(

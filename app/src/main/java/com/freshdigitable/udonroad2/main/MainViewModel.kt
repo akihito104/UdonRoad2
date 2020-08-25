@@ -47,7 +47,13 @@ class MainViewModel(
     }
 
     fun onBackPressed() {
-        eventDispatcher.postEvent(CommonEvent.Back(viewStates.current))
+        val selectedItem = currentState?.selectedItem
+        val event = if (selectedItem != null) {
+            TimelineEvent.TweetItemSelection.Unselected(selectedItem.owner)
+        } else {
+            CommonEvent.Back(viewStates.current)
+        }
+        eventDispatcher.postEvent(event)
     }
 
     val feedbackMessage: AppAction<FeedbackMessage> = viewStates.updateTweet

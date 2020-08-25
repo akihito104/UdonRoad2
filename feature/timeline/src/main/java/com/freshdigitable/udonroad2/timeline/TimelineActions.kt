@@ -56,6 +56,9 @@ class TimelineActions @Inject constructor(
     val toggleItem: AppAction<TweetItemSelection.Toggle> = dispatcher.toAction {
         filterByType()
     }
+    val unselectItem: AppAction<TweetItemSelection.Unselected> = dispatcher.toAction {
+        filterByType()
+    }
 
     val favTweet: AppAction<SelectedItemShortcut.Like> = dispatcher.toAction { filterByType() }
     val retweet: AppAction<SelectedItemShortcut.Retweet> = dispatcher.toAction { filterByType() }

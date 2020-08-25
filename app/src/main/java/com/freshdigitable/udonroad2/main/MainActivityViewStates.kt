@@ -63,7 +63,7 @@ class MainActivityViewStates @Inject constructor(
                             throw IllegalStateException()
                         }
                     },
-                    actions.unselectItem.map {
+                    timelineActions.unselectItem.map {
                         if (container.owner == it.owner) {
                             selectedItemRepository.remove(it.owner)
                             StateHolder(null)
