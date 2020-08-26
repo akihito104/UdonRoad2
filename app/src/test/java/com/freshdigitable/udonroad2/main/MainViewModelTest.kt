@@ -25,6 +25,7 @@ import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.google.common.truth.Truth.assertThat
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -42,7 +43,7 @@ class MainViewModelTest {
         val rule = MainViewModelTestRule()
 
         @Test
-        fun initialEvent_withNull_then_isFabVisible_false(): Unit = with(rule) {
+        fun initialEvent_withNull_then_dispatchNavigateIsCalledWithOauth(): Unit = with(rule) {
             // setup
             stateModelRule.oauthTokenRepositoryMock.setupCurrentUserId(null)
 
@@ -50,7 +51,11 @@ class MainViewModelTest {
             sut.initialEvent(null)
 
             // verify
-            assertThat(sut.isFabVisible.value).isFalse()
+            verify {
+                stateModelRule.navDelegate.dispatchNavigate(match {
+                    it is MainNavHostState.Timeline && it.owner.query == QueryType.Oauth
+                })
+            }
         }
     }
 
@@ -60,8 +65,14 @@ class MainViewModelTest {
 
         @Before
         fun setup(): Unit = with(rule) {
-            stateModelRule.oauthTokenRepositoryMock.setupCurrentUserId(200)
-            sut.initialEvent(null)
+            stateModelRule.navDelegateRule.setupContainerState(
+                MainNavHostState.Timeline(
+                    ListOwner(
+                        0,
+                        QueryType.TweetQueryType.Timeline()
+                    ), MainNavHostState.Cause.INIT
+                )
+            )
             stateModelRule.selectedItemRepository.put(
                 SelectedItemId(
                     ListOwner(0, QueryType.TweetQueryType.Timeline()), TweetId(200)
@@ -86,7 +97,9 @@ class MainViewModelTest {
 
         @Test
         fun onBackPressed_then_UnselectedEventDispatched(): Unit = with(rule) {
+            // setup
             val unselectedObserver = stateModelRule.timelineActions.unselectItem.test()
+
             // exercise
             sut.onBackPressed()
 

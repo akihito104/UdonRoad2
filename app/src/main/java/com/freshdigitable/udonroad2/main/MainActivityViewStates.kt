@@ -30,7 +30,7 @@ import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.AppViewState
 import com.freshdigitable.udonroad2.model.app.navigation.EventResult
 import com.freshdigitable.udonroad2.model.app.navigation.ViewState
-import com.freshdigitable.udonroad2.model.app.navigation.toViewState
+import com.freshdigitable.udonroad2.model.app.navigation.subscribeWith
 import com.freshdigitable.udonroad2.timeline.TimelineActions
 import java.io.Serializable
 import javax.inject.Inject
@@ -41,10 +41,16 @@ class MainActivityViewStates @Inject constructor(
     timelineActions: TimelineActions,
     selectedItemRepository: SelectedItemRepository,
     tweetRepository: TweetRepository,
+    navDelegate: MainActivityNavigationDelegate,
 ) {
-    private val container: AppViewState<MainNavHostState> = actions.updateContainer.toViewState()
+    init {
+        navDelegate.subscribeWith(actions.updateContainer) { dispatchNavigate(it) }
+        navDelegate.subscribeWith(actions.rollbackViewState) { dispatchBack() }
+    }
 
-    val selectedItemId: AppViewState<SelectedItemId?> = container.switchMap {
+    private val currentNavHost: AppViewState<MainNavHostState> = navDelegate.containerState
+
+    val selectedItemId: AppViewState<SelectedItemId?> = currentNavHost.switchMap {
         when (it) {
             is MainNavHostState.Timeline -> selectedItemRepository.observe(it.owner)
             else -> MutableLiveData(null)

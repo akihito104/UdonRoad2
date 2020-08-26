@@ -19,40 +19,18 @@ package com.freshdigitable.udonroad2.oauth
 import android.content.Intent
 import android.net.Uri
 import androidx.fragment.app.FragmentActivity
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.LifecycleOwner
-import com.freshdigitable.udonroad2.model.app.navigation.AppAction
-import com.freshdigitable.udonroad2.model.app.navigation.addTo
+import com.freshdigitable.udonroad2.model.app.navigation.NavigationDelegate
 import com.freshdigitable.udonroad2.model.app.weakRef
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragment
-import io.reactivex.disposables.CompositeDisposable
 import javax.inject.Inject
 
 class OauthNavigationDelegate @Inject constructor(
     listItemFragment: ListItemFragment,
-) : LifecycleEventObserver {
+) : NavigationDelegate(listItemFragment) {
     private val activity: FragmentActivity by weakRef(listItemFragment) { it.requireActivity() }
-    private val lifecycleOwner: LifecycleOwner by weakRef(listItemFragment)
-    private val disposables = CompositeDisposable()
-
-    init {
-        lifecycleOwner.lifecycle.addObserver(this)
-    }
-
-    fun <T> subscribeWith(action: AppAction<T>, block: OauthNavigationDelegate.(T) -> Unit) {
-        action.subscribe { block(it) }.addTo(disposables)
-    }
 
     internal fun launchTwitterOauth(authUrl: String) {
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(authUrl))
         activity.startActivity(intent)
-    }
-
-    override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
-        if (event == Lifecycle.Event.ON_DESTROY) {
-            disposables.clear()
-            lifecycleOwner.lifecycle.removeObserver(this)
-        }
     }
 }

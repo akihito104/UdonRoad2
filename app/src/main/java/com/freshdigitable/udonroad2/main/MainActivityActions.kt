@@ -33,7 +33,7 @@ import javax.inject.Inject
 
 @ActivityScope
 class MainActivityActions @Inject constructor(
-    val dispatcher: EventDispatcher,
+    dispatcher: EventDispatcher,
     tokenRepository: OAuthTokenRepository,
     listOwnerGenerator: ListOwnerGenerator,
     timelineActions: TimelineActions,
@@ -81,9 +81,6 @@ class MainActivityActions @Inject constructor(
                 )
             },
             timelineActions.showTweetDetail.map { MainNavHostState.TweetDetail(it.tweetId) },
-            dispatcher.emitter.filterByType<TimelineEvent.DestinationChanged>().map {
-                it.state as MainNavHostState
-            }
         )
     )
 }

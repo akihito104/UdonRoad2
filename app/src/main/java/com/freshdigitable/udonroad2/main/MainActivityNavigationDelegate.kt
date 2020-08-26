@@ -4,8 +4,9 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.findNavController
@@ -17,26 +18,24 @@ import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.app.di.ActivityScope
 import com.freshdigitable.udonroad2.model.app.navigation.FragmentContainerState
-import com.freshdigitable.udonroad2.model.app.navigation.addTo
+import com.freshdigitable.udonroad2.model.app.navigation.NavigationDelegate
+import com.freshdigitable.udonroad2.model.app.navigation.subscribeWith
 import com.freshdigitable.udonroad2.model.app.weakRef
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.timeline.TimelineActions
-import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragment
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentArgs
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentDirections
 import com.freshdigitable.udonroad2.timeline.fragment.TweetDetailFragmentArgs
 import com.freshdigitable.udonroad2.user.UserActivityDirections
-import io.reactivex.disposables.CompositeDisposable
 import java.io.Serializable
 import javax.inject.Inject
 
 @ActivityScope
 class MainActivityNavigationDelegate @Inject constructor(
     mainActivity: MainActivity,
-    actions: MainActivityActions,
     timelineActions: TimelineActions
-) : LifecycleEventObserver {
+) : NavigationDelegate(mainActivity) {
     private val activity: MainActivity by weakRef(mainActivity)
     private val drawerLayout: DrawerLayout by weakRef(mainActivity) {
         it.findViewById<DrawerLayout>(R.id.main_drawer)
@@ -54,35 +53,30 @@ class MainActivityNavigationDelegate @Inject constructor(
                     MainNavHostState.Cause.DESTINATION_CHANGED
                 )
             )
-            this@MainActivityNavigationDelegate.containerState = containerState
-            actions.dispatcher.postEvent(TimelineEvent.DestinationChanged(containerState))
+            _containerState.value = containerState
         }
 
-    private var containerState: MainNavHostState? = null
-
-    private val disposables = CompositeDisposable()
+    private val _containerState = MutableLiveData<MainNavHostState>()
+    val containerState: LiveData<MainNavHostState> = _containerState
 
     init {
-        timelineActions.launchUserInfo.subscribe {
+        subscribeWith(timelineActions.launchUserInfo) {
             navController.navigate(UserActivityDirections.actionTimelineToActivityUser(it))
-        }.addTo(disposables)
-        timelineActions.launchMediaViewer.subscribe {
+        }
+        subscribeWith(timelineActions.launchMediaViewer) {
             navController.navigate(
                 R.id.action_global_toMedia,
                 MediaActivityArgs(it.tweetId, it.index).toBundle()
             )
-        }.addTo(disposables)
-        actions.rollbackViewState.subscribe {
-            activity.onBackPressedDispatcher.onBackPressed()
-        }.addTo(disposables)
-        actions.updateContainer.subscribe {
-            activity.navigateTo(it)
-        }.addTo(disposables)
-        activity.lifecycle.addObserver(this)
+        }
+    }
+
+    fun dispatchNavigate(state: MainNavHostState) {
+        activity.navigateTo(state)
     }
 
     private fun AppCompatActivity.navigateTo(nextState: MainNavHostState) {
-        if (nextState.isDestinationEqualTo(this@MainActivityNavigationDelegate.containerState)) {
+        if (nextState.isDestinationEqualTo(containerState.value)) {
             return
         }
         when (nextState) {
@@ -109,15 +103,18 @@ class MainActivityNavigationDelegate @Inject constructor(
         }
     }
 
+    fun dispatchBack() {
+        activity.onBackPressedDispatcher.onBackPressed()
+    }
+
     override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
+        super.onStateChanged(source, event)
         when (event) {
             Lifecycle.Event.ON_CREATE -> {
                 navController.addOnDestinationChangedListener(onDestinationChanged)
             }
             Lifecycle.Event.ON_DESTROY -> {
                 navController.removeOnDestinationChangedListener(onDestinationChanged)
-                disposables.clear()
-                activity.lifecycle.removeObserver(this)
             }
             else -> Unit
         }
