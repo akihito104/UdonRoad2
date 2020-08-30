@@ -24,12 +24,17 @@ import com.freshdigitable.udonroad2.data.impl.AppExecutor
 import com.freshdigitable.udonroad2.data.impl.DispatcherProvider
 import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
 import com.freshdigitable.udonroad2.model.AccessTokenEntity
+import com.freshdigitable.udonroad2.model.ListOwnerGenerator
+import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.RequestTokenItem
+import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.user.UserId
+import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.google.common.truth.Truth.assertThat
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.confirmVerified
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -43,9 +48,11 @@ import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runBlockingTest
 import kotlinx.coroutines.test.setMain
-import org.junit.Ignore
+import org.junit.After
 import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.RuleChain
+import org.junit.rules.TestRule
 import org.junit.rules.TestWatcher
 import org.junit.runner.Description
 import org.junit.runner.RunWith
@@ -54,18 +61,20 @@ import java.io.Serializable
 @ExperimentalCoroutinesApi
 @RunWith(AndroidJUnit4::class)
 class OauthViewModelTest {
-    @get:Rule
-    val coroutineRule = CoroutineTestRule()
+    private val coroutineRule = CoroutineTestRule()
 
     @get:Rule
-    val taskRule = InstantTaskExecutorRule()
+    val rule: TestRule = RuleChain.outerRule(InstantTaskExecutorRule())
+        .around(RxExceptionHandler())
+        .around(coroutineRule)
 
     private val dataSource = OauthDataSource(ApplicationProvider.getApplicationContext())
     private val repository = mockk<OAuthTokenRepository>()
     private val dispatcher = EventDispatcher()
     private val savedStates = OauthSavedStates(SavedStateHandle())
+    private val activityEventDelegate: ActivityEventDelegate = mockk()
     private val navDelegate: OauthNavigationDelegate =
-        OauthNavigationDelegate(mockk(relaxed = true))
+        OauthNavigationDelegate(mockk(relaxed = true), ListOwnerGenerator(), activityEventDelegate)
     private val sut = OauthViewModel(
         dataSource, dispatcher, OauthViewStates(
             OauthAction(dispatcher),
@@ -75,6 +84,11 @@ class OauthViewModelTest {
             AppExecutor(dispatcher = coroutineRule.coroutineContextProvider)
         )
     )
+
+    @After
+    fun onTestFinished() {
+        confirmVerified(repository)
+    }
 
     @Test
     fun onLoginClicked(): Unit = coroutineRule.runBlockingTest {
@@ -92,9 +106,7 @@ class OauthViewModelTest {
         sut.onLoginClicked()
 
         // verify
-        test.assertOf {
-            it.assertValueAt(0) { actual -> actual is OauthEvent.LoginClicked }
-        }
+        test.assertValueAt(0) { actual -> actual is OauthEvent.LoginClicked }
         coVerify { repository.getRequestTokenItem() }
         assertThat(sut.sendPinButtonEnabled.value).isFalse()
     }
@@ -119,14 +131,11 @@ class OauthViewModelTest {
 
         // verify
         coVerify { repository.getRequestTokenItem() }
-        dispatcherObserver.assertOf {
-            it.assertValueAt(0) { actual -> actual is OauthEvent.LoginClicked }
-        }
+        dispatcherObserver.assertValueAt(0) { actual -> actual is OauthEvent.LoginClicked }
         assertThat(sut.sendPinButtonEnabled.value).isTrue()
     }
 
     @Test
-    @Ignore
     fun onSendPinClicked(): Unit = coroutineRule.runBlockingTest {
         // setup
         val token = object : RequestTokenItem {
@@ -141,6 +150,7 @@ class OauthViewModelTest {
         every { repository.login(UserId(100)) } just runs
         val dispatcherObserver = dispatcher.emitter.test()
         sut.sendPinButtonEnabled.observeForever { }
+        every { activityEventDelegate.dispatchNavHostNavigate(any()) } just runs
 
         sut.onLoginClicked()
         sut.onAfterPinTextChanged("012345")
@@ -152,13 +162,16 @@ class OauthViewModelTest {
         coVerify { repository.getRequestTokenItem() }
         coVerify { repository.getAccessToken(any(), any()) }
         verify { repository.login(UserId(100)) }
-        dispatcherObserver.assertOf {
-            it.assertValueCount(4)
-            it.assertValueAt(0) { actual -> actual is OauthEvent.LoginClicked }
-            it.assertValueAt(1) { actual -> actual is OauthEvent.PinTextChanged }
-            // FIXME
-            it.assertValueAt(2) { actual -> actual is OauthEvent.SendPinClicked }
-            it.assertValueAt(3) { actual -> actual is OauthEvent.OauthSucceeded }
+        dispatcherObserver
+            .assertValueCount(3)
+            .assertValueAt(0) { actual -> actual is OauthEvent.LoginClicked }
+            .assertValueAt(1) { actual -> actual is OauthEvent.PinTextChanged }
+            .assertValueAt(2) { actual -> actual is OauthEvent.SendPinClicked }
+        verify {
+            activityEventDelegate.dispatchNavHostNavigate(match {
+                it is TimelineEvent.Navigate.Timeline &&
+                    it.owner.query is QueryType.TweetQueryType.Timeline
+            })
         }
         assertThat(sut.sendPinButtonEnabled.value).isFalse()
     }
@@ -179,14 +192,43 @@ class CoroutineTestRule : TestWatcher() {
         Dispatchers.setMain(testCoroutineDispatcher)
     }
 
-    override fun finished(description: Description?) {
-        super.finished(description)
-        Dispatchers.resetMain()
-        testCoroutineDispatcher.cleanupTestCoroutines()
-        exceptionHandler.cleanupTestCoroutines()
+    fun runBlockingTest(block: suspend TestCoroutineScope.() -> Unit) {
+        runBlockingTest(coroutineContextProvider.mainContext, block)
     }
 
-    fun runBlockingTest(block: suspend TestCoroutineScope.() -> Unit) {
-        testCoroutineDispatcher.runBlockingTest(block)
+    override fun finished(description: Description?) {
+        super.finished(description)
+        exceptionHandler.cleanupTestCoroutines()
+        testCoroutineDispatcher.cleanupTestCoroutines()
+        Dispatchers.resetMain()
+    }
+}
+
+class RxExceptionHandler : TestWatcher() {
+    private var defaultExceptionHandler: Thread.UncaughtExceptionHandler? = null
+    private val exceptions = mutableListOf<Throwable>()
+
+    override fun starting(description: Description?) {
+        super.starting(description)
+        defaultExceptionHandler = Thread.getDefaultUncaughtExceptionHandler()
+        Thread.setDefaultUncaughtExceptionHandler { _, e ->
+            synchronized(exceptions) {
+                exceptions += e
+            }
+        }
+    }
+
+    override fun succeeded(description: Description?) {
+        super.succeeded(description)
+        if (exceptions.isNotEmpty()) {
+            val e = exceptions.first()
+            exceptions.forEach { it.printStackTrace() }
+            throw e
+        }
+    }
+
+    override fun finished(description: Description?) {
+        super.finished(description)
+        Thread.setDefaultUncaughtExceptionHandler(defaultExceptionHandler)
     }
 }
