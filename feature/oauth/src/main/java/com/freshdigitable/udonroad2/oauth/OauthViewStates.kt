@@ -55,22 +55,23 @@ class OauthViewStates(
         t != null && p?.isNotEmpty() == true
     }
 
-    private val sendPin: AppAction<OauthEvent.OauthSucceeded> = actions.sendPin.flatMap {
-        val token = requireNotNull(requestToken.value)
-        val verifier = pinText.value.toString()
-        AppAction.create { emitter ->
-            appExecutor.launch {
-                val t = repository.getAccessToken(token, verifier)
-                repository.login(t.userId)
-                savedState.setToken(null)
-                emitter.onNext(OauthEvent.OauthSucceeded)
+    private val completeAuthProcess: AppAction<OauthEvent.OauthSucceeded> =
+        actions.sendPin.flatMap {
+            val token = requireNotNull(requestToken.value)
+            val verifier = pinText.value.toString()
+            AppAction.create { emitter ->
+                appExecutor.launch {
+                    val t = repository.getAccessToken(token, verifier)
+                    repository.login(t.userId)
+                    savedState.setToken(null)
+                    emitter.onNext(OauthEvent.OauthSucceeded)
+                }
             }
         }
-    }
 
     init {
         navDelegate.subscribeWith(_requestToken) { launchTwitterOauth(it.authorizationUrl) }
-        navDelegate.subscribeWith(sendPin) { actions.dispatcher.postEvent(it) }
+        navDelegate.subscribeWith(completeAuthProcess) { toTimeline() }
     }
 }
 

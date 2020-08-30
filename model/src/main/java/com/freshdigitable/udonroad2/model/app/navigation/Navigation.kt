@@ -47,7 +47,7 @@ abstract class Navigation<T : FragmentContainerState>(
         state.observe(activity) { navigate(it) }
     }
 
-    abstract fun onEvent(event: NavigationEvent): T?
+    abstract fun onEvent(event: AppEvent): T?
     abstract fun navigate(s: T?)
 
     @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)

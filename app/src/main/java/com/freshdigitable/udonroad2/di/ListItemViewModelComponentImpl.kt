@@ -25,6 +25,7 @@ import com.freshdigitable.udonroad2.data.impl.di.ListRepositoryComponentModule
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.app.ClassKeyMap
+import com.freshdigitable.udonroad2.model.app.di.ViewModelScope
 import com.freshdigitable.udonroad2.model.app.valueByAssignableClassObject
 import com.freshdigitable.udonroad2.oauth.di.OauthListAdapterModule
 import com.freshdigitable.udonroad2.oauth.di.OauthViewModelModule
@@ -49,6 +50,7 @@ interface ListItemViewModelModule {
     }
 }
 
+@ViewModelScope
 @Subcomponent(
     modules = [
         TimelineViewModelModules::class,

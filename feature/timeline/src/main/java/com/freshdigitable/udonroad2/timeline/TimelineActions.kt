@@ -21,29 +21,27 @@ import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.filterByType
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
 import com.freshdigitable.udonroad2.model.user.TweetingUser
+import com.freshdigitable.udonroad2.timeline.TimelineEvent.Init
+import com.freshdigitable.udonroad2.timeline.TimelineEvent.MediaItemClicked
+import com.freshdigitable.udonroad2.timeline.TimelineEvent.RetweetUserClicked
 import com.freshdigitable.udonroad2.timeline.TimelineEvent.SelectedItemShortcut
 import com.freshdigitable.udonroad2.timeline.TimelineEvent.TweetItemSelection
+import com.freshdigitable.udonroad2.timeline.TimelineEvent.UserIconClicked
 import javax.inject.Inject
 
 class TimelineActions @Inject constructor(
-    dispatcher: EventDispatcher
+    dispatcher: EventDispatcher,
 ) {
-    val showTimeline: AppAction<TimelineEvent.Init> = dispatcher.toAction {
-        filterByType()
-    }
-    val showTweetDetail: AppAction<SelectedItemShortcut.TweetDetail> = dispatcher.toAction {
-        filterByType()
-    }
+    val showTimeline: AppAction<Init> = dispatcher.toAction()
+    val showTweetDetail: AppAction<SelectedItemShortcut.TweetDetail> = dispatcher.toAction()
 
     val launchUserInfo: AppAction<TweetingUser> = dispatcher.toAction {
         AppAction.merge(
-            filterByType<TimelineEvent.UserIconClicked>().map { it.user },
-            filterByType<TimelineEvent.RetweetUserClicked>().map { it.user }
+            filterByType<UserIconClicked>().map { it.user },
+            filterByType<RetweetUserClicked>().map { it.user }
         )
     }
-    val launchMediaViewer: AppAction<TimelineEvent.MediaItemClicked> = dispatcher.toAction {
-        filterByType()
-    }
+    val launchMediaViewer: AppAction<MediaItemClicked> = dispatcher.toAction()
 
     val selectItem: AppAction<TweetItemSelection.Selected> = dispatcher.toAction {
         AppAction.merge(
@@ -53,13 +51,9 @@ class TimelineActions @Inject constructor(
                 .map { TweetItemSelection.Selected(requireNotNull(it.selectedItemId)) }
         )
     }
-    val toggleItem: AppAction<TweetItemSelection.Toggle> = dispatcher.toAction {
-        filterByType()
-    }
-    val unselectItem: AppAction<TweetItemSelection.Unselected> = dispatcher.toAction {
-        filterByType()
-    }
+    val toggleItem: AppAction<TweetItemSelection.Toggle> = dispatcher.toAction()
+    val unselectItem: AppAction<TweetItemSelection.Unselected> = dispatcher.toAction()
 
-    val favTweet: AppAction<SelectedItemShortcut.Like> = dispatcher.toAction { filterByType() }
-    val retweet: AppAction<SelectedItemShortcut.Retweet> = dispatcher.toAction { filterByType() }
+    val favTweet: AppAction<SelectedItemShortcut.Like> = dispatcher.toAction()
+    val retweet: AppAction<SelectedItemShortcut.Retweet> = dispatcher.toAction()
 }

@@ -16,23 +16,23 @@ import javax.inject.Inject
 
 @ActivityScope
 class EventDispatcher @Inject constructor() {
-    val emitter = PublishSubject.create<NavigationEvent>()
+    val emitter = PublishSubject.create<AppEvent>()
 
-    fun postEvent(event: NavigationEvent) {
+    fun postEvent(event: AppEvent) {
         Timber.tag("NavigationDispatcher").d("postEvent: $event")
         emitter.onNext(event)
     }
 }
 
-fun EventDispatcher.postEvents(vararg events: NavigationEvent) {
+fun EventDispatcher.postEvents(vararg events: AppEvent) {
     events.forEach(this::postEvent)
 }
 
 typealias AppAction<T> = Observable<T>
 typealias AppViewState<T> = LiveData<T>
 
-inline fun <T> EventDispatcher.toAction(
-    block: PublishSubject<NavigationEvent>.() -> AppAction<T>
+inline fun <reified T> EventDispatcher.toAction(
+    block: PublishSubject<AppEvent>.() -> AppAction<T> = { filterByType() }
 ): AppAction<T> {
     return PublishSubject.create<T>().also { action ->
         this.emitter.block().subscribe(action)
@@ -50,12 +50,12 @@ inline fun <T, reified E> AppAction<T>.toViewState(
         .distinctUntilChanged()
 }
 
-inline fun <reified T> AppAction<out NavigationEvent>.filterByType(): AppAction<T> {
+inline fun <reified T> AppAction<out AppEvent>.filterByType(): AppAction<T> {
     return this.filter { it is T }.cast(T::class.java)
 }
 
 data class EventResult<T>(
-    val event: NavigationEvent,
+    val event: AppEvent,
     private val result: Result<T>
 ) : Serializable {
     val value: T? = result.getOrNull()
@@ -65,11 +65,11 @@ data class EventResult<T>(
         get() = result.exceptionOrNull()
 
     companion object {
-        fun <T> success(event: NavigationEvent, value: T): EventResult<T> {
+        fun <T> success(event: AppEvent, value: T): EventResult<T> {
             return EventResult(event, Result.success(value))
         }
 
-        fun <T> failure(event: NavigationEvent, throwable: Throwable): EventResult<T> {
+        fun <T> failure(event: AppEvent, throwable: Throwable): EventResult<T> {
             return EventResult(event, Result.failure(throwable))
         }
     }

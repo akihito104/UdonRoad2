@@ -16,11 +16,13 @@
 
 package com.freshdigitable.udonroad2.model.app.navigation
 
+import androidx.annotation.StringRes
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import com.freshdigitable.udonroad2.model.app.weakRef
 import io.reactivex.disposables.CompositeDisposable
+import java.io.Serializable
 
 abstract class NavigationDelegate(
     _lifecycleOwner: LifecycleOwner
@@ -43,4 +45,15 @@ abstract class NavigationDelegate(
 
 fun <T, E : NavigationDelegate> E.subscribeWith(action: AppAction<T>, block: E.(T) -> Unit) {
     action.subscribe { block(it) }.addTo(disposables)
+}
+
+interface ActivityEventDelegate {
+    fun dispatchNavHostNavigate(event: NavigationEvent) {}
+    fun dispatchFeedbackMessage(message: FeedbackMessage)
+}
+
+interface FeedbackMessage : Serializable {
+    @get:StringRes
+    val messageRes: Int
+    val args: List<Any>? get() = null
 }

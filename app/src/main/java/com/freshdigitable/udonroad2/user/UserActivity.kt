@@ -7,7 +7,7 @@ import android.view.Menu
 import android.view.MenuItem
 import androidx.annotation.IdRes
 import androidx.appcompat.app.AppCompatActivity
-import androidx.databinding.DataBindingUtil.setContentView
+import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.observe
@@ -16,7 +16,9 @@ import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.databinding.ActivityUserBinding
 import com.freshdigitable.udonroad2.di.ListItemFragmentModule
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
+import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
+import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
 import com.freshdigitable.udonroad2.model.app.navigation.Navigation
 import com.freshdigitable.udonroad2.model.user.TweetingUser
 import com.google.android.material.appbar.AppBarLayout
@@ -45,7 +47,7 @@ class UserActivity : HasAndroidInjector, AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
         super.onCreate(savedInstanceState)
-        val binding = setContentView<ActivityUserBinding>(
+        val binding = DataBindingUtil.setContentView<ActivityUserBinding>(
             this,
             R.layout.activity_user
         )
@@ -197,6 +199,15 @@ interface UserActivityModule {
                 activity,
                 viewModelProvider
             )
+        }
+
+        @Provides
+        fun provideActivityEventDelegate(): ActivityEventDelegate {
+            return object : ActivityEventDelegate {
+                override fun dispatchFeedbackMessage(message: FeedbackMessage) {
+                    TODO("Not yet implemented")
+                }
+            }
         }
     }
 }
