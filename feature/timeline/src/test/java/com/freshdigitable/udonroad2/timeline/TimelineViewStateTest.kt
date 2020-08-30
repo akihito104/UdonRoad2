@@ -21,11 +21,12 @@ import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
-import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
+import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.postEvents
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.timeline.TimelineEvent.TweetItemSelection
 import com.google.common.truth.Truth.assertThat
+import io.mockk.mockk
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
@@ -79,9 +80,16 @@ class TimelineViewStateTest {
 class TimelineViewStatesTestRule : TestWatcher() {
     private val actionsRule: TimelineActionsTestRule = TimelineActionsTestRule()
     val owner = ListOwnerGenerator().create(QueryType.TweetQueryType.Timeline())
-    val sut = TimelineViewState(owner, actionsRule.sut, SelectedItemRepository())
+    val sut = TimelineViewState(
+        owner,
+        actionsRule.sut,
+        SelectedItemRepository(),
+        mockk(),
+        ListOwnerGenerator(),
+        TimelineNavigationDelegate(mockk(relaxed = true), mockk())
+    )
 
-    fun dispatchEvents(vararg event: NavigationEvent) {
+    fun dispatchEvents(vararg event: AppEvent) {
         actionsRule.dispatcher.postEvents(*event)
     }
 
