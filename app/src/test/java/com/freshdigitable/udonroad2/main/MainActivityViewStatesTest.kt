@@ -24,14 +24,13 @@ import com.freshdigitable.udonroad2.data.impl.TweetRepository
 import com.freshdigitable.udonroad2.data.restclient.AppTwitterException
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
+import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.CommonEvent
-import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.postEvents
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.user.UserId
 import com.freshdigitable.udonroad2.test.MockVerified
-import com.freshdigitable.udonroad2.timeline.TimelineActions
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import io.mockk.every
 import io.mockk.just
@@ -39,7 +38,6 @@ import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.verify
 import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.observers.TestObserver
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
@@ -185,13 +183,13 @@ class MainActivityViewStatesTest {
     @Test
     fun setupEventDispatched_then_dispatchNavigateCalled(): Unit = with(rule) {
         oauthTokenRepositoryMock.setupCurrentUserId(null)
-        every { navDelegate.dispatchNavigate(any()) } just runs
+        every { navDelegate.dispatchNavHostNavigate(any()) } just runs
 
         dispatchEvents(TimelineEvent.Setup())
 
         verify {
-            navDelegate.dispatchNavigate(match {
-                it is MainNavHostState.Timeline && it.owner.query == QueryType.Oauth
+            navDelegate.dispatchNavHostNavigate(match {
+                it is TimelineEvent.Navigate.Timeline && it.owner.query == QueryType.Oauth
             })
         }
     }
@@ -285,22 +283,18 @@ class MainActivityStateModelTestRule : TestWatcher() {
     private val actionsTestRule = MainActivityActionsTestRule()
     val dispatcher = actionsTestRule.dispatcher
     val oauthTokenRepositoryMock = actionsTestRule.oauthTokenRepositoryMock
-    val tweetRepositoryMock = TweetRepositoryRule()
+    private val tweetRepositoryMock = TweetRepositoryRule()
     val selectedItemRepository = SelectedItemRepository()
-    val timelineActions = TimelineActions(dispatcher)
     val navDelegateRule = MainActivityNavigationDelegateRule()
     val navDelegate: MainActivityNavigationDelegate = navDelegateRule.mock
 
     val sut = MainActivityViewStates(
         actionsTestRule.sut,
-        timelineActions,
         selectedItemRepository,
-        tweetRepositoryMock.tweetRepository,
         navDelegateRule.mock
     )
-    val updateTweetObserver: TestObserver<FeedbackMessage> = sut.updateTweet.test()
 
-    fun dispatchEvents(vararg events: NavigationEvent) {
+    fun dispatchEvents(vararg events: AppEvent) {
         dispatcher.postEvents(*events)
     }
 

@@ -22,6 +22,7 @@ import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.tweet.TweetId
+import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.google.common.truth.Truth.assertThat
 import io.mockk.every
 import io.mockk.mockk
@@ -52,8 +53,8 @@ class MainViewModelTest {
 
             // verify
             verify {
-                stateModelRule.navDelegate.dispatchNavigate(match {
-                    it is MainNavHostState.Timeline && it.owner.query == QueryType.Oauth
+                stateModelRule.navDelegate.dispatchNavHostNavigate(match {
+                    it is TimelineEvent.Navigate.Timeline && it.owner.query == QueryType.Oauth
                 })
             }
         }
@@ -66,12 +67,7 @@ class MainViewModelTest {
         @Before
         fun setup(): Unit = with(rule) {
             stateModelRule.navDelegateRule.setupContainerState(
-                MainNavHostState.Timeline(
-                    ListOwner(
-                        0,
-                        QueryType.TweetQueryType.Timeline()
-                    ), MainNavHostState.Cause.INIT
-                )
+                MainNavHostState.Timeline(ListOwner(0, QueryType.TweetQueryType.Timeline()))
             )
             stateModelRule.selectedItemRepository.put(
                 SelectedItemId(
@@ -83,31 +79,30 @@ class MainViewModelTest {
         @Test
         fun onFabMenuSelected_selectedFav_then_favDispatched(): Unit = with(rule) {
             // setup
-            stateModelRule.tweetRepositoryMock.setupPostLikeForSuccess(TweetId(200))
+            val dispatcherObserver = stateModelRule.dispatcher.emitter.test()
 
             // exercise
             sut.onFabMenuSelected(menuItem(R.id.iffabMenu_main_fav))
 
             // verify
             assertThat(sut.isFabVisible.value).isTrue()
-            stateModelRule.updateTweetObserver.assertOf {
-                it.assertValueCount(1)
-            }
+            dispatcherObserver
+                .assertValueCount(1)
+                .assertValueAt(0) { it is TimelineEvent.SelectedItemShortcut.Like }
         }
 
         @Test
         fun onBackPressed_then_UnselectedEventDispatched(): Unit = with(rule) {
             // setup
-            val unselectedObserver = stateModelRule.timelineActions.unselectItem.test()
+            val dispatcherObserver = stateModelRule.dispatcher.emitter.test()
 
             // exercise
             sut.onBackPressed()
 
             // verify
-            unselectedObserver.assertOf {
-                it.assertValueCount(1)
-                it.assertValueAt(0) { actual -> actual.owner.id == 0 }
-            }
+            dispatcherObserver
+                .assertValueCount(1)
+                .assertValueAt(0) { it is TimelineEvent.TweetItemSelection.Unselected }
         }
     }
 }
