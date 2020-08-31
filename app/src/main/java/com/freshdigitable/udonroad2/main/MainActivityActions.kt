@@ -16,57 +16,21 @@
 
 package com.freshdigitable.udonroad2.main
 
-import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
-import com.freshdigitable.udonroad2.model.ListOwnerGenerator
-import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.app.di.ActivityScope
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.CommonEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
-import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
-import com.freshdigitable.udonroad2.model.app.navigation.filterByType
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
 import com.freshdigitable.udonroad2.oauth.OauthEvent
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
-import timber.log.Timber
 import javax.inject.Inject
 
 @ActivityScope
 class MainActivityActions @Inject constructor(
     dispatcher: EventDispatcher,
-    tokenRepository: OAuthTokenRepository,
-    listOwnerGenerator: ListOwnerGenerator,
 ) {
-    private val showFirstView: AppAction<out NavigationEvent> = dispatcher.toAction {
-        filterByType<TimelineEvent.Setup>().map {
-            Timber.tag("Action").d("showFirstView: $it")
-            when {
-                tokenRepository.getCurrentUserId() != null -> {
-                    tokenRepository.login()
-                    TimelineEvent.Navigate.Timeline(
-                        listOwnerGenerator.create(QueryType.TweetQueryType.Timeline()),
-                        NavigationEvent.Type.INIT
-                    )
-                }
-                else -> TimelineEvent.Navigate.Timeline(
-                    listOwnerGenerator.create(QueryType.Oauth),
-                    NavigationEvent.Type.INIT
-                )
-            }
-        }
-    }
+    internal val showFirstView: AppAction<TimelineEvent.Setup> = dispatcher.toAction()
+    internal val showAuth: AppAction<OauthEvent.Init> = dispatcher.toAction()
 
-    val rollbackViewState: AppAction<CommonEvent.Back> = dispatcher.toAction()
-
-    private val showAuth: AppAction<OauthEvent.Init> = dispatcher.toAction()
-
-    val updateContainer: AppAction<out NavigationEvent> = AppAction.merge(
-        showFirstView,
-        showAuth.map {
-            TimelineEvent.Navigate.Timeline(
-                listOwnerGenerator.create(QueryType.Oauth),
-                NavigationEvent.Type.INIT
-            )
-        },
-    )
+    internal val rollbackViewState: AppAction<CommonEvent.Back> = dispatcher.toAction()
 }

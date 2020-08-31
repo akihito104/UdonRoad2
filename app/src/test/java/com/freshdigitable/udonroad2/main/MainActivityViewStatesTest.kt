@@ -20,12 +20,15 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.MutableLiveData
 import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
 import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
+import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.CommonEvent
+import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.postEvents
 import com.freshdigitable.udonroad2.model.user.UserId
 import com.freshdigitable.udonroad2.test_common.MockVerified
+import com.freshdigitable.udonroad2.test_common.RxExceptionHandler
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import io.mockk.every
 import io.mockk.just
@@ -46,12 +49,47 @@ class MainActivityViewStatesTest {
     val rule = MainActivityStateModelTestRule()
 
     @Test
-    fun setupEventDispatched_then_dispatchNavigateCalled(): Unit = with(rule) {
+    fun updateContainer_dispatchSetupEvent_then_flowInitOauthEvent(): Unit = with(rule) {
+        // setup
         oauthTokenRepositoryMock.setupCurrentUserId(null)
-        every { navDelegate.dispatchNavHostNavigate(any()) } just runs
 
+        // exercise
+        dispatcher.postEvent(TimelineEvent.Setup())
+
+        // verify
+        verify {
+            navDelegate.dispatchNavHostNavigate(match {
+                it is TimelineEvent.Navigate.Timeline && it.owner.query is QueryType.Oauth
+            })
+        }
+    }
+
+    @Test
+    fun updateContainer_dispatchSetupEvent_then_TimelineQueryIsFlowing(): Unit = with(rule) {
+        // setup
+        oauthTokenRepositoryMock.setupCurrentUserId(10000)
+
+        // exercise
+        dispatcher.postEvent(TimelineEvent.Setup())
+
+        // verify
+        verify {
+            navDelegate.dispatchNavHostNavigate(match {
+                it is TimelineEvent.Navigate.Timeline &&
+                    it.owner.query is QueryType.TweetQueryType.Timeline
+            })
+        }
+    }
+
+    @Test
+    fun setupEventDispatched_then_dispatchNavigateCalled(): Unit = with(rule) {
+        // setup
+        oauthTokenRepositoryMock.setupCurrentUserId(null)
+
+        // exercise
         dispatchEvents(TimelineEvent.Setup())
 
+        // verify
         verify {
             navDelegate.dispatchNavHostNavigate(match {
                 it is TimelineEvent.Navigate.Timeline && it.owner.query == QueryType.Oauth
@@ -61,10 +99,10 @@ class MainActivityViewStatesTest {
 
     @Test
     fun backEventDispatched_then_dispatchBackCalled(): Unit = with(rule) {
-        every { navDelegate.dispatchBack() } just runs
-
+        // exercise
         dispatchEvents(CommonEvent.Back(null))
 
+        // verify
         verify { navDelegate.dispatchBack() }
     }
 }
@@ -103,16 +141,18 @@ class MainActivityNavigationDelegateRule(
 }
 
 class MainActivityStateModelTestRule : TestWatcher() {
-    private val actionsTestRule = MainActivityActionsTestRule()
-    val dispatcher = actionsTestRule.dispatcher
-    val oauthTokenRepositoryMock = actionsTestRule.oauthTokenRepositoryMock
+    //    private val actionsTestRule = MainActivityActionsTestRule()
+    val dispatcher = EventDispatcher()
+    val oauthTokenRepositoryMock = OAuthTokenRepositoryRule()
     val selectedItemRepository = SelectedItemRepository()
     val navDelegateRule = MainActivityNavigationDelegateRule()
     val navDelegate: MainActivityNavigationDelegate = navDelegateRule.mock
 
     val sut = MainActivityViewStates(
-        actionsTestRule.sut,
+        MainActivityActions(dispatcher),
         selectedItemRepository,
+        oauthTokenRepositoryMock.tokenRepository,
+        ListOwnerGenerator(),
         navDelegateRule.mock
     )
 
@@ -130,8 +170,8 @@ class MainActivityStateModelTestRule : TestWatcher() {
 
     override fun apply(base: Statement?, description: Description?): Statement {
         return RuleChain.outerRule(InstantTaskExecutorRule())
-            .around(actionsTestRule)
             .around(navDelegateRule)
+            .around(RxExceptionHandler())
             .apply(super.apply(base, description), description)
     }
 }
