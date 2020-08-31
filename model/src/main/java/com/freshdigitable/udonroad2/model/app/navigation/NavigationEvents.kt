@@ -16,14 +16,18 @@
 
 package com.freshdigitable.udonroad2.model.app.navigation
 
-interface NavigationEvent
-interface FragmentContainerState
-interface ViewState
+interface AppEvent
+interface NavigationEvent : AppEvent {
+    enum class Type { INIT, NAVIGATE }
+}
 
-sealed class CommonEvent : NavigationEvent {
+interface ViewState
+interface FragmentContainerState
+data class StateHolder<T>(val value: T?)
+
+sealed class CommonEvent : AppEvent {
     data class Back(
         val currentState: ViewState?
     ) : CommonEvent()
 }
 
-data class StateHolder<T>(val value: T?)

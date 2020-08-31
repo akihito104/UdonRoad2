@@ -20,9 +20,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelStoreOwner
 import com.freshdigitable.udonroad2.main.MainActivity
+import com.freshdigitable.udonroad2.main.MainActivityNavigationDelegate
 import com.freshdigitable.udonroad2.main.MainActivityViewStates
 import com.freshdigitable.udonroad2.main.MainViewModel
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
+import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import dagger.Binds
 import dagger.Module
@@ -41,6 +43,9 @@ interface MainActivityModule {
 
     @Binds
     fun bindAppCompatActivity(activity: MainActivity): AppCompatActivity
+
+    @Binds
+    fun bindActivityEventDelegate(navDelegate: MainActivityNavigationDelegate): ActivityEventDelegate
 
     companion object {
         @Provides

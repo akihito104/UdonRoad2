@@ -19,7 +19,6 @@ package com.freshdigitable.udonroad2.main
 import android.view.MenuItem
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
-import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.CommonEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
@@ -47,10 +46,14 @@ class MainViewModel(
     }
 
     fun onBackPressed() {
-        eventDispatcher.postEvent(CommonEvent.Back(viewStates.current))
+        val selectedItem = currentState?.selectedItem
+        val event = if (selectedItem != null) {
+            TimelineEvent.TweetItemSelection.Unselected(selectedItem.owner)
+        } else {
+            CommonEvent.Back(viewStates.current)
+        }
+        eventDispatcher.postEvent(event)
     }
-
-    val feedbackMessage: AppAction<FeedbackMessage> = viewStates.updateTweet
 
     val currentState: MainActivityViewState?
         get() = viewStates.current

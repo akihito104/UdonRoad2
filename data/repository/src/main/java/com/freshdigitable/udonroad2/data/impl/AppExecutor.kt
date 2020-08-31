@@ -13,7 +13,7 @@ import kotlin.coroutines.CoroutineContext
 class AppExecutor(
     private val parentJob: Job = SupervisorJob(),
     val dispatcher: DispatcherProvider = DispatcherProvider(),
-    coroutineScope: CoroutineScope = CoroutineScope(dispatcher.mainDispatcher + parentJob)
+    coroutineScope: CoroutineScope = CoroutineScope(dispatcher.mainContext + parentJob)
 ) : CoroutineScope by coroutineScope {
     val io: Executor = Executor { command ->
         launchIO { command.run() }
@@ -30,7 +30,7 @@ class DispatcherProvider(
     private val exceptionHandler: CoroutineExceptionHandler? = null
 ) {
     val mainContext: CoroutineContext
-        get() = exceptionHandler?.let { it + mainDispatcher } ?: mainDispatcher
+        get() = exceptionHandler?.plus(mainDispatcher) ?: mainDispatcher
     val ioContext: CoroutineContext
-        get() = exceptionHandler?.let { it + ioDispatcher } ?: ioDispatcher
+        get() = exceptionHandler?.plus(ioDispatcher) ?: ioDispatcher
 }

@@ -23,16 +23,12 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.databinding.ActivityMainBinding
-import com.freshdigitable.udonroad2.model.app.navigation.addTo
 import com.freshdigitable.udonroad2.oauth.OauthEvent
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
-import com.google.android.material.snackbar.Snackbar
 import dagger.android.AndroidInjection
 import dagger.android.AndroidInjector
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasAndroidInjector
-import io.reactivex.disposables.CompositeDisposable
-import timber.log.Timber
 import javax.inject.Inject
 
 class MainActivity : AppCompatActivity(), HasAndroidInjector {
@@ -42,7 +38,6 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
     @Inject
     lateinit var viewModelProvider: ViewModelProvider
     private val viewModel: MainViewModel by lazy { viewModelProvider[MainViewModel::class.java] }
-    private val compositeDisposable = CompositeDisposable()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
@@ -75,21 +70,6 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
         }
     }
 
-    override fun onStart() {
-        super.onStart()
-
-        val container = requireNotNull(findViewById<View>(R.id.main_container))
-        viewModel.feedbackMessage.subscribe {
-            Timber.tag("MainActivity").d("feedbackMessage: $it")
-            Snackbar.make(container, it.messageRes, Snackbar.LENGTH_SHORT).show()
-        }.addTo(compositeDisposable)
-    }
-
-    override fun onStop() {
-        super.onStop()
-        compositeDisposable.clear()
-    }
-
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.saveViewState(viewModel.currentState)
@@ -101,11 +81,6 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
 
     override fun onSupportNavigateUp(): Boolean {
         return navigation.onSupportNavigateUp() || super.onSupportNavigateUp()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        compositeDisposable.clear()
     }
 
     @Inject

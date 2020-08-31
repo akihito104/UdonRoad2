@@ -30,7 +30,7 @@ import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import com.freshdigitable.udonroad2.model.user.UserListItem
-import com.freshdigitable.udonroad2.timeline.viewmodel.FragmentContainerViewStateModel
+import com.freshdigitable.udonroad2.timeline.TimelineViewState
 import com.freshdigitable.udonroad2.timeline.viewmodel.MemberListListViewModel
 import com.freshdigitable.udonroad2.timeline.viewmodel.TimelineViewModel
 import com.freshdigitable.udonroad2.timeline.viewmodel.UserListViewModel
@@ -57,13 +57,13 @@ internal interface TimelineViewModelModule {
         fun provideTimelineViewModel(
             owner: ListOwner<*>,
             eventDispatcher: EventDispatcher,
-            viewStateModel: FragmentContainerViewStateModel,
+            viewStates: TimelineViewState,
             listRepositoryFactory: ListRepositoryComponent.Factory
         ): ViewModel = provideViewModel<QueryType.TweetQueryType, TweetListItem>(
             owner,
             listRepositoryFactory
         ) { o, repository, pagedListProvider ->
-            TimelineViewModel(o, eventDispatcher, viewStateModel, repository, pagedListProvider)
+            TimelineViewModel(o, eventDispatcher, viewStates, repository, pagedListProvider)
         }
 
         @Provides

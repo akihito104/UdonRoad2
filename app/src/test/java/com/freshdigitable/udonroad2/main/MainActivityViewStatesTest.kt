@@ -17,29 +17,22 @@
 package com.freshdigitable.udonroad2.main
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import com.freshdigitable.udonroad2.R
-import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
+import androidx.lifecycle.MutableLiveData
 import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
-import com.freshdigitable.udonroad2.data.impl.TweetRepository
-import com.freshdigitable.udonroad2.data.restclient.AppTwitterException
-import com.freshdigitable.udonroad2.model.ListOwner
+import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
-import com.freshdigitable.udonroad2.model.SelectedItemId
-import com.freshdigitable.udonroad2.model.app.navigation.AppAction
+import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
+import com.freshdigitable.udonroad2.model.app.navigation.CommonEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
-import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
-import com.freshdigitable.udonroad2.model.tweet.TweetEntity
-import com.freshdigitable.udonroad2.model.tweet.TweetId
-import com.freshdigitable.udonroad2.model.user.UserId
-import com.freshdigitable.udonroad2.test.MockVerified
+import com.freshdigitable.udonroad2.model.app.navigation.postEvents
+import com.freshdigitable.udonroad2.test_common.MockVerified
+import com.freshdigitable.udonroad2.test_common.OAuthTokenRepositoryRule
+import com.freshdigitable.udonroad2.test_common.RxExceptionHandler
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
-import com.google.common.truth.Truth.assertThat
 import io.mockk.every
-import io.mockk.just
 import io.mockk.mockk
-import io.mockk.runs
 import io.mockk.verify
-import io.reactivex.observers.TestObserver
+import io.reactivex.disposables.CompositeDisposable
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
@@ -53,7 +46,40 @@ class MainActivityViewStatesTest {
     val rule = MainActivityStateModelTestRule()
 
     @Test
-    fun containerState_dispatchSetupEvent_then_showOauth(): Unit = with(rule) {
+    fun updateContainer_dispatchSetupEvent_then_flowInitOauthEvent(): Unit = with(rule) {
+        // setup
+        oauthTokenRepositoryMock.setupCurrentUserId(null)
+
+        // exercise
+        dispatcher.postEvent(TimelineEvent.Setup())
+
+        // verify
+        verify {
+            navDelegate.dispatchNavHostNavigate(match {
+                it is TimelineEvent.Navigate.Timeline && it.owner.query is QueryType.Oauth
+            })
+        }
+    }
+
+    @Test
+    fun updateContainer_dispatchSetupEvent_then_TimelineQueryIsFlowing(): Unit = with(rule) {
+        // setup
+        oauthTokenRepositoryMock.setupCurrentUserId(10000)
+
+        // exercise
+        dispatcher.postEvent(TimelineEvent.Setup())
+
+        // verify
+        verify {
+            navDelegate.dispatchNavHostNavigate(match {
+                it is TimelineEvent.Navigate.Timeline &&
+                    it.owner.query is QueryType.TweetQueryType.Timeline
+            })
+        }
+    }
+
+    @Test
+    fun setupEventDispatched_then_dispatchNavigateCalled(): Unit = with(rule) {
         // setup
         oauthTokenRepositoryMock.setupCurrentUserId(null)
 
@@ -61,229 +87,57 @@ class MainActivityViewStatesTest {
         dispatchEvents(TimelineEvent.Setup())
 
         // verify
-        assertThat(sut.selectedItemId.value).isEqualTo(null)
+        verify {
+            navDelegate.dispatchNavHostNavigate(match {
+                it is TimelineEvent.Navigate.Timeline && it.owner.query == QueryType.Oauth
+            })
+        }
     }
 
     @Test
-    fun fabVisible_dispatchToggleSelectedItemEvent_then_fabVisibleIsTrue(): Unit = with(rule) {
-        // setup
-        oauthTokenRepositoryMock.setupCurrentUserId(10000)
-
+    fun backEventDispatched_then_dispatchBackCalled(): Unit = with(rule) {
         // exercise
-        dispatchEvents(
-            TimelineEvent.Setup(),
-            TimelineEvent.TweetItemSelection.Toggle(
-                SelectedItemId(
-                    ListOwner(0, QueryType.TweetQueryType.Timeline()), TweetId(200)
-                )
-            )
-        )
+        dispatchEvents(CommonEvent.Back(null))
 
         // verify
-        assertThat(sut.isFabVisible.value).isTrue()
-        assertThat(sut.selectedItemId.value?.originalId).isEqualTo(TweetId(200L))
-    }
-
-    @Test
-    fun selectedItemId_dispatchMediaItemClickedEvent_then_selectedItemIdHasValue(): Unit =
-        with(rule) {
-            // setup
-            oauthTokenRepositoryMock.setupCurrentUserId(10000)
-
-            // exercise
-            dispatchEvents(
-                TimelineEvent.Setup(),
-                TimelineEvent.MediaItemClicked(
-                    TweetId(1000),
-                    0,
-                    SelectedItemId(ListOwner(0, QueryType.TweetQueryType.Timeline()), TweetId(1000))
-                )
-            )
-
-            // verify
-            assertThat(sut.selectedItemId.value?.originalId).isEqualTo(TweetId(1000L))
-        }
-
-    @Test
-    fun updateTweet_dispatchLikeIsSuccess_then_likeDispatched(): Unit = with(rule) {
-        // setup
-        oauthTokenRepositoryMock.setupCurrentUserId(10000)
-        tweetRepositoryMock.setupPostLikeForSuccess(TweetId(200))
-
-        // exercise
-        dispatchEvents(
-            TimelineEvent.Setup(),
-            TimelineEvent.TweetItemSelection.Selected(
-                SelectedItemId(
-                    ListOwner(0, QueryType.TweetQueryType.Timeline()), TweetId(200)
-                )
-            ),
-            TimelineEvent.SelectedItemShortcut.Like(TweetId(200))
-        )
-
-        // verify
-        assertThat(sut.isFabVisible.value).isTrue()
-        assertThat(sut.selectedItemId.value?.originalId).isEqualTo(TweetId(200L))
-        updateTweetObserver.assertValueCount(1)
-        updateTweetObserver.assertValueAt(0) {
-            it.messageRes == R.string.msg_fav_create_success
-        }
-    }
-
-    @Test
-    fun updateTweet_dispatchLikeIsFailure_then_likeDispatchedWithError(): Unit = with(rule) {
-        // setup
-        oauthTokenRepositoryMock.setupCurrentUserId(10000)
-        tweetRepositoryMock.setupPostLikeForFailure(
-            TweetId(200), AppTwitterException.ErrorType.ALREADY_FAVORITED
-        )
-
-        // exercise
-        dispatchEvents(
-            TimelineEvent.Setup(),
-            TimelineEvent.TweetItemSelection.Selected(
-                SelectedItemId(
-                    ListOwner(0, QueryType.TweetQueryType.Timeline()), TweetId(200)
-                )
-            ),
-            TimelineEvent.SelectedItemShortcut.Like(TweetId(200))
-        )
-
-        // verify
-        assertThat(sut.isFabVisible.value).isTrue()
-        assertThat(sut.selectedItemId.value?.originalId).isEqualTo(TweetId(200L))
-        updateTweetObserver.assertValueCount(1)
-        updateTweetObserver.assertValueAt(0) {
-            it.messageRes == R.string.msg_already_fav
-        }
-    }
-
-    @Test
-    fun updateTweet_dispatchRetweetEvent_then_retweetDispatched(): Unit = with(rule) {
-        // setup
-        oauthTokenRepositoryMock.setupCurrentUserId(10000)
-        tweetRepositoryMock.setupPostRetweetForSuccess(TweetId(200))
-
-        // exercise
-        dispatchEvents(
-            TimelineEvent.Setup(),
-            TimelineEvent.TweetItemSelection.Selected(
-                SelectedItemId(
-                    ListOwner(0, QueryType.TweetQueryType.Timeline()), TweetId(200)
-                )
-            ),
-            TimelineEvent.SelectedItemShortcut.Retweet(TweetId(200))
-        )
-
-        // verify
-        assertThat(sut.isFabVisible.value).isTrue()
-        assertThat(sut.selectedItemId.value?.originalId).isEqualTo(TweetId(200L))
-        updateTweetObserver.assertValueCount(1)
-        updateTweetObserver.assertValueAt(0) {
-            it.messageRes == R.string.msg_rt_create_success
-        }
-    }
-
-    @Test
-    fun updateTweet_dispatchRetweetIsFailure_then_retweetResultIsDispatchedWithException(): Unit =
-        with(rule) {
-            // setup
-            oauthTokenRepositoryMock.setupCurrentUserId(10000)
-            tweetRepositoryMock.setupPostRetweetForFailure(
-                TweetId(200), AppTwitterException.ErrorType.ALREADY_RETWEETED
-            )
-
-            // exercise
-            dispatchEvents(
-                TimelineEvent.Setup(),
-                TimelineEvent.TweetItemSelection.Selected(
-                    SelectedItemId(
-                        ListOwner(0, QueryType.TweetQueryType.Timeline()), TweetId(200)
-                    )
-                ),
-                TimelineEvent.SelectedItemShortcut.Retweet(TweetId(200))
-            )
-
-            // verify
-            assertThat(sut.isFabVisible.value).isTrue()
-            assertThat(sut.selectedItemId.value?.originalId).isEqualTo(TweetId(200L))
-            updateTweetObserver.assertValueCount(1)
-            updateTweetObserver.assertValueAt(0) {
-                it.messageRes == R.string.msg_already_rt
-            }
-        }
-}
-
-class OAuthTokenRepositoryRule(
-    val tokenRepository: OAuthTokenRepository = mockk(),
-    private val mockVerified: MockVerified = MockVerified(listOf(tokenRepository))
-) : TestRule by mockVerified {
-    fun setupCurrentUserId(userId: Long?) {
-        val id = UserId.create(userId)
-        every { tokenRepository.getCurrentUserId() } returns id
-        mockVerified.expected { verify { tokenRepository.getCurrentUserId() } }
-        if (id != null) {
-            every { tokenRepository.login(id) } just runs
-            mockVerified.expected { verify { tokenRepository.login(id) } }
-        }
+        verify { navDelegate.dispatchBack() }
     }
 }
 
-class TweetRepositoryRule(
-    val tweetRepository: TweetRepository = mockk(),
-    private val mockVerified: MockVerified = MockVerified(listOf(tweetRepository))
+class MainActivityNavigationDelegateRule(
+    val mock: MainActivityNavigationDelegate = mockk(relaxed = true),
+    private val mockVerified: MockVerified = MockVerified(listOf(mock))
 ) : TestRule by mockVerified {
+    private val containerStateSource = MutableLiveData<MainNavHostState>()
 
-    fun setupPostLikeForSuccess(tweetId: TweetId, liked: TweetEntity = mockk()) {
-        setupPostLike(tweetId, Result.success(liked))
+    init {
+        every { mock.containerState } returns containerStateSource
+        mockVerified.expected { verify { mock.containerState } }
+        every { mock.disposables } returns CompositeDisposable()
+        mockVerified.expected { verify { mock.disposables } }
     }
 
-    fun setupPostLikeForFailure(tweetId: TweetId, exceptionType: AppTwitterException.ErrorType) {
-        val exception = createException(exceptionType)
-        setupPostLike(tweetId, Result.failure(exception))
-    }
-
-    private fun setupPostLike(tweetId: TweetId, result: Result<TweetEntity>) {
-        every { tweetRepository.postLike(tweetId) } returns AppAction.just(result)
-        mockVerified.expected { verify { tweetRepository.postLike(tweetId) } }
-    }
-
-    fun setupPostRetweetForSuccess(tweetId: TweetId, retweeted: TweetEntity = mockk()) {
-        setupPostRetweet(tweetId, Result.success(retweeted))
-    }
-
-    fun setupPostRetweetForFailure(tweetId: TweetId, exceptionType: AppTwitterException.ErrorType) {
-        val exception = createException(exceptionType)
-        setupPostRetweet(tweetId, Result.failure(exception))
-    }
-
-    private fun setupPostRetweet(tweetId: TweetId, result: Result<TweetEntity>) {
-        every { tweetRepository.postRetweet(tweetId) } returns AppAction.just(result)
-        mockVerified.expected { verify { tweetRepository.postRetweet(tweetId) } }
-    }
-
-    private fun createException(exceptionType: AppTwitterException.ErrorType): AppTwitterException {
-        return mockk<AppTwitterException>().apply {
-            every { statusCode } returns exceptionType.statusCode
-            every { errorCode } returns exceptionType.errorCode
-            every { errorType } returns exceptionType
-        }
+    fun setupContainerState(state: MainNavHostState) {
+        containerStateSource.value = state
     }
 }
 
 class MainActivityStateModelTestRule : TestWatcher() {
-    private val actionsTestRule = MainActivityActionsTestRule()
-    val dispatcher = actionsTestRule.dispatcher
-    val oauthTokenRepositoryMock = actionsTestRule.oauthTokenRepositoryMock
-    val tweetRepositoryMock = TweetRepositoryRule()
-    val sut = MainActivityViewStates(
-        actionsTestRule.sut,
-        SelectedItemRepository(),
-        tweetRepositoryMock.tweetRepository
-    )
-    val updateTweetObserver: TestObserver<FeedbackMessage> = sut.updateTweet.test()
+    val dispatcher = EventDispatcher()
+    val oauthTokenRepositoryMock = OAuthTokenRepositoryRule()
+    val selectedItemRepository = SelectedItemRepository()
+    val navDelegateRule = MainActivityNavigationDelegateRule()
+    val navDelegate: MainActivityNavigationDelegate = navDelegateRule.mock
 
-    fun dispatchEvents(vararg events: NavigationEvent) {
+    val sut = MainActivityViewStates(
+        MainActivityActions(dispatcher),
+        selectedItemRepository,
+        oauthTokenRepositoryMock.mock,
+        ListOwnerGenerator(),
+        navDelegateRule.mock
+    )
+
+    fun dispatchEvents(vararg events: AppEvent) {
         dispatcher.postEvents(*events)
     }
 
@@ -297,12 +151,8 @@ class MainActivityStateModelTestRule : TestWatcher() {
 
     override fun apply(base: Statement?, description: Description?): Statement {
         return RuleChain.outerRule(InstantTaskExecutorRule())
-            .around(actionsTestRule)
-            .around(tweetRepositoryMock)
+            .around(navDelegateRule)
+            .around(RxExceptionHandler())
             .apply(super.apply(base, description), description)
     }
-}
-
-fun EventDispatcher.postEvents(vararg events: NavigationEvent) {
-    events.forEach(this::postEvent)
 }

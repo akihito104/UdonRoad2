@@ -22,10 +22,10 @@ import androidx.lifecycle.ViewModel
 import androidx.paging.PagedListAdapter
 import androidx.savedstate.SavedStateRegistryOwner
 import com.freshdigitable.udonroad2.data.impl.di.ListRepositoryComponentModule
-import com.freshdigitable.udonroad2.main.MainActivityViewStates
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.app.ClassKeyMap
+import com.freshdigitable.udonroad2.model.app.di.ViewModelScope
 import com.freshdigitable.udonroad2.model.app.valueByAssignableClassObject
 import com.freshdigitable.udonroad2.oauth.di.OauthListAdapterModule
 import com.freshdigitable.udonroad2.oauth.di.OauthViewModelModule
@@ -33,8 +33,6 @@ import com.freshdigitable.udonroad2.timeline.di.ListItemAdapterComponent
 import com.freshdigitable.udonroad2.timeline.di.ListItemViewModelComponent
 import com.freshdigitable.udonroad2.timeline.di.TimelineAdapterModules
 import com.freshdigitable.udonroad2.timeline.di.TimelineViewModelModules
-import com.freshdigitable.udonroad2.timeline.viewmodel.FragmentContainerViewStateModel
-import dagger.Binds
 import dagger.BindsInstance
 import dagger.Module
 import dagger.Provides
@@ -50,13 +48,9 @@ interface ListItemViewModelModule {
             builder: ListItemViewModelComponentImpl.Builder
         ): ListItemViewModelComponent.Builder = builder
     }
-
-    @Binds
-    fun bindMainActivityViewStates(
-        viewStates: MainActivityViewStates
-    ): FragmentContainerViewStateModel
 }
 
+@ViewModelScope
 @Subcomponent(
     modules = [
         TimelineViewModelModules::class,

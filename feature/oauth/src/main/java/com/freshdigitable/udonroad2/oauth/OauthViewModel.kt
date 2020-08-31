@@ -22,8 +22,8 @@ import androidx.lifecycle.ViewModel
 import androidx.paging.DataSource
 import androidx.paging.PagedList
 import com.freshdigitable.udonroad2.model.QueryType
+import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
-import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.timeline.ListItemLoadable
 
 class OauthViewModel(
@@ -69,7 +69,7 @@ class OauthViewModel(
 
 }
 
-sealed class OauthEvent : NavigationEvent {
+sealed class OauthEvent : AppEvent {
     object Init : OauthEvent()
     object LoginClicked : OauthEvent()
     data class PinTextChanged(val text: CharSequence) : OauthEvent()

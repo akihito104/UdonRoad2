@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.freshdigitable.udonroad2.test
+package com.freshdigitable.udonroad2.test_common
 
 import io.mockk.confirmVerified
 import org.junit.rules.TestWatcher

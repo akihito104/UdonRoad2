@@ -21,12 +21,12 @@ import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
-import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.google.common.truth.Truth.assertThat
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -44,7 +44,7 @@ class MainViewModelTest {
         val rule = MainViewModelTestRule()
 
         @Test
-        fun initialEvent_withNull_then_isFabVisible_false(): Unit = with(rule) {
+        fun initialEvent_withNull_then_dispatchNavigateIsCalledWithOauth(): Unit = with(rule) {
             // setup
             stateModelRule.oauthTokenRepositoryMock.setupCurrentUserId(null)
 
@@ -52,7 +52,11 @@ class MainViewModelTest {
             sut.initialEvent(null)
 
             // verify
-            assertThat(sut.isFabVisible.value).isFalse()
+            verify {
+                stateModelRule.navDelegate.dispatchNavHostNavigate(match {
+                    it is TimelineEvent.Navigate.Timeline && it.owner.query == QueryType.Oauth
+                })
+            }
         }
     }
 
@@ -62,13 +66,12 @@ class MainViewModelTest {
 
         @Before
         fun setup(): Unit = with(rule) {
-            stateModelRule.oauthTokenRepositoryMock.setupCurrentUserId(200)
-            sut.initialEvent(null)
-            dispatchEvents(
-                TimelineEvent.TweetItemSelection.Selected(
-                    SelectedItemId(
-                        ListOwner(0, QueryType.TweetQueryType.Timeline()), TweetId(200)
-                    )
+            stateModelRule.navDelegateRule.setupContainerState(
+                MainNavHostState.Timeline(ListOwner(0, QueryType.TweetQueryType.Timeline()))
+            )
+            stateModelRule.selectedItemRepository.put(
+                SelectedItemId(
+                    ListOwner(0, QueryType.TweetQueryType.Timeline()), TweetId(200)
                 )
             )
         }
@@ -76,22 +79,30 @@ class MainViewModelTest {
         @Test
         fun onFabMenuSelected_selectedFav_then_favDispatched(): Unit = with(rule) {
             // setup
-            stateModelRule.tweetRepositoryMock.setupPostLikeForSuccess(TweetId(200))
+            val dispatcherObserver = stateModelRule.dispatcher.emitter.test()
 
             // exercise
             sut.onFabMenuSelected(menuItem(R.id.iffabMenu_main_fav))
 
             // verify
             assertThat(sut.isFabVisible.value).isTrue()
+            dispatcherObserver
+                .assertValueCount(1)
+                .assertValueAt(0) { it is TimelineEvent.SelectedItemShortcut.Like }
         }
 
         @Test
-        fun onBackPressed_then_fabVisibleIsFalse(): Unit = with(rule) {
+        fun onBackPressed_then_UnselectedEventDispatched(): Unit = with(rule) {
+            // setup
+            val dispatcherObserver = stateModelRule.dispatcher.emitter.test()
+
             // exercise
             sut.onBackPressed()
 
             // verify
-            assertThat(sut.isFabVisible.value).isFalse()
+            dispatcherObserver
+                .assertValueCount(1)
+                .assertValueAt(0) { it is TimelineEvent.TweetItemSelection.Unselected }
         }
     }
 }
@@ -100,10 +111,6 @@ class MainViewModelTestRule(
     val stateModelRule: MainActivityStateModelTestRule = MainActivityStateModelTestRule()
 ) : TestWatcher() {
     val sut: MainViewModel = MainViewModel(stateModelRule.dispatcher, stateModelRule.sut)
-
-    fun dispatchEvents(vararg events: NavigationEvent) {
-        stateModelRule.dispatchEvents(*events)
-    }
 
     override fun apply(base: Statement?, description: Description?): Statement {
         return RuleChain.outerRule(stateModelRule)

@@ -16,26 +16,21 @@
 
 package com.freshdigitable.udonroad2.main
 
-import androidx.annotation.StringRes
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.map
 import androidx.lifecycle.switchMap
-import com.freshdigitable.udonroad2.R
+import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
 import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
-import com.freshdigitable.udonroad2.data.impl.TweetRepository
-import com.freshdigitable.udonroad2.data.restclient.AppTwitterException
+import com.freshdigitable.udonroad2.model.ListOwnerGenerator
+import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.app.di.ActivityScope
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.AppViewState
-import com.freshdigitable.udonroad2.model.app.navigation.EventResult
-import com.freshdigitable.udonroad2.model.app.navigation.StateHolder
+import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.ViewState
-import com.freshdigitable.udonroad2.model.app.navigation.filterByType
-import com.freshdigitable.udonroad2.model.app.navigation.toViewState
-import com.freshdigitable.udonroad2.timeline.TimelineEvent.SelectedItemShortcut
-import com.freshdigitable.udonroad2.timeline.viewmodel.FragmentContainerViewStateModel
+import com.freshdigitable.udonroad2.model.app.navigation.subscribeWith
+import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import java.io.Serializable
 import javax.inject.Inject
 
@@ -43,53 +38,48 @@ import javax.inject.Inject
 class MainActivityViewStates @Inject constructor(
     actions: MainActivityActions,
     selectedItemRepository: SelectedItemRepository,
-    tweetRepository: TweetRepository
-) : FragmentContainerViewStateModel {
+    tokenRepository: OAuthTokenRepository,
+    listOwnerGenerator: ListOwnerGenerator,
+    navDelegate: MainActivityNavigationDelegate,
+) {
 
-    private val container: AppViewState<MainNavHostState> = actions.updateContainer.toViewState()
-
-    override val selectedItemId: LiveData<SelectedItemId?> = container.switchMap { container ->
-        when (container) {
-            is MainNavHostState.Timeline -> {
-                AppAction.merge(
-                    AppAction.just(container).map {
-                        StateHolder(selectedItemRepository.find(it.owner))
-                    },
-                    actions.selectItem.map {
-                        if (container.owner == it.owner) {
-                            selectedItemRepository.put(it.selectedItemId)
-                            StateHolder(selectedItemRepository.find(it.owner))
-                        } else {
-                            throw IllegalStateException()
-                        }
-                    },
-                    actions.unselectItem.map {
-                        if (container.owner == it.owner) {
-                            selectedItemRepository.remove(it.owner)
-                            StateHolder(null)
-                        } else {
-                            throw IllegalStateException()
-                        }
-                    },
-                    actions.toggleItem.map {
-                        if (container.owner == it.owner) {
-                            val current = selectedItemRepository.find(it.item.owner)
-                            when (it.item) {
-                                current -> selectedItemRepository.remove(it.item.owner)
-                                else -> selectedItemRepository.put(it.item)
-                            }
-                            StateHolder(selectedItemRepository.find(it.owner))
-                        } else {
-                            throw IllegalStateException()
-                        }
-                    }
-                ).toViewState()
+    private val updateContainer: AppAction<out NavigationEvent> = AppAction.merge(
+        actions.showFirstView.map {
+            when {
+                tokenRepository.getCurrentUserId() != null -> {
+                    tokenRepository.login()
+                    TimelineEvent.Navigate.Timeline(
+                        listOwnerGenerator.create(QueryType.TweetQueryType.Timeline()),
+                        NavigationEvent.Type.INIT
+                    )
+                }
+                else -> TimelineEvent.Navigate.Timeline(
+                    listOwnerGenerator.create(QueryType.Oauth), NavigationEvent.Type.INIT
+                )
             }
-            else -> MutableLiveData(StateHolder(null))
-        }
-    }.map { it.value }
+        },
+        actions.showAuth.map {
+            TimelineEvent.Navigate.Timeline(
+                listOwnerGenerator.create(QueryType.Oauth), NavigationEvent.Type.INIT
+            )
+        },
+    )
 
-    val isFabVisible: AppViewState<Boolean> = selectedItemId.map { item -> item != null }
+    init {
+        navDelegate.subscribeWith(updateContainer) { dispatchNavHostNavigate(it) }
+        navDelegate.subscribeWith(actions.rollbackViewState) { dispatchBack() }
+    }
+
+    private val currentNavHost: AppViewState<MainNavHostState> = navDelegate.containerState
+
+    val selectedItemId: AppViewState<SelectedItemId?> = currentNavHost.switchMap {
+        when (it) {
+            is MainNavHostState.Timeline -> selectedItemRepository.observe(it.owner)
+            else -> MutableLiveData(null)
+        }
+    }
+
+    val isFabVisible: AppViewState<Boolean> = selectedItemId.map { it != null }
 
     val current: MainActivityViewState?
         get() {
@@ -98,50 +88,9 @@ class MainActivityViewStates @Inject constructor(
                 fabVisible = isFabVisible.value ?: false
             )
         }
-
-    val updateTweet: AppAction<FeedbackMessage> = AppAction.merge(
-        actions.updateTweet.filterByType<SelectedItemShortcut.Like>().flatMap { event ->
-            tweetRepository.postLike(event.tweetId).map { EventResult(event, it) }
-        }.map {
-            when {
-                it.isSuccess -> FeedbackMessage.FavCreateSuccess
-                it.isExceptionTypeOf(AppTwitterException.ErrorType.ALREADY_FAVORITED) -> {
-                    FeedbackMessage.AlreadyFav
-                }
-                else -> FeedbackMessage.FavCreateFailed
-            }
-        },
-        actions.updateTweet.filterByType<SelectedItemShortcut.Retweet>().flatMap { event ->
-            tweetRepository.postRetweet(event.tweetId).map { EventResult(event, it) }
-        }.map {
-            when {
-                it.isSuccess -> FeedbackMessage.RtCreateSuccess
-                it.isExceptionTypeOf(AppTwitterException.ErrorType.ALREADY_RETWEETED) -> {
-                    FeedbackMessage.AlreadyRt
-                }
-                else -> FeedbackMessage.RtCreateFailed
-            }
-        }
-    )
 }
 
 data class MainActivityViewState(
     val selectedItem: SelectedItemId?,
     val fabVisible: Boolean
 ) : ViewState, Serializable
-
-sealed class FeedbackMessage(
-    @StringRes val messageRes: Int
-) {
-    object FavCreateSuccess : FeedbackMessage(R.string.msg_fav_create_success)
-    object FavCreateFailed : FeedbackMessage(R.string.msg_fav_create_failed)
-    object AlreadyFav : FeedbackMessage(R.string.msg_already_fav)
-
-    object RtCreateSuccess : FeedbackMessage(R.string.msg_rt_create_success)
-    object RtCreateFailed : FeedbackMessage(R.string.msg_rt_create_failed)
-    object AlreadyRt : FeedbackMessage(R.string.msg_already_rt)
-}
-
-fun EventResult<*>.isExceptionTypeOf(type: AppTwitterException.ErrorType): Boolean {
-    return (this.exception as? AppTwitterException)?.errorType == type
-}

@@ -4,19 +4,17 @@ import android.view.MenuItem
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.MemberListItem
 import com.freshdigitable.udonroad2.model.SelectedItemId
-import com.freshdigitable.udonroad2.model.app.navigation.FragmentContainerState
+import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.user.TweetingUser
 import com.freshdigitable.udonroad2.timeline.TimelineEvent.SelectedItemShortcut
 import java.io.Serializable
 
-sealed class TimelineEvent : NavigationEvent {
+sealed class TimelineEvent : AppEvent {
     data class Setup(val savedState: Serializable? = null) : TimelineEvent()
 
     object Init : TimelineEvent()
-
-    data class DestinationChanged(val state: FragmentContainerState) : NavigationEvent
 
     data class UserIconClicked(val user: TweetingUser) : TimelineEvent()
 
@@ -52,6 +50,38 @@ sealed class TimelineEvent : NavigationEvent {
         val index: Int = 0,
         val selectedItemId: SelectedItemId? = null
     ) : TimelineEvent()
+
+    sealed class Navigate : TimelineEvent(), NavigationEvent {
+        data class Timeline(
+            val owner: ListOwner<*>,
+            override val type: NavigationEvent.Type = NavigationEvent.Type.NAVIGATE
+        ) : Navigate()
+
+        data class Detail(
+            val id: TweetId,
+            override val type: NavigationEvent.Type = NavigationEvent.Type.NAVIGATE
+        ) : Navigate()
+
+        data class UserInfo(val tweetingUser: TweetingUser) : Navigate() {
+            override val type: NavigationEvent.Type = NavigationEvent.Type.NAVIGATE
+        }
+
+        data class MediaViewer(
+            val tweetId: TweetId,
+            val index: Int = 0,
+            val selectedItemId: SelectedItemId? = null
+        ) : Navigate() {
+            internal constructor(event: MediaItemClicked) : this(
+                event.tweetId,
+                event.index,
+                event.selectedItemId
+            )
+
+            override val type: NavigationEvent.Type = NavigationEvent.Type.NAVIGATE
+        }
+
+        abstract val type: NavigationEvent.Type
+    }
 }
 
 fun SelectedItemShortcut.Companion.create(
