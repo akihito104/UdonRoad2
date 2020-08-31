@@ -18,7 +18,6 @@ package com.freshdigitable.udonroad2.main
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.MutableLiveData
-import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
 import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
@@ -26,14 +25,12 @@ import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.CommonEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.postEvents
-import com.freshdigitable.udonroad2.model.user.UserId
 import com.freshdigitable.udonroad2.test_common.MockVerified
+import com.freshdigitable.udonroad2.test_common.OAuthTokenRepositoryRule
 import com.freshdigitable.udonroad2.test_common.RxExceptionHandler
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import io.mockk.every
-import io.mockk.just
 import io.mockk.mockk
-import io.mockk.runs
 import io.mockk.verify
 import io.reactivex.disposables.CompositeDisposable
 import org.junit.Rule
@@ -107,21 +104,6 @@ class MainActivityViewStatesTest {
     }
 }
 
-class OAuthTokenRepositoryRule(
-    val tokenRepository: OAuthTokenRepository = mockk(),
-    private val mockVerified: MockVerified = MockVerified(listOf(tokenRepository))
-) : TestRule by mockVerified {
-    fun setupCurrentUserId(userId: Long?) {
-        val id = UserId.create(userId)
-        every { tokenRepository.getCurrentUserId() } returns id
-        mockVerified.expected { verify { tokenRepository.getCurrentUserId() } }
-        if (id != null) {
-            every { tokenRepository.login(id) } just runs
-            mockVerified.expected { verify { tokenRepository.login(id) } }
-        }
-    }
-}
-
 class MainActivityNavigationDelegateRule(
     val mock: MainActivityNavigationDelegate = mockk(relaxed = true),
     private val mockVerified: MockVerified = MockVerified(listOf(mock))
@@ -141,7 +123,6 @@ class MainActivityNavigationDelegateRule(
 }
 
 class MainActivityStateModelTestRule : TestWatcher() {
-    //    private val actionsTestRule = MainActivityActionsTestRule()
     val dispatcher = EventDispatcher()
     val oauthTokenRepositoryMock = OAuthTokenRepositoryRule()
     val selectedItemRepository = SelectedItemRepository()
@@ -151,7 +132,7 @@ class MainActivityStateModelTestRule : TestWatcher() {
     val sut = MainActivityViewStates(
         MainActivityActions(dispatcher),
         selectedItemRepository,
-        oauthTokenRepositoryMock.tokenRepository,
+        oauthTokenRepositoryMock.mock,
         ListOwnerGenerator(),
         navDelegateRule.mock
     )
