@@ -37,13 +37,10 @@ class TimelineActionsTest {
         )
 
         // verify
-        favTweetObserver.assertOf {
-            it.assertNotComplete()
-            it.assertValueCount(1)
-            it.assertValueAt(
-                0, SelectedItemShortcut.Like(TweetId(1000))
-            )
-        }
+        favTweetObserver
+            .assertNotComplete()
+            .assertValueCount(1)
+            .assertValueAt(0, SelectedItemShortcut.Like(TweetId(1000)))
     }
 
     @Test
@@ -54,11 +51,10 @@ class TimelineActionsTest {
         )
 
         // verify
-        retweetObserver.assertOf {
-            it.assertNotComplete()
-            it.assertValueCount(1)
-            it.assertValueAt(0, SelectedItemShortcut.Retweet(TweetId(1000)))
-        }
+        retweetObserver
+            .assertNotComplete()
+            .assertValueCount(1)
+            .assertValueAt(0, SelectedItemShortcut.Retweet(TweetId(1000)))
     }
 
     @Test
@@ -70,16 +66,14 @@ class TimelineActionsTest {
         )
 
         // verify
-        favTweetObserver.assertOf {
-            it.assertNotComplete()
-            it.assertValueCount(1)
-            it.assertValueAt(0, SelectedItemShortcut.Like(TweetId(1000)))
-        }
-        retweetObserver.assertOf {
-            it.assertNotComplete()
-            it.assertValueCount(1)
-            it.assertValueAt(0, SelectedItemShortcut.Retweet(TweetId(1000)))
-        }
+        favTweetObserver
+            .assertNotComplete()
+            .assertValueCount(1)
+            .assertValueAt(0, SelectedItemShortcut.Like(TweetId(1000)))
+        retweetObserver
+            .assertNotComplete()
+            .assertValueCount(1)
+            .assertValueAt(0, SelectedItemShortcut.Retweet(TweetId(1000)))
     }
 }
 
