@@ -8,3 +8,4 @@ include ':app',
         ':data:repository',
         ':data:repository-api',
         ':model'
+include ':test-common'

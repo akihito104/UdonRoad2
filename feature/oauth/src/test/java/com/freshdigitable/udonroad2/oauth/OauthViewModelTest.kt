@@ -21,7 +21,6 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.freshdigitable.udonroad2.data.impl.AppExecutor
-import com.freshdigitable.udonroad2.data.impl.DispatcherProvider
 import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
 import com.freshdigitable.udonroad2.model.AccessTokenEntity
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
@@ -30,6 +29,8 @@ import com.freshdigitable.udonroad2.model.RequestTokenItem
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.user.UserId
+import com.freshdigitable.udonroad2.test_common.CoroutineTestRule
+import com.freshdigitable.udonroad2.test_common.RxExceptionHandler
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.google.common.truth.Truth.assertThat
 import io.mockk.coEvery
@@ -40,21 +41,12 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.verify
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.TestCoroutineDispatcher
-import kotlinx.coroutines.test.TestCoroutineExceptionHandler
-import kotlinx.coroutines.test.TestCoroutineScope
-import kotlinx.coroutines.test.resetMain
-import kotlinx.coroutines.test.runBlockingTest
-import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
 import org.junit.rules.TestRule
-import org.junit.rules.TestWatcher
-import org.junit.runner.Description
 import org.junit.runner.RunWith
 import java.io.Serializable
 
@@ -174,61 +166,5 @@ class OauthViewModelTest {
             })
         }
         assertThat(sut.sendPinButtonEnabled.value).isFalse()
-    }
-}
-
-@ExperimentalCoroutinesApi
-class CoroutineTestRule : TestWatcher() {
-    val testCoroutineDispatcher = TestCoroutineDispatcher()
-    private val exceptionHandler = TestCoroutineExceptionHandler()
-    val coroutineContextProvider = DispatcherProvider(
-        testCoroutineDispatcher,
-        testCoroutineDispatcher,
-        exceptionHandler
-    )
-
-    override fun starting(description: Description?) {
-        super.starting(description)
-        Dispatchers.setMain(testCoroutineDispatcher)
-    }
-
-    fun runBlockingTest(block: suspend TestCoroutineScope.() -> Unit) {
-        runBlockingTest(coroutineContextProvider.mainContext, block)
-    }
-
-    override fun finished(description: Description?) {
-        super.finished(description)
-        exceptionHandler.cleanupTestCoroutines()
-        testCoroutineDispatcher.cleanupTestCoroutines()
-        Dispatchers.resetMain()
-    }
-}
-
-class RxExceptionHandler : TestWatcher() {
-    private var defaultExceptionHandler: Thread.UncaughtExceptionHandler? = null
-    private val exceptions = mutableListOf<Throwable>()
-
-    override fun starting(description: Description?) {
-        super.starting(description)
-        defaultExceptionHandler = Thread.getDefaultUncaughtExceptionHandler()
-        Thread.setDefaultUncaughtExceptionHandler { _, e ->
-            synchronized(exceptions) {
-                exceptions += e
-            }
-        }
-    }
-
-    override fun succeeded(description: Description?) {
-        super.succeeded(description)
-        if (exceptions.isNotEmpty()) {
-            val e = exceptions.first()
-            exceptions.forEach { it.printStackTrace() }
-            throw e
-        }
-    }
-
-    override fun finished(description: Description?) {
-        super.finished(description)
-        Thread.setDefaultUncaughtExceptionHandler(defaultExceptionHandler)
     }
 }

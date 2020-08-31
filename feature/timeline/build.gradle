@@ -76,6 +76,7 @@ dependencies {
     implementation "com.jakewharton.threetenabp:threetenabp:$threetenbp_version"
     implementation "com.jakewharton.timber:timber:$timber_version"
 
+    testImplementation project(":test-common")
     testImplementation "junit:junit:$junit_version"
     testImplementation "io.mockk:mockk:$mockk_version"
     testImplementation "com.google.truth:truth:$truth_version"

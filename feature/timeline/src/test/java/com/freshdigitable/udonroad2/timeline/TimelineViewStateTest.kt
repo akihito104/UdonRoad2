@@ -18,15 +18,23 @@ package com.freshdigitable.udonroad2.timeline
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
+import com.freshdigitable.udonroad2.data.restclient.AppTwitterException
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
+import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.postEvents
 import com.freshdigitable.udonroad2.model.tweet.TweetId
+import com.freshdigitable.udonroad2.test_common.RxExceptionHandler
+import com.freshdigitable.udonroad2.timeline.TimelineEvent.SelectedItemShortcut
 import com.freshdigitable.udonroad2.timeline.TimelineEvent.TweetItemSelection
 import com.google.common.truth.Truth.assertThat
+import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
+import io.mockk.verify
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
@@ -41,6 +49,9 @@ class TimelineViewStateTest {
     @Test
     fun selectedItemId_dispatchMediaItemClickedEvent_then_selectedItemIdHasValue(): Unit =
         with(rule) {
+            // setup
+            every { activityEventDelegate.dispatchNavHostNavigate(any()) } just runs
+
             // exercise
             dispatchEvents(
                 TimelineEvent.Setup(),
@@ -51,6 +62,11 @@ class TimelineViewStateTest {
 
             // verify
             assertThat(sut.selectedItemId.value?.originalId).isEqualTo(TweetId(1000L))
+            verify {
+                activityEventDelegate.dispatchNavHostNavigate(
+                    match { it is TimelineEvent.Navigate.MediaViewer }
+                )
+            }
         }
 
     @Test
@@ -75,18 +91,117 @@ class TimelineViewStateTest {
         // verify
         assertThat(sut.selectedItemId.value).isNull()
     }
+
+    @Test
+    fun updateTweet_dispatchLikeIsSuccess_then_likeDispatched(): Unit = with(rule) {
+        // setup
+        every { activityEventDelegate.dispatchFeedbackMessage(any()) } just runs
+        tweetRepositoryMock.setupPostLikeForSuccess(TweetId(200))
+        dispatchEvents(
+            TweetItemSelection.Selected(SelectedItemId(owner, TweetId(200)))
+        )
+
+        // exercise
+        dispatchEvents(
+            SelectedItemShortcut.Like(TweetId(200))
+        )
+
+        // verify
+        assertThat(sut.selectedItemId.value?.originalId).isEqualTo(TweetId(200L))
+        verify {
+            activityEventDelegate.dispatchFeedbackMessage(
+                match { it.messageRes == R.string.msg_fav_create_success }
+            )
+        }
+    }
+
+    @Test
+    fun updateTweet_dispatchLikeIsFailure_then_likeDispatchedWithError(): Unit = with(rule) {
+        // setup
+        every { activityEventDelegate.dispatchFeedbackMessage(any()) } just runs
+        tweetRepositoryMock.setupPostLikeForFailure(
+            TweetId(200), AppTwitterException.ErrorType.ALREADY_FAVORITED
+        )
+        dispatchEvents(
+            TweetItemSelection.Selected(SelectedItemId(owner, TweetId(200)))
+        )
+
+        // exercise
+        dispatchEvents(
+            SelectedItemShortcut.Like(TweetId(200))
+        )
+
+        // verify
+        assertThat(sut.selectedItemId.value?.originalId).isEqualTo(TweetId(200L))
+        verify {
+            activityEventDelegate.dispatchFeedbackMessage(
+                match { it.messageRes == R.string.msg_already_fav }
+            )
+        }
+    }
+
+    @Test
+    fun updateTweet_dispatchRetweetEvent_then_retweetDispatched(): Unit = with(rule) {
+        // setup
+        every { activityEventDelegate.dispatchFeedbackMessage(any()) } just runs
+        tweetRepositoryMock.setupPostRetweetForSuccess(TweetId(200))
+        dispatchEvents(
+            TweetItemSelection.Selected(SelectedItemId(owner, TweetId(200)))
+        )
+
+        // exercise
+        dispatchEvents(
+            SelectedItemShortcut.Retweet(TweetId(200))
+        )
+
+        // verify
+        assertThat(sut.selectedItemId.value?.originalId).isEqualTo(TweetId(200L))
+        verify {
+            activityEventDelegate.dispatchFeedbackMessage(
+                match { it.messageRes == R.string.msg_rt_create_success }
+            )
+        }
+    }
+
+    @Test
+    fun updateTweet_dispatchRetweetIsFailure_then_retweetResultIsDispatchedWithException(): Unit =
+        with(rule) {
+            // setup
+            every { activityEventDelegate.dispatchFeedbackMessage(any()) } just runs
+            tweetRepositoryMock.setupPostRetweetForFailure(
+                TweetId(200), AppTwitterException.ErrorType.ALREADY_RETWEETED
+            )
+            dispatchEvents(
+                TweetItemSelection.Selected(SelectedItemId(owner, TweetId(200)))
+            )
+
+            // exercise
+            dispatchEvents(
+                SelectedItemShortcut.Retweet(TweetId(200))
+            )
+
+            // verify
+            assertThat(sut.selectedItemId.value?.originalId).isEqualTo(TweetId(200L))
+            verify {
+                activityEventDelegate.dispatchFeedbackMessage(match {
+                    it.messageRes == R.string.msg_already_rt
+                })
+            }
+        }
 }
 
 class TimelineViewStatesTestRule : TestWatcher() {
     private val actionsRule: TimelineActionsTestRule = TimelineActionsTestRule()
+    val tweetRepositoryMock = TweetRepositoryRule()
     val owner = ListOwnerGenerator().create(QueryType.TweetQueryType.Timeline())
+    val activityEventDelegate: ActivityEventDelegate = mockk()
     val sut = TimelineViewState(
         owner,
         actionsRule.sut,
         SelectedItemRepository(),
-        mockk(),
+        tweetRepositoryMock.tweetRepository,
         ListOwnerGenerator(),
-        TimelineNavigationDelegate(mockk(relaxed = true), mockk())
+        TimelineNavigationDelegate(mockk(relaxed = true), activityEventDelegate)
     )
 
     fun dispatchEvents(vararg event: AppEvent) {
@@ -100,6 +215,9 @@ class TimelineViewStatesTestRule : TestWatcher() {
 
     override fun apply(base: Statement?, description: Description?): Statement {
         return RuleChain.outerRule(InstantTaskExecutorRule())
+            .around(actionsRule)
+            .around(tweetRepositoryMock)
+            .around(RxExceptionHandler())
             .apply(super.apply(base, description), description)
     }
 }
