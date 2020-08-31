@@ -50,34 +50,28 @@ class TimelineViewState @Inject constructor(
         AppAction.just(owner).map {
             StateHolder(selectedItemRepository.find(it))
         },
-        actions.selectItem.map {
-            if (owner == it.owner) {
+        actions.selectItem
+            .filter { owner == it.owner }
+            .map {
                 selectedItemRepository.put(it.selectedItemId)
                 StateHolder(selectedItemRepository.find(it.owner))
-            } else {
-                throw IllegalStateException()
-            }
-        },
-        actions.unselectItem.map {
-            if (owner == it.owner) {
+            },
+        actions.unselectItem
+            .filter { owner == it.owner }
+            .map {
                 selectedItemRepository.remove(it.owner)
                 StateHolder(null)
-            } else {
-                throw IllegalStateException()
-            }
-        },
-        actions.toggleItem.map {
-            if (owner == it.owner) {
+            },
+        actions.toggleItem
+            .filter { owner == it.owner }
+            .map {
                 val current = selectedItemRepository.find(it.item.owner)
                 when (it.item) {
                     current -> selectedItemRepository.remove(it.item.owner)
                     else -> selectedItemRepository.put(it.item)
                 }
                 StateHolder(selectedItemRepository.find(it.owner))
-            } else {
-                throw IllegalStateException()
             }
-        }
     ).toViewState()
 
     val selectedItemId: AppViewState<SelectedItemId?> = _selectedItemId.map { it.value }
