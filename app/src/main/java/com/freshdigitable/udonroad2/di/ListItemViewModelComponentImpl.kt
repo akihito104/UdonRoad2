@@ -20,7 +20,6 @@ import android.os.Bundle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 import androidx.paging.PagedListAdapter
-import androidx.savedstate.SavedStateRegistryOwner
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.app.ClassKeyMap
@@ -64,9 +63,6 @@ interface ListItemViewModelComponentImpl : ListItemViewModelComponent {
     interface Builder : ListItemViewModelComponent.Builder {
         @BindsInstance
         override fun owner(owner: ListOwner<*>): Builder
-
-        @BindsInstance
-        override fun savedStateRegistryOwner(owner: SavedStateRegistryOwner): Builder
 
         @BindsInstance
         override fun firstArgs(bundle: Bundle?): Builder

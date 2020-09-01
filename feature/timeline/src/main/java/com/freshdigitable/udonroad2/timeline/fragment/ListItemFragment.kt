@@ -48,7 +48,6 @@ class ListItemFragment : Fragment() {
 
         val viewModel: ViewModel = listItemViewModelBuilder
             .owner(listOwner)
-            .savedStateRegistryOwner(this)
             .firstArgs(savedInstanceState)
             .build()
             .viewModel("_$ownerId")

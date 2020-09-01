@@ -23,14 +23,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.paging.PagedListAdapter
-import androidx.savedstate.SavedStateRegistryOwner
 import com.freshdigitable.udonroad2.model.ListOwner
 
 interface ListItemViewModelComponent {
 
     interface Builder {
         fun owner(owner: ListOwner<*>): Builder
-        fun savedStateRegistryOwner(owner: SavedStateRegistryOwner): Builder
         fun firstArgs(bundle: Bundle?): Builder
         fun build(): ListItemViewModelComponent
     }

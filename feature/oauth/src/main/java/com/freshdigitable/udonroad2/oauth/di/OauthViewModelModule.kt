@@ -20,6 +20,7 @@ import android.app.Application
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.paging.DataSource
+import androidx.savedstate.SavedStateRegistryOwner
 import com.freshdigitable.udonroad2.data.impl.AppExecutor
 import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
 import com.freshdigitable.udonroad2.data.impl.di.ListRepositoryComponentModule
@@ -37,6 +38,7 @@ import com.freshdigitable.udonroad2.oauth.OauthSavedStates
 import com.freshdigitable.udonroad2.oauth.OauthViewModel
 import com.freshdigitable.udonroad2.oauth.OauthViewStates
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragment
+import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.multibindings.IntoMap
@@ -44,6 +46,9 @@ import kotlin.reflect.KClass
 
 @Module(includes = [ListRepositoryComponentModule::class])
 interface OauthViewModelModule {
+    @Binds
+    fun bindSavedStateRegistryOwner(fragment: ListItemFragment): SavedStateRegistryOwner
+
     companion object {
         @Provides
         fun provideOauthAction(dispatcher: EventDispatcher): OauthAction {
