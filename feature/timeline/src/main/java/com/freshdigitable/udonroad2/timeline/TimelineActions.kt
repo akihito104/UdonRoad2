@@ -27,9 +27,8 @@ import com.freshdigitable.udonroad2.timeline.TimelineEvent.RetweetUserClicked
 import com.freshdigitable.udonroad2.timeline.TimelineEvent.SelectedItemShortcut
 import com.freshdigitable.udonroad2.timeline.TimelineEvent.TweetItemSelection
 import com.freshdigitable.udonroad2.timeline.TimelineEvent.UserIconClicked
-import javax.inject.Inject
 
-class TimelineActions @Inject constructor(
+class TimelineActions(
     dispatcher: EventDispatcher,
 ) {
     val showTimeline: AppAction<Init> = dispatcher.toAction()

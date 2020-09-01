@@ -22,9 +22,12 @@ import androidx.lifecycle.ViewModel
 import androidx.paging.DataSource
 import com.freshdigitable.udonroad2.data.impl.AppExecutor
 import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
+import com.freshdigitable.udonroad2.data.impl.di.ListRepositoryComponentModule
+import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.app.di.QueryTypeKey
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
+import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.oauth.OauthAction
 import com.freshdigitable.udonroad2.oauth.OauthDataSource
@@ -33,14 +36,29 @@ import com.freshdigitable.udonroad2.oauth.OauthNavigationDelegate
 import com.freshdigitable.udonroad2.oauth.OauthSavedStates
 import com.freshdigitable.udonroad2.oauth.OauthViewModel
 import com.freshdigitable.udonroad2.oauth.OauthViewStates
+import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragment
 import dagger.Module
 import dagger.Provides
 import dagger.multibindings.IntoMap
 import kotlin.reflect.KClass
 
-@Module
+@Module(includes = [ListRepositoryComponentModule::class])
 interface OauthViewModelModule {
     companion object {
+        @Provides
+        fun provideOauthAction(dispatcher: EventDispatcher): OauthAction {
+            return OauthAction(dispatcher)
+        }
+
+        @Provides
+        fun provideOauthNavigationDelegate(
+            fragment: ListItemFragment,
+            listOwnerGenerator: ListOwnerGenerator,
+            activityEventDelegate: ActivityEventDelegate
+        ): OauthNavigationDelegate {
+            return OauthNavigationDelegate(fragment, listOwnerGenerator, activityEventDelegate)
+        }
+
         @Provides
         fun provideOauthDataSource(context: Application): DataSource<Int, OauthItem> {
             return OauthDataSource(context)

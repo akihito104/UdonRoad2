@@ -19,18 +19,26 @@ package com.freshdigitable.udonroad2.timeline.di
 import androidx.lifecycle.ViewModel
 import com.freshdigitable.udonroad2.data.ListRepository
 import com.freshdigitable.udonroad2.data.PagedListProvider
+import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
+import com.freshdigitable.udonroad2.data.impl.TweetRepository
 import com.freshdigitable.udonroad2.data.impl.di.ListRepositoryComponent
+import com.freshdigitable.udonroad2.data.impl.di.ListRepositoryComponentModule
 import com.freshdigitable.udonroad2.data.impl.di.listRepository
 import com.freshdigitable.udonroad2.data.impl.di.pagedListProvider
 import com.freshdigitable.udonroad2.model.ListOwner
+import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.MemberListItem
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.app.di.QueryTypeKey
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
+import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import com.freshdigitable.udonroad2.model.user.UserListItem
+import com.freshdigitable.udonroad2.timeline.TimelineActions
+import com.freshdigitable.udonroad2.timeline.TimelineNavigationDelegate
 import com.freshdigitable.udonroad2.timeline.TimelineViewState
+import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragment
 import com.freshdigitable.udonroad2.timeline.viewmodel.MemberListListViewModel
 import com.freshdigitable.udonroad2.timeline.viewmodel.TimelineViewModel
 import com.freshdigitable.udonroad2.timeline.viewmodel.UserListViewModel
@@ -43,7 +51,8 @@ import kotlin.reflect.KClass
     includes = [
         TimelineViewModelModule::class,
         UserListViewModelModule::class,
-        MemberListListViewModelModule::class
+        MemberListListViewModelModule::class,
+        ListRepositoryComponentModule::class
     ]
 )
 interface TimelineViewModelModules
@@ -70,6 +79,38 @@ internal interface TimelineViewModelModule {
         @IntoMap
         @QueryTypeKey(QueryType.TweetQueryType::class)
         fun provideTimelineViewModelKClass(): KClass<out ViewModel> = TimelineViewModel::class
+
+        @Provides
+        fun provideTimelineViewState(
+            owner: ListOwner<*>,
+            actions: TimelineActions,
+            selectedItemRepository: SelectedItemRepository,
+            tweetRepository: TweetRepository,
+            listOwnerGenerator: ListOwnerGenerator,
+            navDelegate: TimelineNavigationDelegate
+        ): TimelineViewState {
+            return TimelineViewState(
+                owner,
+                actions,
+                selectedItemRepository,
+                tweetRepository,
+                listOwnerGenerator,
+                navDelegate
+            )
+        }
+
+        @Provides
+        fun provideTimelineNavigationDelegate(
+            fragment: ListItemFragment,
+            activityEventDelegate: ActivityEventDelegate
+        ): TimelineNavigationDelegate {
+            return TimelineNavigationDelegate(fragment, activityEventDelegate)
+        }
+
+        @Provides
+        fun provideTimelineActions(dispatcher: EventDispatcher): TimelineActions {
+            return TimelineActions(dispatcher)
+        }
     }
 }
 

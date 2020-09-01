@@ -68,7 +68,7 @@ class AppSavedStateViewModelFactory @Inject constructor(
         modelClass: Class<T>,
         handle: SavedStateHandle
     ): T = savedStateViewModelComponent.create(handle)
-        .viewModelProviderFactory()
+        .viewModelProviderFactory
         .create(modelClass)
 }
 
@@ -87,5 +87,5 @@ interface SavedStateViewModelComponent {
         fun create(@BindsInstance handle: SavedStateHandle): SavedStateViewModelComponent
     }
 
-    fun viewModelProviderFactory(): ViewModelProviderFactory
+    val viewModelProviderFactory: ViewModelProviderFactory
 }
