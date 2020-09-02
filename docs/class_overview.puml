@@ -20,17 +20,14 @@ class NavigationDelegate {
 
 Activity *- Fragment
 Activity -- ViewModel
-Activity *- NavigationDelegate
 Fragment -- ViewModel
 
 EventDispatcher - ViewModel
 EventDispatcher -- Actions : < observe
 
 ViewModel o-- ViewStates : > observe
-Actions - Repository
 
 ViewStates - Actions : > observe
-NavigationDelegate -- Actions : > observe
-
+ViewStates *-- NavigationDelegate
 ViewStates -- Repository
 @enduml
