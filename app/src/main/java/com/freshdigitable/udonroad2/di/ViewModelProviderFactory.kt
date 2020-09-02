@@ -24,6 +24,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.savedstate.SavedStateRegistryOwner
 import com.freshdigitable.udonroad2.model.app.ClassKeyMap
+import com.freshdigitable.udonroad2.model.app.di.IntoSavedStateFactory
 import com.freshdigitable.udonroad2.model.app.valueByAssignableClass
 import com.freshdigitable.udonroad2.oauth.di.OauthViewModelModule
 import dagger.Binds
@@ -32,9 +33,10 @@ import dagger.Module
 import dagger.Provides
 import dagger.Subcomponent
 import javax.inject.Inject
+import javax.inject.Named
 import javax.inject.Provider
 
-class ViewModelProviderFactory @Inject constructor(
+class ViewModelProviderFactory(
     private val providers: ClassKeyMap<ViewModel, Provider<ViewModel>>
 ) : ViewModelProvider.Factory {
 
@@ -46,15 +48,13 @@ class ViewModelProviderFactory @Inject constructor(
 
 @Module
 interface ViewModelModule {
-    @Binds
-    fun bindViewModelFactory(factory: ViewModelProviderFactory): ViewModelProvider.Factory
-
     companion object {
         @Provides
         fun provideViewModelProvider(
             viewModelStoreOwner: ViewModelStoreOwner,
-            viewModelFactory: ViewModelProvider.Factory
-        ): ViewModelProvider = ViewModelProvider(viewModelStoreOwner, viewModelFactory)
+            providers: ClassKeyMap<ViewModel, Provider<ViewModel>>
+        ): ViewModelProvider =
+            ViewModelProvider(viewModelStoreOwner, ViewModelProviderFactory(providers))
     }
 }
 
@@ -80,12 +80,26 @@ interface SavedStateViewModelModule {
     ): AbstractSavedStateViewModelFactory
 }
 
-@Subcomponent(modules = [OauthViewModelModule::class])
+private const val SAVED_STATE_VIEW_MODEL_PROVIDER_FACTORY = "SavedStateViewModelProviderFactory"
+
+@Subcomponent(modules = [SavedStateViewModelProviderFactoryModule::class])
 interface SavedStateViewModelComponent {
     @Subcomponent.Factory
     interface Factory {
         fun create(@BindsInstance handle: SavedStateHandle): SavedStateViewModelComponent
     }
 
-    val viewModelProviderFactory: ViewModelProviderFactory
+    @get:Named(SAVED_STATE_VIEW_MODEL_PROVIDER_FACTORY)
+    val viewModelProviderFactory: ViewModelProvider.Factory
+}
+
+@Module(includes = [OauthViewModelModule::class])
+object SavedStateViewModelProviderFactoryModule {
+    @Provides
+    @Named(SAVED_STATE_VIEW_MODEL_PROVIDER_FACTORY)
+    fun provideIntoSavedStateFactoryViewModelProvider(
+        @IntoSavedStateFactory providers: ClassKeyMap<ViewModel, Provider<ViewModel>>
+    ): ViewModelProvider.Factory {
+        return ViewModelProviderFactory(providers)
+    }
 }

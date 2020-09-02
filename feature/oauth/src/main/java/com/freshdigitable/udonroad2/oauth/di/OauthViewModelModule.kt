@@ -26,6 +26,7 @@ import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
 import com.freshdigitable.udonroad2.data.impl.di.ListRepositoryComponentModule
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
+import com.freshdigitable.udonroad2.model.app.di.IntoSavedStateFactory
 import com.freshdigitable.udonroad2.model.app.di.QueryTypeKey
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
@@ -87,6 +88,7 @@ interface OauthViewModelModule {
         @Provides
         @IntoMap
         @ViewModelKey(OauthViewModel::class)
+        @IntoSavedStateFactory
         fun provideOauthViewModel(
             dataSource: DataSource<Int, OauthItem>,
             eventDispatcher: EventDispatcher,

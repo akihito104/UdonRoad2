@@ -17,11 +17,9 @@
 package com.freshdigitable.udonroad2.timeline.di
 
 import android.os.Bundle
-import androidx.lifecycle.AbstractSavedStateViewModelFactory
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelStoreOwner
 import androidx.paging.PagedListAdapter
 import com.freshdigitable.udonroad2.model.ListOwner
 
@@ -33,14 +31,12 @@ interface ListItemViewModelComponent {
         fun build(): ListItemViewModelComponent
     }
 
-    val savedStateViewModelProviderFactory: AbstractSavedStateViewModelFactory
-    val viewModelStoreOwner: ViewModelStoreOwner
     val viewModelClass: Class<out ViewModel>
+    val viewModelProvider: ViewModelProvider
 }
 
 fun ListItemViewModelComponent.viewModel(key: String): ViewModel {
-    return ViewModelProvider(viewModelStoreOwner, savedStateViewModelProviderFactory) // XXX
-        .get(key, viewModelClass)
+    return viewModelProvider.get(key, viewModelClass)
 }
 
 interface ListItemAdapterComponent {

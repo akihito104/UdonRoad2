@@ -19,17 +19,37 @@ package com.freshdigitable.udonroad2.model.app.di
 import androidx.lifecycle.ViewModel
 import com.freshdigitable.udonroad2.model.QueryType
 import dagger.MapKey
+import javax.inject.Qualifier
 import kotlin.reflect.KClass
 
 @MustBeDocumented
 @Target(
     AnnotationTarget.FUNCTION,
-    AnnotationTarget.PROPERTY_GETTER,
-    AnnotationTarget.PROPERTY_SETTER
+    AnnotationTarget.PROPERTY
 )
 @Retention(AnnotationRetention.RUNTIME)
 @MapKey
 annotation class ViewModelKey(val value: KClass<out ViewModel>)
+
+@MustBeDocumented
+@Target(
+    AnnotationTarget.FUNCTION,
+    AnnotationTarget.PROPERTY,
+    AnnotationTarget.VALUE_PARAMETER,
+)
+@Retention(AnnotationRetention.RUNTIME)
+@Qualifier
+annotation class IntoFactory
+
+@MustBeDocumented
+@Target(
+    AnnotationTarget.FUNCTION,
+    AnnotationTarget.PROPERTY,
+    AnnotationTarget.VALUE_PARAMETER,
+)
+@Retention(AnnotationRetention.RUNTIME)
+@Qualifier
+annotation class IntoSavedStateFactory
 
 @MustBeDocumented
 @Target(

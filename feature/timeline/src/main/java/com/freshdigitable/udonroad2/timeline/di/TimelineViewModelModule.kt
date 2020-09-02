@@ -29,6 +29,7 @@ import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.MemberListItem
 import com.freshdigitable.udonroad2.model.QueryType
+import com.freshdigitable.udonroad2.model.app.di.IntoFactory
 import com.freshdigitable.udonroad2.model.app.di.QueryTypeKey
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
@@ -63,6 +64,7 @@ internal interface TimelineViewModelModule {
         @Provides
         @IntoMap
         @ViewModelKey(TimelineViewModel::class)
+        @IntoFactory
         fun provideTimelineViewModel(
             owner: ListOwner<*>,
             eventDispatcher: EventDispatcher,
@@ -120,6 +122,7 @@ internal interface UserListViewModelModule {
         @Provides
         @IntoMap
         @ViewModelKey(UserListViewModel::class)
+        @IntoFactory
         fun provideUserListViewModel(
             owner: ListOwner<*>,
             eventDispatcher: EventDispatcher,
@@ -144,6 +147,7 @@ internal interface MemberListListViewModelModule {
         @Provides
         @IntoMap
         @ViewModelKey(MemberListListViewModel::class)
+        @IntoFactory
         fun provideMemberListListViewModel(
             owner: ListOwner<*>,
             eventDispatcher: EventDispatcher,
