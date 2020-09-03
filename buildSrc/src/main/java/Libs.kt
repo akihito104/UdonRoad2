@@ -26,16 +26,10 @@ object Libs {
         "androidx.lifecycle:lifecycle-extensions:${Versions.lifecycle}"
     const val androidx_lifecycle_livedata_ktx =
         "androidx.lifecycle:lifecycle-livedata-ktx:${Versions.lifecycle}"
-    const val androidx_lifecycle_livedata =
-        "androidx.lifecycle:lifecycle-livedata:${Versions.lifecycle}"
     const val androidx_lifecycle_rx_ktx =
         "androidx.lifecycle:lifecycle-reactivestreams-ktx:${Versions.lifecycle}"
-    const val androidx_lifecycle_rx =
-        "androidx.lifecycle:lifecycle-reactivestreams:${Versions.lifecycle}"
     const val androidx_lifecycle_viewmodel_ktx =
         "androidx.lifecycle:lifecycle-viewmodel-ktx:${Versions.lifecycle}"
-    const val androidx_lifecycle_viewmodel =
-        "androidx.lifecycle:lifecycle-viewmodel:${Versions.lifecycle}"
     const val androidx_navigation_fragment_ktx =
         "androidx.navigation:navigation-fragment-ktx:${Versions.nav}"
     const val androidx_navigation_ui_ktx = "androidx.navigation:navigation-ui-ktx:${Versions.nav}"
