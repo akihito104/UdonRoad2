@@ -58,68 +58,68 @@ dependencies {
     implementation project(':data:restclient')
     implementation project(':model')
 
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutine_version"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutine_version"
+    implementation Libs.kotlin_stdlib_jdk7
+    implementation Libs.kotlinx_coroutines
+    implementation Libs.kotlinx_coroutines_android
 
-    implementation "androidx.appcompat:appcompat:$appcompat_version"
-    implementation "androidx.core:core-ktx:$coreKtx_version"
-    implementation "androidx.constraintlayout:constraintlayout:$constraintLayout_version"
-    implementation "com.google.android.material:material:$material_version"
-    implementation "androidx.viewpager2:viewpager2:$viewpager2_version"
+    implementation Libs.androidx_appcompat
+    implementation Libs.androidx_core_ktx
+    implementation Libs.androidx_constraintlayout
+    implementation Libs.material
+    implementation Libs.androidx_viewpager
 
-    implementation "androidx.lifecycle:lifecycle-extensions:$lifecycle_version"
-    implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version"
-    implementation "androidx.lifecycle:lifecycle-viewmodel:$lifecycle_version"
-    implementation "androidx.lifecycle:lifecycle-reactivestreams-ktx:$lifecycle_version"
-    implementation "androidx.room:room-runtime:$room_version"
+    implementation Libs.androidx_lifecycle_ext
+    implementation Libs.androidx_lifecycle_livedata_ktx
+    implementation Libs.androidx_lifecycle_viewmodel_ktx
+    implementation Libs.androidx_lifecycle_rx_ktx
+    implementation Libs.androidx_room_runtime
 
-    implementation "androidx.navigation:navigation-fragment-ktx:$nav_version"
-    implementation "androidx.navigation:navigation-ui-ktx:$nav_version"
+    implementation Libs.androidx_navigation_fragment_ktx
+    implementation Libs.androidx_navigation_ui_ktx
 
-    implementation "com.google.dagger:dagger-android:$dagger_version"
-    implementation "com.google.dagger:dagger-android-support:$dagger_version"
-    kapt "com.google.dagger:dagger-compiler:$dagger_version"
-    kapt "com.google.dagger:dagger-android-processor:$dagger_version"
+    implementation Libs.dagger_android
+    implementation Libs.dagger_android_support
+    kapt Libs.dagger_compiler
+    kapt Libs.dagger_android_processor
 
-    implementation "io.reactivex.rxjava2:rxjava:$rx_version"
-    implementation "io.reactivex.rxjava2:rxandroid:$rxAndroid_version"
+    implementation Libs.rxjava2
+    implementation Libs.rxjava2_android
 
-    implementation "org.twitter4j:twitter4j-core:$t4j_version"
+    implementation Libs.twitter4j
 
-    implementation "com.jakewharton.threetenabp:threetenabp:$threetenbp_version"
-    implementation "com.jakewharton.timber:timber:$timber_version"
+    implementation Libs.threetenbp
+    implementation Libs.timber
 
-    debugImplementation "com.squareup.leakcanary:leakcanary-android:$leakcanary_version"
+    debugImplementation Libs.leakcanary
 
     // test
     testImplementation project(":test-common")
-    testImplementation "junit:junit:$junit_version"
-    testImplementation "io.mockk:mockk:$mockk_version"
-    testImplementation "com.google.truth:truth:$truth_version"
-    testImplementation "androidx.test:core:$androidx_test_core_version"
-    testImplementation "androidx.arch.core:core-testing:$androidx_arch_core_testing_version"
-    testImplementation "androidx.test.ext:junit:$androidx_junit_ext_version"
-    testImplementation "androidx.test:runner:$androidTestRunner_version"
-    testImplementation "org.robolectric:robolectric:$robolectric_version"
-    testImplementation "com.google.dagger:dagger-android:$dagger_version"
-    testImplementation "com.google.dagger:dagger-android-support:$dagger_version"
-    kaptTest "com.google.dagger:dagger-compiler:$dagger_version"
-    kaptTest "com.google.dagger:dagger-android-processor:$dagger_version"
+    testImplementation Libs.junit
+    testImplementation Libs.mockk
+    testImplementation Libs.truth
+    testImplementation Libs.androidx_test_core
+    testImplementation Libs.androidx_test_arch_core
+    testImplementation Libs.androidx_test_ext_junit
+    testImplementation Libs.androidx_test_runner
+    testImplementation Libs.robolectric
+    testImplementation Libs.dagger_android
+    testImplementation Libs.dagger_android_support
+    kaptTest Libs.dagger_compiler
+    kaptTest Libs.dagger_android_processor
 
     // android test
-    androidTestImplementation "io.mockk:mockk-android:$mockk_version"
-    androidTestImplementation "androidx.test:core:$androidx_test_core_version"
-    androidTestImplementation "androidx.test:runner:$androidTestRunner_version"
-    androidTestImplementation "androidx.test:rules:$androidx_test_rules_version"
-    androidTestImplementation "androidx.test.ext:junit:$androidx_junit_ext_version"
-    androidTestImplementation "androidx.test.ext:truth:$androidx_truth_ext_version"
-    androidTestImplementation "com.google.truth:truth:$truth_version"
-    androidTestImplementation "androidx.test.espresso:espresso-core:$espresso_version"
-    androidTestImplementation "androidx.test.espresso:espresso-intents:$espresso_version"
-    androidTestUtil "androidx.test:orchestrator:$test_orchestrator_version"
-    androidTestImplementation "com.google.dagger:dagger-android:$dagger_version"
-    androidTestImplementation "com.google.dagger:dagger-android-support:$dagger_version"
-    kaptAndroidTest "com.google.dagger:dagger-compiler:$dagger_version"
-    kaptAndroidTest "com.google.dagger:dagger-android-processor:$dagger_version"
+    androidTestImplementation Libs.mockk_android
+    androidTestImplementation Libs.androidx_test_core
+    androidTestImplementation Libs.androidx_test_runner
+    androidTestImplementation Libs.androidx_test_rules
+    androidTestImplementation Libs.androidx_test_ext_junit
+    androidTestImplementation Libs.androidx_test_ext_truth
+    androidTestImplementation Libs.truth
+    androidTestImplementation Libs.androidx_test_espresso
+    androidTestImplementation Libs.androidx_test_espresso_intents
+    androidTestUtil Libs.androidx_test_orchestrator
+    androidTestImplementation Libs.dagger_android
+    androidTestImplementation Libs.dagger_android_support
+    kaptAndroidTest Libs.dagger_compiler
+    kaptAndroidTest Libs.dagger_android_processor
 }

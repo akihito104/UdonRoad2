@@ -45,34 +45,34 @@ dependencies {
     implementation project(':model')
 
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutine_version"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutine_version"
+    implementation Libs.kotlin_stdlib_jdk7
+    implementation Libs.kotlinx_coroutines
+    implementation Libs.kotlinx_coroutines_android
 
-    implementation "androidx.appcompat:appcompat:$appcompat_version"
-    implementation "androidx.core:core-ktx:$coreKtx_version"
-    implementation "androidx.lifecycle:lifecycle-extensions:$lifecycle_version"
-    implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version"
-    implementation "androidx.lifecycle:lifecycle-viewmodel:$lifecycle_version"
+    implementation Libs.androidx_appcompat
+    implementation Libs.androidx_core_ktx
+    implementation Libs.androidx_lifecycle_ext
+    implementation Libs.androidx_lifecycle_livedata_ktx
+    implementation Libs.androidx_lifecycle_viewmodel_ktx
 
-    implementation "androidx.navigation:navigation-fragment-ktx:$nav_version"
-    implementation "androidx.navigation:navigation-ui-ktx:$nav_version"
+    implementation Libs.androidx_navigation_fragment_ktx
+    implementation Libs.androidx_navigation_ui_ktx
 
-    implementation "com.google.android.material:material:$material_version"
-    implementation "androidx.recyclerview:recyclerview:$recyclerview_version"
-    implementation "androidx.constraintlayout:constraintlayout:$constraintLayout_version"
-    implementation "androidx.viewpager2:viewpager2:$viewpager2_version"
+    implementation Libs.material
+    implementation Libs.androidx_recyclerview
+    implementation Libs.androidx_constraintlayout
+    implementation Libs.androidx_viewpager
 
-    implementation "com.google.dagger:dagger-android:$dagger_version"
-    implementation "com.google.dagger:dagger-android-support:$dagger_version"
-    kapt "com.google.dagger:dagger-compiler:$dagger_version"
-    kapt "com.google.dagger:dagger-android-processor:$dagger_version"
+    implementation Libs.dagger_android
+    implementation Libs.dagger_android_support
+    kapt Libs.dagger_compiler
+    kapt Libs.dagger_android_processor
 
-    implementation "com.github.bumptech.glide:glide:$glide_version"
-    kapt "com.github.bumptech.glide:compiler:$glide_version"
+    implementation Libs.glide
+    kapt Libs.glide_compiler
 
-    testImplementation "junit:junit:$junit_version"
+    testImplementation Libs.junit
 
-    androidTestImplementation "androidx.test.ext:junit:$androidx_junit_ext_version"
-    androidTestImplementation "androidx.test.espresso:espresso-core:$espresso_version"
+    androidTestImplementation Libs.androidx_test_ext_junit
+    androidTestImplementation Libs.androidx_test_espresso
 }
