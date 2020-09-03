@@ -44,7 +44,8 @@ object Libs {
     const val androidx_room_compiler = "androidx.room:room-compiler:${Versions.room}"
     const val androidx_room_ktx = "androidx.room:room-ktx:${Versions.room}"
     const val androidx_room_runtime = "androidx.room:room-runtime:${Versions.room}"
-    const val androidx_swiperefreshlayout = "androidx.swiperefreshlayout:swiperefreshlayout:1.0.0"
+    const val androidx_swiperefreshlayout =
+        "androidx.swiperefreshlayout:swiperefreshlayout:${Versions.swipeRefreshLayout}"
     const val androidx_test_core = "androidx.test:core:${Versions.androidx_test_core}"
     const val androidx_test_espresso = "androidx.test.espresso:espresso-core:${Versions.espresso}"
     const val androidx_test_espresso_intents =

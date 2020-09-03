@@ -31,6 +31,7 @@ object Versions {
     const val material = "1.2.0-alpha06"
     const val constraintLayout = "2.0.0-beta6"
     const val viewpager2 = "1.0.0-beta03"
+    const val swipeRefreshLayout = "1.0.0"
 
     const val dagger = "2.27"
 
