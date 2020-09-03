@@ -64,4 +64,7 @@ object Versions {
     // ktlint
     const val ktlint_plugin = "9.2.1"
     const val ktlint = "0.37.1"
+
+    // build libs
+    const val android_gradle_tools = "4.0.1"
 }

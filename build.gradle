@@ -9,12 +9,12 @@ buildscript {
         maven { url "https://plugins.gradle.org/m2/" }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.0.1'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${Versions.kotlin}"
+        classpath BuildLibs.android_gradle_tools
+        classpath BuildLibs.kotlin_gradle_plugin
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
-        classpath "org.jlleitschuh.gradle:ktlint-gradle:${Versions.ktlint_plugin}"
-        classpath "androidx.navigation:navigation-safe-args-gradle-plugin:${Versions.nav}"
+        classpath BuildLibs.ktlint
+        classpath BuildLibs.androidx_navigation_safeargs_plugin
     }
 }
 
