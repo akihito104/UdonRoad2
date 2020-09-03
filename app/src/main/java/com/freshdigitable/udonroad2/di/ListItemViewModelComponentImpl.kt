@@ -19,12 +19,13 @@ package com.freshdigitable.udonroad2.di
 import android.os.Bundle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelStoreOwner
 import androidx.paging.PagedListAdapter
-import androidx.savedstate.SavedStateRegistryOwner
-import com.freshdigitable.udonroad2.data.impl.di.ListRepositoryComponentModule
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.app.ClassKeyMap
+import com.freshdigitable.udonroad2.model.app.di.IntoFactory
 import com.freshdigitable.udonroad2.model.app.di.ViewModelScope
 import com.freshdigitable.udonroad2.model.app.valueByAssignableClassObject
 import com.freshdigitable.udonroad2.oauth.di.OauthListAdapterModule
@@ -37,6 +38,7 @@ import dagger.BindsInstance
 import dagger.Module
 import dagger.Provides
 import dagger.Subcomponent
+import javax.inject.Named
 import javax.inject.Provider
 import kotlin.reflect.KClass
 
@@ -50,16 +52,10 @@ interface ListItemViewModelModule {
     }
 }
 
+private const val COMPOSED_VIEW_MODEL_PROVIDER = "ComposedViewModelProvider"
+
 @ViewModelScope
-@Subcomponent(
-    modules = [
-        TimelineViewModelModules::class,
-        OauthViewModelModule::class,
-        ListRepositoryComponentModule::class,
-        SavedStateViewModelModule::class,
-        ViewModelClassProvider::class
-    ]
-)
+@Subcomponent(modules = [ViewModelClassProvider::class])
 interface ListItemViewModelComponentImpl : ListItemViewModelComponent {
 
     @Subcomponent.Builder
@@ -68,21 +64,46 @@ interface ListItemViewModelComponentImpl : ListItemViewModelComponent {
         override fun owner(owner: ListOwner<*>): Builder
 
         @BindsInstance
-        override fun savedStateRegistryOwner(owner: SavedStateRegistryOwner): Builder
-
-        @BindsInstance
         override fun firstArgs(bundle: Bundle?): Builder
 
         override fun build(): ListItemViewModelComponentImpl
     }
+
+    @get:Named(COMPOSED_VIEW_MODEL_PROVIDER)
+    override val viewModelProvider: ViewModelProvider
 }
 
-@Module
+@Module(
+    includes = [
+        TimelineViewModelModules::class,
+        OauthViewModelModule::class,
+        SavedStateViewModelModule::class,
+    ]
+)
 object ViewModelClassProvider {
     @Provides
     fun ClassKeyMap<QueryType, KClass<out ViewModel>>.provideViewModelClass(
         owner: ListOwner<*>
     ): Class<out ViewModel> = this.valueByAssignableClassObject(owner.query).java
+
+    @Provides
+    @Named(COMPOSED_VIEW_MODEL_PROVIDER)
+    fun provideViewModelProvider(
+        owner: ViewModelStoreOwner,
+        @IntoFactory providers: ClassKeyMap<ViewModel, Provider<ViewModel>>,
+        savedStateFactory: AppSavedStateViewModelFactory,
+    ): ViewModelProvider {
+        val f = ViewModelProviderFactory(providers)
+        val factory = object : ViewModelProvider.Factory {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                return when {
+                    providers.keys.contains(modelClass) -> f.create(modelClass)
+                    else -> savedStateFactory.create(modelClass)
+                }
+            }
+        }
+        return ViewModelProvider(owner, factory)
+    }
 }
 
 @Module(subcomponents = [ListItemAdapterComponentImpl::class])

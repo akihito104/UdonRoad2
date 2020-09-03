@@ -36,9 +36,8 @@ import com.freshdigitable.udonroad2.model.app.navigation.StateHolder
 import com.freshdigitable.udonroad2.model.app.navigation.subscribeWith
 import com.freshdigitable.udonroad2.model.app.navigation.toViewState
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragment
-import javax.inject.Inject
 
-class TimelineViewState @Inject constructor(
+class TimelineViewState(
     owner: ListOwner<*>,
     actions: TimelineActions,
     selectedItemRepository: SelectedItemRepository,
@@ -135,7 +134,7 @@ fun EventResult<*>.isExceptionTypeOf(type: AppTwitterException.ErrorType): Boole
     return (this.exception as? AppTwitterException)?.errorType == type
 }
 
-class TimelineNavigationDelegate @Inject constructor(
+class TimelineNavigationDelegate(
     listItemFragment: ListItemFragment,
     activityEventDelegate: ActivityEventDelegate,
 ) : NavigationDelegate(listItemFragment), ActivityEventDelegate by activityEventDelegate

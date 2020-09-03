@@ -19,9 +19,8 @@ package com.freshdigitable.udonroad2.oauth
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
-import javax.inject.Inject
 
-class OauthAction @Inject constructor(
+class OauthAction(
     dispatcher: EventDispatcher
 ) {
     internal val authApp: AppAction<OauthEvent.LoginClicked> = dispatcher.toAction()

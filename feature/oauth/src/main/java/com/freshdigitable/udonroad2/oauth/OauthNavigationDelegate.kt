@@ -27,9 +27,8 @@ import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.weakRef
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragment
-import javax.inject.Inject
 
-class OauthNavigationDelegate @Inject constructor(
+class OauthNavigationDelegate(
     listItemFragment: ListItemFragment,
     private val listOwnerGenerator: ListOwnerGenerator,
     activityEventDelegate: ActivityEventDelegate,
