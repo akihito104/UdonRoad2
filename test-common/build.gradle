@@ -40,8 +40,8 @@ dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation project(":data:repository")
     implementation project(":model")
-    implementation Libs.kotlin_stdlib_jdk7
-    implementation Libs.kotlinx_test_coroutines
-    implementation Libs.junit
-    implementation Libs.mockk
+    implementation Libs.KOTLIN_STDLIB_JDK7
+    implementation Libs.KOTLINX_TEST_COROUTINES
+    implementation Libs.JUNIT
+    implementation Libs.MOCKK
 }

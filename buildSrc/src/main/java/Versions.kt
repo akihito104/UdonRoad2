@@ -15,57 +15,57 @@
  */
 
 object Versions {
-    const val kotlin = "1.4.0"
-    const val coroutine = "1.3.3"
+    const val KOTLIN = "1.4.0"
+    const val KOTLIN_COROUTINES = "1.3.3"
 
-    const val appcompat = "1.1.0"
-    const val fragment = "1.2.4"
+    const val ANDROIDX_APPCOMPAT = "1.1.0"
+    const val ANDROIDX_FRAGMENT = "1.2.4"
 
-    const val coreKtx = "1.3.0"
-    const val lifecycle = "2.2.0"
-    const val paging = "2.1.0"
-    const val room = "2.2.5"
-    const val nav = "2.3.0"
+    const val ANDROIDX_CORE = "1.3.0"
+    const val ANDROIDX_LIFECYCLE = "2.2.0"
+    const val ANDROIDX_PAGING = "2.1.0"
+    const val ANDROIDX_ROOM = "2.2.5"
+    const val ANDROIDX_NAVIGATION = "2.3.0"
 
-    const val recyclerview = "1.0.0"
-    const val material = "1.2.0-alpha06"
-    const val constraintLayout = "2.0.0-beta6"
-    const val viewpager2 = "1.0.0-beta03"
-    const val swipeRefreshLayout = "1.0.0"
+    const val MATERIAL_DESIGN = "1.2.0-alpha06"
+    const val ANDROIDX_RECYCLER_VIEW = "1.0.0"
+    const val ANDROIDX_CONSTRAINT_LAYOUT = "2.0.0-beta6"
+    const val ANDROIDX_VIEWPAGER2 = "1.0.0-beta03"
+    const val ANDROIDX_SWIPE_REFRESH_LAYOUT = "1.0.0"
 
-    const val dagger = "2.27"
+    const val DAGGER = "2.27"
 
-    const val rx = "2.2.19"
-    const val rxAndroid = "2.1.1"
+    const val RXJAVA = "2.2.19"
+    const val RXJAVA_ANDROID = "2.1.1"
 
-    const val t4j = "4.0.7"
-    const val glide = "4.11.0"
-    const val threetenbp = "1.1.0"
-    const val timber = "4.7.1"
+    const val TWITTER4J = "4.0.7"
+    const val GLIDE = "4.11.0"
+    const val THREETENBP = "1.1.0"
+    const val TIMBER = "4.7.1"
 
-    const val leakcanary = "2.4"
+    const val LEAKCANARY = "2.4"
 
     // test
-    const val junit = "4.12"
-    const val mockk = "1.10.0"
-    const val robolectric = "4.3.1"
-    const val truth = "0.42"
-    const val androidx_test_core = "1.2.0"
-    const val androidx_junit_ext = "1.1.1"
-    const val androidx_test_rules = "1.2.0"
-    const val androidx_truth_ext = "1.2.0"
-    const val androidx_arch_core_testing = "2.1.0"
-    const val kotlin_coroutine_testing = "1.3.9"
+    const val JUNIT = "4.12"
+    const val MOCKK = "1.10.0"
+    const val ROBOLECTRIC = "4.3.1"
+    const val TRUTH = "0.42"
+    const val KOTLINX_TEST_COROUTINES = "1.3.9"
+    const val ANDROIDX_TEST_CORE = "1.2.0"
+    const val ANDROIDX_TEST_JUNIT_EXT = "1.1.1"
+    const val ANDROIDX_TEST_RULES = "1.2.0"
+    const val ANDROIDX_TEST_TRUTH_EXT = "1.2.0"
+    const val ANDROIDX_TEST_ARCH_CORE = "2.1.0"
 
     // android test
-    const val androidTestRunner = "1.2.0"
-    const val espresso = "3.2.0"
-    const val test_orchestrator = "1.2.0"
+    const val ANDROIDX_TEST_RUNNER = "1.2.0"
+    const val ANDROIDX_TEST_ESPRESSO = "3.2.0"
+    const val ANDROIDX_TEST_ORCHESTRATOR = "1.2.0"
 
     // ktlint
-    const val ktlint_plugin = "9.2.1"
-    const val ktlint = "0.37.1"
+    const val KTLINT_PLUGIN = "9.2.1"
+    const val KTLINT = "0.37.1"
 
     // build libs
-    const val android_gradle_tools = "4.0.1"
+    const val ANDROID_GRADLE_TOOL = "4.0.1"
 }

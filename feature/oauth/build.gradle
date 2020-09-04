@@ -55,39 +55,39 @@ dependencies {
     implementation project(":data:repository")
     implementation project(":model")
 
-    implementation Libs.kotlin_stdlib_jdk7
-    implementation Libs.kotlinx_coroutines
-    implementation Libs.kotlinx_coroutines_android
+    implementation Libs.KOTLIN_STDLIB_JDK7
+    implementation Libs.KOTLINX_COROUTINES
+    implementation Libs.KOTLINX_COROUTINES_ANDROID
 
-    implementation Libs.androidx_lifecycle_livedata_ktx
-    implementation Libs.androidx_lifecycle_viewmodel_ktx
-    implementation Libs.androidx_appcompat
-    implementation Libs.androidx_paging
-    implementation Libs.androidx_constraintlayout
-    implementation Libs.material
+    implementation Libs.ANDROIDX_LIFECYCLE_LIVEDATA_KTX
+    implementation Libs.ANDROIDX_LIFECYCLE_VIEWMODEL_KTX
+    implementation Libs.ANDROIDX_APPCOMPAT
+    implementation Libs.ANDROIDX_PAGING
+    implementation Libs.ANDROIDX_CONSTRAINT_LAYOUT
+    implementation Libs.MATERIAL_DESIGN
 
-    implementation Libs.dagger_android
-    implementation Libs.dagger_android_support
+    implementation Libs.DAGGER_ANDROID
+    implementation Libs.DAGGER_ANDROID_SUPPORT
 
-    implementation Libs.androidx_navigation_fragment_ktx
-    implementation Libs.androidx_navigation_ui_ktx
+    implementation Libs.ANDROIDX_NAVIGATION_FRAGMENT_KTX
+    implementation Libs.ANDROIDX_NAVIGATION_UI_KTX
 
-    kapt Libs.dagger_compiler
-    kapt Libs.dagger_android_processor
+    kapt Libs.DAGGER_COMPILER
+    kapt Libs.DAGGER_ANDROID_PROCESSOR
 
-    implementation Libs.threetenbp
+    implementation Libs.THREETENBP
 
     testImplementation project(":test-common")
-    testImplementation Libs.junit
-    testImplementation Libs.mockk
-    testImplementation Libs.truth
-    testImplementation Libs.androidx_test_core
-    testImplementation Libs.androidx_test_arch_core
-    testImplementation Libs.androidx_test_ext_junit
-    testImplementation Libs.androidx_test_runner
-    testImplementation Libs.robolectric
-    testImplementation Libs.kotlinx_test_coroutines
+    testImplementation Libs.JUNIT
+    testImplementation Libs.MOCKK
+    testImplementation Libs.TRUTH
+    testImplementation Libs.ANDROIDX_TEST_CORE
+    testImplementation Libs.ANDROIDX_TEST_ARCH_CORE
+    testImplementation Libs.ANDROIDX_TEST_EXT_JUNIT
+    testImplementation Libs.ANDROIDX_TEST_RUNNER
+    testImplementation Libs.ROBOLECTRIC
+    testImplementation Libs.KOTLINX_TEST_COROUTINES
 
-    androidTestImplementation Libs.androidx_test_ext_junit
-    androidTestImplementation Libs.androidx_test_espresso
+    androidTestImplementation Libs.ANDROIDX_TEST_EXT_JUNIT
+    androidTestImplementation Libs.ANDROIDX_TEST_ESPRESSO
 }

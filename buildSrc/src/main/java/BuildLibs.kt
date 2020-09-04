@@ -15,10 +15,10 @@
  */
 
 object BuildLibs {
-    const val android_gradle_tools =
-        "com.android.tools.build:gradle:${Versions.android_gradle_tools}"
-    const val kotlin_gradle_plugin = "org.jetbrains.kotlin:kotlin-gradle-plugin:${Versions.kotlin}"
-    const val ktlint = "org.jlleitschuh.gradle:ktlint-gradle:${Versions.ktlint_plugin}"
-    const val androidx_navigation_safeargs_plugin =
-        "androidx.navigation:navigation-safe-args-gradle-plugin:${Versions.nav}"
+    const val ANDROID_GRADLE_TOOL =
+        "com.android.tools.build:gradle:${Versions.ANDROID_GRADLE_TOOL}"
+    const val KOTLIN_GRADLE_PLUGIN = "org.jetbrains.kotlin:kotlin-gradle-plugin:${Versions.KOTLIN}"
+    const val KTLINT_PLUGIN = "org.jlleitschuh.gradle:ktlint-gradle:${Versions.KTLINT_PLUGIN}"
+    const val ANDROIDX_NAVIGATION_SAFEARGS_PLUGIN =
+        "androidx.navigation:navigation-safe-args-gradle-plugin:${Versions.ANDROIDX_NAVIGATION}"
 }

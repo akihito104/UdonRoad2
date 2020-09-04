@@ -15,68 +15,73 @@
  */
 
 object Libs {
-    const val androidx_appcompat = "androidx.appcompat:appcompat:${Versions.appcompat}"
-    const val androidx_test_arch_core =
-        "androidx.arch.core:core-testing:${Versions.androidx_arch_core_testing}"
-    const val androidx_constraintlayout =
-        "androidx.constraintlayout:constraintlayout:${Versions.constraintLayout}"
-    const val androidx_core_ktx = "androidx.core:core-ktx:${Versions.coreKtx}"
-    const val androidx_fragment_ktx = "androidx.fragment:fragment-ktx:${Versions.fragment}"
-    const val androidx_lifecycle_ext =
-        "androidx.lifecycle:lifecycle-extensions:${Versions.lifecycle}"
-    const val androidx_lifecycle_livedata_ktx =
-        "androidx.lifecycle:lifecycle-livedata-ktx:${Versions.lifecycle}"
-    const val androidx_lifecycle_rx_ktx =
-        "androidx.lifecycle:lifecycle-reactivestreams-ktx:${Versions.lifecycle}"
-    const val androidx_lifecycle_viewmodel_ktx =
-        "androidx.lifecycle:lifecycle-viewmodel-ktx:${Versions.lifecycle}"
-    const val androidx_navigation_fragment_ktx =
-        "androidx.navigation:navigation-fragment-ktx:${Versions.nav}"
-    const val androidx_navigation_ui_ktx = "androidx.navigation:navigation-ui-ktx:${Versions.nav}"
-    const val androidx_paging = "androidx.paging:paging-runtime:${Versions.paging}"
-    const val androidx_recyclerview = "androidx.recyclerview:recyclerview:${Versions.recyclerview}"
-    const val androidx_room_compiler = "androidx.room:room-compiler:${Versions.room}"
-    const val androidx_room_ktx = "androidx.room:room-ktx:${Versions.room}"
-    const val androidx_room_runtime = "androidx.room:room-runtime:${Versions.room}"
-    const val androidx_swiperefreshlayout =
-        "androidx.swiperefreshlayout:swiperefreshlayout:${Versions.swipeRefreshLayout}"
-    const val androidx_test_core = "androidx.test:core:${Versions.androidx_test_core}"
-    const val androidx_test_espresso = "androidx.test.espresso:espresso-core:${Versions.espresso}"
-    const val androidx_test_espresso_intents =
-        "androidx.test.espresso:espresso-intents:${Versions.espresso}"
-    const val androidx_test_ext_junit = "androidx.test.ext:junit:${Versions.androidx_junit_ext}"
-    const val androidx_test_ext_truth = "androidx.test.ext:truth:${Versions.androidx_truth_ext}"
-    const val androidx_test_rules = "androidx.test:rules:${Versions.androidx_test_rules}"
-    const val androidx_test_runner = "androidx.test:runner:${Versions.androidTestRunner}"
-    const val androidx_viewpager = "androidx.viewpager2:viewpager2:${Versions.viewpager2}"
-    const val glide_compiler = "com.github.bumptech.glide:compiler:${Versions.glide}"
-    const val glide = "com.github.bumptech.glide:glide:${Versions.glide}"
-    const val material = "com.google.android.material:material:${Versions.material}"
-    const val dagger_android = "com.google.dagger:dagger-android:${Versions.dagger}"
-    const val dagger_android_processor =
-        "com.google.dagger:dagger-android-processor:${Versions.dagger}"
-    const val dagger_android_support = "com.google.dagger:dagger-android-support:${Versions.dagger}"
-    const val dagger_compiler = "com.google.dagger:dagger-compiler:${Versions.dagger}"
-    const val truth = "com.google.truth:truth:${Versions.truth}"
-    const val threetenbp = "com.jakewharton.threetenabp:threetenabp:${Versions.threetenbp}"
-    const val timber = "com.jakewharton.timber:timber:${Versions.timber}"
-    const val leakcanary = "com.squareup.leakcanary:leakcanary-android:${Versions.leakcanary}"
-    const val mockk_android = "io.mockk:mockk-android:${Versions.mockk}"
-    const val mockk = "io.mockk:mockk:${Versions.mockk}"
-    const val rxjava2_android = "io.reactivex.rxjava2:rxandroid:${Versions.rxAndroid}"
-    const val rxjava2 = "io.reactivex.rxjava2:rxjava:${Versions.rx}"
-    const val junit = "junit:junit:${Versions.junit}"
-    const val kotlin_stdlib_jdk7 = "org.jetbrains.kotlin:kotlin-stdlib-jdk7:${Versions.kotlin}"
-    const val kotlin_stdlib = "org.jetbrains.kotlin:kotlin-stdlib:${Versions.kotlin}"
-    const val kotlinx_coroutines_android =
-        "org.jetbrains.kotlinx:kotlinx-coroutines-android:${Versions.coroutine}"
-    const val kotlinx_coroutines =
-        "org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.coroutine}"
-    const val kotlinx_test_coroutines =
-        "org.jetbrains.kotlinx:kotlinx-coroutines-test:${Versions.kotlin_coroutine_testing}"
-    const val robolectric = "org.robolectric:robolectric:${Versions.robolectric}"
-    const val twitter4j = "org.twitter4j:twitter4j-core:${Versions.t4j}"
-    const val twitter4j_http_support = "org.twitter4j:twitter4j-http2-support:${Versions.t4j}"
-    const val androidx_test_orchestrator =
-        "androidx.test:orchestrator:${Versions.test_orchestrator}"
+    const val ANDROIDX_APPCOMPAT = "androidx.appcompat:appcompat:${Versions.ANDROIDX_APPCOMPAT}"
+    const val ANDROIDX_TEST_ARCH_CORE =
+        "androidx.arch.core:core-testing:${Versions.ANDROIDX_TEST_ARCH_CORE}"
+    const val ANDROIDX_CONSTRAINT_LAYOUT =
+        "androidx.constraintlayout:constraintlayout:${Versions.ANDROIDX_CONSTRAINT_LAYOUT}"
+    const val ANDROIDX_CORE_KTX = "androidx.core:core-ktx:${Versions.ANDROIDX_CORE}"
+    const val ANDROIDX_FRAGMENT_KTX = "androidx.fragment:fragment-ktx:${Versions.ANDROIDX_FRAGMENT}"
+    const val ANDROIDX_LIFECYCLE_EXT =
+        "androidx.lifecycle:lifecycle-extensions:${Versions.ANDROIDX_LIFECYCLE}"
+    const val ANDROIDX_LIFECYCLE_LIVEDATA_KTX =
+        "androidx.lifecycle:lifecycle-livedata-ktx:${Versions.ANDROIDX_LIFECYCLE}"
+    const val ANDROIDX_LIFECYCLE_RX_KTX =
+        "androidx.lifecycle:lifecycle-reactivestreams-ktx:${Versions.ANDROIDX_LIFECYCLE}"
+    const val ANDROIDX_LIFECYCLE_VIEWMODEL_KTX =
+        "androidx.lifecycle:lifecycle-viewmodel-ktx:${Versions.ANDROIDX_LIFECYCLE}"
+    const val ANDROIDX_NAVIGATION_FRAGMENT_KTX =
+        "androidx.navigation:navigation-fragment-ktx:${Versions.ANDROIDX_NAVIGATION}"
+    const val ANDROIDX_NAVIGATION_UI_KTX =
+        "androidx.navigation:navigation-ui-ktx:${Versions.ANDROIDX_NAVIGATION}"
+    const val ANDROIDX_PAGING = "androidx.paging:paging-runtime:${Versions.ANDROIDX_PAGING}"
+    const val ANDROIDX_RECYCLER_VIEW =
+        "androidx.recyclerview:recyclerview:${Versions.ANDROIDX_RECYCLER_VIEW}"
+    const val ANDROIDX_ROOM_COMPILER = "androidx.room:room-compiler:${Versions.ANDROIDX_ROOM}"
+    const val ANDROIDX_ROOM_KTX = "androidx.room:room-ktx:${Versions.ANDROIDX_ROOM}"
+    const val ANDROIDX_ROOM_RUNTIME = "androidx.room:room-runtime:${Versions.ANDROIDX_ROOM}"
+    const val ANDROIDX_SWIPE_REFRESH_LAYOUT =
+        "androidx.swiperefreshlayout:swiperefreshlayout:${Versions.ANDROIDX_SWIPE_REFRESH_LAYOUT}"
+    const val ANDROIDX_TEST_CORE = "androidx.test:core:${Versions.ANDROIDX_TEST_CORE}"
+    const val ANDROIDX_TEST_ESPRESSO =
+        "androidx.test.espresso:espresso-core:${Versions.ANDROIDX_TEST_ESPRESSO}"
+    const val ANDROIDX_TEST_ESPRESSO_INTENTS =
+        "androidx.test.espresso:espresso-intents:${Versions.ANDROIDX_TEST_ESPRESSO}"
+    const val ANDROIDX_TEST_EXT_JUNIT =
+        "androidx.test.ext:junit:${Versions.ANDROIDX_TEST_JUNIT_EXT}"
+    const val ANDROIDX_TEST_EXT_TRUTH =
+        "androidx.test.ext:truth:${Versions.ANDROIDX_TEST_TRUTH_EXT}"
+    const val ANDROIDX_TEST_RULES = "androidx.test:rules:${Versions.ANDROIDX_TEST_RULES}"
+    const val ANDROIDX_TEST_RUNNER = "androidx.test:runner:${Versions.ANDROIDX_TEST_RUNNER}"
+    const val ANDROIDX_VIEWPAGER2 = "androidx.viewpager2:viewpager2:${Versions.ANDROIDX_VIEWPAGER2}"
+    const val GLIDE_COMPILER = "com.github.bumptech.glide:compiler:${Versions.GLIDE}"
+    const val GLIDE = "com.github.bumptech.glide:glide:${Versions.GLIDE}"
+    const val MATERIAL_DESIGN = "com.google.android.material:material:${Versions.MATERIAL_DESIGN}"
+    const val DAGGER_ANDROID = "com.google.dagger:dagger-android:${Versions.DAGGER}"
+    const val DAGGER_ANDROID_PROCESSOR =
+        "com.google.dagger:dagger-android-processor:${Versions.DAGGER}"
+    const val DAGGER_ANDROID_SUPPORT = "com.google.dagger:dagger-android-support:${Versions.DAGGER}"
+    const val DAGGER_COMPILER = "com.google.dagger:dagger-compiler:${Versions.DAGGER}"
+    const val TRUTH = "com.google.truth:truth:${Versions.TRUTH}"
+    const val THREETENBP = "com.jakewharton.threetenabp:threetenabp:${Versions.THREETENBP}"
+    const val TIMBER = "com.jakewharton.timber:timber:${Versions.TIMBER}"
+    const val LEAKCANARY = "com.squareup.leakcanary:leakcanary-android:${Versions.LEAKCANARY}"
+    const val MOCKK_ANDROID = "io.mockk:mockk-android:${Versions.MOCKK}"
+    const val MOCKK = "io.mockk:mockk:${Versions.MOCKK}"
+    const val RXJAVA2_ANDROID = "io.reactivex.rxjava2:rxandroid:${Versions.RXJAVA_ANDROID}"
+    const val RXJAVA2 = "io.reactivex.rxjava2:rxjava:${Versions.RXJAVA}"
+    const val JUNIT = "junit:junit:${Versions.JUNIT}"
+    const val KOTLIN_STDLIB_JDK7 = "org.jetbrains.kotlin:kotlin-stdlib-jdk7:${Versions.KOTLIN}"
+    const val KOTLINX_COROUTINES_ANDROID =
+        "org.jetbrains.kotlinx:kotlinx-coroutines-android:${Versions.KOTLIN_COROUTINES}"
+    const val KOTLINX_COROUTINES =
+        "org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.KOTLIN_COROUTINES}"
+    const val KOTLINX_TEST_COROUTINES =
+        "org.jetbrains.kotlinx:kotlinx-coroutines-test:${Versions.KOTLINX_TEST_COROUTINES}"
+    const val ROBOLECTRIC = "org.robolectric:robolectric:${Versions.ROBOLECTRIC}"
+    const val TWITTER4J = "org.twitter4j:twitter4j-core:${Versions.TWITTER4J}"
+    const val TWITTER4J_HTTP2_SUPPORT =
+        "org.twitter4j:twitter4j-http2-support:${Versions.TWITTER4J}"
+    const val ANDROIDX_TEST_ORCHESTRATOR =
+        "androidx.test:orchestrator:${Versions.ANDROIDX_TEST_ORCHESTRATOR}"
 }

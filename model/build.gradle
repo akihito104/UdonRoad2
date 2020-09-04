@@ -25,25 +25,25 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    implementation Libs.kotlin_stdlib_jdk7
+    implementation Libs.KOTLIN_STDLIB_JDK7
 
-    implementation Libs.androidx_appcompat
-    implementation Libs.androidx_core_ktx
-    implementation Libs.androidx_lifecycle_ext
-    implementation Libs.androidx_lifecycle_livedata_ktx
-    implementation Libs.androidx_lifecycle_rx_ktx
+    implementation Libs.ANDROIDX_APPCOMPAT
+    implementation Libs.ANDROIDX_CORE_KTX
+    implementation Libs.ANDROIDX_LIFECYCLE_EXT
+    implementation Libs.ANDROIDX_LIFECYCLE_LIVEDATA_KTX
+    implementation Libs.ANDROIDX_LIFECYCLE_RX_KTX
 
-    implementation Libs.threetenbp
-    implementation Libs.timber
+    implementation Libs.THREETENBP
+    implementation Libs.TIMBER
 
-    implementation Libs.dagger_android
-    implementation Libs.dagger_android_support
+    implementation Libs.DAGGER_ANDROID
+    implementation Libs.DAGGER_ANDROID_SUPPORT
 
-    api Libs.rxjava2
+    api Libs.RXJAVA2
 
-    testImplementation Libs.junit
-    androidTestImplementation Libs.androidx_test_runner
-    androidTestImplementation Libs.androidx_test_espresso
+    testImplementation Libs.JUNIT
+    androidTestImplementation Libs.ANDROIDX_TEST_RUNNER
+    androidTestImplementation Libs.ANDROIDX_TEST_ESPRESSO
 }
 repositories {
     mavenCentral()

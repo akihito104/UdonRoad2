@@ -39,14 +39,14 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation project(':model')
 
-    implementation Libs.kotlin_stdlib_jdk7
+    implementation Libs.KOTLIN_STDLIB_JDK7
 
-    implementation Libs.androidx_core_ktx
-    implementation Libs.androidx_appcompat
-    api Libs.androidx_paging
+    implementation Libs.ANDROIDX_CORE_KTX
+    implementation Libs.ANDROIDX_APPCOMPAT
+    api Libs.ANDROIDX_PAGING
 
-    testImplementation Libs.junit
+    testImplementation Libs.JUNIT
 
-    androidTestImplementation Libs.androidx_test_ext_junit
-    androidTestImplementation Libs.androidx_test_espresso
+    androidTestImplementation Libs.ANDROIDX_TEST_EXT_JUNIT
+    androidTestImplementation Libs.ANDROIDX_TEST_ESPRESSO
 }

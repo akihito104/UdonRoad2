@@ -58,68 +58,68 @@ dependencies {
     implementation project(':data:restclient')
     implementation project(':model')
 
-    implementation Libs.kotlin_stdlib_jdk7
-    implementation Libs.kotlinx_coroutines
-    implementation Libs.kotlinx_coroutines_android
+    implementation Libs.KOTLIN_STDLIB_JDK7
+    implementation Libs.KOTLINX_COROUTINES
+    implementation Libs.KOTLINX_COROUTINES_ANDROID
 
-    implementation Libs.androidx_appcompat
-    implementation Libs.androidx_core_ktx
-    implementation Libs.androidx_constraintlayout
-    implementation Libs.material
-    implementation Libs.androidx_viewpager
+    implementation Libs.ANDROIDX_APPCOMPAT
+    implementation Libs.ANDROIDX_CORE_KTX
+    implementation Libs.ANDROIDX_CONSTRAINT_LAYOUT
+    implementation Libs.MATERIAL_DESIGN
+    implementation Libs.ANDROIDX_VIEWPAGER2
 
-    implementation Libs.androidx_lifecycle_ext
-    implementation Libs.androidx_lifecycle_livedata_ktx
-    implementation Libs.androidx_lifecycle_viewmodel_ktx
-    implementation Libs.androidx_lifecycle_rx_ktx
-    implementation Libs.androidx_room_runtime
+    implementation Libs.ANDROIDX_LIFECYCLE_EXT
+    implementation Libs.ANDROIDX_LIFECYCLE_LIVEDATA_KTX
+    implementation Libs.ANDROIDX_LIFECYCLE_VIEWMODEL_KTX
+    implementation Libs.ANDROIDX_LIFECYCLE_RX_KTX
+    implementation Libs.ANDROIDX_ROOM_RUNTIME
 
-    implementation Libs.androidx_navigation_fragment_ktx
-    implementation Libs.androidx_navigation_ui_ktx
+    implementation Libs.ANDROIDX_NAVIGATION_FRAGMENT_KTX
+    implementation Libs.ANDROIDX_NAVIGATION_UI_KTX
 
-    implementation Libs.dagger_android
-    implementation Libs.dagger_android_support
-    kapt Libs.dagger_compiler
-    kapt Libs.dagger_android_processor
+    implementation Libs.DAGGER_ANDROID
+    implementation Libs.DAGGER_ANDROID_SUPPORT
+    kapt Libs.DAGGER_COMPILER
+    kapt Libs.DAGGER_ANDROID_PROCESSOR
 
-    implementation Libs.rxjava2
-    implementation Libs.rxjava2_android
+    implementation Libs.RXJAVA2
+    implementation Libs.RXJAVA2_ANDROID
 
-    implementation Libs.twitter4j
+    implementation Libs.TWITTER4J
 
-    implementation Libs.threetenbp
-    implementation Libs.timber
+    implementation Libs.THREETENBP
+    implementation Libs.TIMBER
 
-    debugImplementation Libs.leakcanary
+    debugImplementation Libs.LEAKCANARY
 
     // test
     testImplementation project(":test-common")
-    testImplementation Libs.junit
-    testImplementation Libs.mockk
-    testImplementation Libs.truth
-    testImplementation Libs.androidx_test_core
-    testImplementation Libs.androidx_test_arch_core
-    testImplementation Libs.androidx_test_ext_junit
-    testImplementation Libs.androidx_test_runner
-    testImplementation Libs.robolectric
-    testImplementation Libs.dagger_android
-    testImplementation Libs.dagger_android_support
-    kaptTest Libs.dagger_compiler
-    kaptTest Libs.dagger_android_processor
+    testImplementation Libs.JUNIT
+    testImplementation Libs.MOCKK
+    testImplementation Libs.TRUTH
+    testImplementation Libs.ANDROIDX_TEST_CORE
+    testImplementation Libs.ANDROIDX_TEST_ARCH_CORE
+    testImplementation Libs.ANDROIDX_TEST_EXT_JUNIT
+    testImplementation Libs.ANDROIDX_TEST_RUNNER
+    testImplementation Libs.ROBOLECTRIC
+    testImplementation Libs.DAGGER_ANDROID
+    testImplementation Libs.DAGGER_ANDROID_SUPPORT
+    kaptTest Libs.DAGGER_COMPILER
+    kaptTest Libs.DAGGER_ANDROID_PROCESSOR
 
     // android test
-    androidTestImplementation Libs.mockk_android
-    androidTestImplementation Libs.androidx_test_core
-    androidTestImplementation Libs.androidx_test_runner
-    androidTestImplementation Libs.androidx_test_rules
-    androidTestImplementation Libs.androidx_test_ext_junit
-    androidTestImplementation Libs.androidx_test_ext_truth
-    androidTestImplementation Libs.truth
-    androidTestImplementation Libs.androidx_test_espresso
-    androidTestImplementation Libs.androidx_test_espresso_intents
-    androidTestUtil Libs.androidx_test_orchestrator
-    androidTestImplementation Libs.dagger_android
-    androidTestImplementation Libs.dagger_android_support
-    kaptAndroidTest Libs.dagger_compiler
-    kaptAndroidTest Libs.dagger_android_processor
+    androidTestImplementation Libs.MOCKK_ANDROID
+    androidTestImplementation Libs.ANDROIDX_TEST_CORE
+    androidTestImplementation Libs.ANDROIDX_TEST_RUNNER
+    androidTestImplementation Libs.ANDROIDX_TEST_RULES
+    androidTestImplementation Libs.ANDROIDX_TEST_EXT_JUNIT
+    androidTestImplementation Libs.ANDROIDX_TEST_EXT_TRUTH
+    androidTestImplementation Libs.TRUTH
+    androidTestImplementation Libs.ANDROIDX_TEST_ESPRESSO
+    androidTestImplementation Libs.ANDROIDX_TEST_ESPRESSO_INTENTS
+    androidTestUtil Libs.ANDROIDX_TEST_ORCHESTRATOR
+    androidTestImplementation Libs.DAGGER_ANDROID
+    androidTestImplementation Libs.DAGGER_ANDROID_SUPPORT
+    kaptAndroidTest Libs.DAGGER_COMPILER
+    kaptAndroidTest Libs.DAGGER_ANDROID_PROCESSOR
 }

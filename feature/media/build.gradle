@@ -45,34 +45,34 @@ dependencies {
     implementation project(':model')
 
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation Libs.kotlin_stdlib_jdk7
-    implementation Libs.kotlinx_coroutines
-    implementation Libs.kotlinx_coroutines_android
+    implementation Libs.KOTLIN_STDLIB_JDK7
+    implementation Libs.KOTLINX_COROUTINES
+    implementation Libs.KOTLINX_COROUTINES_ANDROID
 
-    implementation Libs.androidx_appcompat
-    implementation Libs.androidx_core_ktx
-    implementation Libs.androidx_lifecycle_ext
-    implementation Libs.androidx_lifecycle_livedata_ktx
-    implementation Libs.androidx_lifecycle_viewmodel_ktx
+    implementation Libs.ANDROIDX_APPCOMPAT
+    implementation Libs.ANDROIDX_CORE_KTX
+    implementation Libs.ANDROIDX_LIFECYCLE_EXT
+    implementation Libs.ANDROIDX_LIFECYCLE_LIVEDATA_KTX
+    implementation Libs.ANDROIDX_LIFECYCLE_VIEWMODEL_KTX
 
-    implementation Libs.androidx_navigation_fragment_ktx
-    implementation Libs.androidx_navigation_ui_ktx
+    implementation Libs.ANDROIDX_NAVIGATION_FRAGMENT_KTX
+    implementation Libs.ANDROIDX_NAVIGATION_UI_KTX
 
-    implementation Libs.material
-    implementation Libs.androidx_recyclerview
-    implementation Libs.androidx_constraintlayout
-    implementation Libs.androidx_viewpager
+    implementation Libs.MATERIAL_DESIGN
+    implementation Libs.ANDROIDX_RECYCLER_VIEW
+    implementation Libs.ANDROIDX_CONSTRAINT_LAYOUT
+    implementation Libs.ANDROIDX_VIEWPAGER2
 
-    implementation Libs.dagger_android
-    implementation Libs.dagger_android_support
-    kapt Libs.dagger_compiler
-    kapt Libs.dagger_android_processor
+    implementation Libs.DAGGER_ANDROID
+    implementation Libs.DAGGER_ANDROID_SUPPORT
+    kapt Libs.DAGGER_COMPILER
+    kapt Libs.DAGGER_ANDROID_PROCESSOR
 
-    implementation Libs.glide
-    kapt Libs.glide_compiler
+    implementation Libs.GLIDE
+    kapt Libs.GLIDE_COMPILER
 
-    testImplementation Libs.junit
+    testImplementation Libs.JUNIT
 
-    androidTestImplementation Libs.androidx_test_ext_junit
-    androidTestImplementation Libs.androidx_test_espresso
+    androidTestImplementation Libs.ANDROIDX_TEST_EXT_JUNIT
+    androidTestImplementation Libs.ANDROIDX_TEST_ESPRESSO
 }
