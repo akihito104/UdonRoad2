@@ -45,7 +45,7 @@ allprojects {
 }
 
 subprojects {
-    apply(plugin = "org.jlleitschuh.gradle.ktlint")// Version should be inherited from parent
+    apply(plugin = "org.jlleitschuh.gradle.ktlint") // Version should be inherited from parent
 
     // Optionally configure plugin
     ktlint {
