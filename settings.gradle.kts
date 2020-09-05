@@ -1,0 +1,13 @@
+include(
+    ":app",
+    ":feature:oauth",
+    ":feature:media",
+    ":feature:timeline",
+    ":candysh",
+    ":data:db",
+    ":data:restclient",
+    ":data:repository",
+    ":data:repository-api",
+    ":model"
+)
+include(":test-common")

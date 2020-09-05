@@ -68,4 +68,6 @@ object Versions {
 
     // build libs
     const val ANDROID_GRADLE_TOOL = "4.0.1"
+    const val SCABBARD = "0.4.0"
+    const val RELEASES_HUB = "1.6.0"
 }

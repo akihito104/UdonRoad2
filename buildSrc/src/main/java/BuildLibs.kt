@@ -21,4 +21,7 @@ object BuildLibs {
     const val KTLINT_PLUGIN = "org.jlleitschuh.gradle:ktlint-gradle:${Versions.KTLINT_PLUGIN}"
     const val ANDROIDX_NAVIGATION_SAFEARGS_PLUGIN =
         "androidx.navigation:navigation-safe-args-gradle-plugin:${Versions.ANDROIDX_NAVIGATION}"
+    const val SCABBARD_PLUGIN =
+        "gradle.plugin.dev.arunkumar:scabbard-gradle-plugin:${Versions.SCABBARD}"
+    const val RELEASES_HUB = "com.releaseshub:releases-hub-gradle-plugin:${Versions.RELEASES_HUB}"
 }

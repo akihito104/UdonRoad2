@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-import systems.danger.kotlin.*
+import systems.danger.kotlin.danger
+import systems.danger.kotlin.onGitHub
+import systems.danger.kotlin.warn
 
 danger(args) {
-
-    val allSourceFiles = git.modifiedFiles + git.createdFiles
-    val sourceChanges = allSourceFiles.firstOrNull { it.contains("src") }
 
     onGitHub {
         // Big PR Check
