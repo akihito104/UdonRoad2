@@ -30,26 +30,26 @@ dependencies {
     api project(':data:repository-api')
     implementation project(':model')
 
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutine_version"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutine_version"
+    implementation Libs.KOTLINX_COROUTINES
+    implementation Libs.KOTLINX_COROUTINES_ANDROID
 
-    implementation "androidx.core:core-ktx:$coreKtx_version"
-    implementation "androidx.appcompat:appcompat:$appcompat_version"
-    implementation "androidx.lifecycle:lifecycle-extensions:$lifecycle_version"
-    implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version"
+    implementation Libs.ANDROIDX_CORE_KTX
+    implementation Libs.ANDROIDX_APPCOMPAT
+    implementation Libs.ANDROIDX_LIFECYCLE_EXT
+    implementation Libs.ANDROIDX_LIFECYCLE_LIVEDATA_KTX
 
-    implementation "androidx.room:room-runtime:$room_version"
-    kapt "androidx.room:room-compiler:$room_version"
+    implementation Libs.ANDROIDX_ROOM_RUNTIME
+    kapt Libs.ANDROIDX_ROOM_COMPILER
 
-    implementation "com.google.dagger:dagger-android:$dagger_version"
-    implementation "com.google.dagger:dagger-android-support:$dagger_version"
-    kapt "com.google.dagger:dagger-compiler:$dagger_version"
-    kapt "com.google.dagger:dagger-android-processor:$dagger_version"
+    implementation Libs.DAGGER_ANDROID
+    implementation Libs.DAGGER_ANDROID_SUPPORT
+    kapt Libs.DAGGER_COMPILER
+    kapt Libs.DAGGER_ANDROID_PROCESSOR
 
-    implementation "com.jakewharton.threetenabp:threetenabp:$threetenbp_version"
-    implementation "com.jakewharton.timber:timber:$timber_version"
+    implementation Libs.THREETENBP
+    implementation Libs.TIMBER
 
-    testImplementation "junit:junit:$junit_version"
-    androidTestImplementation "androidx.test:runner:$androidTestRunner_version"
-    androidTestImplementation "androidx.test.espresso:espresso-core:$espresso_version"
+    testImplementation Libs.JUNIT
+    androidTestImplementation Libs.ANDROIDX_TEST_RUNNER
+    androidTestImplementation Libs.ANDROIDX_TEST_ESPRESSO
 }
