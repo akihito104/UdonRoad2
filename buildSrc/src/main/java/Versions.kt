@@ -49,12 +49,12 @@ object Versions {
     const val JUNIT = "4.12"
     const val MOCKK = "1.10.0"
     const val ROBOLECTRIC = "4.3.1"
-    const val TRUTH = "0.42"
+    const val TRUTH = "1.0.1"
     const val KOTLINX_TEST_COROUTINES = "1.3.9"
     const val ANDROIDX_TEST_CORE = "1.2.0"
     const val ANDROIDX_TEST_JUNIT_EXT = "1.1.1"
     const val ANDROIDX_TEST_RULES = "1.2.0"
-    const val ANDROIDX_TEST_TRUTH_EXT = "1.2.0"
+    const val ANDROIDX_TEST_TRUTH_EXT = "1.3.0"
     const val ANDROIDX_TEST_ARCH_CORE = "2.1.0"
 
     // android test
