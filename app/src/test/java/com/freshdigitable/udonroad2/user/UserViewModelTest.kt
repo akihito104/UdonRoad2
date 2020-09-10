@@ -30,126 +30,97 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.verify
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.junit.experimental.runners.Enclosed
 import org.junit.rules.RuleChain
 import org.junit.rules.TestWatcher
 import org.junit.runner.Description
-import org.junit.runner.RunWith
 import org.junit.runners.model.Statement
 
-@RunWith(Enclosed::class)
 class UserViewModelTest {
-    class WhenInit {
-        @get:Rule
-        val rule = UserViewModelTestRule()
+    @get:Rule
+    val rule = UserViewModelTestRule()
 
-        @Test
-        fun initialValue(): Unit = with(rule) {
-            // verify
-            assertThat(sut.user.value).isNull()
-            assertThat(sut.relationship.value).isNull()
-            assertThat(sut.fabVisible.value).isFalse()
-            assertThat(sut.titleAlpha.value).isEqualTo(0)
-        }
-
-        @Test
-        fun setAppbarScrollRate(): Unit = with(rule) {
-            // exercise
-            sut.setAppBarScrollRate(1f)
-
-            // verify
-            assertThat(sut.titleAlpha.value).isEqualTo(1f)
-        }
-
-        @Test
-        fun setUserId(): Unit = with(rule) {
-            // setup
-            val targetUser = UserId(1000)
-            setupUser(targetUser)
-            setupRelation(targetUser)
-
-            // exercise
-            sut.setUserId(targetUser)
-
-            // verify
-            assertThat(sut.user.value).isNotNull()
-            assertThat(sut.relationship.value).isNotNull()
-        }
+    @Test
+    fun initialValue(): Unit = with(rule) {
+        // verify
+        assertThat(sut.user.value).isNotNull()
+        assertThat(sut.relationship.value).isNotNull()
+        assertThat(sut.fabVisible.value).isFalse()
+        assertThat(sut.titleAlpha.value).isEqualTo(0)
     }
 
-    class WhenSetUserId {
-        @get:Rule
-        val rule = UserViewModelTestRule()
-        private val targetId = UserId(1000)
+    @Test
+    fun setAppbarScrollRate(): Unit = with(rule) {
+        // exercise
+        sut.setAppBarScrollRate(1f)
 
-        @Before
-        fun setup(): Unit = with(rule) {
-            setupUser(targetId)
-            setupRelation(targetId)
-            sut.setUserId(targetId)
-        }
+        // verify
+        assertThat(sut.titleAlpha.value).isEqualTo(1f)
+    }
 
-        @Test
-        fun updateFollowingStatus(): Unit = with(rule) {
-            // setup
-            every { relationshipRepository.updateFollowingStatus(targetId, any()) } just runs
+    @Test
+    fun updateFollowingStatus(): Unit = with(rule) {
+        // setup
+        every { relationshipRepository.updateFollowingStatus(targetId, any()) } just runs
 
-            // exercise
-            sut.updateFollowingStatus(true)
+        // exercise
+        sut.updateFollowingStatus(true)
 
-            // verify
-            verify { relationshipRepository.updateFollowingStatus(targetId, true) }
-        }
+        // verify
+        verify { relationshipRepository.updateFollowingStatus(targetId, true) }
+    }
 
-        @Test
-        fun updateBlockingStatus(): Unit = with(rule) {
-            // setup
-            every { relationshipRepository.updateBlockingStatus(targetId, any()) } just runs
+    @Test
+    fun updateBlockingStatus(): Unit = with(rule) {
+        // setup
+        every { relationshipRepository.updateBlockingStatus(targetId, any()) } just runs
 
-            // exercise
-            sut.updateBlockingStatus(true)
+        // exercise
+        sut.updateBlockingStatus(true)
 
-            // verify
-            verify { relationshipRepository.updateBlockingStatus(targetId, true) }
-        }
+        // verify
+        verify { relationshipRepository.updateBlockingStatus(targetId, true) }
+    }
 
-        @Test
-        fun updateMutingStatus(): Unit = with(rule) {
-            // setup
-            every { relationshipRepository.updateMutingStatus(targetId, any()) } just runs
+    @Test
+    fun updateMutingStatus(): Unit = with(rule) {
+        // setup
+        every { relationshipRepository.updateMutingStatus(targetId, any()) } just runs
 
-            // exercise
-            sut.updateMutingStatus(true)
+        // exercise
+        sut.updateMutingStatus(true)
 
-            // verify
-            verify { relationshipRepository.updateMutingStatus(targetId, true) }
-        }
+        // verify
+        verify { relationshipRepository.updateMutingStatus(targetId, true) }
+    }
 
-        @Test
-        fun reportForSpam(): Unit = with(rule) {
-            // setup
-            every { relationshipRepository.reportSpam(targetId) } just runs
+    @Test
+    fun reportForSpam(): Unit = with(rule) {
+        // setup
+        every { relationshipRepository.reportSpam(targetId) } just runs
 
-            // exercise
-            sut.reportForSpam()
+        // exercise
+        sut.reportForSpam()
 
-            // verify
-            verify { relationshipRepository.reportSpam(targetId) }
-        }
+        // verify
+        verify { relationshipRepository.reportSpam(targetId) }
     }
 }
 
 class UserViewModelTestRule : TestWatcher() {
+    val targetId = UserId(1000)
     private val userRepository = MockVerified2.create<UserRepository>()
     private val _relationshipRepository = MockVerified2.create<RelationshipRepository>()
     val relationshipRepository: RelationshipRepository = _relationshipRepository.mock
-    val sut = UserViewModel(userRepository.mock, relationshipRepository)
+    val sut: UserViewModel by lazy {
+        UserViewModel(targetId, userRepository.mock, relationshipRepository)
+    }
 
     override fun starting(description: Description?) {
         super.starting(description)
+        setupUser(targetId)
+        setupRelation(targetId)
         listOf(
             sut.user,
             sut.relationship,
@@ -165,7 +136,7 @@ class UserViewModelTestRule : TestWatcher() {
             .apply(super.apply(base, description), description)
     }
 
-    fun setupUser(targetUser: UserId) {
+    private fun setupUser(targetUser: UserId) {
         val response = mockk<User>().apply {
             every { id } returns targetUser
         }
@@ -175,7 +146,7 @@ class UserViewModelTestRule : TestWatcher() {
         }
     }
 
-    fun setupRelation(targetUser: UserId, response: Relationship = mockk()) {
+    private fun setupRelation(targetUser: UserId, response: Relationship = mockk()) {
         with(_relationshipRepository) {
             every { mock.findRelationship(targetUser) } returns MutableLiveData(response)
             expected { verify { mock.findRelationship(targetUser) } }

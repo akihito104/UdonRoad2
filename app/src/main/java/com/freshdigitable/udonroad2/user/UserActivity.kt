@@ -8,7 +8,6 @@ import android.view.MenuItem
 import androidx.annotation.IdRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.observe
 import androidx.viewpager.widget.ViewPager
@@ -17,9 +16,7 @@ import com.freshdigitable.udonroad2.databinding.ActivityUserBinding
 import com.freshdigitable.udonroad2.di.ListItemFragmentModule
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
-import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
-import com.freshdigitable.udonroad2.model.app.navigation.Navigation
 import com.freshdigitable.udonroad2.model.user.TweetingUser
 import com.google.android.material.appbar.AppBarLayout
 import dagger.Binds
@@ -34,15 +31,15 @@ import kotlin.math.abs
 
 class UserActivity : HasAndroidInjector, AppCompatActivity() {
     @Inject
-    lateinit var viewModelProvider: ViewModelProvider
-
-    @Inject
-    lateinit var navigation: Navigation<UserActivityState>
+    lateinit var userViewModelComponentFactory: UserViewModelComponent.Factory
 
     @Inject
     lateinit var listOwnerGenerator: ListOwnerGenerator
 
-    private val viewModel: UserViewModel by lazy { viewModelProvider[UserViewModel::class.java] }
+    private val viewModel: UserViewModel by lazy {
+        userViewModelComponentFactory.create(user.id)
+            .viewModelProvider[UserViewModel::class.java]
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
@@ -54,7 +51,6 @@ class UserActivity : HasAndroidInjector, AppCompatActivity() {
         val adapter = UserFragmentPagerAdapter(supportFragmentManager, user, listOwnerGenerator)
 
         binding.setup(viewModel, adapter)
-        viewModel.setUserId(user.id)
         binding.userToolbar.title = ""
         setSupportActionBar(binding.userToolbar)
     }
@@ -179,7 +175,7 @@ class UserActivity : HasAndroidInjector, AppCompatActivity() {
 @Module(
     includes = [
         ListItemFragmentModule::class,
-        UserViewModelModule::class
+        UserViewModelComponentModule::class
     ]
 )
 interface UserActivityModule {
@@ -188,19 +184,6 @@ interface UserActivityModule {
 
     @Module
     companion object {
-        @Provides
-        fun provideUserActivityNavigation(
-            eventDispatcher: EventDispatcher,
-            activity: UserActivity,
-            viewModelProvider: ViewModelProvider
-        ): Navigation<UserActivityState> {
-            return UserActivityNavigation(
-                eventDispatcher,
-                activity,
-                viewModelProvider
-            )
-        }
-
         @Provides
         fun provideActivityEventDelegate(): ActivityEventDelegate {
             return object : ActivityEventDelegate {

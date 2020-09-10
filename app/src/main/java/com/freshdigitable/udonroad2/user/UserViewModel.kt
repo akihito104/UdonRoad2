@@ -4,8 +4,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.map
-import androidx.lifecycle.switchMap
 import com.freshdigitable.udonroad2.data.impl.RelationshipRepository
 import com.freshdigitable.udonroad2.data.impl.UserRepository
 import com.freshdigitable.udonroad2.model.SelectedItemId
@@ -13,25 +13,20 @@ import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
 import com.freshdigitable.udonroad2.model.user.Relationship
 import com.freshdigitable.udonroad2.model.user.User
 import com.freshdigitable.udonroad2.model.user.UserId
-import dagger.Binds
+import dagger.BindsInstance
 import dagger.Module
 import dagger.Provides
+import dagger.Subcomponent
 import dagger.multibindings.IntoMap
 import kotlin.math.min
 
 class UserViewModel(
-    private val repository: UserRepository,
+    private val userId: UserId,
+    userRepository: UserRepository,
     private val relationshipRepository: RelationshipRepository
 ) : ViewModel() {
-    private val userId: MutableLiveData<UserId> = MutableLiveData()
-    val user: LiveData<User?> = userId.switchMap { repository.getUser(it) }
-    val relationship: LiveData<Relationship?> = userId.switchMap {
-        relationshipRepository.findRelationship(it)
-    }
-
-    fun setUserId(id: UserId) {
-        userId.value = id
-    }
+    val user: LiveData<User?> = userRepository.getUser(userId)
+    val relationship: LiveData<Relationship?> = relationshipRepository.findRelationship(userId)
 
     private val appBarScrollRate = MutableLiveData(0f)
     val titleAlpha: LiveData<Float> = appBarScrollRate.map { r ->
@@ -73,15 +68,15 @@ class UserViewModel(
     }
 
     fun updateFollowingStatus(following: Boolean) {
-        relationshipRepository.updateFollowingStatus(userId.value!!, following)
+        relationshipRepository.updateFollowingStatus(userId, following)
     }
 
     fun updateBlockingStatus(blocking: Boolean) {
-        relationshipRepository.updateBlockingStatus(userId.value!!, blocking)
+        relationshipRepository.updateBlockingStatus(userId, blocking)
     }
 
     fun updateMutingStatus(muting: Boolean) {
-        relationshipRepository.updateMutingStatus(userId.value!!, muting)
+        relationshipRepository.updateMutingStatus(userId, muting)
     }
 
     fun updateWantRetweet(wantRetweet: Boolean) {
@@ -89,24 +84,35 @@ class UserViewModel(
     }
 
     fun reportForSpam() {
-        relationshipRepository.reportSpam(userId.value!!)
+        relationshipRepository.reportSpam(userId)
     }
 }
 
 @Module
 interface UserViewModelModule {
-    @Binds
-    @IntoMap
-    @ViewModelKey(UserViewModel::class)
-    fun bindUserViewModel(viewModel: UserViewModel): ViewModel
-
     companion object {
         @Provides
+        @IntoMap
+        @ViewModelKey(UserViewModel::class)
         fun provideUserViewModel(
+            userId: UserId,
             userRepository: UserRepository,
             relationshipRepository: RelationshipRepository
-        ): UserViewModel {
-            return UserViewModel(userRepository, relationshipRepository)
+        ): ViewModel {
+            return UserViewModel(userId, userRepository, relationshipRepository)
         }
     }
 }
+
+@Subcomponent(modules = [UserViewModelModule::class])
+interface UserViewModelComponent {
+    @Subcomponent.Factory
+    interface Factory {
+        fun create(@BindsInstance userId: UserId): UserViewModelComponent
+    }
+
+    val viewModelProvider: ViewModelProvider
+}
+
+@Module(subcomponents = [UserViewModelComponent::class])
+interface UserViewModelComponentModule
