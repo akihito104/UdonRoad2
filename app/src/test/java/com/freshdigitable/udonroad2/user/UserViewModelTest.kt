@@ -20,65 +20,165 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.MutableLiveData
 import com.freshdigitable.udonroad2.data.impl.RelationshipRepository
 import com.freshdigitable.udonroad2.data.impl.UserRepository
+import com.freshdigitable.udonroad2.model.user.Relationship
+import com.freshdigitable.udonroad2.model.user.User
 import com.freshdigitable.udonroad2.model.user.UserId
+import com.freshdigitable.udonroad2.test_common.MockVerified2
 import com.google.common.truth.Truth.assertThat
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
 import io.mockk.verify
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.junit.experimental.runners.Enclosed
+import org.junit.rules.RuleChain
+import org.junit.rules.TestWatcher
+import org.junit.runner.Description
+import org.junit.runner.RunWith
+import org.junit.runners.model.Statement
 
+@RunWith(Enclosed::class)
 class UserViewModelTest {
-    @get:Rule
-    val instantTaskRule = InstantTaskExecutorRule()
+    class WhenInit {
+        @get:Rule
+        val rule = UserViewModelTestRule()
 
-    private val userRepository = mockk<UserRepository>()
-    private val relationshipRepository = mockk<RelationshipRepository>()
-    private val sut = UserViewModel(userRepository, relationshipRepository)
+        @Test
+        fun initialValue(): Unit = with(rule) {
+            // verify
+            assertThat(sut.user.value).isNull()
+            assertThat(sut.relationship.value).isNull()
+            assertThat(sut.fabVisible.value).isFalse()
+            assertThat(sut.titleAlpha.value).isEqualTo(0)
+        }
 
-    @Before
-    fun setup() {
-        sut.user.observeForever { }
-        sut.relationship.observeForever { }
-        sut.fabVisible.observeForever { }
-        sut.titleAlpha.observeForever { }
+        @Test
+        fun setAppbarScrollRate(): Unit = with(rule) {
+            // exercise
+            sut.setAppBarScrollRate(1f)
+
+            // verify
+            assertThat(sut.titleAlpha.value).isEqualTo(1f)
+        }
+
+        @Test
+        fun setUserId(): Unit = with(rule) {
+            // setup
+            val targetUser = UserId(1000)
+            setupUser(targetUser)
+            setupRelation(targetUser)
+
+            // exercise
+            sut.setUserId(targetUser)
+
+            // verify
+            assertThat(sut.user.value).isNotNull()
+            assertThat(sut.relationship.value).isNotNull()
+        }
     }
 
-    @Test
-    fun initialValue() {
-        // verify
-        assertThat(sut.user.value).isNull()
-        assertThat(sut.relationship.value).isNull()
-        assertThat(sut.fabVisible.value).isFalse()
-        assertThat(sut.titleAlpha.value).isEqualTo(0)
+    class WhenSetUserId {
+        @get:Rule
+        val rule = UserViewModelTestRule()
+        private val targetId = UserId(1000)
+
+        @Before
+        fun setup(): Unit = with(rule) {
+            setupUser(targetId)
+            setupRelation(targetId)
+            sut.setUserId(targetId)
+        }
+
+        @Test
+        fun updateFollowingStatus(): Unit = with(rule) {
+            // setup
+            every { relationshipRepository.updateFollowingStatus(targetId, any()) } just runs
+
+            // exercise
+            sut.updateFollowingStatus(true)
+
+            // verify
+            verify { relationshipRepository.updateFollowingStatus(targetId, true) }
+        }
+
+        @Test
+        fun updateBlockingStatus(): Unit = with(rule) {
+            // setup
+            every { relationshipRepository.updateBlockingStatus(targetId, any()) } just runs
+
+            // exercise
+            sut.updateBlockingStatus(true)
+
+            // verify
+            verify { relationshipRepository.updateBlockingStatus(targetId, true) }
+        }
+
+        @Test
+        fun updateMutingStatus(): Unit = with(rule) {
+            // setup
+            every { relationshipRepository.updateMutingStatus(targetId, any()) } just runs
+
+            // exercise
+            sut.updateMutingStatus(true)
+
+            // verify
+            verify { relationshipRepository.updateMutingStatus(targetId, true) }
+        }
+
+        @Test
+        fun reportForSpam(): Unit = with(rule) {
+            // setup
+            every { relationshipRepository.reportSpam(targetId) } just runs
+
+            // exercise
+            sut.reportForSpam()
+
+            // verify
+            verify { relationshipRepository.reportSpam(targetId) }
+        }
+    }
+}
+
+class UserViewModelTestRule : TestWatcher() {
+    private val userRepository = MockVerified2.create<UserRepository>()
+    private val _relationshipRepository = MockVerified2.create<RelationshipRepository>()
+    val relationshipRepository: RelationshipRepository = _relationshipRepository.mock
+    val sut = UserViewModel(userRepository.mock, relationshipRepository)
+
+    override fun starting(description: Description?) {
+        super.starting(description)
+        listOf(
+            sut.user,
+            sut.relationship,
+            sut.fabVisible,
+            sut.titleAlpha
+        ).forEach { it.observeForever {} }
     }
 
-    @Test
-    fun setUserId() {
-        // setup
-        val targetUser = UserId(1000)
-        every { userRepository.getUser(targetUser) } returns MutableLiveData(mockk())
-        every {
-            relationshipRepository.findRelationship(targetUser)
-        } returns MutableLiveData(mockk())
-
-        // exercise
-        sut.setUserId(targetUser)
-
-        // verify
-        verify { userRepository.getUser(targetUser) }
-        verify { relationshipRepository.findRelationship(targetUser) }
-        assertThat(sut.user.value).isNotNull()
-        assertThat(sut.relationship.value).isNotNull()
+    override fun apply(base: Statement?, description: Description?): Statement {
+        return RuleChain.outerRule(InstantTaskExecutorRule())
+            .around(userRepository)
+            .around(_relationshipRepository)
+            .apply(super.apply(base, description), description)
     }
 
-    @Test
-    fun setAppbarScrollRate() {
-        // exercise
-        sut.setAppBarScrollRate(1f)
+    fun setupUser(targetUser: UserId) {
+        val response = mockk<User>().apply {
+            every { id } returns targetUser
+        }
+        with(userRepository) {
+            every { mock.getUser(targetUser) } returns MutableLiveData(response)
+            expected { verify { mock.getUser(targetUser) } }
+        }
+    }
 
-        // verify
-        assertThat(sut.titleAlpha.value).isEqualTo(1f)
+    fun setupRelation(targetUser: UserId, response: Relationship = mockk()) {
+        with(_relationshipRepository) {
+            every { mock.findRelationship(targetUser) } returns MutableLiveData(response)
+            expected { verify { mock.findRelationship(targetUser) } }
+        }
     }
 }

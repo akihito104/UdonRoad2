@@ -17,6 +17,7 @@
 package com.freshdigitable.udonroad2.test_common
 
 import io.mockk.confirmVerified
+import io.mockk.mockk
 import org.junit.rules.TestWatcher
 import org.junit.runner.Description
 
@@ -36,5 +37,28 @@ class MockVerified(
         super.succeeded(description)
         expectedBlocks.forEach { it() }
         confirmVerified(*mocks.toTypedArray())
+    }
+}
+
+class MockVerified2<T>(
+    val mock: T
+) : TestWatcher() {
+
+    companion object {
+        inline fun <reified T> create(relaxed: Boolean = false): MockVerified2<T> {
+            return MockVerified2(mockk(relaxed = relaxed))
+        }
+    }
+
+    private val expectedBlocks = mutableListOf<ExpectedVerify>()
+
+    fun expected(block: ExpectedVerify) {
+        expectedBlocks.add(block)
+    }
+
+    override fun succeeded(description: Description?) {
+        super.succeeded(description)
+        expectedBlocks.forEach { it() }
+        confirmVerified(mock as Any)
     }
 }
