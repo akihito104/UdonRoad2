@@ -33,7 +33,7 @@ class UserViewModel(
         userId.value = id
     }
 
-    private val appBarScrollRate = MutableLiveData<Float>()
+    private val appBarScrollRate = MutableLiveData(0f)
     val titleAlpha: LiveData<Float> = appBarScrollRate.map { r ->
         if (r >= 0.9f) {
             min((r - 0.9f) * 10, 1f)
