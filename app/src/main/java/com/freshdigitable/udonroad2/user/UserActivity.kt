@@ -36,7 +36,7 @@ class UserActivity : HasAndroidInjector, AppCompatActivity() {
     lateinit var listOwnerGenerator: ListOwnerGenerator
 
     private val viewModel: UserViewModel by lazy {
-        userViewModelComponentFactory.create(user.id)
+        userViewModelComponentFactory.create(user)
             .viewModelProvider[UserViewModel::class.java]
     }
 
@@ -47,7 +47,7 @@ class UserActivity : HasAndroidInjector, AppCompatActivity() {
             this,
             R.layout.activity_user
         )
-        val adapter = UserFragmentPagerAdapter(supportFragmentManager, user, listOwnerGenerator)
+        val adapter = UserFragmentPagerAdapter(supportFragmentManager, viewModel)
 
         binding.setup(viewModel, adapter)
         binding.userToolbar.title = ""
