@@ -5,17 +5,15 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.map
-import androidx.lifecycle.switchMap
 import com.freshdigitable.udonroad2.data.impl.RelationshipRepository
-import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
 import com.freshdigitable.udonroad2.data.impl.UserRepository
 import com.freshdigitable.udonroad2.model.ListOwner
-import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.user.Relationship
 import com.freshdigitable.udonroad2.model.user.TweetingUser
 import com.freshdigitable.udonroad2.model.user.User
+import com.freshdigitable.udonroad2.user.UserActivityEvent.Relationships
 import dagger.BindsInstance
 import dagger.Module
 import dagger.Provides
@@ -29,22 +27,13 @@ class UserViewModel(
     private val viewState: UserActivityViewStates,
     userRepository: UserRepository,
     relationshipRepository: RelationshipRepository,
-    selectedItemRepository: SelectedItemRepository,
-    ownerGenerator: ListOwnerGenerator,
 ) : ViewModel() {
     val user: LiveData<User?> = userRepository.getUser(tweetingUser.id)
     val relationship: LiveData<Relationship?> = relationshipRepository.findRelationship(
         tweetingUser.id
     )
 
-    // TODO: save to state handle
-    private val pages: Map<UserPage, ListOwner<*>> = UserPage.values().map {
-        it to ownerGenerator.create(it.createQuery(tweetingUser))
-    }.toMap()
-
-    fun getOwner(userPage: UserPage): ListOwner<*> {
-        return requireNotNull(pages[userPage])
-    }
+    fun getOwner(userPage: UserPage): ListOwner<*> = requireNotNull(viewState.pages[userPage])
 
     fun setAppBarScrollRate(rate: Float) {
         appBarScrollRate.value = rate
@@ -59,34 +48,30 @@ class UserViewModel(
         }
     }
 
-    fun setCurrentPage(index: Int) {
-        this.currentPage.value = UserPage.values()[index]
-    }
+    val fabVisible: LiveData<Boolean> = viewState.fabVisible
 
-    private val currentPage = MutableLiveData(UserPage.values()[0])
-    private val selectedItemId = currentPage.switchMap {
-        selectedItemRepository.observe(requireNotNull(pages[it]))
+    fun setCurrentPage(index: Int) {
+        eventDispatcher.postEvent(UserActivityEvent.PageChanged(UserPage.values()[index]))
     }
-    val fabVisible: LiveData<Boolean> = selectedItemId.map { it != null }
 
     fun updateFollowingStatus(following: Boolean) {
-        eventDispatcher.postEvent(UserActivityEvent.Following(following, tweetingUser.id))
+        eventDispatcher.postEvent(Relationships.Following(following, tweetingUser.id))
     }
 
     fun updateBlockingStatus(blocking: Boolean) {
-        eventDispatcher.postEvent(UserActivityEvent.Blocking(blocking, tweetingUser.id))
+        eventDispatcher.postEvent(Relationships.Blocking(blocking, tweetingUser.id))
     }
 
     fun updateMutingStatus(muting: Boolean) {
-        eventDispatcher.postEvent(UserActivityEvent.Muting(muting, tweetingUser.id))
+        eventDispatcher.postEvent(Relationships.Muting(muting, tweetingUser.id))
     }
 
     fun updateWantRetweet(wantRetweet: Boolean) {
-        eventDispatcher.postEvent(UserActivityEvent.WantsRetweet(wantRetweet, tweetingUser.id))
+        eventDispatcher.postEvent(Relationships.WantsRetweet(wantRetweet, tweetingUser.id))
     }
 
     fun reportForSpam() {
-        eventDispatcher.postEvent(UserActivityEvent.ReportSpam(tweetingUser.id))
+        eventDispatcher.postEvent(Relationships.ReportSpam(tweetingUser.id))
     }
 }
 
@@ -102,19 +87,13 @@ interface UserViewModelModule {
             viewState: UserActivityViewStates,
             userRepository: UserRepository,
             relationshipRepository: RelationshipRepository,
-            selectedItemRepository: SelectedItemRepository,
-            ownerGenerator: ListOwnerGenerator,
-        ): ViewModel {
-            return UserViewModel(
-                user,
-                eventDispatcher,
-                viewState,
-                userRepository,
-                relationshipRepository,
-                selectedItemRepository,
-                ownerGenerator
-            )
-        }
+        ): ViewModel = UserViewModel(
+            user,
+            eventDispatcher,
+            viewState,
+            userRepository,
+            relationshipRepository,
+        )
     }
 }
 

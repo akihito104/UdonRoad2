@@ -181,18 +181,15 @@ class UserViewModelTestRule : TestWatcher() {
     val sut: UserViewModel by lazy {
         val eventDispatcher = EventDispatcher()
         val viewStates = UserActivityViewStates(
+            targetUser,
             UserActivityActions(eventDispatcher),
             relationshipRepository,
+            selectedItemRepository,
+            ListOwnerGenerator(),
             mockk(relaxed = true)
         )
         UserViewModel(
-            targetUser,
-            eventDispatcher,
-            viewStates,
-            userRepository.mock,
-            relationshipRepository,
-            selectedItemRepository,
-            ListOwnerGenerator()
+            targetUser, eventDispatcher, viewStates, userRepository.mock, relationshipRepository,
         )
     }
 
@@ -200,7 +197,8 @@ class UserViewModelTestRule : TestWatcher() {
         super.starting(description)
         setupUser(targetId)
         setupRelation(targetId)
-        UserPage.values().forEach { sut.getOwner(it) }
+
+        sut.setCurrentPage(0)
         listOf(
             sut.user,
             sut.relationship,

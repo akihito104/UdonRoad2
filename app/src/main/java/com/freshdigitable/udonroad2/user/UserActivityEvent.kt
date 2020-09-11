@@ -20,29 +20,33 @@ import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.user.UserId
 
 sealed class UserActivityEvent : AppEvent {
-    data class Following(
-        val wantsFollow: Boolean,
-        override val targetUserId: UserId
-    ) : UserActivityEvent()
+    data class PageChanged(val page: UserPage) : UserActivityEvent()
 
-    data class Blocking(
-        val wantsBlock: Boolean,
-        override val targetUserId: UserId
-    ) : UserActivityEvent()
+    sealed class Relationships : UserActivityEvent() {
+        data class Following(
+            val wantsFollow: Boolean,
+            override val targetUserId: UserId
+        ) : Relationships()
 
-    data class WantsRetweet(
-        val wantsRetweet: Boolean,
-        override val targetUserId: UserId
-    ) : UserActivityEvent()
+        data class Blocking(
+            val wantsBlock: Boolean,
+            override val targetUserId: UserId
+        ) : Relationships()
 
-    data class Muting(
-        val wantsMute: Boolean,
-        override val targetUserId: UserId
-    ) : UserActivityEvent()
+        data class WantsRetweet(
+            val wantsRetweet: Boolean,
+            override val targetUserId: UserId
+        ) : Relationships()
 
-    data class ReportSpam(
-        override val targetUserId: UserId
-    ) : UserActivityEvent()
+        data class Muting(
+            val wantsMute: Boolean,
+            override val targetUserId: UserId
+        ) : Relationships()
 
-    abstract val targetUserId: UserId
+        data class ReportSpam(
+            override val targetUserId: UserId
+        ) : Relationships()
+
+        abstract val targetUserId: UserId
+    }
 }

@@ -19,13 +19,16 @@ package com.freshdigitable.udonroad2.user
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
+import com.freshdigitable.udonroad2.user.UserActivityEvent.Relationships
 import javax.inject.Inject
 
 class UserActivityActions @Inject constructor(eventDispatcher: EventDispatcher) {
-    val changeFollowingStatus: AppAction<UserActivityEvent.Following> = eventDispatcher.toAction()
-    val changeBlockingStatus: AppAction<UserActivityEvent.Blocking> = eventDispatcher.toAction()
-    val changeRetweetBlockingStatus: AppAction<UserActivityEvent.WantsRetweet> =
+    val currentPageChanged: AppAction<UserActivityEvent.PageChanged> = eventDispatcher.toAction()
+
+    val changeFollowingStatus: AppAction<Relationships.Following> = eventDispatcher.toAction()
+    val changeBlockingStatus: AppAction<Relationships.Blocking> = eventDispatcher.toAction()
+    val changeRetweetBlockingStatus: AppAction<Relationships.WantsRetweet> =
         eventDispatcher.toAction()
-    val changeMutingStatus: AppAction<UserActivityEvent.Muting> = eventDispatcher.toAction()
-    val reportSpam: AppAction<UserActivityEvent.ReportSpam> = eventDispatcher.toAction()
+    val changeMutingStatus: AppAction<Relationships.Muting> = eventDispatcher.toAction()
+    val reportSpam: AppAction<Relationships.ReportSpam> = eventDispatcher.toAction()
 }
