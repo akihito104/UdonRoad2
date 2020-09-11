@@ -20,6 +20,7 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.MutableLiveData
 import com.freshdigitable.udonroad2.data.impl.RelationshipRepository
 import com.freshdigitable.udonroad2.data.impl.UserRepository
+import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.user.Relationship
 import com.freshdigitable.udonroad2.model.user.User
 import com.freshdigitable.udonroad2.model.user.UserId
@@ -114,7 +115,19 @@ class UserViewModelTestRule : TestWatcher() {
     private val _relationshipRepository = MockVerified2.create<RelationshipRepository>()
     val relationshipRepository: RelationshipRepository = _relationshipRepository.mock
     val sut: UserViewModel by lazy {
-        UserViewModel(targetId, userRepository.mock, relationshipRepository)
+        val eventDispatcher = EventDispatcher()
+        val viewStates = UserActivityViewStates(
+            UserActivityActions(eventDispatcher),
+            relationshipRepository,
+            mockk(relaxed = true)
+        )
+        UserViewModel(
+            targetId,
+            eventDispatcher,
+            viewStates,
+            userRepository.mock,
+            relationshipRepository
+        )
     }
 
     override fun starting(description: Description?) {

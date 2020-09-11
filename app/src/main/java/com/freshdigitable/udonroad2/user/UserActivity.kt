@@ -16,7 +16,6 @@ import com.freshdigitable.udonroad2.databinding.ActivityUserBinding
 import com.freshdigitable.udonroad2.di.ListItemFragmentModule
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
-import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
 import com.freshdigitable.udonroad2.model.user.TweetingUser
 import com.google.android.material.appbar.AppBarLayout
 import dagger.Binds
@@ -182,15 +181,14 @@ interface UserActivityModule {
     @Binds
     fun bindViewModelStoreOwner(activity: UserActivity): ViewModelStoreOwner
 
+    @Binds
+    fun bindActivityEventDelegate(eventDelegate: UserActivityNavigation): ActivityEventDelegate
+
     @Module
     companion object {
         @Provides
-        fun provideActivityEventDelegate(): ActivityEventDelegate {
-            return object : ActivityEventDelegate {
-                override fun dispatchFeedbackMessage(message: FeedbackMessage) {
-                    TODO("Not yet implemented")
-                }
-            }
+        fun provideActivityEventDelegate(activity: UserActivity): UserActivityNavigation {
+            return UserActivityNavigation(activity)
         }
     }
 }

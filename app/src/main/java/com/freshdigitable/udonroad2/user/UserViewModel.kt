@@ -10,6 +10,7 @@ import com.freshdigitable.udonroad2.data.impl.RelationshipRepository
 import com.freshdigitable.udonroad2.data.impl.UserRepository
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
+import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.user.Relationship
 import com.freshdigitable.udonroad2.model.user.User
 import com.freshdigitable.udonroad2.model.user.UserId
@@ -22,8 +23,10 @@ import kotlin.math.min
 
 class UserViewModel(
     private val userId: UserId,
+    private val eventDispatcher: EventDispatcher,
+    private val viewState: UserActivityViewStates,
     userRepository: UserRepository,
-    private val relationshipRepository: RelationshipRepository
+    relationshipRepository: RelationshipRepository
 ) : ViewModel() {
     val user: LiveData<User?> = userRepository.getUser(userId)
     val relationship: LiveData<Relationship?> = relationshipRepository.findRelationship(userId)
@@ -68,23 +71,23 @@ class UserViewModel(
     }
 
     fun updateFollowingStatus(following: Boolean) {
-        relationshipRepository.updateFollowingStatus(userId, following)
+        eventDispatcher.postEvent(UserActivityEvent.Following(following, userId))
     }
 
     fun updateBlockingStatus(blocking: Boolean) {
-        relationshipRepository.updateBlockingStatus(userId, blocking)
+        eventDispatcher.postEvent(UserActivityEvent.Blocking(blocking, userId))
     }
 
     fun updateMutingStatus(muting: Boolean) {
-        relationshipRepository.updateMutingStatus(userId, muting)
+        eventDispatcher.postEvent(UserActivityEvent.Muting(muting, userId))
     }
 
     fun updateWantRetweet(wantRetweet: Boolean) {
-        relationshipRepository.updateWantRetweetStatus(relationship.value!!, wantRetweet)
+        eventDispatcher.postEvent(UserActivityEvent.WantsRetweet(wantRetweet, userId))
     }
 
     fun reportForSpam() {
-        relationshipRepository.reportSpam(userId)
+        eventDispatcher.postEvent(UserActivityEvent.ReportSpam(userId))
     }
 }
 
@@ -96,10 +99,18 @@ interface UserViewModelModule {
         @ViewModelKey(UserViewModel::class)
         fun provideUserViewModel(
             userId: UserId,
+            eventDispatcher: EventDispatcher,
+            viewState: UserActivityViewStates,
             userRepository: UserRepository,
             relationshipRepository: RelationshipRepository
         ): ViewModel {
-            return UserViewModel(userId, userRepository, relationshipRepository)
+            return UserViewModel(
+                userId,
+                eventDispatcher,
+                viewState,
+                userRepository,
+                relationshipRepository
+            )
         }
     }
 }
