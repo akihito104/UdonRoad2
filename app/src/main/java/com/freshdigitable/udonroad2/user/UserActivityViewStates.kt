@@ -16,6 +16,7 @@
 
 package com.freshdigitable.udonroad2.user
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.map
 import androidx.lifecycle.switchMap
 import com.freshdigitable.udonroad2.data.impl.RelationshipRepository
@@ -27,6 +28,7 @@ import com.freshdigitable.udonroad2.model.app.navigation.subscribeWith
 import com.freshdigitable.udonroad2.model.app.navigation.toViewState
 import com.freshdigitable.udonroad2.model.user.TweetingUser
 import javax.inject.Inject
+import kotlin.math.min
 
 class UserActivityViewStates @Inject constructor(
     tweetingUser: TweetingUser,
@@ -47,6 +49,14 @@ class UserActivityViewStates @Inject constructor(
     val fabVisible: AppViewState<Boolean> = currentPage
         .switchMap { selectedItemRepository.observe(requireNotNull(pages[it])) }
         .map { it != null }
+
+    val titleAlpha: LiveData<Float> = actions.scrollAppbar.map { r ->
+        if (r.scrollRate >= 0.9f) {
+            min((r.scrollRate - 0.9f) * 10, 1f)
+        } else {
+            0f
+        }
+    }.toViewState()
 
     init {
         with(navigationDelegate) {

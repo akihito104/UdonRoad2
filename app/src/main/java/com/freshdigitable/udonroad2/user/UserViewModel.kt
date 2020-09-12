@@ -1,10 +1,8 @@
 package com.freshdigitable.udonroad2.user
 
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.map
 import com.freshdigitable.udonroad2.data.impl.RelationshipRepository
 import com.freshdigitable.udonroad2.data.impl.UserRepository
 import com.freshdigitable.udonroad2.model.ListOwner
@@ -19,7 +17,6 @@ import dagger.Module
 import dagger.Provides
 import dagger.Subcomponent
 import dagger.multibindings.IntoMap
-import kotlin.math.min
 
 class UserViewModel(
     private val tweetingUser: TweetingUser,
@@ -33,22 +30,14 @@ class UserViewModel(
         tweetingUser.id
     )
 
+    val titleAlpha: LiveData<Float> = viewState.titleAlpha
+    val fabVisible: LiveData<Boolean> = viewState.fabVisible
+
     fun getOwner(userPage: UserPage): ListOwner<*> = requireNotNull(viewState.pages[userPage])
 
     fun setAppBarScrollRate(rate: Float) {
-        appBarScrollRate.value = rate
+        eventDispatcher.postEvent(UserActivityEvent.AppbarScrolled(rate))
     }
-
-    private val appBarScrollRate = MutableLiveData(0f)
-    val titleAlpha: LiveData<Float> = appBarScrollRate.map { r ->
-        if (r >= 0.9f) {
-            min((r - 0.9f) * 10, 1f)
-        } else {
-            0f
-        }
-    }
-
-    val fabVisible: LiveData<Boolean> = viewState.fabVisible
 
     fun setCurrentPage(index: Int) {
         eventDispatcher.postEvent(UserActivityEvent.PageChanged(UserPage.values()[index]))

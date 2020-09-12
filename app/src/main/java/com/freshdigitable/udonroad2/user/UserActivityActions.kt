@@ -24,6 +24,7 @@ import javax.inject.Inject
 
 class UserActivityActions @Inject constructor(eventDispatcher: EventDispatcher) {
     val currentPageChanged: AppAction<UserActivityEvent.PageChanged> = eventDispatcher.toAction()
+    val scrollAppbar: AppAction<UserActivityEvent.AppbarScrolled> = eventDispatcher.toAction()
 
     val changeFollowingStatus: AppAction<Relationships.Following> = eventDispatcher.toAction()
     val changeBlockingStatus: AppAction<Relationships.Blocking> = eventDispatcher.toAction()

@@ -199,6 +199,7 @@ class UserViewModelTestRule : TestWatcher() {
         setupRelation(targetId)
 
         sut.setCurrentPage(0)
+        sut.setAppBarScrollRate(0f)
         listOf(
             sut.user,
             sut.relationship,

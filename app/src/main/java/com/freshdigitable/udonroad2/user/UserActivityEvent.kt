@@ -21,6 +21,7 @@ import com.freshdigitable.udonroad2.model.user.UserId
 
 sealed class UserActivityEvent : AppEvent {
     data class PageChanged(val page: UserPage) : UserActivityEvent()
+    data class AppbarScrolled(val scrollRate: Float) : UserActivityEvent()
 
     sealed class Relationships : UserActivityEvent() {
         data class Following(
