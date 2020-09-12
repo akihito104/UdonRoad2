@@ -14,7 +14,6 @@ import androidx.viewpager.widget.ViewPager
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.databinding.ActivityUserBinding
 import com.freshdigitable.udonroad2.di.ListItemFragmentModule
-import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
 import com.freshdigitable.udonroad2.model.user.TweetingUser
 import com.google.android.material.appbar.AppBarLayout
@@ -31,9 +30,6 @@ import kotlin.math.abs
 class UserActivity : HasAndroidInjector, AppCompatActivity() {
     @Inject
     lateinit var userViewModelComponentFactory: UserViewModelComponent.Factory
-
-    @Inject
-    lateinit var listOwnerGenerator: ListOwnerGenerator
 
     private val viewModel: UserViewModel by lazy {
         userViewModelComponentFactory.create(user)
