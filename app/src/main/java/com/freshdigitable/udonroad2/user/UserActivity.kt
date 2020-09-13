@@ -7,6 +7,7 @@ import android.view.Menu
 import android.view.MenuItem
 import androidx.annotation.IdRes
 import androidx.appcompat.app.AppCompatActivity
+import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.observe
@@ -16,7 +17,9 @@ import com.freshdigitable.udonroad2.databinding.ActivityUserBinding
 import com.freshdigitable.udonroad2.di.ListItemFragmentModule
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
 import com.freshdigitable.udonroad2.model.user.TweetingUser
+import com.freshdigitable.udonroad2.model.user.User
 import com.google.android.material.appbar.AppBarLayout
+import com.google.android.material.tabs.TabLayout
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -46,8 +49,10 @@ class UserActivity : HasAndroidInjector, AppCompatActivity() {
         val adapter = UserFragmentPagerAdapter(supportFragmentManager, viewModel)
 
         binding.setup(viewModel, adapter)
-        binding.userToolbar.title = ""
         setSupportActionBar(binding.userToolbar)
+        viewModel.relationship.observe(this) {
+            invalidateOptionsMenu()
+        }
     }
 
     private fun ActivityUserBinding.setup(
@@ -55,7 +60,9 @@ class UserActivity : HasAndroidInjector, AppCompatActivity() {
         adapter: UserFragmentPagerAdapter
     ) {
         lifecycleOwner = this@UserActivity
+        this.viewModel = viewModel
 
+        userToolbar.title = ""
         userAppBar.addOnOffsetChangedListener(
             AppBarLayout.OnOffsetChangedListener { appBar, offset ->
                 viewModel.setAppBarScrollRate(
@@ -64,19 +71,6 @@ class UserActivity : HasAndroidInjector, AppCompatActivity() {
             }
         )
 
-        viewModel.user.observe(this@UserActivity) { u ->
-            adapter.titles.clear()
-            adapter.titles.addAll(
-                UserPage.values().map { p ->
-                    if (p.count != null) {
-                        getString(p.titleRes, p.count.invoke(u) ?: "---")
-                    } else {
-                        getString(p.titleRes)
-                    }
-                }
-            )
-            adapter.notifyDataSetChanged()
-        }
         userPager.apply {
             this.adapter = adapter
             addOnPageChangeListener(object : ViewPager.SimpleOnPageChangeListener() {
@@ -85,13 +79,7 @@ class UserActivity : HasAndroidInjector, AppCompatActivity() {
                 }
             })
         }
-
         userTabContainer.setupWithViewPager(userPager)
-
-        this.viewModel = viewModel
-        viewModel.relationship.observe(this@UserActivity) {
-            invalidateOptionsMenu()
-        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -154,9 +142,14 @@ class UserActivity : HasAndroidInjector, AppCompatActivity() {
     private val user: TweetingUser get() = args.user
 
     companion object {
-        fun start(context: Context, user: TweetingUser) {
+        fun getIntent(context: Context, user: TweetingUser): Intent {
             val intent = Intent(context, UserActivity::class.java)
             intent.putExtras(UserActivityArgs(user).toBundle())
+            return intent
+        }
+
+        fun start(context: Context, user: TweetingUser) {
+            val intent = getIntent(context, user)
             context.startActivity(intent)
         }
     }
@@ -165,6 +158,18 @@ class UserActivity : HasAndroidInjector, AppCompatActivity() {
     lateinit var injector: DispatchingAndroidInjector<Any>
 
     override fun androidInjector(): AndroidInjector<Any> = injector
+}
+
+@BindingAdapter("updateTabTexts")
+fun TabLayout.updateText(user: User?) {
+    for (index in UserPage.values().indices) {
+        val tab = getTabAt(index)
+        val page = UserPage.values()[index]
+        tab?.text = when {
+            page.count != null -> context.getString(page.titleRes, page.count.invoke(user) ?: "---")
+            else -> context.getString(page.titleRes)
+        }
+    }
 }
 
 @Module(

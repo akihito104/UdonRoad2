@@ -21,10 +21,6 @@ class UserFragmentPagerAdapter(
         return ListItemFragment.newInstance(viewModel.getOwner(UserPage.values()[position]))
     }
 
-    val titles: MutableList<String> = UserPage.values().map { it.name }.toMutableList()
-
-    override fun getPageTitle(position: Int): CharSequence? = titles[position]
-
     override fun getCount(): Int = UserPage.values().size
 }
 
