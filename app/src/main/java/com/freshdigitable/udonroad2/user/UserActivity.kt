@@ -72,12 +72,13 @@ class UserActivity : HasAndroidInjector, AppCompatActivity() {
         )
 
         userPager.apply {
-            this.adapter = adapter
             addOnPageChangeListener(object : ViewPager.SimpleOnPageChangeListener() {
                 override fun onPageSelected(position: Int) {
                     viewModel.setCurrentPage(position)
                 }
             })
+            this.adapter = adapter
+            viewModel.setCurrentPage(userPager.currentItem)
         }
         userTabContainer.setupWithViewPager(userPager)
     }
