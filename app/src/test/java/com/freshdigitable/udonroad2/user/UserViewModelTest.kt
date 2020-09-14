@@ -183,14 +183,13 @@ class UserViewModelTestRule : TestWatcher() {
         val viewStates = UserActivityViewStates(
             targetUser,
             UserActivityActions(eventDispatcher),
+            userRepository.mock,
             relationshipRepository,
             selectedItemRepository,
             ListOwnerGenerator(),
             mockk(relaxed = true)
         )
-        UserViewModel(
-            targetUser, eventDispatcher, viewStates, userRepository.mock, relationshipRepository,
-        )
+        UserViewModel(targetUser, eventDispatcher, viewStates)
     }
 
     override fun starting(description: Description?) {

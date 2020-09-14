@@ -3,8 +3,6 @@ package com.freshdigitable.udonroad2.user
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.freshdigitable.udonroad2.data.impl.RelationshipRepository
-import com.freshdigitable.udonroad2.data.impl.UserRepository
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
@@ -22,14 +20,9 @@ class UserViewModel(
     private val tweetingUser: TweetingUser,
     private val eventDispatcher: EventDispatcher,
     private val viewState: UserActivityViewStates,
-    userRepository: UserRepository,
-    relationshipRepository: RelationshipRepository,
 ) : ViewModel() {
-    val user: LiveData<User?> = userRepository.getUser(tweetingUser.id)
-    val relationship: LiveData<Relationship?> = relationshipRepository.findRelationship(
-        tweetingUser.id
-    )
-
+    val user: LiveData<User?> = viewState.user
+    val relationship: LiveData<Relationship?> = viewState.relationship
     val titleAlpha: LiveData<Float> = viewState.titleAlpha
     val fabVisible: LiveData<Boolean> = viewState.fabVisible
 
@@ -74,15 +67,7 @@ interface UserViewModelModule {
             user: TweetingUser,
             eventDispatcher: EventDispatcher,
             viewState: UserActivityViewStates,
-            userRepository: UserRepository,
-            relationshipRepository: RelationshipRepository,
-        ): ViewModel = UserViewModel(
-            user,
-            eventDispatcher,
-            viewState,
-            userRepository,
-            relationshipRepository,
-        )
+        ): ViewModel = UserViewModel(user, eventDispatcher, viewState)
     }
 }
 
