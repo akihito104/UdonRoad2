@@ -20,44 +20,35 @@ import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
 import com.freshdigitable.udonroad2.model.AccessTokenEntity
 import com.freshdigitable.udonroad2.model.RequestTokenItem
 import com.freshdigitable.udonroad2.model.user.UserId
-import io.mockk.coEvery
-import io.mockk.coVerify
-import io.mockk.every
-import io.mockk.just
-import io.mockk.mockk
-import io.mockk.runs
-import io.mockk.verify
 import org.junit.rules.TestRule
 import java.io.Serializable
 
 class OAuthTokenRepositoryRule(
-    val mock: OAuthTokenRepository = mockk(),
-    private val mockVerified: MockVerified = MockVerified(listOf(mock))
+    private val mockVerified: MockVerified<OAuthTokenRepository> = MockVerified.create()
 ) : TestRule by mockVerified {
+    val mock: OAuthTokenRepository = mockVerified.mock
+
     fun setupCurrentUserId(userId: Long?) {
         val id = UserId.create(userId)
-        every { mock.getCurrentUserId() } returns id
-        mockVerified.expected { verify { mock.getCurrentUserId() } }
+        mockVerified.setupResponseWithVerify({ mock.getCurrentUserId() }, id)
         if (id != null) {
             setupLogin(id)
         }
     }
 
     fun setupLogin(id: UserId) {
-        every { mock.login(id) } just runs
-        mockVerified.expected { verify { mock.login(id) } }
+        mockVerified.setupResponseWithVerify({ mock.login(id) }, Unit)
     }
 
     fun setupGetRequestTokenItem(token: RequestTokenItem = requestTokenItem) {
-        coEvery { mock.getRequestTokenItem() } returns token
-        mockVerified.expected { coVerify { mock.getRequestTokenItem() } }
+        mockVerified.coSetupResponseWithVerify({ mock.getRequestTokenItem() }, token)
     }
 
     fun setupGetAccessToken(verifier: String, accessTokenUser: UserId) {
-        coEvery { mock.getAccessToken(any(), "012345") } returns AccessTokenEntity.create(
-            accessTokenUser, "token", "tokenSecret"
+        mockVerified.coSetupResponseWithVerify(
+            { mock.getAccessToken(any(), verifier) },
+            AccessTokenEntity.create(accessTokenUser, "token", "tokenSecret")
         )
-        mockVerified.expected { coVerify { mock.getAccessToken(any(), verifier) } }
     }
 
     companion object {

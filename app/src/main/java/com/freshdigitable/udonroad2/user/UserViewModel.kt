@@ -1,112 +1,73 @@
 package com.freshdigitable.udonroad2.user
 
+import android.view.MenuItem
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MediatorLiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.map
-import androidx.lifecycle.switchMap
-import com.freshdigitable.udonroad2.data.impl.RelationshipRepository
-import com.freshdigitable.udonroad2.data.impl.UserRepository
-import com.freshdigitable.udonroad2.model.SelectedItemId
-import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
+import com.freshdigitable.udonroad2.model.ListOwner
+import com.freshdigitable.udonroad2.model.app.navigation.CommonEvent
+import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.user.Relationship
+import com.freshdigitable.udonroad2.model.user.TweetingUser
 import com.freshdigitable.udonroad2.model.user.User
-import com.freshdigitable.udonroad2.model.user.UserId
-import dagger.Binds
-import dagger.Module
-import dagger.Provides
-import dagger.multibindings.IntoMap
-import kotlin.math.min
+import com.freshdigitable.udonroad2.timeline.TimelineEvent
+import com.freshdigitable.udonroad2.timeline.postSelectedItemShortcutEvent
+import com.freshdigitable.udonroad2.user.UserActivityEvent.Relationships
+import timber.log.Timber
 
 class UserViewModel(
-    private val repository: UserRepository,
-    private val relationshipRepository: RelationshipRepository
+    private val tweetingUser: TweetingUser,
+    private val eventDispatcher: EventDispatcher,
+    private val viewState: UserActivityViewStates,
 ) : ViewModel() {
-    private val userId: MutableLiveData<UserId> = MutableLiveData()
-    val user: LiveData<User?> = userId.switchMap { repository.getUser(it) }
-    val relationship: LiveData<Relationship?> = userId.switchMap {
-        relationshipRepository.findRelationship(it)
-    }
+    val user: LiveData<User?> = viewState.user
+    val relationship: LiveData<Relationship?> = viewState.relationship
+    val titleAlpha: LiveData<Float> = viewState.titleAlpha
+    val fabVisible: LiveData<Boolean> = viewState.fabVisible
 
-    fun setUserId(id: UserId) {
-        userId.value = id
-    }
-
-    private val appBarScrollRate = MutableLiveData<Float>()
-    val titleAlpha: LiveData<Float> = appBarScrollRate.map { r ->
-        if (r >= 0.9f) {
-            min((r - 0.9f) * 10, 1f)
-        } else {
-            0f
-        }
-    }
+    fun getOwner(userPage: UserPage): ListOwner<*> = requireNotNull(viewState.pages[userPage])
 
     fun setAppBarScrollRate(rate: Float) {
-        appBarScrollRate.value = rate
+        eventDispatcher.postEvent(UserActivityEvent.AppbarScrolled(rate))
     }
-
-    private val currentPage = MutableLiveData(0)
-    private val selectedItemId = MutableLiveData<MutableMap<Int, SelectedItemId?>>(mutableMapOf())
-
-    private val _fabVisible = MediatorLiveData<Boolean>().also {
-        it.addSource(currentPage) { updateFabVisible() }
-        it.addSource(selectedItemId) { updateFabVisible() }
-    }
-    val fabVisible: LiveData<Boolean> = _fabVisible
 
     fun setCurrentPage(index: Int) {
-        this.currentPage.value = index
+        eventDispatcher.postEvent(UserActivityEvent.PageChanged(UserPage.values()[index]))
     }
 
-    fun setSelectedItemId(selectedItemId: SelectedItemId?) {
-        val map = requireNotNull(this.selectedItemId.value)
-        val curr = requireNotNull(currentPage.value)
-        map[curr] = selectedItemId
-        this.selectedItemId.value = map
+    fun onFabMenuSelected(item: MenuItem) {
+        Timber.tag("UserViewModel").d("onFabSelected: $item")
+        val selected =
+            requireNotNull(viewState.selectedItemId.value) { "selectedItem should not be null." }
+        eventDispatcher.postSelectedItemShortcutEvent(item, selected)
     }
 
-    private fun updateFabVisible() {
-        val map = requireNotNull(this.selectedItemId.value)
-        val curr = requireNotNull(currentPage.value)
-        _fabVisible.value = map[curr] != null
+    fun onBackPressed() {
+        val selectedItem = viewState.selectedItemId.value
+        val event = if (selectedItem != null) {
+            TimelineEvent.TweetItemSelection.Unselected(selectedItem.owner)
+        } else {
+            CommonEvent.Back
+        }
+        eventDispatcher.postEvent(event)
     }
 
     fun updateFollowingStatus(following: Boolean) {
-        relationshipRepository.updateFollowingStatus(userId.value!!, following)
+        eventDispatcher.postEvent(Relationships.Following(following, tweetingUser.id))
     }
 
     fun updateBlockingStatus(blocking: Boolean) {
-        relationshipRepository.updateBlockingStatus(userId.value!!, blocking)
+        eventDispatcher.postEvent(Relationships.Blocking(blocking, tweetingUser.id))
     }
 
     fun updateMutingStatus(muting: Boolean) {
-        relationshipRepository.updateMutingStatus(userId.value!!, muting)
+        eventDispatcher.postEvent(Relationships.Muting(muting, tweetingUser.id))
     }
 
     fun updateWantRetweet(wantRetweet: Boolean) {
-        relationshipRepository.updateWantRetweetStatus(relationship.value!!, wantRetweet)
+        eventDispatcher.postEvent(Relationships.WantsRetweet(wantRetweet, tweetingUser.id))
     }
 
     fun reportForSpam() {
-        relationshipRepository.reportSpam(userId.value!!)
-    }
-}
-
-@Module
-interface UserViewModelModule {
-    @Binds
-    @IntoMap
-    @ViewModelKey(UserViewModel::class)
-    fun bindUserViewModel(viewModel: UserViewModel): ViewModel
-
-    companion object {
-        @Provides
-        fun provideUserViewModel(
-            userRepository: UserRepository,
-            relationshipRepository: RelationshipRepository
-        ): UserViewModel {
-            return UserViewModel(userRepository, relationshipRepository)
-        }
+        eventDispatcher.postEvent(Relationships.ReportSpam(tweetingUser.id))
     }
 }

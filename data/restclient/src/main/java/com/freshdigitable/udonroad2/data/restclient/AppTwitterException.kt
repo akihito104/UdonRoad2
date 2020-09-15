@@ -28,7 +28,7 @@ class AppTwitterException(exception: TwitterException) : Exception(exception) {
         private const val STATUS_FORBIDDEN: Int = 403
 
         private fun findByCode(statusCode: Int, errorCode: Int): ErrorType? {
-            return ErrorType.values().first {
+            return ErrorType.values().firstOrNull {
                 it.statusCode == statusCode && it.errorCode == errorCode
             }
         }

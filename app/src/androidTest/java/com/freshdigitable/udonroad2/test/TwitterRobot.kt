@@ -14,9 +14,11 @@
  * limitations under the License.
  */
 
-package com.freshdigitable.udonroad2
+package com.freshdigitable.udonroad2.test
 
 import androidx.test.core.app.ApplicationProvider
+import com.freshdigitable.udonroad2.TestApplicationBase
+import com.freshdigitable.udonroad2.model.user.UserId
 import io.mockk.MockKAnswerScope
 import io.mockk.MockKMatcherScope
 import io.mockk.confirmVerified
@@ -30,14 +32,17 @@ import org.junit.runner.Description
 import twitter4j.GeoLocation
 import twitter4j.HashtagEntity
 import twitter4j.MediaEntity
+import twitter4j.PagableResponseList
 import twitter4j.Paging
 import twitter4j.Place
 import twitter4j.RateLimitStatus
+import twitter4j.Relationship
 import twitter4j.ResponseList
 import twitter4j.Scopes
 import twitter4j.Status
 import twitter4j.SymbolEntity
 import twitter4j.Twitter
+import twitter4j.TwitterResponse
 import twitter4j.URLEntity
 import twitter4j.User
 import twitter4j.UserMentionEntity
@@ -78,25 +83,61 @@ class TwitterRobot : TestWatcher() {
     fun setupGetHomeTimeline(
         pagingBlock: MatcherScopedBlock<Paging>? = null,
         response: List<Status>,
-        answer: MockKAnswerScope<ResponseList<Status>, ResponseList<Status>>.() -> Unit = {}
+        onAnswer: AnswerScopedBlock<ResponseList<Status>, ResponseList<Status>> = {}
     ) {
-        val res = mockk<ResponseList<Status>>().apply {
-            every { size } returns response.size
-            every { iterator() } returns response.toMutableList().iterator()
-        }
+        val res = createResponseListMock(response)
         if (pagingBlock == null) {
-            every { twitter.homeTimeline } answers {
-                answer()
-                res
-            }
-            expected.add { verify { twitter.homeTimeline } }
+            setupResponseWithVerify({ twitter.homeTimeline }, res, onAnswer)
         } else {
-            every { twitter.getHomeTimeline(pagingBlock()) } answers {
-                answer()
-                res
-            }
-            expected.add { verify { twitter.getHomeTimeline(pagingBlock()) } }
+            setupResponseWithVerify({ twitter.getHomeTimeline(pagingBlock()) }, res, onAnswer)
         }
+    }
+
+    fun setupGetUserTimeline(
+        userId: UserId,
+        pagingBlock: MatcherScopedBlock<Paging>? = null,
+        response: List<Status>,
+        onAnswer: AnswerScopedBlock<ResponseList<Status>, ResponseList<Status>> = {}
+    ) {
+        val res = createResponseListMock(response)
+        if (pagingBlock == null) {
+            setupResponseWithVerify({ twitter.getUserTimeline(userId.value) }, res, onAnswer)
+        } else {
+            setupResponseWithVerify(
+                { twitter.getUserTimeline(userId.value, pagingBlock()) },
+                res,
+                onAnswer
+            )
+        }
+    }
+
+    fun setupGetFollowersList(
+        userId: UserId,
+        response: List<User>,
+        onAnswer: AnswerScopedBlock<ResponseList<User>, ResponseList<User>> = {}
+    ) {
+        val res = createPagableResponseListMock(response)
+        setupResponseWithVerify({ twitter.getFollowersList(userId.value, -1) }, res, onAnswer)
+    }
+
+    fun setupShowUser(user: User) {
+        setupResponseWithVerify({ twitter.showUser(user.id) }, user)
+    }
+
+    fun setupRelationships(userId: UserId, targetUserId: UserId) {
+        setupResponseWithVerify({ twitter.id }, userId.value)
+        val relationship = mockk<Relationship>().apply {
+            every { getTargetUserId() } returns targetUserId.value
+            every { isSourceFollowingTarget } returns false
+            every { isSourceBlockingTarget } returns false
+            every { isSourceMutingTarget } returns false
+            every { isSourceWantRetweets } returns false
+            every { isSourceNotificationsEnabled } returns false
+        }
+        setupResponseWithVerify(
+            { twitter.showFriendship(userId.value, targetUserId.value) },
+            relationship
+        )
     }
 
     override fun succeeded(description: Description?) {
@@ -104,9 +145,44 @@ class TwitterRobot : TestWatcher() {
         expected.forEach { it() }
         confirmVerified(twitter)
     }
+
+    private fun <T> createResponseListMock(response: List<T>): ResponseList<T> {
+        val resList = mockk<ResponseList<T>>(relaxed = true)
+        val mutableList = response.toMutableList()
+        return object : ResponseList<T>, MutableList<T> by mutableList {
+            override fun getRateLimitStatus(): RateLimitStatus = resList.rateLimitStatus
+            override fun getAccessLevel(): Int = resList.accessLevel
+        }
+    }
+
+    private fun <T : TwitterResponse> createPagableResponseListMock(
+        response: List<T>
+    ): PagableResponseList<T> {
+        val resList = mockk<PagableResponseList<T>>(relaxed = true)
+        val mutableList = createResponseListMock(response)
+        return object : PagableResponseList<T>, ResponseList<T> by mutableList {
+            override fun hasPrevious(): Boolean = resList.hasPrevious()
+            override fun getPreviousCursor(): Long = resList.previousCursor
+            override fun hasNext(): Boolean = resList.hasNext()
+            override fun getNextCursor(): Long = resList.nextCursor
+        }
+    }
+
+    private fun <T> setupResponseWithVerify(
+        target: MatcherScopedBlock<T>,
+        res: T,
+        alsoOnAnswer: AnswerScopedBlock<T, T> = {},
+    ) {
+        every(target) answers {
+            alsoOnAnswer()
+            res
+        }
+        expected.add { verify { target() } }
+    }
 }
 
 typealias MatcherScopedBlock<T> = MockKMatcherScope.() -> T
+typealias AnswerScopedBlock<T, B> = MockKAnswerScope<T, B>.() -> Unit
 
 fun createRequestToken(
     userId: Long,

@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android"
+<layout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     >
 
     <data>
+
         <variable
             name="viewModel"
             type="com.freshdigitable.udonroad2.user.UserViewModel"
@@ -15,11 +17,13 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         >
+
         <com.google.android.material.appbar.AppBarLayout
             android:id="@+id/user_appBar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             >
+
             <com.google.android.material.appbar.CollapsingToolbarLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -27,17 +31,20 @@
                 app:contentScrim="?attr/colorPrimary"
                 app:titleEnabled="false"
                 >
+
                 <include
                     layout="@layout/view_user_header"
                     app:item="@{viewModel.user}"
                     app:relationship="@{viewModel.relationship}"
                     />
+
                 <androidx.appcompat.widget.Toolbar
                     android:id="@+id/user_toolbar"
                     android:layout_width="match_parent"
                     android:layout_height="?attr/actionBarSize"
                     app:layout_collapseMode="pin"
                     >
+
                     <TextView
                         android:id="@+id/user_title"
                         android:layout_width="wrap_content"
@@ -58,6 +65,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:tabMode="scrollable"
+                app:updateTabTexts="@{viewModel.user}"
                 />
         </com.google.android.material.appbar.AppBarLayout>
 
@@ -67,6 +75,7 @@
             android:layout_height="match_parent"
             app:layout_behavior="@string/appbar_scrolling_view_behavior"
             />
+
         <com.freshdigitable.fabshortcut.FlingFAB
             android:id="@+id/user_fab"
             android:layout_width="wrap_content"
@@ -76,6 +85,7 @@
             app:menu="@menu/iffab_main"
             style="@style/Widget.FlingFAB"
             app:isVisible="@{viewModel.fabVisible}"
+            app:menuListener="@{viewModel::onFabMenuSelected}"
             />
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </layout>

@@ -17,7 +17,6 @@
 package com.freshdigitable.udonroad2.data.db.dao
 
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.map
 import androidx.paging.DataSource
 import androidx.room.ColumnInfo
 import androidx.room.Dao
@@ -30,18 +29,30 @@ import androidx.room.Query
 import androidx.room.Transaction
 import com.freshdigitable.udonroad2.data.db.dbview.UserListDbView
 import com.freshdigitable.udonroad2.data.db.entity.UserEntity
+import com.freshdigitable.udonroad2.data.db.ext.toEntity
 import com.freshdigitable.udonroad2.model.user.User
 import com.freshdigitable.udonroad2.model.user.UserId
 
 @Dao
 abstract class UserDao {
+
+    open suspend fun addUsers(users: List<User>) {
+        val u = users.map {
+            when (it) {
+                is UserEntity -> it
+                else -> it.toEntity()
+            }
+        }
+        addUsers(u)
+    }
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     internal abstract suspend fun addUsers(users: List<UserEntity>)
 
     @Query("SELECT * FROM user WHERE id = :id")
     internal abstract fun getUser(id: UserId): LiveData<UserEntity?>
 
-    open fun getUserById(id: UserId): LiveData<User?> = getUser(id).map { it }
+    open fun getUserById(id: UserId): LiveData<out User?> = getUser(id)
 
     @Transaction
     internal open suspend fun addUsers(entities: List<UserEntity>, owner: String? = null) {

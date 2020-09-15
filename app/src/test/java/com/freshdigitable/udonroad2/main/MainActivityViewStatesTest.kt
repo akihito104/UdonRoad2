@@ -29,8 +29,6 @@ import com.freshdigitable.udonroad2.test_common.MockVerified
 import com.freshdigitable.udonroad2.test_common.OAuthTokenRepositoryRule
 import com.freshdigitable.udonroad2.test_common.RxExceptionHandler
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
-import io.mockk.every
-import io.mockk.mockk
 import io.mockk.verify
 import io.reactivex.disposables.CompositeDisposable
 import org.junit.Rule
@@ -97,7 +95,7 @@ class MainActivityViewStatesTest {
     @Test
     fun backEventDispatched_then_dispatchBackCalled(): Unit = with(rule) {
         // exercise
-        dispatchEvents(CommonEvent.Back(null))
+        dispatchEvents(CommonEvent.Back)
 
         // verify
         verify { navDelegate.dispatchBack() }
@@ -105,16 +103,14 @@ class MainActivityViewStatesTest {
 }
 
 class MainActivityNavigationDelegateRule(
-    val mock: MainActivityNavigationDelegate = mockk(relaxed = true),
-    private val mockVerified: MockVerified = MockVerified(listOf(mock))
-) : TestRule by mockVerified {
+    private val _mock: MockVerified<MainActivityNavigationDelegate> = MockVerified.create(true)
+) : TestRule by _mock {
+    val mock: MainActivityNavigationDelegate = _mock.mock
     private val containerStateSource = MutableLiveData<MainNavHostState>()
 
     init {
-        every { mock.containerState } returns containerStateSource
-        mockVerified.expected { verify { mock.containerState } }
-        every { mock.disposables } returns CompositeDisposable()
-        mockVerified.expected { verify { mock.disposables } }
+        _mock.setupResponseWithVerify({ mock.containerState }, containerStateSource)
+        _mock.setupResponseWithVerify({ mock.disposables }, CompositeDisposable())
     }
 
     fun setupContainerState(state: MainNavHostState) {
@@ -145,7 +141,6 @@ class MainActivityStateModelTestRule : TestWatcher() {
         super.starting(description)
         listOf(
             sut.isFabVisible,
-            sut.selectedItemId
         ).forEach { it.observeForever {} }
     }
 

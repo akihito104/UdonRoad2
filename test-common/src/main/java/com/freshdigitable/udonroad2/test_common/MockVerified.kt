@@ -16,15 +16,28 @@
 
 package com.freshdigitable.udonroad2.test_common
 
+import io.mockk.MockKAnswerScope
+import io.mockk.MockKMatcherScope
+import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.confirmVerified
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
 import org.junit.rules.TestWatcher
 import org.junit.runner.Description
 
 typealias ExpectedVerify = () -> Unit
 
-class MockVerified(
-    private val mocks: List<Any>
+class MockVerified<T>(
+    val mock: T
 ) : TestWatcher() {
+
+    companion object {
+        inline fun <reified T> create(relaxed: Boolean = false): MockVerified<T> {
+            return MockVerified(mockk(relaxed = relaxed))
+        }
+    }
 
     private val expectedBlocks = mutableListOf<ExpectedVerify>()
 
@@ -32,9 +45,36 @@ class MockVerified(
         expectedBlocks.add(block)
     }
 
+    fun <R> setupResponseWithVerify(
+        target: MatcherScopedBlock<R>,
+        res: R,
+        alsoOnAnswer: AnswerScopedBlock<R, R> = {},
+    ) {
+        every(target) answers {
+            alsoOnAnswer()
+            res
+        }
+        expectedBlocks.add { verify { target() } }
+    }
+
+    fun <R> coSetupResponseWithVerify(
+        target: suspend MockKMatcherScope.() -> R,
+        res: R,
+        alsoOnAnswer: AnswerScopedBlock<R, R> = {},
+    ) {
+        coEvery(target) answers {
+            alsoOnAnswer()
+            res
+        }
+        expectedBlocks.add { coVerify { target() } }
+    }
+
     override fun succeeded(description: Description?) {
         super.succeeded(description)
         expectedBlocks.forEach { it() }
-        confirmVerified(*mocks.toTypedArray())
+        confirmVerified(mock as Any)
     }
 }
+
+typealias MatcherScopedBlock<R> = MockKMatcherScope.() -> R
+typealias AnswerScopedBlock<T, B> = MockKAnswerScope<T, B>.() -> Unit

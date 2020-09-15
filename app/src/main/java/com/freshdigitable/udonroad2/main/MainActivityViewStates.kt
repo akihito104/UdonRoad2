@@ -72,7 +72,7 @@ class MainActivityViewStates @Inject constructor(
 
     private val currentNavHost: AppViewState<MainNavHostState> = navDelegate.containerState
 
-    val selectedItemId: AppViewState<SelectedItemId?> = currentNavHost.switchMap {
+    private val selectedItemId: AppViewState<SelectedItemId?> = currentNavHost.switchMap {
         when (it) {
             is MainNavHostState.Timeline -> selectedItemRepository.observe(it.owner)
             else -> MutableLiveData(null)

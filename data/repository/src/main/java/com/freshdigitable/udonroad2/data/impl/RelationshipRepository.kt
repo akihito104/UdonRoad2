@@ -65,8 +65,9 @@ class RelationshipRepository @Inject constructor(
         }
     }
 
-    fun updateWantRetweetStatus(currentRelation: Relationship, wantRetweets: Boolean) {
+    fun updateWantRetweetStatus(userId: UserId, wantRetweets: Boolean) {
         executor.launchIO {
+            val currentRelation = restClient.fetchFriendship(userId)
             val updated = restClient.updateFriendship(
                 currentRelation.userId,
                 currentRelation.notificationsEnabled,

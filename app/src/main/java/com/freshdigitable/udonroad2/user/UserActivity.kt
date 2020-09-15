@@ -7,24 +7,17 @@ import android.view.Menu
 import android.view.MenuItem
 import androidx.annotation.IdRes
 import androidx.appcompat.app.AppCompatActivity
+import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.observe
 import androidx.viewpager.widget.ViewPager
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.databinding.ActivityUserBinding
-import com.freshdigitable.udonroad2.di.ListItemFragmentModule
-import com.freshdigitable.udonroad2.model.ListOwnerGenerator
-import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
-import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
-import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
-import com.freshdigitable.udonroad2.model.app.navigation.Navigation
+import com.freshdigitable.udonroad2.di.UserViewModelComponent
 import com.freshdigitable.udonroad2.model.user.TweetingUser
+import com.freshdigitable.udonroad2.model.user.User
 import com.google.android.material.appbar.AppBarLayout
-import dagger.Binds
-import dagger.Module
-import dagger.Provides
+import com.google.android.material.tabs.TabLayout
 import dagger.android.AndroidInjection
 import dagger.android.AndroidInjector
 import dagger.android.DispatchingAndroidInjector
@@ -34,15 +27,12 @@ import kotlin.math.abs
 
 class UserActivity : HasAndroidInjector, AppCompatActivity() {
     @Inject
-    lateinit var viewModelProvider: ViewModelProvider
+    lateinit var userViewModelComponentFactory: UserViewModelComponent.Factory
 
-    @Inject
-    lateinit var navigation: Navigation<UserActivityState>
-
-    @Inject
-    lateinit var listOwnerGenerator: ListOwnerGenerator
-
-    private val viewModel: UserViewModel by lazy { viewModelProvider[UserViewModel::class.java] }
+    private val viewModel: UserViewModel by lazy {
+        userViewModelComponentFactory.create(user)
+            .viewModelProvider[UserViewModel::class.java]
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
@@ -51,12 +41,13 @@ class UserActivity : HasAndroidInjector, AppCompatActivity() {
             this,
             R.layout.activity_user
         )
-        val adapter = UserFragmentPagerAdapter(supportFragmentManager, user, listOwnerGenerator)
+        val adapter = UserFragmentPagerAdapter(supportFragmentManager, viewModel)
 
         binding.setup(viewModel, adapter)
-        viewModel.setUserId(user.id)
-        binding.userToolbar.title = ""
         setSupportActionBar(binding.userToolbar)
+        viewModel.relationship.observe(this) {
+            invalidateOptionsMenu()
+        }
     }
 
     private fun ActivityUserBinding.setup(
@@ -64,7 +55,9 @@ class UserActivity : HasAndroidInjector, AppCompatActivity() {
         adapter: UserFragmentPagerAdapter
     ) {
         lifecycleOwner = this@UserActivity
+        this.viewModel = viewModel
 
+        userToolbar.title = ""
         userAppBar.addOnOffsetChangedListener(
             AppBarLayout.OnOffsetChangedListener { appBar, offset ->
                 viewModel.setAppBarScrollRate(
@@ -73,34 +66,16 @@ class UserActivity : HasAndroidInjector, AppCompatActivity() {
             }
         )
 
-        viewModel.user.observe(this@UserActivity) { u ->
-            adapter.titles.clear()
-            adapter.titles.addAll(
-                UserPage.values().map { p ->
-                    if (p.count != null) {
-                        getString(p.titleRes, p.count.invoke(u) ?: "---")
-                    } else {
-                        getString(p.titleRes)
-                    }
-                }
-            )
-            adapter.notifyDataSetChanged()
-        }
         userPager.apply {
-            this.adapter = adapter
             addOnPageChangeListener(object : ViewPager.SimpleOnPageChangeListener() {
                 override fun onPageSelected(position: Int) {
                     viewModel.setCurrentPage(position)
                 }
             })
+            this.adapter = adapter
+            viewModel.setCurrentPage(userPager.currentItem)
         }
-
         userTabContainer.setupWithViewPager(userPager)
-
-        this.viewModel = viewModel
-        viewModel.relationship.observe(this@UserActivity) {
-            invalidateOptionsMenu()
-        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -157,15 +132,24 @@ class UserActivity : HasAndroidInjector, AppCompatActivity() {
         return true
     }
 
+    override fun onBackPressed() {
+        viewModel.onBackPressed()
+    }
+
     private val args: UserActivityArgs by lazy {
         UserActivityArgs.fromBundle(requireNotNull(intent.extras))
     }
     private val user: TweetingUser get() = args.user
 
     companion object {
-        fun start(context: Context, user: TweetingUser) {
+        fun getIntent(context: Context, user: TweetingUser): Intent {
             val intent = Intent(context, UserActivity::class.java)
             intent.putExtras(UserActivityArgs(user).toBundle())
+            return intent
+        }
+
+        fun start(context: Context, user: TweetingUser) {
+            val intent = getIntent(context, user)
             context.startActivity(intent)
         }
     }
@@ -176,38 +160,14 @@ class UserActivity : HasAndroidInjector, AppCompatActivity() {
     override fun androidInjector(): AndroidInjector<Any> = injector
 }
 
-@Module(
-    includes = [
-        ListItemFragmentModule::class,
-        UserViewModelModule::class
-    ]
-)
-interface UserActivityModule {
-    @Binds
-    fun bindViewModelStoreOwner(activity: UserActivity): ViewModelStoreOwner
-
-    @Module
-    companion object {
-        @Provides
-        fun provideUserActivityNavigation(
-            eventDispatcher: EventDispatcher,
-            activity: UserActivity,
-            viewModelProvider: ViewModelProvider
-        ): Navigation<UserActivityState> {
-            return UserActivityNavigation(
-                eventDispatcher,
-                activity,
-                viewModelProvider
-            )
-        }
-
-        @Provides
-        fun provideActivityEventDelegate(): ActivityEventDelegate {
-            return object : ActivityEventDelegate {
-                override fun dispatchFeedbackMessage(message: FeedbackMessage) {
-                    TODO("Not yet implemented")
-                }
-            }
+@BindingAdapter("updateTabTexts")
+fun TabLayout.updateText(user: User?) {
+    for (index in UserPage.values().indices) {
+        val tab = getTabAt(index)
+        val page = UserPage.values()[index]
+        tab?.text = when {
+            page.count != null -> context.getString(page.titleRes, page.count.invoke(user) ?: "---")
+            else -> context.getString(page.titleRes)
         }
     }
 }

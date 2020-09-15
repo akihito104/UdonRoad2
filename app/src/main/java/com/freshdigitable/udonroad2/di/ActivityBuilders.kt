@@ -24,7 +24,6 @@ import com.freshdigitable.udonroad2.media.MediaActivity
 import com.freshdigitable.udonroad2.media.MediaActivityModule
 import com.freshdigitable.udonroad2.model.app.di.ActivityScope
 import com.freshdigitable.udonroad2.user.UserActivity
-import com.freshdigitable.udonroad2.user.UserActivityModule
 import dagger.Module
 import dagger.Provides
 import dagger.android.ContributesAndroidInjector

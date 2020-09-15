@@ -24,13 +24,12 @@ import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.test_common.MockVerified
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.verify
 import org.junit.rules.TestRule
 
 class TweetRepositoryRule(
-    val tweetRepository: TweetRepository = mockk(),
-    private val mockVerified: MockVerified = MockVerified(listOf(tweetRepository))
+    private val mockVerified: MockVerified<TweetRepository> = MockVerified.create()
 ) : TestRule by mockVerified {
+    val mock: TweetRepository = mockVerified.mock
 
     fun setupPostLikeForSuccess(tweetId: TweetId, liked: TweetEntity = mockk()) {
         setupPostLike(tweetId, Result.success(liked))
@@ -42,8 +41,7 @@ class TweetRepositoryRule(
     }
 
     private fun setupPostLike(tweetId: TweetId, result: Result<TweetEntity>) {
-        every { tweetRepository.postLike(tweetId) } returns AppAction.just(result)
-        mockVerified.expected { verify { tweetRepository.postLike(tweetId) } }
+        mockVerified.setupResponseWithVerify({ mock.postLike(tweetId) }, AppAction.just(result))
     }
 
     fun setupPostRetweetForSuccess(tweetId: TweetId, retweeted: TweetEntity = mockk()) {
@@ -56,8 +54,7 @@ class TweetRepositoryRule(
     }
 
     private fun setupPostRetweet(tweetId: TweetId, result: Result<TweetEntity>) {
-        every { tweetRepository.postRetweet(tweetId) } returns AppAction.just(result)
-        mockVerified.expected { verify { tweetRepository.postRetweet(tweetId) } }
+        mockVerified.setupResponseWithVerify({ mock.postRetweet(tweetId) }, AppAction.just(result))
     }
 
     private fun createException(exceptionType: AppTwitterException.ErrorType): AppTwitterException {

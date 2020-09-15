@@ -33,6 +33,8 @@ dependencies {
     implementation Libs.ANDROIDX_LIFECYCLE_LIVEDATA_KTX
     implementation Libs.ANDROIDX_LIFECYCLE_RX_KTX
 
+    implementation Libs.MATERIAL_DESIGN
+
     implementation Libs.THREETENBP
     implementation Libs.TIMBER
 

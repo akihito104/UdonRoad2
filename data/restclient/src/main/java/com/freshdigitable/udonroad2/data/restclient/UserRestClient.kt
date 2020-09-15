@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-package com.freshdigitable.udonroad2.model.app.navigation
+package com.freshdigitable.udonroad2.data.restclient
 
-interface AppEvent
-interface NavigationEvent : AppEvent {
-    enum class Type { INIT, NAVIGATE }
+import com.freshdigitable.udonroad2.data.restclient.ext.toEntity
+import com.freshdigitable.udonroad2.model.user.User
+import com.freshdigitable.udonroad2.model.user.UserId
+import javax.inject.Inject
+
+class UserRestClient @Inject constructor(
+    private val twitter: AppTwitter
+) {
+    suspend fun showUser(id: UserId): User {
+        val u = twitter.fetch { showUser(id.value) }
+        return u.toEntity()
+    }
 }
-
-interface ViewState
-interface FragmentContainerState
-data class StateHolder<T>(val value: T?)
-
-sealed class CommonEvent : AppEvent {
-    object Back : CommonEvent()
-}
-
