@@ -118,7 +118,8 @@ class OauthViewModelTestRule : TestWatcher() {
     private val coroutineRule = CoroutineTestRule()
     val repositoryRule = OAuthTokenRepositoryRule()
     private val dispatcher = EventDispatcher()
-    val activityEventDelegate: ActivityEventDelegate = mockk()
+    private val _activityEventDelegate = MockVerified.create<ActivityEventDelegate>()
+    val activityEventDelegate: ActivityEventDelegate = _activityEventDelegate.mock
     private val navDelegate: OauthNavigationDelegate =
         OauthNavigationDelegate(mockk(relaxed = true), ListOwnerGenerator(), activityEventDelegate)
 
@@ -150,7 +151,7 @@ class OauthViewModelTestRule : TestWatcher() {
             .around(RxExceptionHandler())
             .around(coroutineRule)
             .around(repositoryRule)
-            .around(MockVerified(listOf(activityEventDelegate)))
+            .around(_activityEventDelegate)
             .apply(super.apply(base, description), description)
     }
 }

@@ -31,7 +31,7 @@ import com.freshdigitable.udonroad2.model.user.Relationship
 import com.freshdigitable.udonroad2.model.user.TweetingUser
 import com.freshdigitable.udonroad2.model.user.User
 import com.freshdigitable.udonroad2.model.user.UserId
-import com.freshdigitable.udonroad2.test_common.MockVerified2
+import com.freshdigitable.udonroad2.test_common.MockVerified
 import com.google.common.truth.Truth.assertThat
 import io.mockk.every
 import io.mockk.just
@@ -173,8 +173,8 @@ class UserViewModelTestRule : TestWatcher() {
         every { id } returns targetId
         every { screenName } returns "user1"
     }
-    private val userRepository = MockVerified2.create<UserRepository>()
-    private val _relationshipRepository = MockVerified2.create<RelationshipRepository>()
+    private val userRepository = MockVerified.create<UserRepository>()
+    private val _relationshipRepository = MockVerified.create<RelationshipRepository>()
     val relationshipRepository: RelationshipRepository = _relationshipRepository.mock
     val selectedItemRepository = SelectedItemRepository()
 
@@ -219,15 +219,14 @@ class UserViewModelTestRule : TestWatcher() {
             every { id } returns targetUser
         }
         with(userRepository) {
-            every { mock.getUser(targetUser) } returns MutableLiveData(response)
-            expected { verify { mock.getUser(targetUser) } }
+            setupResponseWithVerify({ mock.getUser(targetUser) }, MutableLiveData(response))
         }
     }
 
     private fun setupRelation(targetUser: UserId, response: Relationship = mockk()) {
-        with(_relationshipRepository) {
-            every { mock.findRelationship(targetUser) } returns MutableLiveData(response)
-            expected { verify { mock.findRelationship(targetUser) } }
-        }
+        _relationshipRepository.setupResponseWithVerify(
+            { relationshipRepository.findRelationship(targetUser) },
+            MutableLiveData(response)
+        )
     }
 }

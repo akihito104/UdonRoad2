@@ -199,7 +199,7 @@ class TimelineViewStatesTestRule : TestWatcher() {
         owner,
         actionsRule.sut,
         SelectedItemRepository(),
-        tweetRepositoryMock.tweetRepository,
+        tweetRepositoryMock.mock,
         ListOwnerGenerator(),
         TimelineNavigationDelegate(mockk(relaxed = true), activityEventDelegate)
     )
