@@ -3,9 +3,7 @@ package com.freshdigitable.udonroad2.user
 import android.view.MenuItem
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import com.freshdigitable.udonroad2.model.ListOwner
-import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
 import com.freshdigitable.udonroad2.model.app.navigation.CommonEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.user.Relationship
@@ -14,11 +12,6 @@ import com.freshdigitable.udonroad2.model.user.User
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.postSelectedItemShortcutEvent
 import com.freshdigitable.udonroad2.user.UserActivityEvent.Relationships
-import dagger.BindsInstance
-import dagger.Module
-import dagger.Provides
-import dagger.Subcomponent
-import dagger.multibindings.IntoMap
 import timber.log.Timber
 
 class UserViewModel(
@@ -78,30 +71,3 @@ class UserViewModel(
         eventDispatcher.postEvent(Relationships.ReportSpam(tweetingUser.id))
     }
 }
-
-@Module
-interface UserViewModelModule {
-    companion object {
-        @Provides
-        @IntoMap
-        @ViewModelKey(UserViewModel::class)
-        fun provideUserViewModel(
-            user: TweetingUser,
-            eventDispatcher: EventDispatcher,
-            viewState: UserActivityViewStates,
-        ): ViewModel = UserViewModel(user, eventDispatcher, viewState)
-    }
-}
-
-@Subcomponent(modules = [UserViewModelModule::class])
-interface UserViewModelComponent {
-    @Subcomponent.Factory
-    interface Factory {
-        fun create(@BindsInstance user: TweetingUser): UserViewModelComponent
-    }
-
-    val viewModelProvider: ViewModelProvider
-}
-
-@Module(subcomponents = [UserViewModelComponent::class])
-interface UserViewModelComponentModule

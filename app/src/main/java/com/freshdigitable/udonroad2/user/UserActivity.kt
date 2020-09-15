@@ -9,20 +9,15 @@ import androidx.annotation.IdRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.observe
 import androidx.viewpager.widget.ViewPager
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.databinding.ActivityUserBinding
-import com.freshdigitable.udonroad2.di.ListItemFragmentModule
-import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
+import com.freshdigitable.udonroad2.di.UserViewModelComponent
 import com.freshdigitable.udonroad2.model.user.TweetingUser
 import com.freshdigitable.udonroad2.model.user.User
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.tabs.TabLayout
-import dagger.Binds
-import dagger.Module
-import dagger.Provides
 import dagger.android.AndroidInjection
 import dagger.android.AndroidInjector
 import dagger.android.DispatchingAndroidInjector
@@ -173,28 +168,6 @@ fun TabLayout.updateText(user: User?) {
         tab?.text = when {
             page.count != null -> context.getString(page.titleRes, page.count.invoke(user) ?: "---")
             else -> context.getString(page.titleRes)
-        }
-    }
-}
-
-@Module(
-    includes = [
-        ListItemFragmentModule::class,
-        UserViewModelComponentModule::class
-    ]
-)
-interface UserActivityModule {
-    @Binds
-    fun bindViewModelStoreOwner(activity: UserActivity): ViewModelStoreOwner
-
-    @Binds
-    fun bindActivityEventDelegate(eventDelegate: UserActivityNavigationDelegate): ActivityEventDelegate
-
-    @Module
-    companion object {
-        @Provides
-        fun provideActivityEventDelegate(activity: UserActivity): UserActivityNavigationDelegate {
-            return UserActivityNavigationDelegate(activity)
         }
     }
 }
