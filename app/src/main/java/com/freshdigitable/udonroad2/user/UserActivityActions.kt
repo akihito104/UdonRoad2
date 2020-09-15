@@ -17,6 +17,7 @@
 package com.freshdigitable.udonroad2.user
 
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
+import com.freshdigitable.udonroad2.model.app.navigation.CommonEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
 import com.freshdigitable.udonroad2.user.UserActivityEvent.Relationships
@@ -32,4 +33,6 @@ class UserActivityActions @Inject constructor(eventDispatcher: EventDispatcher) 
         eventDispatcher.toAction()
     val changeMutingStatus: AppAction<Relationships.Muting> = eventDispatcher.toAction()
     val reportSpam: AppAction<Relationships.ReportSpam> = eventDispatcher.toAction()
+
+    val rollbackViewState: AppAction<CommonEvent.Back> = eventDispatcher.toAction()
 }

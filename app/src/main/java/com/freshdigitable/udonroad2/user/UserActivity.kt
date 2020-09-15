@@ -137,6 +137,10 @@ class UserActivity : HasAndroidInjector, AppCompatActivity() {
         return true
     }
 
+    override fun onBackPressed() {
+        viewModel.onBackPressed()
+    }
+
     private val args: UserActivityArgs by lazy {
         UserActivityArgs.fromBundle(requireNotNull(intent.extras))
     }

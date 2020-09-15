@@ -97,7 +97,7 @@ class MainActivityViewStatesTest {
     @Test
     fun backEventDispatched_then_dispatchBackCalled(): Unit = with(rule) {
         // exercise
-        dispatchEvents(CommonEvent.Back(null))
+        dispatchEvents(CommonEvent.Back)
 
         // verify
         verify { navDelegate.dispatchBack() }
@@ -145,7 +145,6 @@ class MainActivityStateModelTestRule : TestWatcher() {
         super.starting(description)
         listOf(
             sut.isFabVisible,
-            sut.selectedItemId
         ).forEach { it.observeForever {} }
     }
 

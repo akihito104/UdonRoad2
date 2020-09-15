@@ -29,4 +29,8 @@ class UserActivityNavigationDelegate(
             )
         }
     }
+
+    fun dispatchBack() {
+        activity.onBackPressedDispatcher.onBackPressed()
+    }
 }

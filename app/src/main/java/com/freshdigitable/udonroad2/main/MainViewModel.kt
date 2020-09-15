@@ -22,7 +22,7 @@ import androidx.lifecycle.ViewModel
 import com.freshdigitable.udonroad2.model.app.navigation.CommonEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
-import com.freshdigitable.udonroad2.timeline.create
+import com.freshdigitable.udonroad2.timeline.postSelectedItemShortcutEvent
 import timber.log.Timber
 
 class MainViewModel(
@@ -40,9 +40,7 @@ class MainViewModel(
         Timber.tag("MainViewModel").d("onFabSelected: $item")
         val selected =
             requireNotNull(currentState?.selectedItem) { "selectedItem should not be null." }
-        TimelineEvent.SelectedItemShortcut.create(item, selected).forEach {
-            eventDispatcher.postEvent(it)
-        }
+        eventDispatcher.postSelectedItemShortcutEvent(item, selected)
     }
 
     fun onBackPressed() {
@@ -50,7 +48,7 @@ class MainViewModel(
         val event = if (selectedItem != null) {
             TimelineEvent.TweetItemSelection.Unselected(selectedItem.owner)
         } else {
-            CommonEvent.Back(viewStates.current)
+            CommonEvent.Back
         }
         eventDispatcher.postEvent(event)
     }

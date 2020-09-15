@@ -85,6 +85,7 @@
             app:menu="@menu/iffab_main"
             style="@style/Widget.FlingFAB"
             app:isVisible="@{viewModel.fabVisible}"
+            app:menuListener="@{viewModel::onFabMenuSelected}"
             />
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </layout>

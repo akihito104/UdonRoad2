@@ -5,7 +5,9 @@ import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.MemberListItem
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
+import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
+import com.freshdigitable.udonroad2.model.app.navigation.postEvents
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.user.TweetingUser
 import com.freshdigitable.udonroad2.timeline.TimelineEvent.SelectedItemShortcut
@@ -84,16 +86,16 @@ sealed class TimelineEvent : AppEvent {
     }
 }
 
-fun SelectedItemShortcut.Companion.create(
+fun EventDispatcher.postSelectedItemShortcutEvent(
     menuItem: MenuItem,
     selectedItemId: SelectedItemId
-): Collection<TimelineEvent> {
+) {
     val tweetId = selectedItemId.quoteId ?: selectedItemId.originalId
-    return when (menuItem.itemId) {
-        R.id.iffabMenu_main_detail -> listOf(SelectedItemShortcut.TweetDetail(tweetId))
-        R.id.iffabMenu_main_fav -> listOf(SelectedItemShortcut.Like(tweetId))
-        R.id.iffabMenu_main_rt -> listOf(SelectedItemShortcut.Retweet(tweetId))
-        R.id.iffabMenu_main_favRt -> listOf(
+    when (menuItem.itemId) {
+        R.id.iffabMenu_main_detail -> postEvent(SelectedItemShortcut.TweetDetail(tweetId))
+        R.id.iffabMenu_main_fav -> postEvent(SelectedItemShortcut.Like(tweetId))
+        R.id.iffabMenu_main_rt -> postEvent(SelectedItemShortcut.Retweet(tweetId))
+        R.id.iffabMenu_main_favRt -> postEvents(
             SelectedItemShortcut.Like(tweetId),
             SelectedItemShortcut.Retweet(tweetId)
         )

@@ -59,8 +59,10 @@ class UserActivityViewStates @Inject constructor(
     private val currentPage: AppViewState<UserPage> = actions.currentPageChanged
         .map { it.page }
         .toViewState()
-    val fabVisible: AppViewState<Boolean> = currentPage
-        .switchMap { selectedItemRepository.observe(requireNotNull(pages[it])) }
+    val selectedItemId = currentPage.switchMap {
+        selectedItemRepository.observe(requireNotNull(pages[it]))
+    }
+    val fabVisible: AppViewState<Boolean> = selectedItemId
         .map { it != null }
 
     val titleAlpha: LiveData<Float> = actions.scrollAppbar.map { r ->
@@ -69,7 +71,9 @@ class UserActivityViewStates @Inject constructor(
         } else {
             0f
         }
-    }.toViewState()
+    }
+        .distinctUntilChanged()
+        .toViewState()
 
     init {
         with(navigationDelegate) {
@@ -88,6 +92,7 @@ class UserActivityViewStates @Inject constructor(
             subscribeWith(actions.reportSpam) {
                 relationshipRepository.reportSpam(it.targetUserId)
             }
+            subscribeWith(actions.rollbackViewState) { dispatchBack() }
         }
     }
 }

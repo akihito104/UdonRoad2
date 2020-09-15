@@ -26,8 +26,6 @@ interface FragmentContainerState
 data class StateHolder<T>(val value: T?)
 
 sealed class CommonEvent : AppEvent {
-    data class Back(
-        val currentState: ViewState?
-    ) : CommonEvent()
+    object Back : CommonEvent()
 }
 

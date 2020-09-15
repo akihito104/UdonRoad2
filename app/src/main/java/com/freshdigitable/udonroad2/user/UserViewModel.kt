@@ -1,20 +1,25 @@
 package com.freshdigitable.udonroad2.user
 
+import android.view.MenuItem
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
+import com.freshdigitable.udonroad2.model.app.navigation.CommonEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.user.Relationship
 import com.freshdigitable.udonroad2.model.user.TweetingUser
 import com.freshdigitable.udonroad2.model.user.User
+import com.freshdigitable.udonroad2.timeline.TimelineEvent
+import com.freshdigitable.udonroad2.timeline.postSelectedItemShortcutEvent
 import com.freshdigitable.udonroad2.user.UserActivityEvent.Relationships
 import dagger.BindsInstance
 import dagger.Module
 import dagger.Provides
 import dagger.Subcomponent
 import dagger.multibindings.IntoMap
+import timber.log.Timber
 
 class UserViewModel(
     private val tweetingUser: TweetingUser,
@@ -34,6 +39,23 @@ class UserViewModel(
 
     fun setCurrentPage(index: Int) {
         eventDispatcher.postEvent(UserActivityEvent.PageChanged(UserPage.values()[index]))
+    }
+
+    fun onFabMenuSelected(item: MenuItem) {
+        Timber.tag("UserViewModel").d("onFabSelected: $item")
+        val selected =
+            requireNotNull(viewState.selectedItemId.value) { "selectedItem should not be null." }
+        eventDispatcher.postSelectedItemShortcutEvent(item, selected)
+    }
+
+    fun onBackPressed() {
+        val selectedItem = viewState.selectedItemId.value
+        val event = if (selectedItem != null) {
+            TimelineEvent.TweetItemSelection.Unselected(selectedItem.owner)
+        } else {
+            CommonEvent.Back
+        }
+        eventDispatcher.postEvent(event)
     }
 
     fun updateFollowingStatus(following: Boolean) {
