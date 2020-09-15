@@ -1,7 +1,6 @@
 package com.freshdigitable.udonroad2.main
 
 import android.os.Bundle
-import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Lifecycle
@@ -19,10 +18,11 @@ import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.app.di.ActivityScope
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
-import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
+import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessageDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.FragmentContainerState
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
+import com.freshdigitable.udonroad2.model.app.navigation.SnackbarFeedbackMessageDelegate
 import com.freshdigitable.udonroad2.model.app.weakRef
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
@@ -31,14 +31,16 @@ import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentArgs
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentDirections
 import com.freshdigitable.udonroad2.timeline.fragment.TweetDetailFragmentArgs
 import com.freshdigitable.udonroad2.user.UserActivityDirections
-import com.google.android.material.snackbar.Snackbar
 import java.io.Serializable
 import javax.inject.Inject
 
 @ActivityScope
 class MainActivityNavigationDelegate @Inject constructor(
     mainActivity: MainActivity,
-) : NavigationDelegate(mainActivity), ActivityEventDelegate {
+) : NavigationDelegate(mainActivity), ActivityEventDelegate,
+    FeedbackMessageDelegate by SnackbarFeedbackMessageDelegate(
+        weakRef(mainActivity) { it.findViewById(R.id.main_container) }
+    ) {
     private val activity: MainActivity by weakRef(mainActivity)
     private val drawerLayout: DrawerLayout by weakRef(mainActivity) {
         it.findViewById<DrawerLayout>(R.id.main_drawer)
@@ -123,22 +125,6 @@ class MainActivityNavigationDelegate @Inject constructor(
     }
 
     fun onSupportNavigateUp(): Boolean = navController.navigateUp(drawerLayout)
-
-    private val snackbarContainer: View by weakRef(activity) {
-        it.findViewById(R.id.main_container)
-    }
-
-    override fun dispatchFeedbackMessage(message: FeedbackMessage) {
-        if (message.args == null) {
-            Snackbar.make(snackbarContainer, message.messageRes, Snackbar.LENGTH_SHORT).show()
-        } else {
-            Snackbar.make(
-                snackbarContainer,
-                activity.getString(message.messageRes, message.args),
-                Snackbar.LENGTH_SHORT
-            ).show()
-        }
-    }
 }
 
 sealed class MainNavHostState : FragmentContainerState, Serializable {

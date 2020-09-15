@@ -184,13 +184,13 @@ interface UserActivityModule {
     fun bindViewModelStoreOwner(activity: UserActivity): ViewModelStoreOwner
 
     @Binds
-    fun bindActivityEventDelegate(eventDelegate: UserActivityNavigation): ActivityEventDelegate
+    fun bindActivityEventDelegate(eventDelegate: UserActivityNavigationDelegate): ActivityEventDelegate
 
     @Module
     companion object {
         @Provides
-        fun provideActivityEventDelegate(activity: UserActivity): UserActivityNavigation {
-            return UserActivityNavigation(activity)
+        fun provideActivityEventDelegate(activity: UserActivity): UserActivityNavigationDelegate {
+            return UserActivityNavigationDelegate(activity)
         }
     }
 }

@@ -16,6 +16,8 @@
 
 package com.freshdigitable.udonroad2.media
 
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
@@ -96,6 +98,14 @@ class MediaActivity : AppCompatActivity(), HasAndroidInjector {
     }
     private val tweetId: TweetId get() = args.id
     private val index: Int get() = args.index
+
+    companion object {
+        fun start(context: Context, args: MediaActivityArgs) {
+            val intent = Intent(context, MediaActivity::class.java)
+            intent.putExtras(args.toBundle())
+            context.startActivity(intent)
+        }
+    }
 
     @Inject
     lateinit var injector: DispatchingAndroidInjector<Any>

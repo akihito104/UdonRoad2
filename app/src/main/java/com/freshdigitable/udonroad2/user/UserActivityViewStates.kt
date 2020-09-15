@@ -41,7 +41,7 @@ class UserActivityViewStates @Inject constructor(
     relationshipRepository: RelationshipRepository,
     selectedItemRepository: SelectedItemRepository,
     ownerGenerator: ListOwnerGenerator,
-    navigationDelegate: UserActivityNavigation
+    navigationDelegate: UserActivityNavigationDelegate
 ) {
     val user: LiveData<User?> = userRepository.getUser(tweetingUser.id)
     val relationship: LiveData<Relationship?> = user.switchMap {
