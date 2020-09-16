@@ -3,12 +3,14 @@ package com.freshdigitable.udonroad2.user
 import android.view.MenuItem
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
+import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.app.navigation.CommonEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.user.Relationship
 import com.freshdigitable.udonroad2.model.user.TweetingUser
 import com.freshdigitable.udonroad2.model.user.User
+import com.freshdigitable.udonroad2.model.user.UserId
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.postSelectedItemShortcutEvent
 import com.freshdigitable.udonroad2.user.UserActivityEvent.Relationships
@@ -51,23 +53,24 @@ class UserViewModel(
         eventDispatcher.postEvent(event)
     }
 
-    fun updateFollowingStatus(following: Boolean) {
-        eventDispatcher.postEvent(Relationships.Following(following, tweetingUser.id))
+    fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return eventDispatcher.postRelationshipEvent(tweetingUser.id, item)
     }
+}
 
-    fun updateBlockingStatus(blocking: Boolean) {
-        eventDispatcher.postEvent(Relationships.Blocking(blocking, tweetingUser.id))
+private fun EventDispatcher.postRelationshipEvent(userId: UserId, item: MenuItem): Boolean {
+    val event = when (item.itemId) {
+        R.id.action_follow -> Relationships.Following(true, userId)
+        R.id.action_unfollow -> Relationships.Following(false, userId)
+        R.id.action_block -> Relationships.Blocking(true, userId)
+        R.id.action_unblock -> Relationships.Blocking(false, userId)
+        R.id.action_mute -> Relationships.Muting(true, userId)
+        R.id.action_unmute -> Relationships.Muting(false, userId)
+        R.id.action_block_retweet -> Relationships.WantsRetweet(false, userId)
+        R.id.action_unblock_retweet -> Relationships.WantsRetweet(true, userId)
+        R.id.action_r4s -> Relationships.ReportSpam(userId)
+        else -> return false
     }
-
-    fun updateMutingStatus(muting: Boolean) {
-        eventDispatcher.postEvent(Relationships.Muting(muting, tweetingUser.id))
-    }
-
-    fun updateWantRetweet(wantRetweet: Boolean) {
-        eventDispatcher.postEvent(Relationships.WantsRetweet(wantRetweet, tweetingUser.id))
-    }
-
-    fun reportForSpam() {
-        eventDispatcher.postEvent(Relationships.ReportSpam(tweetingUser.id))
-    }
+    postEvent(event)
+    return true
 }

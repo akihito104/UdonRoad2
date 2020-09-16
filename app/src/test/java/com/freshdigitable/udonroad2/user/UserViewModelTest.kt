@@ -18,9 +18,11 @@ package com.freshdigitable.udonroad2.user
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.MutableLiveData
+import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.data.impl.RelationshipRepository
 import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
 import com.freshdigitable.udonroad2.data.impl.UserRepository
+import com.freshdigitable.udonroad2.main.menuItem
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
@@ -73,7 +75,7 @@ class UserViewModelTest {
         every { relationshipRepository.updateFollowingStatus(targetId, any()) } just runs
 
         // exercise
-        sut.updateFollowingStatus(true)
+        sut.onOptionsItemSelected(menuItem(R.id.action_follow))
 
         // verify
         verify { relationshipRepository.updateFollowingStatus(targetId, true) }
@@ -85,7 +87,7 @@ class UserViewModelTest {
         every { relationshipRepository.updateBlockingStatus(targetId, any()) } just runs
 
         // exercise
-        sut.updateBlockingStatus(true)
+        sut.onOptionsItemSelected(menuItem(R.id.action_block))
 
         // verify
         verify { relationshipRepository.updateBlockingStatus(targetId, true) }
@@ -97,7 +99,7 @@ class UserViewModelTest {
         every { relationshipRepository.updateMutingStatus(targetId, any()) } just runs
 
         // exercise
-        sut.updateMutingStatus(true)
+        sut.onOptionsItemSelected(menuItem(R.id.action_mute))
 
         // verify
         verify { relationshipRepository.updateMutingStatus(targetId, true) }
@@ -109,7 +111,7 @@ class UserViewModelTest {
         every { relationshipRepository.reportSpam(targetId) } just runs
 
         // exercise
-        sut.reportForSpam()
+        sut.onOptionsItemSelected(menuItem(R.id.action_r4s))
 
         // verify
         verify { relationshipRepository.reportSpam(targetId) }

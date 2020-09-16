@@ -73,7 +73,7 @@ class UserActivity : HasAndroidInjector, AppCompatActivity() {
                 }
             })
             this.adapter = adapter
-            viewModel.setCurrentPage(userPager.currentItem)
+            viewModel.setCurrentPage(currentItem)
         }
         userTabContainer.setupWithViewPager(userPager)
     }
@@ -117,19 +117,11 @@ class UserActivity : HasAndroidInjector, AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.action_follow -> viewModel.updateFollowingStatus(true)
-            R.id.action_unfollow -> viewModel.updateFollowingStatus(false)
-            R.id.action_block -> viewModel.updateBlockingStatus(true)
-            R.id.action_unblock -> viewModel.updateBlockingStatus(false)
-            R.id.action_mute -> viewModel.updateMutingStatus(true)
-            R.id.action_unmute -> viewModel.updateMutingStatus(false)
-            R.id.action_block_retweet -> viewModel.updateWantRetweet(false)
-            R.id.action_unblock_retweet -> viewModel.updateWantRetweet(true)
-            R.id.action_r4s -> viewModel.reportForSpam()
-            else -> return super.onOptionsItemSelected(item)
+        return if (viewModel.onOptionsItemSelected(item)) {
+            true
+        } else {
+            super.onOptionsItemSelected(item)
         }
-        return true
     }
 
     override fun onBackPressed() {

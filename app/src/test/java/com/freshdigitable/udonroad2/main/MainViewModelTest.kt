@@ -17,6 +17,7 @@
 package com.freshdigitable.udonroad2.main
 
 import android.view.MenuItem
+import androidx.annotation.IdRes
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.QueryType
@@ -116,10 +117,10 @@ class MainViewModelTestRule(
         return RuleChain.outerRule(stateModelRule)
             .apply(super.apply(base, description), description)
     }
+}
 
-    fun menuItem(id: Int): MenuItem {
-        return mockk<MenuItem>().apply {
-            every { itemId } returns id
-        }
+fun menuItem(@IdRes id: Int): MenuItem {
+    return mockk<MenuItem>().apply {
+        every { itemId } returns id
     }
 }
