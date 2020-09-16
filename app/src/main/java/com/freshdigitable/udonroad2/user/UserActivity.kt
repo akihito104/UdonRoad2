@@ -5,7 +5,6 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
-import androidx.annotation.IdRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
@@ -45,7 +44,7 @@ class UserActivity : HasAndroidInjector, AppCompatActivity() {
 
         binding.setup(viewModel, adapter)
         setSupportActionBar(binding.userToolbar)
-        viewModel.relationship.observe(this) {
+        viewModel.relationshipMenuItems.observe(this) {
             invalidateOptionsMenu()
         }
     }
@@ -83,37 +82,11 @@ class UserActivity : HasAndroidInjector, AppCompatActivity() {
         return true
     }
 
-    override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
-        val r = viewModel.relationship.value ?: return false
-        menu?.run {
-            switchVisibility(
-                R.id.action_follow,
-                R.id.action_unfollow, !r.following
-            )
-            switchVisibility(
-                R.id.action_block,
-                R.id.action_unblock, !r.blocking
-            )
-            switchVisibility(
-                R.id.action_mute,
-                R.id.action_unmute, !r.muting
-            )
-            switchVisibility(
-                R.id.action_block_retweet,
-                R.id.action_unblock_retweet,
-                if (r.following) r.wantRetweets else null
-            )
-        }
+    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
+        val availableItems = viewModel.relationshipMenuItems.value ?: return false
+        RelationshipMenu.values().forEach { menu.findItem(it.id).isVisible = false }
+        availableItems.forEach { menu.findItem(it.id).isVisible = true }
         return true
-    }
-
-    private fun Menu.switchVisibility(
-        @IdRes positiveId: Int,
-        @IdRes negativeId: Int,
-        positiveItemVisible: Boolean?
-    ) {
-        findItem(positiveId).isVisible = positiveItemVisible ?: false
-        findItem(negativeId).isVisible = positiveItemVisible?.not() ?: false
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

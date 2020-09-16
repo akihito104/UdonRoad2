@@ -36,6 +36,15 @@ import com.freshdigitable.udonroad2.model.user.User
 import com.freshdigitable.udonroad2.model.user.UserId
 import com.freshdigitable.udonroad2.test_common.MatcherScopedBlock
 import com.freshdigitable.udonroad2.test_common.MockVerified
+import com.freshdigitable.udonroad2.user.RelationshipMenu.BLOCK
+import com.freshdigitable.udonroad2.user.RelationshipMenu.FOLLOW
+import com.freshdigitable.udonroad2.user.RelationshipMenu.MUTE
+import com.freshdigitable.udonroad2.user.RelationshipMenu.REPORT_SPAM
+import com.freshdigitable.udonroad2.user.RelationshipMenu.RETWEET_BLOCKED
+import com.freshdigitable.udonroad2.user.RelationshipMenu.RETWEET_WANTED
+import com.freshdigitable.udonroad2.user.RelationshipMenu.UNBLOCK
+import com.freshdigitable.udonroad2.user.RelationshipMenu.UNFOLLOW
+import com.freshdigitable.udonroad2.user.RelationshipMenu.UNMUTE
 import com.google.common.truth.Truth.assertThat
 import io.mockk.every
 import io.mockk.mockk
@@ -59,8 +68,9 @@ class UserViewModelTest {
         @Test
         fun initialValue(): Unit = with(rule) {
             // verify
-            assertThat(sut.user.value).isNotNull()
-            assertThat(sut.relationship.value).isNotNull()
+            assertThat(sut.user.value).isNull()
+            assertThat(sut.relationship.value).isNull()
+            assertThat(sut.relationshipMenuItems.value).isNull()
             assertThat(sut.fabVisible.value).isFalse()
             assertThat(sut.titleAlpha.value).isEqualTo(0)
         }
@@ -128,7 +138,7 @@ class UserViewModelTest {
     }
 
     @RunWith(Parameterized::class)
-    class WhenUpdateRelationship(private val param: Param) {
+    class WhenRelationshipMenuIsSelected(private val param: Param) {
         @get:Rule
         val rule = UserViewModelTestRule()
 
@@ -183,6 +193,94 @@ class UserViewModelTest {
             sut.onOptionsItemSelected(menuItem(param.menuId))
         }
     }
+
+    @RunWith(Parameterized::class)
+    class WhenRelationshipUpdated(private val param: Param) {
+        @get:Rule
+        val rule = UserViewModelTestRule()
+
+        data class Param(
+            val givenRelationship: Relationship?,
+            val menuSet: Iterable<RelationshipMenu>
+        ) {
+            override fun toString(): String {
+                return "relationship:" + (givenRelationship?.let {
+                    "{following:${it.following}, blocking:${it.blocking}, " +
+                        "muting:${it.muting}, wantRetweets:${it.wantRetweets}}"
+                } ?: "null") +
+                    ", menuSet:$menuSet"
+            }
+        }
+
+        companion object {
+            @JvmStatic
+            @Parameterized.Parameters(name = "{0}")
+            fun params(): List<Param> = listOf(
+                Param(
+                    null,
+                    setOf(REPORT_SPAM)
+                ),
+                Param(
+                    relationship(),
+                    setOf(FOLLOW, BLOCK, MUTE, REPORT_SPAM)
+                ),
+                Param(
+                    relationship(givenBlocking = true),
+                    setOf(FOLLOW, UNBLOCK, MUTE, REPORT_SPAM)
+                ),
+                Param(
+                    relationship(givenMuting = true),
+                    setOf(FOLLOW, BLOCK, UNMUTE, REPORT_SPAM)
+                ),
+                Param(
+                    relationship(givenFollowing = true),
+                    setOf(UNFOLLOW, BLOCK, MUTE, RETWEET_WANTED, REPORT_SPAM)
+                ),
+                Param(
+                    relationship(givenFollowing = true, givenMuting = true),
+                    setOf(UNFOLLOW, BLOCK, UNMUTE, RETWEET_WANTED, REPORT_SPAM)
+                ),
+                Param(
+                    relationship(givenFollowing = true, givenWantRetweets = true),
+                    setOf(UNFOLLOW, BLOCK, MUTE, RETWEET_BLOCKED, REPORT_SPAM)
+                ),
+                Param(
+                    relationship(
+                        givenFollowing = true,
+                        givenMuting = true,
+                        givenWantRetweets = true
+                    ),
+                    setOf(UNFOLLOW, BLOCK, UNMUTE, RETWEET_BLOCKED, REPORT_SPAM)
+                ),
+            )
+
+            private fun relationship(
+                givenFollowing: Boolean = false,
+                givenBlocking: Boolean = false,
+                givenMuting: Boolean = false,
+                givenWantRetweets: Boolean = false
+            ): Relationship = mockk<Relationship>().apply {
+                every { following } returns givenFollowing
+                every { blocking } returns givenBlocking
+                every { muting } returns givenMuting
+                every { wantRetweets } returns givenWantRetweets
+            }
+        }
+
+        @Test
+        fun test(): Unit = with(rule) {
+            // setup
+            setupRelation(targetId, param.givenRelationship)
+
+            // exercise
+            userSource.value = mockk<User>().apply {
+                every { id } returns targetId
+            }
+
+            // verify
+            assertThat(sut.relationshipMenuItems.value).containsExactlyElementsIn(param.menuSet)
+        }
+    }
 }
 
 class UserViewModelTestRule : TestWatcher() {
@@ -213,7 +311,6 @@ class UserViewModelTestRule : TestWatcher() {
     override fun starting(description: Description?) {
         super.starting(description)
         setupUser(targetId)
-        setupRelation(targetId)
 
         sut.setCurrentPage(0)
         sut.setAppBarScrollRate(0f)
@@ -221,7 +318,8 @@ class UserViewModelTestRule : TestWatcher() {
             sut.user,
             sut.relationship,
             sut.fabVisible,
-            sut.titleAlpha
+            sut.titleAlpha,
+            sut.relationshipMenuItems,
         ).forEach { it.observeForever {} }
     }
 
@@ -232,19 +330,20 @@ class UserViewModelTestRule : TestWatcher() {
             .apply(super.apply(base, description), description)
     }
 
-    private fun setupUser(targetUser: UserId) {
-        val response = mockk<User>().apply {
-            every { id } returns targetUser
-        }
+    val userSource = MutableLiveData<User>()
+
+    private fun setupUser(targetId: UserId) {
         with(userRepository) {
-            setupResponseWithVerify({ mock.getUser(targetUser) }, MutableLiveData(response))
+            setupResponseWithVerify({ mock.getUser(targetId) }, userSource)
         }
     }
 
-    private fun setupRelation(targetUser: UserId, response: Relationship = mockk()) {
+    private val relationshipSource = MutableLiveData<Relationship>()
+
+    fun setupRelation(targetId: UserId, response: Relationship? = null) {
+        relationshipSource.value = response
         relationshipRepositoryMock.setupResponseWithVerify(
-            { relationshipRepository.findRelationship(targetUser) },
-            MutableLiveData(response)
+            { relationshipRepository.findRelationship(targetId) }, relationshipSource
         )
     }
 }
