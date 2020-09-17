@@ -16,11 +16,14 @@
 
 package com.freshdigitable.udonroad2.user
 
+import androidx.annotation.IdRes
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.MutableLiveData
+import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.data.impl.RelationshipRepository
 import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
 import com.freshdigitable.udonroad2.data.impl.UserRepository
+import com.freshdigitable.udonroad2.main.menuItem
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
@@ -31,139 +34,252 @@ import com.freshdigitable.udonroad2.model.user.Relationship
 import com.freshdigitable.udonroad2.model.user.TweetingUser
 import com.freshdigitable.udonroad2.model.user.User
 import com.freshdigitable.udonroad2.model.user.UserId
+import com.freshdigitable.udonroad2.test_common.MatcherScopedBlock
 import com.freshdigitable.udonroad2.test_common.MockVerified
+import com.freshdigitable.udonroad2.user.RelationshipMenu.BLOCK
+import com.freshdigitable.udonroad2.user.RelationshipMenu.FOLLOW
+import com.freshdigitable.udonroad2.user.RelationshipMenu.MUTE
+import com.freshdigitable.udonroad2.user.RelationshipMenu.REPORT_SPAM
+import com.freshdigitable.udonroad2.user.RelationshipMenu.RETWEET_BLOCKED
+import com.freshdigitable.udonroad2.user.RelationshipMenu.RETWEET_WANTED
+import com.freshdigitable.udonroad2.user.RelationshipMenu.UNBLOCK
+import com.freshdigitable.udonroad2.user.RelationshipMenu.UNFOLLOW
+import com.freshdigitable.udonroad2.user.RelationshipMenu.UNMUTE
 import com.google.common.truth.Truth.assertThat
 import io.mockk.every
-import io.mockk.just
 import io.mockk.mockk
-import io.mockk.runs
-import io.mockk.verify
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.junit.experimental.runners.Enclosed
 import org.junit.rules.RuleChain
 import org.junit.rules.TestWatcher
 import org.junit.runner.Description
+import org.junit.runner.RunWith
+import org.junit.runners.Parameterized
 import org.junit.runners.model.Statement
 
+@RunWith(Enclosed::class)
 class UserViewModelTest {
-    @get:Rule
-    val rule = UserViewModelTestRule()
+    class Init {
+        @get:Rule
+        val rule = UserViewModelTestRule()
 
-    @Test
-    fun initialValue(): Unit = with(rule) {
-        // verify
-        assertThat(sut.user.value).isNotNull()
-        assertThat(sut.relationship.value).isNotNull()
-        assertThat(sut.fabVisible.value).isFalse()
-        assertThat(sut.titleAlpha.value).isEqualTo(0)
-    }
+        @Test
+        fun initialValue(): Unit = with(rule) {
+            // verify
+            assertThat(sut.user.value).isNull()
+            assertThat(sut.relationship.value).isNull()
+            assertThat(sut.relationshipMenuItems.value).isNull()
+            assertThat(sut.fabVisible.value).isFalse()
+            assertThat(sut.titleAlpha.value).isEqualTo(0)
+        }
 
-    @Test
-    fun setAppbarScrollRate(): Unit = with(rule) {
-        // exercise
-        sut.setAppBarScrollRate(1f)
+        @Test
+        fun setAppbarScrollRate(): Unit = with(rule) {
+            // exercise
+            sut.setAppBarScrollRate(1f)
 
-        // verify
-        assertThat(sut.titleAlpha.value).isEqualTo(1f)
-    }
+            // verify
+            assertThat(sut.titleAlpha.value).isEqualTo(1f)
+        }
 
-    @Test
-    fun updateFollowingStatus(): Unit = with(rule) {
-        // setup
-        every { relationshipRepository.updateFollowingStatus(targetId, any()) } just runs
+        @Test
+        fun fabVisible_dispatchedSelectedEvent_then_fabVisibleIsTrue(): Unit = with(rule) {
+            // setup
+            sut.setCurrentPage(0)
 
-        // exercise
-        sut.updateFollowingStatus(true)
-
-        // verify
-        verify { relationshipRepository.updateFollowingStatus(targetId, true) }
-    }
-
-    @Test
-    fun updateBlockingStatus(): Unit = with(rule) {
-        // setup
-        every { relationshipRepository.updateBlockingStatus(targetId, any()) } just runs
-
-        // exercise
-        sut.updateBlockingStatus(true)
-
-        // verify
-        verify { relationshipRepository.updateBlockingStatus(targetId, true) }
-    }
-
-    @Test
-    fun updateMutingStatus(): Unit = with(rule) {
-        // setup
-        every { relationshipRepository.updateMutingStatus(targetId, any()) } just runs
-
-        // exercise
-        sut.updateMutingStatus(true)
-
-        // verify
-        verify { relationshipRepository.updateMutingStatus(targetId, true) }
-    }
-
-    @Test
-    fun reportForSpam(): Unit = with(rule) {
-        // setup
-        every { relationshipRepository.reportSpam(targetId) } just runs
-
-        // exercise
-        sut.reportForSpam()
-
-        // verify
-        verify { relationshipRepository.reportSpam(targetId) }
-    }
-
-    @Test
-    fun fabVisible_dispatchedSelectedEvent_then_fabVisibleIsTrue(): Unit = with(rule) {
-        // setup
-        sut.setCurrentPage(0)
-
-        // exercise
-        selectedItemRepository.put(
-            SelectedItemId(
-                ListOwner(0, QueryType.TweetQueryType.Timeline(targetId)), TweetId(10000)
+            // exercise
+            selectedItemRepository.put(
+                SelectedItemId(
+                    ListOwner(0, QueryType.TweetQueryType.Timeline(targetId)), TweetId(10000)
+                )
             )
-        )
 
-        // verify
-        assertThat(sut.fabVisible.value).isTrue()
+            // verify
+            assertThat(sut.fabVisible.value).isTrue()
+        }
     }
 
-    @Test
-    fun fabVisible_WhenItemSelectedChangeCurrentPage_then_fabVisibleIsFalse(): Unit = with(rule) {
-        // setup
-        sut.setCurrentPage(0)
-        selectedItemRepository.put(
-            SelectedItemId(
-                ListOwner(0, QueryType.TweetQueryType.Timeline(targetId)), TweetId(10000)
+    class WhenItemSelected {
+        @get:Rule
+        val rule = UserViewModelTestRule()
+
+        @Before
+        fun setup(): Unit = with(rule) {
+            sut.setCurrentPage(0)
+            selectedItemRepository.put(
+                SelectedItemId(
+                    ListOwner(0, QueryType.TweetQueryType.Timeline(targetId)), TweetId(10000)
+                )
             )
-        )
+        }
 
-        // exercise
-        sut.setCurrentPage(1)
+        @Test
+        fun fabVisible_changeCurrentPage_then_fabVisibleIsFalse(): Unit = with(rule) {
+            // exercise
+            sut.setCurrentPage(1)
 
-        // verify
-        assertThat(sut.fabVisible.value).isFalse()
+            // verify
+            assertThat(sut.fabVisible.value).isFalse()
+        }
+
+        @Test
+        fun fabVisible_returnToPage_then_fabVisibleIsTrue(): Unit = with(rule) {
+            // setup
+            sut.setCurrentPage(1)
+
+            // exercise
+            sut.setCurrentPage(0)
+
+            // verify
+            assertThat(sut.fabVisible.value).isTrue()
+        }
     }
 
-    @Test
-    fun fabVisible_WhenItemSelectedReturnToPage_then_fabVisibleIsTrue(): Unit = with(rule) {
-        // setup
-        sut.setCurrentPage(0)
-        selectedItemRepository.put(
-            SelectedItemId(
-                ListOwner(0, QueryType.TweetQueryType.Timeline(targetId)), TweetId(10000)
+    @RunWith(Parameterized::class)
+    class WhenRelationshipMenuIsSelected(private val param: Param) {
+        @get:Rule
+        val rule = UserViewModelTestRule()
+
+        data class Param(
+            @IdRes val menuId: Int,
+            val text: String,
+            val block: UserViewModelTestRule.() -> MatcherScopedBlock<Unit>
+        ) {
+            override fun toString(): String = text
+        }
+
+        companion object {
+            @JvmStatic
+            @Parameterized.Parameters(name = "{0}")
+            fun params(): List<Param> = listOf(
+                Param(R.id.action_follow, "follow") {
+                    { relationshipRepository.updateFollowingStatus(targetId, true) }
+                },
+                Param(R.id.action_unfollow, "unfollow") {
+                    { relationshipRepository.updateFollowingStatus(targetId, false) }
+                },
+                Param(R.id.action_mute, "mute") {
+                    { relationshipRepository.updateMutingStatus(targetId, true) }
+                },
+                Param(R.id.action_unmute, "unmute") {
+                    { relationshipRepository.updateMutingStatus(targetId, false) }
+                },
+                Param(R.id.action_block, "block") {
+                    { relationshipRepository.updateBlockingStatus(targetId, true) }
+                },
+                Param(R.id.action_unblock, "unblock") {
+                    { relationshipRepository.updateBlockingStatus(targetId, false) }
+                },
+                Param(R.id.action_block_retweet, "block_retweet") {
+                    { relationshipRepository.updateWantRetweetStatus(targetId, false) }
+                },
+                Param(R.id.action_unblock_retweet, "want_retweet") {
+                    { relationshipRepository.updateWantRetweetStatus(targetId, true) }
+                },
+                Param(R.id.action_r4s, "spam") {
+                    { relationshipRepository.reportSpam(targetId) }
+                },
             )
-        )
-        sut.setCurrentPage(1)
+        }
 
-        // exercise
-        sut.setCurrentPage(0)
+        @Test
+        fun test(): Unit = with(rule) {
+            // setup
+            relationshipRepositoryMock.setupResponseWithVerify(param.block(this), Unit)
 
-        // verify
-        assertThat(sut.fabVisible.value).isTrue()
+            // exercise
+            sut.onOptionsItemSelected(menuItem(param.menuId))
+        }
+    }
+
+    @RunWith(Parameterized::class)
+    class WhenRelationshipUpdated(private val param: Param) {
+        @get:Rule
+        val rule = UserViewModelTestRule()
+
+        data class Param(
+            val givenRelationship: Relationship?,
+            val menuSet: Iterable<RelationshipMenu>
+        ) {
+            override fun toString(): String {
+                return "relationship:" + (givenRelationship?.let {
+                    "{following:${it.following}, blocking:${it.blocking}, " +
+                        "muting:${it.muting}, wantRetweets:${it.wantRetweets}}"
+                } ?: "null") +
+                    ", menuSet:$menuSet"
+            }
+        }
+
+        companion object {
+            @JvmStatic
+            @Parameterized.Parameters(name = "{0}")
+            fun params(): List<Param> = listOf(
+                Param(
+                    null,
+                    setOf(REPORT_SPAM)
+                ),
+                Param(
+                    relationship(),
+                    setOf(FOLLOW, BLOCK, MUTE, REPORT_SPAM)
+                ),
+                Param(
+                    relationship(givenBlocking = true),
+                    setOf(FOLLOW, UNBLOCK, MUTE, REPORT_SPAM)
+                ),
+                Param(
+                    relationship(givenMuting = true),
+                    setOf(FOLLOW, BLOCK, UNMUTE, REPORT_SPAM)
+                ),
+                Param(
+                    relationship(givenFollowing = true),
+                    setOf(UNFOLLOW, BLOCK, MUTE, RETWEET_WANTED, REPORT_SPAM)
+                ),
+                Param(
+                    relationship(givenFollowing = true, givenMuting = true),
+                    setOf(UNFOLLOW, BLOCK, UNMUTE, RETWEET_WANTED, REPORT_SPAM)
+                ),
+                Param(
+                    relationship(givenFollowing = true, givenWantRetweets = true),
+                    setOf(UNFOLLOW, BLOCK, MUTE, RETWEET_BLOCKED, REPORT_SPAM)
+                ),
+                Param(
+                    relationship(
+                        givenFollowing = true,
+                        givenMuting = true,
+                        givenWantRetweets = true
+                    ),
+                    setOf(UNFOLLOW, BLOCK, UNMUTE, RETWEET_BLOCKED, REPORT_SPAM)
+                ),
+            )
+
+            private fun relationship(
+                givenFollowing: Boolean = false,
+                givenBlocking: Boolean = false,
+                givenMuting: Boolean = false,
+                givenWantRetweets: Boolean = false
+            ): Relationship = mockk<Relationship>().apply {
+                every { following } returns givenFollowing
+                every { blocking } returns givenBlocking
+                every { muting } returns givenMuting
+                every { wantRetweets } returns givenWantRetweets
+            }
+        }
+
+        @Test
+        fun test(): Unit = with(rule) {
+            // setup
+            setupRelation(targetId, param.givenRelationship)
+
+            // exercise
+            userSource.value = mockk<User>().apply {
+                every { id } returns targetId
+            }
+
+            // verify
+            assertThat(sut.relationshipMenuItems.value).containsExactlyElementsIn(param.menuSet)
+        }
     }
 }
 
@@ -174,8 +290,8 @@ class UserViewModelTestRule : TestWatcher() {
         every { screenName } returns "user1"
     }
     private val userRepository = MockVerified.create<UserRepository>()
-    private val _relationshipRepository = MockVerified.create<RelationshipRepository>()
-    val relationshipRepository: RelationshipRepository = _relationshipRepository.mock
+    val relationshipRepositoryMock = MockVerified.create<RelationshipRepository>()
+    val relationshipRepository: RelationshipRepository = relationshipRepositoryMock.mock
     val selectedItemRepository = SelectedItemRepository()
 
     val sut: UserViewModel by lazy {
@@ -195,7 +311,6 @@ class UserViewModelTestRule : TestWatcher() {
     override fun starting(description: Description?) {
         super.starting(description)
         setupUser(targetId)
-        setupRelation(targetId)
 
         sut.setCurrentPage(0)
         sut.setAppBarScrollRate(0f)
@@ -203,30 +318,32 @@ class UserViewModelTestRule : TestWatcher() {
             sut.user,
             sut.relationship,
             sut.fabVisible,
-            sut.titleAlpha
+            sut.titleAlpha,
+            sut.relationshipMenuItems,
         ).forEach { it.observeForever {} }
     }
 
     override fun apply(base: Statement?, description: Description?): Statement {
         return RuleChain.outerRule(InstantTaskExecutorRule())
             .around(userRepository)
-            .around(_relationshipRepository)
+            .around(relationshipRepositoryMock)
             .apply(super.apply(base, description), description)
     }
 
-    private fun setupUser(targetUser: UserId) {
-        val response = mockk<User>().apply {
-            every { id } returns targetUser
-        }
+    val userSource = MutableLiveData<User>()
+
+    private fun setupUser(targetId: UserId) {
         with(userRepository) {
-            setupResponseWithVerify({ mock.getUser(targetUser) }, MutableLiveData(response))
+            setupResponseWithVerify({ mock.getUser(targetId) }, userSource)
         }
     }
 
-    private fun setupRelation(targetUser: UserId, response: Relationship = mockk()) {
-        _relationshipRepository.setupResponseWithVerify(
-            { relationshipRepository.findRelationship(targetUser) },
-            MutableLiveData(response)
+    private val relationshipSource = MutableLiveData<Relationship>()
+
+    fun setupRelation(targetId: UserId, response: Relationship? = null) {
+        relationshipSource.value = response
+        relationshipRepositoryMock.setupResponseWithVerify(
+            { relationshipRepository.findRelationship(targetId) }, relationshipSource
         )
     }
 }

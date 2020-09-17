@@ -1,18 +1,23 @@
 package com.freshdigitable.udonroad2.user
 
 import android.view.MenuItem
+import androidx.annotation.IdRes
+import androidx.annotation.Keep
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
+import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.app.navigation.CommonEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.user.Relationship
 import com.freshdigitable.udonroad2.model.user.TweetingUser
 import com.freshdigitable.udonroad2.model.user.User
+import com.freshdigitable.udonroad2.model.user.UserId
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.postSelectedItemShortcutEvent
 import com.freshdigitable.udonroad2.user.UserActivityEvent.Relationships
 import timber.log.Timber
+import java.util.EnumSet
 
 class UserViewModel(
     private val tweetingUser: TweetingUser,
@@ -23,6 +28,7 @@ class UserViewModel(
     val relationship: LiveData<Relationship?> = viewState.relationship
     val titleAlpha: LiveData<Float> = viewState.titleAlpha
     val fabVisible: LiveData<Boolean> = viewState.fabVisible
+    val relationshipMenuItems: LiveData<Set<RelationshipMenu>> = viewState.relationshipMenuItems
 
     fun getOwner(userPage: UserPage): ListOwner<*> = requireNotNull(viewState.pages[userPage])
 
@@ -51,23 +57,50 @@ class UserViewModel(
         eventDispatcher.postEvent(event)
     }
 
-    fun updateFollowingStatus(following: Boolean) {
-        eventDispatcher.postEvent(Relationships.Following(following, tweetingUser.id))
+    fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return eventDispatcher.postRelationshipEvent(tweetingUser.id, item)
     }
+}
 
-    fun updateBlockingStatus(blocking: Boolean) {
-        eventDispatcher.postEvent(Relationships.Blocking(blocking, tweetingUser.id))
-    }
+private fun EventDispatcher.postRelationshipEvent(userId: UserId, item: MenuItem): Boolean {
+    val menuItem = RelationshipMenu.findById(item.itemId) ?: return false
+    postEvent(menuItem.event(userId))
+    return true
+}
 
-    fun updateMutingStatus(muting: Boolean) {
-        eventDispatcher.postEvent(Relationships.Muting(muting, tweetingUser.id))
-    }
+@Keep
+enum class RelationshipMenu(
+    @IdRes val id: Int,
+    val event: (UserId) -> Relationships
+) {
+    FOLLOW(R.id.action_follow, { u -> Relationships.Following(true, u) }),
+    UNFOLLOW(R.id.action_unfollow, { u -> Relationships.Following(false, u) }),
+    BLOCK(R.id.action_block, { u -> Relationships.Blocking(true, u) }),
+    UNBLOCK(R.id.action_unblock, { u -> Relationships.Blocking(false, u) }),
+    MUTE(R.id.action_mute, { u -> Relationships.Muting(true, u) }),
+    UNMUTE(R.id.action_unmute, { u -> Relationships.Muting(false, u) }),
+    RETWEET_BLOCKED(R.id.action_block_retweet, { u -> Relationships.WantsRetweet(false, u) }),
+    RETWEET_WANTED(R.id.action_unblock_retweet, { u -> Relationships.WantsRetweet(true, u) }),
+    REPORT_SPAM(R.id.action_r4s, { u -> Relationships.ReportSpam(u) }),
+    ;
 
-    fun updateWantRetweet(wantRetweet: Boolean) {
-        eventDispatcher.postEvent(Relationships.WantsRetweet(wantRetweet, tweetingUser.id))
-    }
+    companion object {
+        fun findById(@IdRes id: Int): RelationshipMenu? = values().firstOrNull { it.id == id }
 
-    fun reportForSpam() {
-        eventDispatcher.postEvent(Relationships.ReportSpam(tweetingUser.id))
+        fun availableItems(relationship: Relationship?): EnumSet<RelationshipMenu> {
+            if (relationship == null) {
+                return EnumSet.of(REPORT_SPAM)
+            }
+            return EnumSet.of(
+                if (relationship.following) UNFOLLOW else FOLLOW,
+                if (relationship.blocking) UNBLOCK else BLOCK,
+                if (relationship.muting) UNMUTE else MUTE,
+                REPORT_SPAM,
+            ).apply {
+                if (relationship.following) {
+                    if (relationship.wantRetweets) add(RETWEET_BLOCKED) else add(RETWEET_WANTED)
+                }
+            }
+        }
     }
 }

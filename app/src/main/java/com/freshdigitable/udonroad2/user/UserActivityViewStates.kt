@@ -44,11 +44,14 @@ class UserActivityViewStates @Inject constructor(
     navigationDelegate: UserActivityNavigationDelegate
 ) {
     val user: LiveData<User?> = userRepository.getUser(tweetingUser.id)
-    val relationship: LiveData<Relationship?> = user.switchMap {
+    val relationship: AppViewState<Relationship?> = user.switchMap {
         when (it) {
             null -> MutableLiveData()
             else -> relationshipRepository.findRelationship(it.id)
         }
+    }
+    val relationshipMenuItems: AppViewState<Set<RelationshipMenu>> = relationship.map {
+        RelationshipMenu.availableItems(it)
     }
 
     // TODO: save to state handle
