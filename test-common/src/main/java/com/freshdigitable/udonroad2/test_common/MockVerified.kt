@@ -77,4 +77,5 @@ class MockVerified<T>(
 }
 
 typealias MatcherScopedBlock<R> = MockKMatcherScope.() -> R
+typealias MatcherScopedSuspendBlock<R> = suspend MockKMatcherScope.() -> R
 typealias AnswerScopedBlock<T, B> = MockKAnswerScope<T, B>.() -> Unit

@@ -20,6 +20,7 @@ import androidx.annotation.IdRes
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.MutableLiveData
 import com.freshdigitable.udonroad2.R
+import com.freshdigitable.udonroad2.data.impl.AppExecutor
 import com.freshdigitable.udonroad2.data.impl.RelationshipRepository
 import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
 import com.freshdigitable.udonroad2.data.impl.UserRepository
@@ -34,7 +35,8 @@ import com.freshdigitable.udonroad2.model.user.Relationship
 import com.freshdigitable.udonroad2.model.user.TweetingUser
 import com.freshdigitable.udonroad2.model.user.User
 import com.freshdigitable.udonroad2.model.user.UserId
-import com.freshdigitable.udonroad2.test_common.MatcherScopedBlock
+import com.freshdigitable.udonroad2.test_common.CoroutineTestRule
+import com.freshdigitable.udonroad2.test_common.MatcherScopedSuspendBlock
 import com.freshdigitable.udonroad2.test_common.MockVerified
 import com.freshdigitable.udonroad2.user.RelationshipMenu.BLOCK
 import com.freshdigitable.udonroad2.user.RelationshipMenu.FOLLOW
@@ -48,6 +50,7 @@ import com.freshdigitable.udonroad2.user.RelationshipMenu.UNMUTE
 import com.google.common.truth.Truth.assertThat
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -59,6 +62,7 @@ import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 import org.junit.runners.model.Statement
 
+@ExperimentalCoroutinesApi
 @RunWith(Enclosed::class)
 class UserViewModelTest {
     class Init {
@@ -138,14 +142,14 @@ class UserViewModelTest {
     }
 
     @RunWith(Parameterized::class)
-    class WhenRelationshipMenuIsSelected(private val param: Param) {
+    class WhenRelationshipMenuIsSelected(private val param: Param<*>) {
         @get:Rule
         val rule = UserViewModelTestRule()
 
-        data class Param(
+        data class Param<T>(
             @IdRes val menuId: Int,
             val text: String,
-            val block: UserViewModelTestRule.() -> MatcherScopedBlock<Unit>
+            val block: UserViewModelTestRule.() -> MatcherScopedSuspendBlock<T>
         ) {
             override fun toString(): String = text
         }
@@ -153,7 +157,7 @@ class UserViewModelTest {
         companion object {
             @JvmStatic
             @Parameterized.Parameters(name = "{0}")
-            fun params(): List<Param> = listOf(
+            fun params(): List<Param<*>> = listOf(
                 Param(R.id.action_follow, "follow") {
                     { relationshipRepository.updateFollowingStatus(targetId, true) }
                 },
@@ -187,7 +191,7 @@ class UserViewModelTest {
         @Test
         fun test(): Unit = with(rule) {
             // setup
-            relationshipRepositoryMock.setupResponseWithVerify(param.block(this), Unit)
+            relationshipRepositoryMock.coSetupResponseWithVerify(param.block(this), mockk())
 
             // exercise
             sut.onOptionsItemSelected(menuItem(param.menuId))
@@ -283,6 +287,7 @@ class UserViewModelTest {
     }
 }
 
+@ExperimentalCoroutinesApi
 class UserViewModelTestRule : TestWatcher() {
     val targetId = UserId(1000)
     private val targetUser: TweetingUser = mockk<TweetingUser>().apply {
@@ -293,6 +298,7 @@ class UserViewModelTestRule : TestWatcher() {
     val relationshipRepositoryMock = MockVerified.create<RelationshipRepository>()
     val relationshipRepository: RelationshipRepository = relationshipRepositoryMock.mock
     val selectedItemRepository = SelectedItemRepository()
+    private val coroutineRule = CoroutineTestRule()
 
     val sut: UserViewModel by lazy {
         val eventDispatcher = EventDispatcher()
@@ -303,7 +309,8 @@ class UserViewModelTestRule : TestWatcher() {
             relationshipRepository,
             selectedItemRepository,
             ListOwnerGenerator(),
-            mockk(relaxed = true)
+            mockk(relaxed = true),
+            AppExecutor(dispatcher = coroutineRule.coroutineContextProvider)
         )
         UserViewModel(targetUser, eventDispatcher, viewStates)
     }
@@ -327,6 +334,7 @@ class UserViewModelTestRule : TestWatcher() {
         return RuleChain.outerRule(InstantTaskExecutorRule())
             .around(userRepository)
             .around(relationshipRepositoryMock)
+            .around(coroutineRule)
             .apply(super.apply(base, description), description)
     }
 
