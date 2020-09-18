@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright (c) 2020. Matsuda, Akihit (akihito104)
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<resources>
+    <string name="msg_follow_create_success">success followed</string>
+    <string name="msg_follow_create_failure">following failure…</string>
+    <string name="msg_follow_destroy_success">destroyed friendship</string>
+    <string name="msg_follow_destroy_failure">failed to destroy friendship…</string>
+    <string name="msg_block_create_success">blocked</string>
+    <string name="msg_block_create_failure">failed to block…</string>
+    <string name="msg_block_destroy_success">destroyed block</string>
+    <string name="msg_block_destroy_failure">failed to destroy block…</string>
+    <string name="msg_mute_create_failure">failed to mute…</string>
+    <string name="msg_mute_create_success">muted</string>
+    <string name="msg_mute_destroy_failure">failed to unmute…</string>
+    <string name="msg_mute_destroy_success">unmuted</string>
+    <string name="msg_want_retweet_destroy_failure">failed to block Retweet…</string>
+    <string name="msg_want_retweet_destroy_success">blocked Retweet</string>
+    <string name="msg_want_retweet_create_failure">failed to accept RT…</string>
+    <string name="msg_want_retweet_create_success">RT accepting</string>
+    <string name="msg_report_spam_failed">failed to report spam…</string>
+    <string name="msg_report_spam_success">reported spam</string>
+    <string name="msg_fetch_relationship_failed">failed to get friendship with this user…</string>
+</resources>

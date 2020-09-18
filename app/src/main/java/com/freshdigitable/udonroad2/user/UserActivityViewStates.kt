@@ -117,74 +117,75 @@ class UserActivityViewStates @Inject constructor(
 }
 
 @Keep
+@Suppress("unused")
 internal enum class RelationshipFeedbackMessage(
     override val messageRes: Int,
     private val matcher: (EventResult<*>) -> Boolean,
 ) : FeedbackMessage {
-    FOLLOW_CREATE_SUCCESS(R.string.msg_create_friendship_success, {
+    FOLLOW_CREATE_SUCCESS(R.string.msg_follow_create_success, {
         (it.event as? UserActivityEvent.Relationships.Following)?.wantsFollow == true
             && it.isSuccess
     }),
-    FOLLOW_CREATE_FAILURE(R.string.msg_create_friendship_failed, {
+    FOLLOW_CREATE_FAILURE(R.string.msg_follow_create_failure, {
         (it.event as? UserActivityEvent.Relationships.Following)?.wantsFollow == true
             && it.isFailure
     }),
-    FOLLOW_DESTROY_SUCCESS(R.string.msg_destroy_friendship_success, {
+    FOLLOW_DESTROY_SUCCESS(R.string.msg_follow_destroy_success, {
         (it.event as? UserActivityEvent.Relationships.Following)?.wantsFollow == false
             && it.isSuccess
     }),
-    FOLLOW_DESTROY_FAILURE(R.string.msg_destroy_friendship_failed, {
+    FOLLOW_DESTROY_FAILURE(R.string.msg_follow_destroy_failure, {
         (it.event as? UserActivityEvent.Relationships.Following)?.wantsFollow == false
             && it.isFailure
     }),
 
-    MUTE_CREATE_SUCCESS(R.string.msg_create_mute_success, {
+    MUTE_CREATE_SUCCESS(R.string.msg_mute_create_success, {
         (it.event as? UserActivityEvent.Relationships.Muting)?.wantsMute == true
             && it.isSuccess
     }),
-    MUTE_CREATE_FAILURE(R.string.msg_create_mute_failed, {
+    MUTE_CREATE_FAILURE(R.string.msg_mute_create_failure, {
         (it.event as? UserActivityEvent.Relationships.Muting)?.wantsMute == true
             && it.isFailure
     }),
-    MUTE_DESTROY_SUCCESS(R.string.msg_destroy_mute_success, {
+    MUTE_DESTROY_SUCCESS(R.string.msg_mute_destroy_success, {
         (it.event as? UserActivityEvent.Relationships.Muting)?.wantsMute == false
             && it.isSuccess
     }),
-    MUTE_DESTROY_FAILURE(R.string.msg_destroy_mute_failed, {
+    MUTE_DESTROY_FAILURE(R.string.msg_mute_destroy_failure, {
         (it.event as? UserActivityEvent.Relationships.Muting)?.wantsMute == false
             && it.isFailure
     }),
 
-    BLOCK_CREATE_SUCCESS(R.string.msg_create_block_success, {
+    BLOCK_CREATE_SUCCESS(R.string.msg_block_create_success, {
         (it.event as? UserActivityEvent.Relationships.Blocking)?.wantsBlock == true
             && it.isSuccess
     }),
-    BLOCK_CREATE_FAILURE(R.string.msg_create_block_failed, {
+    BLOCK_CREATE_FAILURE(R.string.msg_block_create_failure, {
         (it.event as? UserActivityEvent.Relationships.Blocking)?.wantsBlock == true
             && it.isFailure
     }),
-    BLOCK_DESTROY_SUCCESS(R.string.msg_create_block_success, {
+    BLOCK_DESTROY_SUCCESS(R.string.msg_block_destroy_success, {
         (it.event as? UserActivityEvent.Relationships.Blocking)?.wantsBlock == false
             && it.isSuccess
     }),
-    BLOCK_DESTROY_FAILURE(R.string.msg_create_block_failed, {
+    BLOCK_DESTROY_FAILURE(R.string.msg_block_destroy_failure, {
         (it.event as? UserActivityEvent.Relationships.Blocking)?.wantsBlock == false
             && it.isFailure
     }),
 
-    WANT_RETWEET_CREATE_SUCCESS(R.string.msg_unblock_retweet_success, {
+    WANT_RETWEET_CREATE_SUCCESS(R.string.msg_want_retweet_create_success, {
         (it.event as? UserActivityEvent.Relationships.WantsRetweet)?.wantsRetweet == true
             && it.isSuccess
     }),
-    WANT_RETWEET_CREATE_FAILURE(R.string.msg_unblock_retweet_failed, {
+    WANT_RETWEET_CREATE_FAILURE(R.string.msg_want_retweet_create_failure, {
         (it.event as? UserActivityEvent.Relationships.WantsRetweet)?.wantsRetweet == true
             && it.isFailure
     }),
-    WANT_RETWEET_DESTROY_SUCCESS(R.string.msg_create_block_success, {
+    WANT_RETWEET_DESTROY_SUCCESS(R.string.msg_want_retweet_destroy_success, {
         (it.event as? UserActivityEvent.Relationships.WantsRetweet)?.wantsRetweet == false
             && it.isSuccess
     }),
-    WANT_RETWEET_DESTROY_FAILURE(R.string.msg_create_block_failed, {
+    WANT_RETWEET_DESTROY_FAILURE(R.string.msg_want_retweet_destroy_failure, {
         (it.event as? UserActivityEvent.Relationships.WantsRetweet)?.wantsRetweet == false
             && it.isFailure
     }),
