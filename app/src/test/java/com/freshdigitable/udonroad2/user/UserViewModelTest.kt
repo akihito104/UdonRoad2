@@ -30,6 +30,7 @@ import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
+import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.user.Relationship
 import com.freshdigitable.udonroad2.model.user.TweetingUser
@@ -50,6 +51,7 @@ import com.freshdigitable.udonroad2.user.RelationshipMenu.UNMUTE
 import com.google.common.truth.Truth.assertThat
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Before
 import org.junit.Rule
@@ -147,54 +149,94 @@ class UserViewModelTest {
         val rule = UserViewModelTestRule()
 
         data class Param<T>(
-            @IdRes val menuId: Int,
             val text: String,
-            val block: UserViewModelTestRule.() -> MatcherScopedSuspendBlock<T>
+            @IdRes val menuId: Int,
+            val expectedMessage: FeedbackMessage,
+            val block: UserViewModelTestRule.() -> MatcherScopedSuspendBlock<T>,
         ) {
-            override fun toString(): String = text
+            override fun toString(): String = "$text: expectedMessage:$expectedMessage"
         }
 
         companion object {
             @JvmStatic
             @Parameterized.Parameters(name = "{0}")
             fun params(): List<Param<*>> = listOf(
-                Param(R.id.action_follow, "follow") {
+                Param(
+                    "follow",
+                    R.id.action_follow,
+                    RelationshipFeedbackMessage.FOLLOW_CREATE_SUCCESS
+                ) {
                     { relationshipRepository.updateFollowingStatus(targetId, true) }
                 },
-                Param(R.id.action_unfollow, "unfollow") {
+                Param(
+                    "unfollow",
+                    R.id.action_unfollow,
+                    RelationshipFeedbackMessage.FOLLOW_DESTROY_SUCCESS
+                ) {
                     { relationshipRepository.updateFollowingStatus(targetId, false) }
                 },
-                Param(R.id.action_mute, "mute") {
+                Param(
+                    "mute",
+                    R.id.action_mute,
+                    RelationshipFeedbackMessage.MUTE_CREATE_SUCCESS
+                ) {
                     { relationshipRepository.updateMutingStatus(targetId, true) }
                 },
-                Param(R.id.action_unmute, "unmute") {
+                Param(
+                    "unmute",
+                    R.id.action_unmute,
+                    RelationshipFeedbackMessage.MUTE_DESTROY_SUCCESS
+                ) {
                     { relationshipRepository.updateMutingStatus(targetId, false) }
                 },
-                Param(R.id.action_block, "block") {
+                Param(
+                    "block",
+                    R.id.action_block,
+                    RelationshipFeedbackMessage.BLOCK_CREATE_SUCCESS
+                ) {
                     { relationshipRepository.updateBlockingStatus(targetId, true) }
                 },
-                Param(R.id.action_unblock, "unblock") {
+                Param(
+                    "unblock",
+                    R.id.action_unblock,
+                    RelationshipFeedbackMessage.BLOCK_DESTROY_SUCCESS
+                ) {
                     { relationshipRepository.updateBlockingStatus(targetId, false) }
                 },
-                Param(R.id.action_block_retweet, "block_retweet") {
+                Param(
+                    "block_retweet",
+                    R.id.action_block_retweet,
+                    RelationshipFeedbackMessage.WANT_RETWEET_DESTROY_SUCCESS
+                ) {
                     { relationshipRepository.updateWantRetweetStatus(targetId, false) }
                 },
-                Param(R.id.action_unblock_retweet, "want_retweet") {
+                Param(
+                    "want_retweet",
+                    R.id.action_unblock_retweet,
+                    RelationshipFeedbackMessage.WANT_RETWEET_CREATE_SUCCESS
+                ) {
                     { relationshipRepository.updateWantRetweetStatus(targetId, true) }
                 },
-                Param(R.id.action_r4s, "spam") {
+                Param(
+                    "spam",
+                    R.id.action_r4s,
+                    RelationshipFeedbackMessage.REPORT_SPAM_SUCCESS
+                ) {
                     { relationshipRepository.reportSpam(targetId) }
                 },
             )
         }
 
         @Test
-        fun test(): Unit = with(rule) {
+        fun testOnSuccess(): Unit = with(rule) {
             // setup
             relationshipRepositoryMock.coSetupResponseWithVerify(param.block(this), mockk())
 
             // exercise
             sut.onOptionsItemSelected(menuItem(param.menuId))
+
+            // verify
+            verify { navigationDelegate.dispatchFeedbackMessage(param.expectedMessage) }
         }
     }
 
@@ -299,6 +341,7 @@ class UserViewModelTestRule : TestWatcher() {
     val relationshipRepository: RelationshipRepository = relationshipRepositoryMock.mock
     val selectedItemRepository = SelectedItemRepository()
     private val coroutineRule = CoroutineTestRule()
+    val navigationDelegate = mockk<UserActivityNavigationDelegate>(relaxed = true)
 
     val sut: UserViewModel by lazy {
         val eventDispatcher = EventDispatcher()
@@ -309,7 +352,7 @@ class UserViewModelTestRule : TestWatcher() {
             relationshipRepository,
             selectedItemRepository,
             ListOwnerGenerator(),
-            mockk(relaxed = true),
+            navigationDelegate,
             AppExecutor(dispatcher = coroutineRule.coroutineContextProvider)
         )
         UserViewModel(targetUser, eventDispatcher, viewStates)
