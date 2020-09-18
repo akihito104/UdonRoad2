@@ -71,7 +71,7 @@ class RelationshipRepository @Inject constructor(
                 isBlocking -> restClient.createBlock(targetUserId)
                 else -> restClient.destroyBlock(targetUserId)
             }
-            dao.updateBlockingStatus(user.id, isBlocking)
+            dao.updateBlockingStatusTransaction(user.id, isBlocking)
             return user
         } catch (e: AppTwitterException) {
             fetchFriendship(targetUserId)
@@ -97,7 +97,7 @@ class RelationshipRepository @Inject constructor(
 
     suspend fun reportSpam(userId: UserId): User {
         val user = restClient.reportSpam(userId)
-        dao.updateBlockingStatus(user.id, false)
+        dao.updateBlockingStatusTransaction(user.id, true)
         return user
     }
 }

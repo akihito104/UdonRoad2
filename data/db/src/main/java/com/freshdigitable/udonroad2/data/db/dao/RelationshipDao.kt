@@ -5,6 +5,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import com.freshdigitable.udonroad2.data.db.entity.RelationshipEntity
 import com.freshdigitable.udonroad2.model.user.Relationship
 import com.freshdigitable.udonroad2.model.user.UserId
@@ -33,8 +34,16 @@ abstract class RelationshipDao {
     @Query("UPDATE relationship SET muting = :isMuting WHERE user_id = :userId")
     abstract suspend fun updateMutingStatus(userId: UserId, isMuting: Boolean)
 
+    @Transaction
+    open suspend fun updateBlockingStatusTransaction(userId: UserId, isBlocking: Boolean) {
+        updateBlockingStatus(userId, isBlocking)
+        if (isBlocking) {
+            updateFollowingStatus(userId, false)
+        }
+    }
+
     @Query("UPDATE relationship SET blocking = :isBlocking WHERE user_id = :userId")
-    abstract suspend fun updateBlockingStatus(userId: UserId, isBlocking: Boolean)
+    internal abstract suspend fun updateBlockingStatus(userId: UserId, isBlocking: Boolean)
 
     @Query("UPDATE relationship SET want_retweets = :wantRetweets WHERE user_id = :userId")
     abstract suspend fun updateWantRetweetsStatus(userId: UserId, wantRetweets: Boolean)
