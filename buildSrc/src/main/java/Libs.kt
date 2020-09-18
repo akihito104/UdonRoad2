@@ -76,7 +76,7 @@ object Libs {
         "org.jetbrains.kotlinx:kotlinx-coroutines-android:${Versions.KOTLIN_COROUTINES}"
     const val KOTLINX_COROUTINES =
         "org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.KOTLIN_COROUTINES}"
-`    const val KOTLINX_COROUTINES_RX2 =
+    const val KOTLINX_COROUTINES_RX2 =
         "org.jetbrains.kotlinx:kotlinx-coroutines-rx2:${Versions.KOTLIN_COROUTINES}"
     const val KOTLINX_TEST_COROUTINES =
         "org.jetbrains.kotlinx:kotlinx-coroutines-test:${Versions.KOTLINX_TEST_COROUTINES}"
