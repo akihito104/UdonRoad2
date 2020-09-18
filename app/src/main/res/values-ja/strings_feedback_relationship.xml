@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright (c) 2020. Matsuda, Akihit (akihito104)
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<resources>
+    <string name="msg_follow_create_success">フォローしました</string>
+    <string name="msg_follow_create_failure">フォローできませんでした…</string>
+    <string name="msg_report_spam_success">スパムとして報告しました</string>
+    <string name="msg_report_spam_failed">スパム報告できませんでした…</string>
+    <string name="msg_follow_destroy_success">フォローをやめました</string>
+    <string name="msg_mute_create_failure">ミュートできませんでした…</string>
+    <string name="msg_mute_create_success">ミュートしました</string>
+    <string name="msg_block_destroy_failure">ブロックをやめられませんでした…</string>
+    <string name="msg_block_destroy_success">ブロックをやめました</string>
+    <string name="msg_follow_destroy_failure">フォローをやめられませんでした…</string>
+    <string name="msg_block_create_failure">ブロックできませんした…</string>
+    <string name="msg_block_create_success">ブロックしました</string>
+    <string name="msg_mute_destroy_failure">ミュートをやめられませんでした…</string>
+    <string name="msg_mute_destroy_success">ミュートをやめました</string>
+    <string name="msg_want_retweet_destroy_failure">RTをブロックできませんでした…</string>
+    <string name="msg_want_retweet_destroy_success">RTをブロックしました</string>
+    <string name="msg_want_retweet_create_failure">RTをブロックできませんでした…</string>
+    <string name="msg_want_retweet_create_success">RTをブロックしました</string>
+    <string name="msg_fetch_relationship_failed">このユーザとの関連性を取得できませんでした…</string>
+</resources>

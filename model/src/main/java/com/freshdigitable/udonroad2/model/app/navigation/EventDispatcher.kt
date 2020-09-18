@@ -10,9 +10,13 @@ import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
 import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.PublishSubject
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.rx2.rxObservable
 import timber.log.Timber
 import java.io.Serializable
 import javax.inject.Inject
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 
 @ActivityScope
 class EventDispatcher @Inject constructor() {
@@ -54,6 +58,17 @@ inline fun <reified T> AppAction<out AppEvent>.filterByType(): AppAction<T> {
     return this.filter { it is T }.cast(T::class.java)
 }
 
+@ExperimentalCoroutinesApi
+inline fun <E : AppEvent, R> AppAction<E>.suspendMap(
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    crossinline block: suspend (E) -> R
+): AppAction<EventResult<R>> = flatMap { event ->
+    rxObservable(coroutineContext) {
+        val result = runCatching { block(event) }
+        channel.send(EventResult(event, result))
+    }
+}
+
 data class EventResult<T>(
     val event: AppEvent,
     private val result: Result<T>
@@ -61,6 +76,8 @@ data class EventResult<T>(
     val value: T? = result.getOrNull()
     val isSuccess: Boolean
         get() = result.isSuccess
+    val isFailure: Boolean
+        get() = result.isFailure
     val exception: Throwable?
         get() = result.exceptionOrNull()
 

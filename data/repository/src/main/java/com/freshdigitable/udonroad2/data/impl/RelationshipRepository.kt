@@ -4,8 +4,10 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import com.freshdigitable.udonroad2.data.db.DaoModule
 import com.freshdigitable.udonroad2.data.db.dao.RelationshipDao
+import com.freshdigitable.udonroad2.data.restclient.AppTwitterException
 import com.freshdigitable.udonroad2.data.restclient.FriendshipRestClient
 import com.freshdigitable.udonroad2.model.user.Relationship
+import com.freshdigitable.udonroad2.model.user.User
 import com.freshdigitable.udonroad2.model.user.UserId
 import dagger.Module
 import dagger.Provides
@@ -17,6 +19,7 @@ class RelationshipRepository @Inject constructor(
     private val executor: AppExecutor
 ) {
     fun findRelationship(targetUserId: UserId): LiveData<Relationship?> {
+        fetchFriendship(targetUserId)
         val res = MediatorLiveData<Relationship?>()
         res.addSource(dao.findRelationship(targetUserId)) { r ->
             when {
@@ -34,39 +37,50 @@ class RelationshipRepository @Inject constructor(
         }
     }
 
-    fun updateFollowingStatus(targetUserId: UserId, isFollowing: Boolean) {
-        executor.launchIO {
-            val user = if (isFollowing) {
-                restClient.createFriendship(targetUserId)
-            } else {
-                restClient.destroyFriendship(targetUserId)
+    suspend fun updateFollowingStatus(targetUserId: UserId, isFollowing: Boolean): User {
+        try {
+            val user = when {
+                isFollowing -> restClient.createFriendship(targetUserId)
+                else -> restClient.destroyFriendship(targetUserId)
             }
             dao.updateFollowingStatus(user.id, isFollowing)
+            return user
+        } catch (e: AppTwitterException) {
+            fetchFriendship(targetUserId)
+            throw e
         }
     }
 
-    fun updateMutingStatus(targetUserId: UserId, isMuting: Boolean) {
-        executor.launchIO {
+    suspend fun updateMutingStatus(targetUserId: UserId, isMuting: Boolean): User {
+        try {
             val user = when {
                 isMuting -> restClient.createMute(targetUserId)
                 else -> restClient.destroyMute(targetUserId)
             }
             dao.updateMutingStatus(user.id, isMuting)
+            return user
+        } catch (e: AppTwitterException) {
+            fetchFriendship(targetUserId)
+            throw e
         }
     }
 
-    fun updateBlockingStatus(targetUserId: UserId, isBlocking: Boolean) {
-        executor.launchIO {
+    suspend fun updateBlockingStatus(targetUserId: UserId, isBlocking: Boolean): User {
+        try {
             val user = when {
                 isBlocking -> restClient.createBlock(targetUserId)
                 else -> restClient.destroyBlock(targetUserId)
             }
-            dao.updateBlockingStatus(user.id, isBlocking)
+            dao.updateBlockingStatusTransaction(user.id, isBlocking)
+            return user
+        } catch (e: AppTwitterException) {
+            fetchFriendship(targetUserId)
+            throw e
         }
     }
 
-    fun updateWantRetweetStatus(userId: UserId, wantRetweets: Boolean) {
-        executor.launchIO {
+    suspend fun updateWantRetweetStatus(userId: UserId, wantRetweets: Boolean): Relationship {
+        try {
             val currentRelation = restClient.fetchFriendship(userId)
             val updated = restClient.updateFriendship(
                 currentRelation.userId,
@@ -74,14 +88,17 @@ class RelationshipRepository @Inject constructor(
                 wantRetweets
             )
             dao.updateWantRetweetsStatus(updated.userId, updated.wantRetweets)
+            return updated
+        } catch (e: AppTwitterException) {
+            fetchFriendship(userId)
+            throw e
         }
     }
 
-    fun reportSpam(userId: UserId) {
-        executor.launchIO {
-            val user = restClient.reportSpam(userId)
-            dao.updateBlockingStatus(user.id, false)
-        }
+    suspend fun reportSpam(userId: UserId): User {
+        val user = restClient.reportSpam(userId)
+        dao.updateBlockingStatusTransaction(user.id, true)
+        return user
     }
 }
 

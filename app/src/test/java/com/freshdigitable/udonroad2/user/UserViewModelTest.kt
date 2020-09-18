@@ -20,6 +20,7 @@ import androidx.annotation.IdRes
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.MutableLiveData
 import com.freshdigitable.udonroad2.R
+import com.freshdigitable.udonroad2.data.impl.AppExecutor
 import com.freshdigitable.udonroad2.data.impl.RelationshipRepository
 import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
 import com.freshdigitable.udonroad2.data.impl.UserRepository
@@ -29,12 +30,14 @@ import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
+import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.user.Relationship
 import com.freshdigitable.udonroad2.model.user.TweetingUser
 import com.freshdigitable.udonroad2.model.user.User
 import com.freshdigitable.udonroad2.model.user.UserId
-import com.freshdigitable.udonroad2.test_common.MatcherScopedBlock
+import com.freshdigitable.udonroad2.test_common.CoroutineTestRule
+import com.freshdigitable.udonroad2.test_common.MatcherScopedSuspendBlock
 import com.freshdigitable.udonroad2.test_common.MockVerified
 import com.freshdigitable.udonroad2.user.RelationshipMenu.BLOCK
 import com.freshdigitable.udonroad2.user.RelationshipMenu.FOLLOW
@@ -48,6 +51,8 @@ import com.freshdigitable.udonroad2.user.RelationshipMenu.UNMUTE
 import com.google.common.truth.Truth.assertThat
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -59,6 +64,7 @@ import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 import org.junit.runners.model.Statement
 
+@ExperimentalCoroutinesApi
 @RunWith(Enclosed::class)
 class UserViewModelTest {
     class Init {
@@ -138,59 +144,99 @@ class UserViewModelTest {
     }
 
     @RunWith(Parameterized::class)
-    class WhenRelationshipMenuIsSelected(private val param: Param) {
+    class WhenRelationshipMenuIsSelected(private val param: Param<*>) {
         @get:Rule
         val rule = UserViewModelTestRule()
 
-        data class Param(
-            @IdRes val menuId: Int,
+        data class Param<T>(
             val text: String,
-            val block: UserViewModelTestRule.() -> MatcherScopedBlock<Unit>
+            @IdRes val menuId: Int,
+            val expectedMessage: FeedbackMessage,
+            val block: UserViewModelTestRule.() -> MatcherScopedSuspendBlock<T>,
         ) {
-            override fun toString(): String = text
+            override fun toString(): String = "$text: expectedMessage:$expectedMessage"
         }
 
         companion object {
             @JvmStatic
             @Parameterized.Parameters(name = "{0}")
-            fun params(): List<Param> = listOf(
-                Param(R.id.action_follow, "follow") {
+            fun params(): List<Param<*>> = listOf(
+                Param(
+                    "follow",
+                    R.id.action_follow,
+                    RelationshipFeedbackMessage.FOLLOW_CREATE_SUCCESS
+                ) {
                     { relationshipRepository.updateFollowingStatus(targetId, true) }
                 },
-                Param(R.id.action_unfollow, "unfollow") {
+                Param(
+                    "unfollow",
+                    R.id.action_unfollow,
+                    RelationshipFeedbackMessage.FOLLOW_DESTROY_SUCCESS
+                ) {
                     { relationshipRepository.updateFollowingStatus(targetId, false) }
                 },
-                Param(R.id.action_mute, "mute") {
+                Param(
+                    "mute",
+                    R.id.action_mute,
+                    RelationshipFeedbackMessage.MUTE_CREATE_SUCCESS
+                ) {
                     { relationshipRepository.updateMutingStatus(targetId, true) }
                 },
-                Param(R.id.action_unmute, "unmute") {
+                Param(
+                    "unmute",
+                    R.id.action_unmute,
+                    RelationshipFeedbackMessage.MUTE_DESTROY_SUCCESS
+                ) {
                     { relationshipRepository.updateMutingStatus(targetId, false) }
                 },
-                Param(R.id.action_block, "block") {
+                Param(
+                    "block",
+                    R.id.action_block,
+                    RelationshipFeedbackMessage.BLOCK_CREATE_SUCCESS
+                ) {
                     { relationshipRepository.updateBlockingStatus(targetId, true) }
                 },
-                Param(R.id.action_unblock, "unblock") {
+                Param(
+                    "unblock",
+                    R.id.action_unblock,
+                    RelationshipFeedbackMessage.BLOCK_DESTROY_SUCCESS
+                ) {
                     { relationshipRepository.updateBlockingStatus(targetId, false) }
                 },
-                Param(R.id.action_block_retweet, "block_retweet") {
+                Param(
+                    "block_retweet",
+                    R.id.action_block_retweet,
+                    RelationshipFeedbackMessage.WANT_RETWEET_DESTROY_SUCCESS
+                ) {
                     { relationshipRepository.updateWantRetweetStatus(targetId, false) }
                 },
-                Param(R.id.action_unblock_retweet, "want_retweet") {
+                Param(
+                    "want_retweet",
+                    R.id.action_unblock_retweet,
+                    RelationshipFeedbackMessage.WANT_RETWEET_CREATE_SUCCESS
+                ) {
                     { relationshipRepository.updateWantRetweetStatus(targetId, true) }
                 },
-                Param(R.id.action_r4s, "spam") {
+                Param(
+                    "spam",
+                    R.id.action_r4s,
+                    RelationshipFeedbackMessage.REPORT_SPAM_SUCCESS
+                ) {
                     { relationshipRepository.reportSpam(targetId) }
                 },
             )
         }
 
         @Test
-        fun test(): Unit = with(rule) {
+        fun testOnSuccess(): Unit = with(rule) {
             // setup
-            relationshipRepositoryMock.setupResponseWithVerify(param.block(this), Unit)
+            relationshipRepositoryMock.coSetupResponseWithVerify(param.block(this), mockk())
 
             // exercise
             sut.onOptionsItemSelected(menuItem(param.menuId))
+
+            // verify
+            verify { navigationDelegate.dispatchFeedbackMessage(param.expectedMessage) }
         }
     }
 
@@ -283,6 +329,7 @@ class UserViewModelTest {
     }
 }
 
+@ExperimentalCoroutinesApi
 class UserViewModelTestRule : TestWatcher() {
     val targetId = UserId(1000)
     private val targetUser: TweetingUser = mockk<TweetingUser>().apply {
@@ -293,6 +340,8 @@ class UserViewModelTestRule : TestWatcher() {
     val relationshipRepositoryMock = MockVerified.create<RelationshipRepository>()
     val relationshipRepository: RelationshipRepository = relationshipRepositoryMock.mock
     val selectedItemRepository = SelectedItemRepository()
+    private val coroutineRule = CoroutineTestRule()
+    val navigationDelegate = mockk<UserActivityNavigationDelegate>(relaxed = true)
 
     val sut: UserViewModel by lazy {
         val eventDispatcher = EventDispatcher()
@@ -303,7 +352,8 @@ class UserViewModelTestRule : TestWatcher() {
             relationshipRepository,
             selectedItemRepository,
             ListOwnerGenerator(),
-            mockk(relaxed = true)
+            navigationDelegate,
+            AppExecutor(dispatcher = coroutineRule.coroutineContextProvider)
         )
         UserViewModel(targetUser, eventDispatcher, viewStates)
     }
@@ -327,6 +377,7 @@ class UserViewModelTestRule : TestWatcher() {
         return RuleChain.outerRule(InstantTaskExecutorRule())
             .around(userRepository)
             .around(relationshipRepositoryMock)
+            .around(coroutineRule)
             .apply(super.apply(base, description), description)
     }
 

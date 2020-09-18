@@ -41,5 +41,7 @@ class AppTwitterException(exception: TwitterException) : Exception(exception) {
         // https://developer.twitter.com/ja/docs/basics/response-codes
         ALREADY_FAVORITED(STATUS_FORBIDDEN, 139),
         ALREADY_RETWEETED(STATUS_FORBIDDEN, 327),
+        ALREADY_FOLLOW_REQUESTED(STATUS_FORBIDDEN, 160),
+        REACHED_FOLLOW_LIMIT(STATUS_FORBIDDEN, 161),
     }
 }
