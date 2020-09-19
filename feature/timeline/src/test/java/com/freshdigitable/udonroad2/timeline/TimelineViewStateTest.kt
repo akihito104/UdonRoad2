@@ -17,6 +17,7 @@
 package com.freshdigitable.udonroad2.timeline
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import com.freshdigitable.udonroad2.data.impl.AppExecutor
 import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
 import com.freshdigitable.udonroad2.data.restclient.AppTwitterException
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
@@ -26,6 +27,7 @@ import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.postEvents
 import com.freshdigitable.udonroad2.model.tweet.TweetId
+import com.freshdigitable.udonroad2.test_common.CoroutineTestRule
 import com.freshdigitable.udonroad2.test_common.RxExceptionHandler
 import com.freshdigitable.udonroad2.timeline.TimelineEvent.SelectedItemShortcut
 import com.freshdigitable.udonroad2.timeline.TimelineEvent.TweetItemSelection
@@ -35,6 +37,7 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.verify
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
@@ -42,6 +45,7 @@ import org.junit.rules.TestWatcher
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
 
+@ExperimentalCoroutinesApi
 class TimelineViewStateTest {
     @get:Rule
     val rule = TimelineViewStatesTestRule()
@@ -190,18 +194,21 @@ class TimelineViewStateTest {
         }
 }
 
+@ExperimentalCoroutinesApi
 class TimelineViewStatesTestRule : TestWatcher() {
     private val actionsRule: TimelineActionsTestRule = TimelineActionsTestRule()
     val tweetRepositoryMock = TweetRepositoryRule()
     val owner = ListOwnerGenerator().create(QueryType.TweetQueryType.Timeline())
     val activityEventDelegate: ActivityEventDelegate = mockk()
+    private val coroutineTestRule = CoroutineTestRule()
     val sut = TimelineViewState(
         owner,
         actionsRule.sut,
         SelectedItemRepository(),
         tweetRepositoryMock.mock,
         ListOwnerGenerator(),
-        TimelineNavigationDelegate(mockk(relaxed = true), activityEventDelegate)
+        TimelineNavigationDelegate(mockk(relaxed = true), activityEventDelegate),
+        AppExecutor(dispatcher = coroutineTestRule.coroutineContextProvider)
     )
 
     fun dispatchEvents(vararg event: AppEvent) {
@@ -218,6 +225,7 @@ class TimelineViewStatesTestRule : TestWatcher() {
             .around(actionsRule)
             .around(tweetRepositoryMock)
             .around(RxExceptionHandler())
+            .around(coroutineTestRule)
             .apply(super.apply(base, description), description)
     }
 }

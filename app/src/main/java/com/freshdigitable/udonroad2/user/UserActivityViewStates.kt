@@ -30,7 +30,6 @@ import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.AppViewState
-import com.freshdigitable.udonroad2.model.app.navigation.EventResult
 import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
 import com.freshdigitable.udonroad2.model.app.navigation.subscribeWith
 import com.freshdigitable.udonroad2.model.app.navigation.suspendMap
@@ -91,22 +90,73 @@ class UserActivityViewStates @Inject constructor(
     private val feedbackMessage: AppAction<FeedbackMessage> = AppAction.merge(listOf(
         actions.changeFollowingStatus.suspendMap(executor.dispatcher.ioContext) {
             relationshipRepository.updateFollowingStatus(it.targetUserId, it.wantsFollow)
+        }.map {
+            if (it.event.wantsFollow) {
+                when {
+                    it.isSuccess -> RelationshipFeedbackMessage.FOLLOW_CREATE_SUCCESS
+                    else -> RelationshipFeedbackMessage.FOLLOW_CREATE_FAILURE
+                }
+            } else {
+                when {
+                    it.isSuccess -> RelationshipFeedbackMessage.FOLLOW_DESTROY_SUCCESS
+                    else -> RelationshipFeedbackMessage.FOLLOW_DESTROY_FAILURE
+                }
+            }
         },
         actions.changeBlockingStatus.suspendMap(executor.dispatcher.ioContext) {
             relationshipRepository.updateBlockingStatus(it.targetUserId, it.wantsBlock)
+        }.map {
+            if (it.event.wantsBlock) {
+                when {
+                    it.isSuccess -> RelationshipFeedbackMessage.BLOCK_CREATE_SUCCESS
+                    else -> RelationshipFeedbackMessage.BLOCK_CREATE_FAILURE
+                }
+            } else {
+                when {
+                    it.isSuccess -> RelationshipFeedbackMessage.BLOCK_DESTROY_SUCCESS
+                    else -> RelationshipFeedbackMessage.BLOCK_DESTROY_FAILURE
+                }
+            }
         },
         actions.changeMutingStatus.suspendMap(executor.dispatcher.ioContext) {
             relationshipRepository.updateMutingStatus(it.targetUserId, it.wantsMute)
+        }.map {
+            if (it.event.wantsMute) {
+                when {
+                    it.isSuccess -> RelationshipFeedbackMessage.MUTE_CREATE_SUCCESS
+                    else -> RelationshipFeedbackMessage.MUTE_CREATE_FAILURE
+                }
+            } else {
+                when {
+                    it.isSuccess -> RelationshipFeedbackMessage.MUTE_DESTROY_SUCCESS
+                    else -> RelationshipFeedbackMessage.MUTE_DESTROY_FAILURE
+                }
+            }
         },
         actions.changeRetweetBlockingStatus.suspendMap(executor.dispatcher.ioContext) {
             relationshipRepository.updateWantRetweetStatus(it.targetUserId, it.wantsRetweet)
+        }.map {
+            if (it.event.wantsRetweet) {
+                when (it.isSuccess) {
+                    it.isSuccess -> RelationshipFeedbackMessage.WANT_RETWEET_CREATE_SUCCESS
+                    else -> RelationshipFeedbackMessage.WANT_RETWEET_CREATE_FAILURE
+                }
+            } else {
+                when {
+                    it.isSuccess -> RelationshipFeedbackMessage.WANT_RETWEET_DESTROY_SUCCESS
+                    else -> RelationshipFeedbackMessage.WANT_RETWEET_DESTROY_FAILURE
+                }
+            }
         },
         actions.reportSpam.suspendMap(executor.dispatcher.ioContext) {
             relationshipRepository.reportSpam(it.targetUserId)
+        }.map {
+            when {
+                it.isSuccess -> RelationshipFeedbackMessage.REPORT_SPAM_SUCCESS
+                else -> RelationshipFeedbackMessage.REPORT_SPAM_FAILURE
+            }
         }
-    )).map {
-        RelationshipFeedbackMessage.find(it)
-    }
+    ))
 
     init {
         with(navigationDelegate) {
@@ -120,85 +170,28 @@ class UserActivityViewStates @Inject constructor(
 @Suppress("unused")
 internal enum class RelationshipFeedbackMessage(
     override val messageRes: Int,
-    private val matcher: (EventResult<*>) -> Boolean,
 ) : FeedbackMessage {
-    FOLLOW_CREATE_SUCCESS(R.string.msg_follow_create_success, {
-        (it.event as? UserActivityEvent.Relationships.Following)?.wantsFollow == true
-            && it.isSuccess
-    }),
-    FOLLOW_CREATE_FAILURE(R.string.msg_follow_create_failure, {
-        (it.event as? UserActivityEvent.Relationships.Following)?.wantsFollow == true
-            && it.isFailure
-    }),
-    FOLLOW_DESTROY_SUCCESS(R.string.msg_follow_destroy_success, {
-        (it.event as? UserActivityEvent.Relationships.Following)?.wantsFollow == false
-            && it.isSuccess
-    }),
-    FOLLOW_DESTROY_FAILURE(R.string.msg_follow_destroy_failure, {
-        (it.event as? UserActivityEvent.Relationships.Following)?.wantsFollow == false
-            && it.isFailure
-    }),
+    FOLLOW_CREATE_SUCCESS(R.string.msg_follow_create_success),
+    FOLLOW_CREATE_FAILURE(R.string.msg_follow_create_failure),
+    FOLLOW_DESTROY_SUCCESS(R.string.msg_follow_destroy_success),
+    FOLLOW_DESTROY_FAILURE(R.string.msg_follow_destroy_failure),
 
-    MUTE_CREATE_SUCCESS(R.string.msg_mute_create_success, {
-        (it.event as? UserActivityEvent.Relationships.Muting)?.wantsMute == true
-            && it.isSuccess
-    }),
-    MUTE_CREATE_FAILURE(R.string.msg_mute_create_failure, {
-        (it.event as? UserActivityEvent.Relationships.Muting)?.wantsMute == true
-            && it.isFailure
-    }),
-    MUTE_DESTROY_SUCCESS(R.string.msg_mute_destroy_success, {
-        (it.event as? UserActivityEvent.Relationships.Muting)?.wantsMute == false
-            && it.isSuccess
-    }),
-    MUTE_DESTROY_FAILURE(R.string.msg_mute_destroy_failure, {
-        (it.event as? UserActivityEvent.Relationships.Muting)?.wantsMute == false
-            && it.isFailure
-    }),
+    MUTE_CREATE_SUCCESS(R.string.msg_mute_create_success),
+    MUTE_CREATE_FAILURE(R.string.msg_mute_create_failure),
+    MUTE_DESTROY_SUCCESS(R.string.msg_mute_destroy_success),
+    MUTE_DESTROY_FAILURE(R.string.msg_mute_destroy_failure),
 
-    BLOCK_CREATE_SUCCESS(R.string.msg_block_create_success, {
-        (it.event as? UserActivityEvent.Relationships.Blocking)?.wantsBlock == true
-            && it.isSuccess
-    }),
-    BLOCK_CREATE_FAILURE(R.string.msg_block_create_failure, {
-        (it.event as? UserActivityEvent.Relationships.Blocking)?.wantsBlock == true
-            && it.isFailure
-    }),
-    BLOCK_DESTROY_SUCCESS(R.string.msg_block_destroy_success, {
-        (it.event as? UserActivityEvent.Relationships.Blocking)?.wantsBlock == false
-            && it.isSuccess
-    }),
-    BLOCK_DESTROY_FAILURE(R.string.msg_block_destroy_failure, {
-        (it.event as? UserActivityEvent.Relationships.Blocking)?.wantsBlock == false
-            && it.isFailure
-    }),
+    BLOCK_CREATE_SUCCESS(R.string.msg_block_create_success),
+    BLOCK_CREATE_FAILURE(R.string.msg_block_create_failure),
+    BLOCK_DESTROY_SUCCESS(R.string.msg_block_destroy_success),
+    BLOCK_DESTROY_FAILURE(R.string.msg_block_destroy_failure),
 
-    WANT_RETWEET_CREATE_SUCCESS(R.string.msg_want_retweet_create_success, {
-        (it.event as? UserActivityEvent.Relationships.WantsRetweet)?.wantsRetweet == true
-            && it.isSuccess
-    }),
-    WANT_RETWEET_CREATE_FAILURE(R.string.msg_want_retweet_create_failure, {
-        (it.event as? UserActivityEvent.Relationships.WantsRetweet)?.wantsRetweet == true
-            && it.isFailure
-    }),
-    WANT_RETWEET_DESTROY_SUCCESS(R.string.msg_want_retweet_destroy_success, {
-        (it.event as? UserActivityEvent.Relationships.WantsRetweet)?.wantsRetweet == false
-            && it.isSuccess
-    }),
-    WANT_RETWEET_DESTROY_FAILURE(R.string.msg_want_retweet_destroy_failure, {
-        (it.event as? UserActivityEvent.Relationships.WantsRetweet)?.wantsRetweet == false
-            && it.isFailure
-    }),
+    WANT_RETWEET_CREATE_SUCCESS(R.string.msg_want_retweet_create_success),
+    WANT_RETWEET_CREATE_FAILURE(R.string.msg_want_retweet_create_failure),
+    WANT_RETWEET_DESTROY_SUCCESS(R.string.msg_want_retweet_destroy_success),
+    WANT_RETWEET_DESTROY_FAILURE(R.string.msg_want_retweet_destroy_failure),
 
-    REPORT_SPAM_SUCCESS(R.string.msg_report_spam_success, {
-        it.event is UserActivityEvent.Relationships.ReportSpam && it.isSuccess
-    }),
-    REPORT_SPAM_FAILURE(R.string.msg_report_spam_failed, {
-        it.event is UserActivityEvent.Relationships.ReportSpam && it.isFailure
-    })
+    REPORT_SPAM_SUCCESS(R.string.msg_report_spam_success),
+    REPORT_SPAM_FAILURE(R.string.msg_report_spam_failed)
     ;
-
-    companion object {
-        fun find(result: EventResult<*>): FeedbackMessage? = values().find { it.matcher(result) }
-    }
 }

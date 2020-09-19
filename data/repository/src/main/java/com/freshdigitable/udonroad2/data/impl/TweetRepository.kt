@@ -6,7 +6,6 @@ import com.freshdigitable.udonroad2.data.db.DaoModule
 import com.freshdigitable.udonroad2.data.db.dao.TweetDao
 import com.freshdigitable.udonroad2.data.restclient.AppTwitterException
 import com.freshdigitable.udonroad2.data.restclient.TweetApiClient
-import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
@@ -37,41 +36,29 @@ class TweetRepository @Inject constructor(
         }
     }
 
-    fun postLike(id: TweetId): AppAction<Result<TweetEntity>> {
-        return AppAction.create {
-            executor.launchIO {
-                try {
-                    val liked = restClient.postLike(id)
-                    dao.addTweet(liked)
-                    it.onNext(Result.success(liked))
-                } catch (ex: AppTwitterException) {
-                    if (ex.errorType == AppTwitterException.ErrorType.ALREADY_FAVORITED) {
-                        dao.updateFav(id, true)
-                        it.onNext(Result.failure(ex))
-                    } else {
-                        it.onError(ex)
-                    }
-                }
+    suspend fun postLike(id: TweetId): TweetEntity {
+        try {
+            val liked = restClient.postLike(id)
+            dao.addTweet(liked)
+            return liked
+        } catch (ex: AppTwitterException) {
+            if (ex.errorType == AppTwitterException.ErrorType.ALREADY_FAVORITED) {
+                dao.updateFav(id, true)
             }
+            throw ex
         }
     }
 
-    fun postRetweet(id: TweetId): AppAction<Result<TweetEntity>> {
-        return AppAction.create {
-            executor.launchIO {
-                try {
-                    val retweeted = restClient.postRetweet(id)
-                    dao.addTweet(retweeted)
-                    it.onNext(Result.success(retweeted))
-                } catch (ex: AppTwitterException) {
-                    if (ex.errorType == AppTwitterException.ErrorType.ALREADY_RETWEETED) {
-                        dao.updateRetweeted(id, true)
-                        it.onNext(Result.failure(ex))
-                    } else {
-                        it.onError(ex)
-                    }
-                }
+    suspend fun postRetweet(id: TweetId): TweetEntity {
+        try {
+            val retweeted = restClient.postRetweet(id)
+            dao.addTweet(retweeted)
+            return retweeted
+        } catch (ex: AppTwitterException) {
+            if (ex.errorType == AppTwitterException.ErrorType.ALREADY_RETWEETED) {
+                dao.updateRetweeted(id, true)
             }
+            throw ex
         }
     }
 }

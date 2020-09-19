@@ -14,12 +14,12 @@
   ~ limitations under the License.
   -->
 <resources>
-    <string name="msg_rt_create_failed">RTできませんでした…</string>
+    <string name="msg_rt_create_failure">RTできませんでした…</string>
     <string name="msg_rt_create_success">RTしました</string>
     <string name="msg_rt_delete_success">RTを消しました</string>
     <string name="msg_rt_delete_failed">RTを消せませんでした…</string>
     <string name="msg_fav_create_success">ふぁぼしました</string>
-    <string name="msg_fav_create_failed">ふぁぼできませんでした…</string>
+    <string name="msg_fav_create_failure">ふぁぼできませんでした…</string>
     <string name="msg_fav_delete_failed">ふぁぼを消せませんでした…</string>
     <string name="msg_fav_delete_success">ふぁぼを消しました</string>
     <string name="msg_already_fav">もうふぁぼしてました</string>

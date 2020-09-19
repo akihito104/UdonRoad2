@@ -16,6 +16,8 @@
 
 package com.freshdigitable.udonroad2.test_common
 
+import io.mockk.Answer
+import io.mockk.Call
 import io.mockk.MockKAnswerScope
 import io.mockk.MockKMatcherScope
 import io.mockk.coEvery
@@ -58,14 +60,34 @@ class MockVerified<T>(
     }
 
     fun <R> coSetupResponseWithVerify(
-        target: suspend MockKMatcherScope.() -> R,
+        target: MatcherScopedSuspendBlock<R>,
         res: R,
-        alsoOnAnswer: AnswerScopedBlock<R, R> = {},
+        alsoOnAnswer: () -> Unit = {},
     ) {
-        coEvery(target) answers {
+        coSetupWithVerify(target) {
             alsoOnAnswer()
             res
         }
+    }
+
+    fun <R> coSetupThrowWithVerify(
+        target: MatcherScopedSuspendBlock<R>,
+        throwable: Throwable,
+        alsoOnAnswer: () -> Unit = {},
+    ) {
+        coSetupWithVerify(target) {
+            alsoOnAnswer()
+            throw throwable
+        }
+    }
+
+    private fun <R> coSetupWithVerify(
+        target: MatcherScopedSuspendBlock<R>,
+        answer: () -> R
+    ) {
+        coEvery(target).answers(object : Answer<R> {
+            override fun answer(call: Call): R = answer()
+        })
         expectedBlocks.add { coVerify { target() } }
     }
 
