@@ -18,6 +18,7 @@ package com.freshdigitable.udonroad2.timeline
 
 import androidx.annotation.StringRes
 import androidx.lifecycle.map
+import com.freshdigitable.udonroad2.data.impl.AppExecutor
 import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
 import com.freshdigitable.udonroad2.data.restclient.AppTwitterException
@@ -34,9 +35,12 @@ import com.freshdigitable.udonroad2.model.app.navigation.NavigationDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.StateHolder
 import com.freshdigitable.udonroad2.model.app.navigation.subscribeWith
+import com.freshdigitable.udonroad2.model.app.navigation.suspendMap
 import com.freshdigitable.udonroad2.model.app.navigation.toViewState
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragment
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 
+@ExperimentalCoroutinesApi
 class TimelineViewState(
     owner: ListOwner<*>,
     actions: TimelineActions,
@@ -44,6 +48,7 @@ class TimelineViewState(
     tweetRepository: TweetRepository,
     listOwnerGenerator: ListOwnerGenerator,
     navDelegate: TimelineNavigationDelegate,
+    executor: AppExecutor,
 ) {
     private val _selectedItemId: AppViewState<StateHolder<SelectedItemId>> = AppAction.merge(
         AppAction.just(owner).map {
@@ -76,8 +81,8 @@ class TimelineViewState(
     val selectedItemId: AppViewState<SelectedItemId?> = _selectedItemId.map { it.value }
 
     private val updateTweet: AppAction<TimelineFeedbackMessage> = AppAction.merge(
-        actions.favTweet.flatMap { event ->
-            tweetRepository.postLike(event.tweetId).map { EventResult(event, it) }
+        actions.favTweet.suspendMap(executor.dispatcher.ioContext) { event ->
+            tweetRepository.postLike(event.tweetId)
         }.map {
             when {
                 it.isSuccess -> TimelineFeedbackMessage.FavCreateSuccess
@@ -87,8 +92,8 @@ class TimelineViewState(
                 else -> TimelineFeedbackMessage.FavCreateFailed
             }
         },
-        actions.retweet.flatMap { event ->
-            tweetRepository.postRetweet(event.tweetId).map { EventResult(event, it) }
+        actions.retweet.suspendMap(executor.dispatcher.ioContext) { event ->
+            tweetRepository.postRetweet(event.tweetId)
         }.map {
             when {
                 it.isSuccess -> TimelineFeedbackMessage.RtCreateSuccess

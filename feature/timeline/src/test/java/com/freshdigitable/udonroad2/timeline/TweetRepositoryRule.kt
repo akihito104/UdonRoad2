@@ -18,7 +18,6 @@ package com.freshdigitable.udonroad2.timeline
 
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
 import com.freshdigitable.udonroad2.data.restclient.AppTwitterException
-import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.test_common.MockVerified
@@ -32,29 +31,21 @@ class TweetRepositoryRule(
     val mock: TweetRepository = mockVerified.mock
 
     fun setupPostLikeForSuccess(tweetId: TweetId, liked: TweetEntity = mockk()) {
-        setupPostLike(tweetId, Result.success(liked))
+        mockVerified.coSetupResponseWithVerify({ mock.postLike(tweetId) }, liked)
     }
 
     fun setupPostLikeForFailure(tweetId: TweetId, exceptionType: AppTwitterException.ErrorType) {
         val exception = createException(exceptionType)
-        setupPostLike(tweetId, Result.failure(exception))
-    }
-
-    private fun setupPostLike(tweetId: TweetId, result: Result<TweetEntity>) {
-        mockVerified.setupResponseWithVerify({ mock.postLike(tweetId) }, AppAction.just(result))
+        mockVerified.coSetupThrowWithVerify({ mock.postLike(tweetId) }, exception)
     }
 
     fun setupPostRetweetForSuccess(tweetId: TweetId, retweeted: TweetEntity = mockk()) {
-        setupPostRetweet(tweetId, Result.success(retweeted))
+        mockVerified.coSetupResponseWithVerify({ mock.postRetweet(tweetId) }, retweeted)
     }
 
     fun setupPostRetweetForFailure(tweetId: TweetId, exceptionType: AppTwitterException.ErrorType) {
         val exception = createException(exceptionType)
-        setupPostRetweet(tweetId, Result.failure(exception))
-    }
-
-    private fun setupPostRetweet(tweetId: TweetId, result: Result<TweetEntity>) {
-        mockVerified.setupResponseWithVerify({ mock.postRetweet(tweetId) }, AppAction.just(result))
+        mockVerified.coSetupThrowWithVerify({ mock.postRetweet(tweetId) }, exception)
     }
 
     private fun createException(exceptionType: AppTwitterException.ErrorType): AppTwitterException {

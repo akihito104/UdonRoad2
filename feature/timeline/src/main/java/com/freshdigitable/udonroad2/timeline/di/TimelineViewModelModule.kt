@@ -19,6 +19,7 @@ package com.freshdigitable.udonroad2.timeline.di
 import androidx.lifecycle.ViewModel
 import com.freshdigitable.udonroad2.data.ListRepository
 import com.freshdigitable.udonroad2.data.PagedListProvider
+import com.freshdigitable.udonroad2.data.impl.AppExecutor
 import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
 import com.freshdigitable.udonroad2.data.impl.di.ListRepositoryComponent
@@ -89,7 +90,8 @@ internal interface TimelineViewModelModule {
             selectedItemRepository: SelectedItemRepository,
             tweetRepository: TweetRepository,
             listOwnerGenerator: ListOwnerGenerator,
-            navDelegate: TimelineNavigationDelegate
+            navDelegate: TimelineNavigationDelegate,
+            executor: AppExecutor,
         ): TimelineViewState {
             return TimelineViewState(
                 owner,
@@ -97,7 +99,8 @@ internal interface TimelineViewModelModule {
                 selectedItemRepository,
                 tweetRepository,
                 listOwnerGenerator,
-                navDelegate
+                navDelegate,
+                executor,
             )
         }
 
