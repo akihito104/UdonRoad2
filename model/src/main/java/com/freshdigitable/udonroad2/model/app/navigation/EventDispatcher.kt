@@ -62,15 +62,15 @@ inline fun <reified T> AppAction<out AppEvent>.filterByType(): AppAction<T> {
 inline fun <E : AppEvent, R> AppAction<E>.suspendMap(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     crossinline block: suspend (E) -> R
-): AppAction<EventResult<R>> = flatMap { event ->
+): AppAction<EventResult<E, R>> = flatMap { event ->
     rxObservable(coroutineContext) {
         val result = runCatching { block(event) }
         channel.send(EventResult(event, result))
     }
 }
 
-data class EventResult<T>(
-    val event: AppEvent,
+data class EventResult<E : AppEvent, T>(
+    val event: E,
     private val result: Result<T>
 ) : Serializable {
     val value: T? = result.getOrNull()
@@ -82,17 +82,15 @@ data class EventResult<T>(
         get() = result.exceptionOrNull()
 
     companion object {
-        fun <T> success(event: AppEvent, value: T): EventResult<T> {
+        fun <E : AppEvent, T> success(event: E, value: T): EventResult<E, T> {
             return EventResult(event, Result.success(value))
         }
 
-        fun <T> failure(event: AppEvent, throwable: Throwable): EventResult<T> {
+        fun <E : AppEvent, T> failure(event: E, throwable: Throwable): EventResult<E, T> {
             return EventResult(event, Result.failure(throwable))
         }
     }
 }
-
-typealias AppResult<T> = Observable<EventResult<T>>
 
 fun Disposable.addTo(compositeDisposable: CompositeDisposable) {
     compositeDisposable.add(this)

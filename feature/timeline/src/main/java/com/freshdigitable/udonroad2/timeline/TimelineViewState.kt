@@ -85,22 +85,22 @@ class TimelineViewState(
             tweetRepository.postLike(event.tweetId)
         }.map {
             when {
-                it.isSuccess -> TimelineFeedbackMessage.FavCreateSuccess
+                it.isSuccess -> TimelineFeedbackMessage.FAV_CREATE_SUCCESS
                 it.isExceptionTypeOf(AppTwitterException.ErrorType.ALREADY_FAVORITED) -> {
-                    TimelineFeedbackMessage.AlreadyFav
+                    TimelineFeedbackMessage.ALREADY_FAV
                 }
-                else -> TimelineFeedbackMessage.FavCreateFailed
+                else -> TimelineFeedbackMessage.FAV_CREATE_FAILURE
             }
         },
         actions.retweet.suspendMap(executor.dispatcher.ioContext) { event ->
             tweetRepository.postRetweet(event.tweetId)
         }.map {
             when {
-                it.isSuccess -> TimelineFeedbackMessage.RtCreateSuccess
+                it.isSuccess -> TimelineFeedbackMessage.RT_CREATE_SUCCESS
                 it.isExceptionTypeOf(AppTwitterException.ErrorType.ALREADY_RETWEETED) -> {
-                    TimelineFeedbackMessage.AlreadyRt
+                    TimelineFeedbackMessage.ALREADY_RT
                 }
-                else -> TimelineFeedbackMessage.RtCreateFailed
+                else -> TimelineFeedbackMessage.RT_CREATE_FAILURE
             }
         }
     )
@@ -123,19 +123,19 @@ class TimelineViewState(
     }
 }
 
-internal sealed class TimelineFeedbackMessage(
+internal enum class TimelineFeedbackMessage(
     @StringRes override val messageRes: Int
 ) : FeedbackMessage {
-    object FavCreateSuccess : TimelineFeedbackMessage(R.string.msg_fav_create_success)
-    object FavCreateFailed : TimelineFeedbackMessage(R.string.msg_fav_create_failed)
-    object AlreadyFav : TimelineFeedbackMessage(R.string.msg_already_fav)
+    FAV_CREATE_SUCCESS(R.string.msg_fav_create_success),
+    FAV_CREATE_FAILURE(R.string.msg_fav_create_failure),
+    ALREADY_FAV(R.string.msg_already_fav),
 
-    object RtCreateSuccess : TimelineFeedbackMessage(R.string.msg_rt_create_success)
-    object RtCreateFailed : TimelineFeedbackMessage(R.string.msg_rt_create_failed)
-    object AlreadyRt : TimelineFeedbackMessage(R.string.msg_already_rt)
+    RT_CREATE_SUCCESS(R.string.msg_rt_create_success),
+    RT_CREATE_FAILURE(R.string.msg_rt_create_failure),
+    ALREADY_RT(R.string.msg_already_rt),
 }
 
-fun EventResult<*>.isExceptionTypeOf(type: AppTwitterException.ErrorType): Boolean {
+fun EventResult<*, *>.isExceptionTypeOf(type: AppTwitterException.ErrorType): Boolean {
     return (this.exception as? AppTwitterException)?.errorType == type
 }
 
