@@ -16,7 +16,7 @@
 
 object Versions {
     const val KOTLIN = "1.4.0"
-    const val KOTLIN_COROUTINES = "1.3.3"
+    const val KOTLIN_COROUTINES = "1.3.9"
 
     const val ANDROIDX_APPCOMPAT = "1.1.0"
     const val ANDROIDX_FRAGMENT = "1.2.4"
@@ -50,7 +50,7 @@ object Versions {
     const val MOCKK = "1.10.0"
     const val ROBOLECTRIC = "4.3.1"
     const val TRUTH = "1.0.1"
-    const val KOTLINX_TEST_COROUTINES = "1.3.9"
+    const val KOTLINX_TEST_COROUTINES = KOTLIN_COROUTINES
     const val ANDROIDX_TEST_CORE = "1.2.0"
     const val ANDROIDX_TEST_JUNIT_EXT = "1.1.1"
     const val ANDROIDX_TEST_RULES = "1.2.0"

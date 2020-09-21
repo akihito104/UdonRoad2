@@ -41,7 +41,9 @@ dependencies {
     implementation project(":data:repository")
     implementation project(":model")
     implementation Libs.KOTLIN_STDLIB_JDK7
-    implementation Libs.KOTLINX_TEST_COROUTINES
+    implementation(Libs.KOTLINX_TEST_COROUTINES) {
+        exclude group: "org.jetbrains.kotlinx", module: "kotlinx-coroutines-debug"
+    }
     implementation Libs.JUNIT
-    implementation Libs.MOCKK
+    implementation Libs.MOCKK_ANDROID
 }
