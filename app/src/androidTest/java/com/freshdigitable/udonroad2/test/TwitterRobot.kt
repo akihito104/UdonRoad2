@@ -19,8 +19,8 @@ package com.freshdigitable.udonroad2.test
 import androidx.test.core.app.ApplicationProvider
 import com.freshdigitable.udonroad2.TestApplicationBase
 import com.freshdigitable.udonroad2.model.user.UserId
-import io.mockk.MockKAnswerScope
-import io.mockk.MockKMatcherScope
+import com.freshdigitable.udonroad2.test_common.AnswerScopedBlock
+import com.freshdigitable.udonroad2.test_common.MatcherScopedBlock
 import io.mockk.confirmVerified
 import io.mockk.every
 import io.mockk.just
@@ -35,6 +35,8 @@ import twitter4j.MediaEntity
 import twitter4j.PagableResponseList
 import twitter4j.Paging
 import twitter4j.Place
+import twitter4j.Query
+import twitter4j.QueryResult
 import twitter4j.RateLimitStatus
 import twitter4j.Relationship
 import twitter4j.ResponseList
@@ -45,6 +47,7 @@ import twitter4j.Twitter
 import twitter4j.TwitterResponse
 import twitter4j.URLEntity
 import twitter4j.User
+import twitter4j.UserList
 import twitter4j.UserMentionEntity
 import twitter4j.auth.AccessToken
 import twitter4j.auth.RequestToken
@@ -93,6 +96,35 @@ class TwitterRobot : TestWatcher() {
         }
     }
 
+    fun setupGetFavorites(
+        userId: UserId? = null,
+        pagingBlock: MatcherScopedBlock<Paging>? = null,
+        response: List<Status>,
+        onAnswer: AnswerScopedBlock<ResponseList<Status>, ResponseList<Status>> = {}
+    ) {
+        val res = createResponseListMock(response)
+        if (pagingBlock == null) {
+            if (userId == null) {
+                setupResponseWithVerify({ twitter.favorites }, res, onAnswer)
+            } else {
+                setupResponseWithVerify({ twitter.getFavorites(userId.value) }, res, onAnswer)
+            }
+        } else {
+            setupResponseWithVerify({ twitter.getFavorites(pagingBlock()) }, res, onAnswer)
+        }
+    }
+
+    fun setupGetSearchList(
+        pagingBlock: MatcherScopedBlock<Query> = { any() },
+        response: List<Status>,
+        onAnswer: AnswerScopedBlock<QueryResult, QueryResult> = {}
+    ) {
+        val res = mockk<QueryResult>().apply {
+            every { tweets } returns response
+        }
+        setupResponseWithVerify({ twitter.search(pagingBlock()) }, res, onAnswer)
+    }
+
     fun setupGetUserTimeline(
         userId: UserId,
         pagingBlock: MatcherScopedBlock<Paging>? = null,
@@ -111,6 +143,20 @@ class TwitterRobot : TestWatcher() {
         }
     }
 
+    fun setupGetUserListMemberships(
+        userId: UserId,
+        count: MatcherScopedBlock<Int> = { any() },
+        nextCursor: MatcherScopedBlock<Long> = { any() },
+        response: List<UserList>,
+        onAnswer: AnswerScopedBlock<PagableResponseList<UserList>, PagableResponseList<UserList>> = {}
+    ) {
+        setupResponseWithVerify(
+            { twitter.getUserListMemberships(userId.value, count(), nextCursor()) },
+            createPagableResponseListMock(response),
+            onAnswer
+        )
+    }
+
     fun setupGetFollowersList(
         userId: UserId,
         response: List<User>,
@@ -118,6 +164,15 @@ class TwitterRobot : TestWatcher() {
     ) {
         val res = createPagableResponseListMock(response)
         setupResponseWithVerify({ twitter.getFollowersList(userId.value, -1) }, res, onAnswer)
+    }
+
+    fun setupGetFriendsList(
+        userId: UserId,
+        response: List<User>,
+        onAnswer: AnswerScopedBlock<ResponseList<User>, ResponseList<User>> = {}
+    ) {
+        val res = createPagableResponseListMock(response)
+        setupResponseWithVerify({ twitter.getFriendsList(userId.value, -1) }, res, onAnswer)
     }
 
     fun setupShowUser(user: User) {
@@ -181,9 +236,6 @@ class TwitterRobot : TestWatcher() {
     }
 }
 
-typealias MatcherScopedBlock<T> = MockKMatcherScope.() -> T
-typealias AnswerScopedBlock<T, B> = MockKAnswerScope<T, B>.() -> Unit
-
 fun createRequestToken(
     userId: Long,
     token: String,
@@ -197,6 +249,7 @@ fun createStatus(
     text: String,
     user: User,
     createdAt: Date,
+    mediaEntities: Array<MediaEntity> = emptyArray(),
     quotedStatus: Status? = null
 ): Status {
     return object : Status {
@@ -214,7 +267,7 @@ fun createStatus(
         override fun isFavorited(): Boolean = false
         override fun isRetweeted(): Boolean = false
         override fun isPossiblySensitive(): Boolean = false
-        override fun getMediaEntities(): Array<MediaEntity> = emptyArray()
+        override fun getMediaEntities(): Array<MediaEntity> = mediaEntities
 
         override fun compareTo(other: Status): Int = this.createdAt.compareTo(other.createdAt)
 

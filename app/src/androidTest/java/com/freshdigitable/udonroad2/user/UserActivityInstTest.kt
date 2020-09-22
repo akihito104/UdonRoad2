@@ -17,53 +17,145 @@
 package com.freshdigitable.udonroad2.user
 
 import android.content.Context
+import androidx.recyclerview.widget.RecyclerView
 import androidx.test.core.app.ApplicationProvider
-import androidx.test.espresso.Espresso.onView
-import androidx.test.espresso.assertion.ViewAssertions.matches
-import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
-import androidx.test.espresso.matcher.ViewMatchers.withId
+import androidx.test.espresso.intent.rule.IntentsTestRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.rule.ActivityTestRule
 import com.freshdigitable.udonroad2.R
+import com.freshdigitable.udonroad2.media.MediaActivityArgs
+import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.user.TweetingUser
 import com.freshdigitable.udonroad2.model.user.UserId
 import com.freshdigitable.udonroad2.test.TwitterRobot
 import com.freshdigitable.udonroad2.test.createStatus
 import com.freshdigitable.udonroad2.test.createUser
+import com.freshdigitable.udonroad2.test.intendedWithExtras
+import com.freshdigitable.udonroad2.test.intendingWithExtras
 import com.freshdigitable.udonroad2.test.mainList
+import io.mockk.every
+import io.mockk.mockk
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import twitter4j.MediaEntity
 import java.util.Date
 
 @RunWith(AndroidJUnit4::class)
 class UserActivityInstTest {
     @get:Rule
-    val activityTestRule = ActivityTestRule(UserActivity::class.java, true, false)
+    val activityTestRule = IntentsTestRule(UserActivity::class.java, true, false)
 
     @get:Rule
     val twitterRobot = TwitterRobot()
 
-    @Test
-    fun tweetItemClicked_then_fabIsVisible() {
+    @Before
+    fun setup() {
         val tweetingUser = TweetingUserImpl(UserId(1000), "user1", "user1", "")
         val user = createUser(tweetingUser.id.value, tweetingUser.name, tweetingUser.screenName)
         twitterRobot.setupShowUser(user)
         twitterRobot.setupRelationships(UserId(100), tweetingUser.id)
         twitterRobot.setupGetUserTimeline(tweetingUser.id, response = (0 until 10).map {
-            createStatus(100L + it, "tweet: $it", user, Date(100000L + it))
+            createStatus(
+                100L + it,
+                "tweet: $it",
+                user,
+                Date(100000L + it),
+                arrayOf(mockk<MediaEntity>(relaxed = true).apply {
+                    every { id } returns (3000L + it)
+                    every { type } returns "photo"
+                    every { sizes } returns mapOf()
+                })
+            )
         })
         twitterRobot.setupGetUserTimeline(tweetingUser.id, { any() }, emptyList())
         twitterRobot.setupGetFollowersList(tweetingUser.id, emptyList())
 
         val context = ApplicationProvider.getApplicationContext<Context>()
         activityTestRule.launchActivity(UserActivity.getIntent(context, tweetingUser))
+    }
 
+    @Test
+    fun tweetItemClicked_then_fabIsVisible(): Unit = onUserActivity {
+        mainList {
+            waitForListItem {
+                clickListItemOf(0)
+            }
+        } verify {
+            stateIsSelectedOnItemOf(0)
+        }
+    } verify {
+        fabIsDisplayed()
+    }
+
+    @Test
+    fun switchTab_then_fabIsNotVisible(): Unit = onUserActivity {
+        twitterRobot.setupGetFavorites(userId = UserId(1000), response = emptyList())
+        twitterRobot.setupGetUserListMemberships(UserId(1000), response = emptyList())
+        twitterRobot.setupGetSearchList(response = emptyList())
         mainList {
             clickListItemOf(0)
         } verify {
             stateIsSelectedOnItemOf(0)
-            onView(withId(R.id.user_fab)).check(matches(isDisplayed()))
+        }
+
+        clickPagerTabWithPosition(4)
+    } verify {
+        fabIsNotDisplayed()
+    }
+
+    @Test
+    fun returnFirstTab_then_fabIsVisible(): Unit = onUserActivity {
+        twitterRobot.setupGetFavorites(userId = UserId(1000), response = emptyList())
+        twitterRobot.setupGetUserListMemberships(UserId(1000), response = emptyList())
+        twitterRobot.setupGetSearchList(response = emptyList())
+        mainList {
+            clickListItemOf(0)
+        } verify {
+            stateIsSelectedOnItemOf(0)
+        }
+
+        clickPagerTabWithPosition(4)
+        clickPagerTabWithPosition(0)
+    } verify {
+        fabIsDisplayed()
+    }
+
+    @Test
+    fun clickMedia_then_sendToLaunchMediaActivityIntent() {
+        val mediaActivityArgs = MediaActivityArgs(TweetId(109), 0).toBundle()
+        intendingWithExtras(mediaActivityArgs)
+
+        onUserActivity {
+            waitForListItem {
+                mainList {
+                    clickMediaInListItemOf(0)
+                }
+            }
+        } verify {
+            intendedWithExtras(mediaActivityArgs)
+            fabIsDisplayed()
+        }
+    }
+
+    @Test
+    fun returnFirstTabAndClickMedia_then_sendToLaunchMediaActivityIntent() {
+        twitterRobot.setupGetFavorites(userId = UserId(1000), response = emptyList())
+        twitterRobot.setupGetUserListMemberships(UserId(1000), response = emptyList())
+        twitterRobot.setupGetSearchList(response = emptyList())
+        val mediaActivityArgs = MediaActivityArgs(TweetId(109), 0).toBundle()
+        intendingWithExtras(mediaActivityArgs)
+
+        onUserActivity {
+            clickPagerTabWithPosition(4)
+            clickPagerTabWithPosition(0)
+
+            mainList {
+                clickMediaInListItemOf(0)
+            }
+        } verify {
+            intendedWithExtras(mediaActivityArgs)
+            fabIsDisplayed()
         }
     }
 }
@@ -74,3 +166,10 @@ data class TweetingUserImpl(
     override val screenName: String,
     override val iconUrl: String
 ) : TweetingUser
+
+fun waitForListItem(block: () -> Unit) {
+    waitForActivity<UserActivity>(
+        onActivity = { it.findViewById<RecyclerView>(R.id.main_list).childCount > 0 },
+        afterTask = block
+    )
+}
