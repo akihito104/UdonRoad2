@@ -55,16 +55,16 @@ internal data class MediaDbView(
     val type: MediaType,
 
     @Embedded(prefix = "large_")
-    val largeSize: MediaEntity.Size,
+    val largeSize: MediaEntity.Size?,
 
     @Embedded(prefix = "medium_")
-    val mediumSize: MediaEntity.Size,
+    val mediumSize: MediaEntity.Size?,
 
     @Embedded(prefix = "small_")
-    val smallSize: MediaEntity.Size,
+    val smallSize: MediaEntity.Size?,
 
     @Embedded(prefix = "thumb_")
-    val thumbSize: MediaEntity.Size,
+    val thumbSize: MediaEntity.Size?,
 
     @ColumnInfo(name = "video_aspect_ratio_width")
     val videoAspectRatioWidth: Int?,
