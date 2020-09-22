@@ -41,8 +41,11 @@ internal class ListRepositoryImpl<Q : QueryType, E>(
     override val loading: LiveData<Boolean> = _loading
 
     override fun loadList(query: ListQuery<Q>, owner: String) {
+        if (_loading.value == true) {
+            return
+        }
+        _loading.postValue(true)
         executor.launchIO {
-            _loading.postValue(true)
             try {
                 val timeline = remoteDataSource.getList(query)
                 localDataSource.putList(timeline, query, owner)
