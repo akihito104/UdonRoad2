@@ -130,7 +130,7 @@ class OauthViewModelTestRule : TestWatcher() {
             OauthAction(dispatcher),
             navDelegate,
             repositoryRule.mock,
-            OauthSavedStates(SavedStateHandle()),
+            OauthSavedStates(SavedStateHandle(), coroutineRule.coroutineContextProvider),
             AppExecutor(dispatcher = coroutineRule.coroutineContextProvider)
         )
     )

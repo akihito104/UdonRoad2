@@ -30,7 +30,6 @@ import com.freshdigitable.udonroad2.test_common.OAuthTokenRepositoryRule
 import com.freshdigitable.udonroad2.test_common.RxExceptionHandler
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import io.mockk.verify
-import io.reactivex.disposables.CompositeDisposable
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
@@ -110,7 +109,6 @@ class MainActivityNavigationDelegateRule(
 
     init {
         _mock.setupResponseWithVerify({ mock.containerState }, containerStateSource)
-        _mock.setupResponseWithVerify({ mock.disposables }, CompositeDisposable())
     }
 
     fun setupContainerState(state: MainNavHostState) {

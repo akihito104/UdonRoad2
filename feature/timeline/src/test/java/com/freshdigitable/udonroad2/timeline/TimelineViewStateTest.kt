@@ -207,7 +207,7 @@ class TimelineViewStatesTestRule : TestWatcher() {
         SelectedItemRepository(),
         tweetRepositoryMock.mock,
         ListOwnerGenerator(),
-        TimelineNavigationDelegate(mockk(relaxed = true), activityEventDelegate),
+        TimelineNavigationDelegate(activityEventDelegate),
         AppExecutor(dispatcher = coroutineTestRule.coroutineContextProvider)
     )
 

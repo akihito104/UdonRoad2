@@ -29,8 +29,8 @@ import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.AppViewState
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.ViewState
-import com.freshdigitable.udonroad2.model.app.navigation.subscribeWith
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
+import io.reactivex.disposables.CompositeDisposable
 import java.io.Serializable
 import javax.inject.Inject
 
@@ -40,7 +40,7 @@ class MainActivityViewStates @Inject constructor(
     selectedItemRepository: SelectedItemRepository,
     tokenRepository: OAuthTokenRepository,
     listOwnerGenerator: ListOwnerGenerator,
-    navDelegate: MainActivityNavigationDelegate,
+    private val navDelegate: MainActivityNavigationDelegate,
 ) {
 
     private val updateContainer: AppAction<out NavigationEvent> = AppAction.merge(
@@ -64,11 +64,10 @@ class MainActivityViewStates @Inject constructor(
             )
         },
     )
-
-    init {
-        navDelegate.subscribeWith(updateContainer) { dispatchNavHostNavigate(it) }
-        navDelegate.subscribeWith(actions.rollbackViewState) { dispatchBack() }
-    }
+    private val disposables = CompositeDisposable(
+        updateContainer.subscribe { navDelegate.dispatchNavHostNavigate(it) },
+        actions.rollbackViewState.subscribe { navDelegate.dispatchBack() },
+    )
 
     private val currentNavHost: AppViewState<MainNavHostState> = navDelegate.containerState
 
@@ -88,6 +87,11 @@ class MainActivityViewStates @Inject constructor(
                 fabVisible = isFabVisible.value ?: false
             )
         }
+
+    fun clear() {
+        disposables.clear()
+        navDelegate.clear()
+    }
 }
 
 data class MainActivityViewState(

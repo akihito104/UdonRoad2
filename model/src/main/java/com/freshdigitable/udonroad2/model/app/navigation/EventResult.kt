@@ -30,6 +30,10 @@ data class EventResult<E : AppEvent, T>(
     val exception: Throwable?
         get() = result.exceptionOrNull()
 
+    fun rethrow() {
+        throw requireNotNull(exception)
+    }
+
     companion object {
         fun <E : AppEvent, T> success(event: E, value: T): EventResult<E, T> {
             return EventResult(event, Result.success(value))
