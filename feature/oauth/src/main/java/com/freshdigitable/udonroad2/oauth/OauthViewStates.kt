@@ -20,31 +20,32 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import com.freshdigitable.udonroad2.data.impl.AppExecutor
+import com.freshdigitable.udonroad2.data.impl.DispatcherProvider
 import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
+import com.freshdigitable.udonroad2.model.AccessTokenEntity
 import com.freshdigitable.udonroad2.model.RequestTokenItem
 import com.freshdigitable.udonroad2.model.app.ext.merge
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.AppViewState
-import com.freshdigitable.udonroad2.model.app.navigation.subscribeWith
+import com.freshdigitable.udonroad2.model.app.navigation.EventResult
+import com.freshdigitable.udonroad2.model.app.navigation.suspendMap
 import com.freshdigitable.udonroad2.model.app.navigation.toViewState
-import kotlinx.coroutines.launch
+import io.reactivex.disposables.CompositeDisposable
+import kotlinx.coroutines.withContext
 
 class OauthViewStates(
     actions: OauthAction,
-    navDelegate: OauthNavigationDelegate,
+    private val navDelegate: OauthNavigationDelegate,
     repository: OAuthTokenRepository,
     savedState: OauthSavedStates,
     appExecutor: AppExecutor,
 ) {
-    private val _requestToken: AppAction<RequestTokenItem> = actions.authApp.flatMap {
-        AppAction.create { emitter ->
-            appExecutor.launch {
-                val token = repository.getRequestTokenItem()
-                savedState.setToken(token)
-                emitter.onNext(token)
-            }
+    private val _requestToken: AppAction<EventResult<OauthEvent.LoginClicked, RequestTokenItem>> =
+        actions.authApp.suspendMap(appExecutor.dispatcher.ioContext) {
+            val token = repository.getRequestTokenItem()
+            savedState.setToken(token)
+            token
         }
-    }
     private val requestToken: LiveData<RequestTokenItem?> = savedState.requestTokenItem
 
     internal val pinText: LiveData<CharSequence> = actions.inputPin.map {
@@ -55,35 +56,47 @@ class OauthViewStates(
         t != null && p?.isNotEmpty() == true
     }
 
-    private val completeAuthProcess: AppAction<OauthEvent.OauthSucceeded> =
-        actions.sendPin.flatMap {
+    private val completeAuthProcess: AppAction<EventResult<OauthEvent.SendPinClicked, AccessTokenEntity>> =
+        actions.sendPin.suspendMap(appExecutor.dispatcher.ioContext) {
             val token = requireNotNull(requestToken.value)
             val verifier = pinText.value.toString()
-            AppAction.create { emitter ->
-                appExecutor.launch {
-                    val t = repository.getAccessToken(token, verifier)
-                    repository.login(t.userId)
-                    savedState.setToken(null)
-                    emitter.onNext(OauthEvent.OauthSucceeded)
-                }
-            }
+            val t = repository.getAccessToken(token, verifier)
+            savedState.setToken(null)
+            repository.login(t.userId)
+            t
         }
 
-    init {
-        navDelegate.subscribeWith(_requestToken) { launchTwitterOauth(it.authorizationUrl) }
-        navDelegate.subscribeWith(completeAuthProcess) { toTimeline() }
+    private val disposables = CompositeDisposable(
+        _requestToken.subscribe {
+            when {
+                it.isSuccess -> navDelegate.launchTwitterOauth(requireNotNull(it.value).authorizationUrl)
+                else -> it.rethrow() // FIXME: send feedback
+            }
+        },
+        completeAuthProcess.subscribe {
+            navDelegate.toTimeline()
+        },
+    )
+
+    fun clear() {
+        disposables.clear()
+        navDelegate.clear()
     }
 }
 
-class OauthSavedStates(handle: SavedStateHandle) {
+class OauthSavedStates(
+    handle: SavedStateHandle,
+    private val dispatcherProvider: DispatcherProvider = DispatcherProvider()
+) {
     private val _requestTokenItem: MutableLiveData<RequestTokenItem?> = handle.getLiveData(
         SAVED_STATE_REQUEST_TOKEN
     )
     internal val requestTokenItem: LiveData<RequestTokenItem?> = _requestTokenItem
 
-    internal fun setToken(token: RequestTokenItem?) {
-        _requestTokenItem.value = token
-    }
+    internal suspend fun setToken(token: RequestTokenItem?) =
+        withContext(dispatcherProvider.mainContext) {
+            _requestTokenItem.value = token
+        }
 
     companion object {
         private const val SAVED_STATE_REQUEST_TOKEN = "saveState_requestToken"

@@ -3,8 +3,6 @@ package com.freshdigitable.udonroad2.main
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.drawerlayout.widget.DrawerLayout
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.navigation.NavController
@@ -37,7 +35,7 @@ import javax.inject.Inject
 @ActivityScope
 class MainActivityNavigationDelegate @Inject constructor(
     mainActivity: MainActivity,
-) : NavigationDelegate(mainActivity), ActivityEventDelegate,
+) : NavigationDelegate, ActivityEventDelegate,
     FeedbackMessageDelegate by SnackbarFeedbackMessageDelegate(
         weakRef(mainActivity) { it.findViewById(R.id.main_container) }
     ) {
@@ -45,10 +43,6 @@ class MainActivityNavigationDelegate @Inject constructor(
     private val drawerLayout: DrawerLayout by weakRef(mainActivity) {
         it.findViewById<DrawerLayout>(R.id.main_drawer)
     }
-    private val navController: NavController by weakRef(mainActivity) {
-        it.findNavController(R.id.main_nav_host)
-    }
-
     private val onDestinationChanged =
         NavController.OnDestinationChangedListener { _, destination, arguments ->
             val containerState = requireNotNull(
@@ -56,6 +50,12 @@ class MainActivityNavigationDelegate @Inject constructor(
             )
             _containerState.value = containerState
         }
+
+    private val navController: NavController by weakRef(mainActivity) { a ->
+        a.findNavController(R.id.main_nav_host).also {
+            it.addOnDestinationChangedListener(onDestinationChanged)
+        }
+    }
 
     private val _containerState = MutableLiveData<MainNavHostState>()
     val containerState: LiveData<MainNavHostState> = _containerState
@@ -111,20 +111,11 @@ class MainActivityNavigationDelegate @Inject constructor(
         activity.onBackPressedDispatcher.onBackPressed()
     }
 
-    override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
-        super.onStateChanged(source, event)
-        when (event) {
-            Lifecycle.Event.ON_CREATE -> {
-                navController.addOnDestinationChangedListener(onDestinationChanged)
-            }
-            Lifecycle.Event.ON_DESTROY -> {
-                navController.removeOnDestinationChangedListener(onDestinationChanged)
-            }
-            else -> Unit
-        }
-    }
-
     fun onSupportNavigateUp(): Boolean = navController.navigateUp(drawerLayout)
+
+    override fun clear() {
+        navController.removeOnDestinationChangedListener(onDestinationChanged)
+    }
 }
 
 sealed class MainNavHostState : FragmentContainerState, Serializable {

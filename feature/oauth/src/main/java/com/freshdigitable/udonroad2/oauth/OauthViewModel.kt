@@ -29,7 +29,7 @@ import com.freshdigitable.udonroad2.timeline.ListItemLoadable
 class OauthViewModel(
     dataSource: DataSource<Int, OauthItem>,
     private val eventDispatcher: EventDispatcher,
-    viewStates: OauthViewStates,
+    private val viewStates: OauthViewStates,
 ) : ViewModel(), ListItemLoadable<QueryType.Oauth, OauthItem> {
 
     override val loading: LiveData<Boolean> = MutableLiveData(false)
@@ -67,6 +67,10 @@ class OauthViewModel(
         eventDispatcher.postEvent(OauthEvent.SendPinClicked)
     }
 
+    override fun onCleared() {
+        super.onCleared()
+        viewStates.clear()
+    }
 }
 
 sealed class OauthEvent : AppEvent {

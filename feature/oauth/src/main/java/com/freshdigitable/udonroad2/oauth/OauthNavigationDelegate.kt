@@ -32,7 +32,7 @@ class OauthNavigationDelegate(
     listItemFragment: ListItemFragment,
     private val listOwnerGenerator: ListOwnerGenerator,
     activityEventDelegate: ActivityEventDelegate,
-) : NavigationDelegate(listItemFragment), ActivityEventDelegate by activityEventDelegate {
+) : NavigationDelegate, ActivityEventDelegate by activityEventDelegate {
     private val activity: FragmentActivity by weakRef(listItemFragment) { it.requireActivity() }
 
     internal fun launchTwitterOauth(authUrl: String) {

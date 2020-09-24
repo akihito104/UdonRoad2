@@ -16,43 +16,12 @@
 
 package com.freshdigitable.udonroad2.test
 
-import android.widget.TextView
 import androidx.annotation.StringRes
-import androidx.test.espresso.Espresso
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.ViewInteraction
 import androidx.test.espresso.action.ViewActions.swipeLeft
-import androidx.test.espresso.assertion.ViewAssertions.matches
-import androidx.test.espresso.matcher.ViewMatchers.isAssignableFrom
-import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withId
-import androidx.test.espresso.matcher.ViewMatchers.withParent
-import androidx.test.espresso.matcher.ViewMatchers.withText
 import com.freshdigitable.udonroad2.R
-import org.hamcrest.CoreMatchers.allOf
-import org.hamcrest.CoreMatchers.not
-
-interface ActivityRobot {
-    companion object {
-        val actionBarTitle: ViewInteraction
-            get() = onView(
-                allOf(
-                    withParent(withId(R.id.action_bar)),
-                    isAssignableFrom(TextView::class.java)
-                )
-            )
-    }
-
-    interface VerifyRobot {
-        fun actionBarTitle(@StringRes titleRes: Int) {
-            actionBarTitle.check(matches(withText(titleRes)))
-        }
-    }
-
-    fun pressBack() {
-        Espresso.pressBack()
-    }
-}
 
 fun onMainActivity(block: MainActivityRobot.() -> Unit) {
     MainActivityRobot().apply(block)
@@ -80,13 +49,5 @@ class MainActivityRobot : ActivityRobot {
         verifyRobot.apply(block)
     }
 
-    class Verify : ActivityRobot.VerifyRobot {
-        fun fabIsDisplayed() {
-            fab.check(matches(isDisplayed()))
-        }
-
-        fun fabIsNotDisplayed() {
-            fab.check(matches(not(isDisplayed())))
-        }
-    }
+    class Verify : ActivityRobot.VerifyRobot, FabVerify by FabVerify.get(fab)
 }

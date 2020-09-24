@@ -42,6 +42,14 @@ allprojects {
         maven { url = uri("https://kotlin.bintray.com/kotlin-eap") }
         maven { url = uri("https://plugins.gradle.org/m2/") }
     }
+
+    configurations.all {
+        resolutionStrategy {
+            force(Libs.KOTLINX_COROUTINES)
+            force(Libs.KOTLINX_COROUTINES_ANDROID)
+            force(Libs.KOTLIN_STDLIB_JDK7)
+        }
+    }
 }
 
 subprojects {

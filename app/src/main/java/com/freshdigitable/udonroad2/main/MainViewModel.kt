@@ -55,4 +55,9 @@ class MainViewModel(
 
     val currentState: MainActivityViewState?
         get() = viewStates.current
+
+    override fun onCleared() {
+        super.onCleared()
+        viewStates.clear()
+    }
 }

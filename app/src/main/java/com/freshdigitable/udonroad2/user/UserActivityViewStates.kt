@@ -31,17 +31,16 @@ import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.AppViewState
 import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
-import com.freshdigitable.udonroad2.model.app.navigation.subscribeWith
 import com.freshdigitable.udonroad2.model.app.navigation.suspendMap
 import com.freshdigitable.udonroad2.model.app.navigation.toViewState
 import com.freshdigitable.udonroad2.model.user.Relationship
 import com.freshdigitable.udonroad2.model.user.TweetingUser
 import com.freshdigitable.udonroad2.model.user.User
+import io.reactivex.disposables.CompositeDisposable
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import javax.inject.Inject
 import kotlin.math.min
 
-@ExperimentalCoroutinesApi
 class UserActivityViewStates @Inject constructor(
     tweetingUser: TweetingUser,
     actions: UserActivityActions,
@@ -49,7 +48,7 @@ class UserActivityViewStates @Inject constructor(
     relationshipRepository: RelationshipRepository,
     selectedItemRepository: SelectedItemRepository,
     ownerGenerator: ListOwnerGenerator,
-    navigationDelegate: UserActivityNavigationDelegate,
+    private val navigationDelegate: UserActivityNavigationDelegate,
     executor: AppExecutor,
 ) {
     val user: LiveData<User?> = userRepository.getUser(tweetingUser.id)
@@ -87,6 +86,7 @@ class UserActivityViewStates @Inject constructor(
         .distinctUntilChanged()
         .toViewState()
 
+    @ExperimentalCoroutinesApi
     private val feedbackMessage: AppAction<FeedbackMessage> = AppAction.merge(listOf(
         actions.changeFollowingStatus.suspendMap(executor.dispatcher.ioContext) {
             relationshipRepository.updateFollowingStatus(it.targetUserId, it.wantsFollow)
@@ -158,11 +158,14 @@ class UserActivityViewStates @Inject constructor(
         }
     ))
 
-    init {
-        with(navigationDelegate) {
-            subscribeWith(feedbackMessage) { navigationDelegate.dispatchFeedbackMessage(it) }
-            subscribeWith(actions.rollbackViewState) { dispatchBack() }
-        }
+    private val disposables = CompositeDisposable(
+        feedbackMessage.subscribe { navigationDelegate.dispatchFeedbackMessage(it) },
+        actions.rollbackViewState.subscribe { navigationDelegate.dispatchBack() },
+    )
+
+    fun clear() {
+        disposables.clear()
+        navigationDelegate.clear()
     }
 }
 

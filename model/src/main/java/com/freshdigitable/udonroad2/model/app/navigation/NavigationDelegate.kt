@@ -16,33 +16,8 @@
 
 package com.freshdigitable.udonroad2.model.app.navigation
 
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.LifecycleOwner
-import com.freshdigitable.udonroad2.model.app.weakRef
-import io.reactivex.disposables.CompositeDisposable
-
-abstract class NavigationDelegate(
-    _lifecycleOwner: LifecycleOwner
-) : LifecycleEventObserver {
-
-    private val lifecycleOwner: LifecycleOwner by weakRef(_lifecycleOwner)
-    val disposables = CompositeDisposable()
-
-    init {
-        lifecycleOwner.lifecycle.addObserver(this)
-    }
-
-    override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
-        if (event == Lifecycle.Event.ON_DESTROY) {
-            disposables.clear()
-            lifecycleOwner.lifecycle.removeObserver(this)
-        }
-    }
-}
-
-fun <T, E : NavigationDelegate> E.subscribeWith(action: AppAction<T>, block: E.(T) -> Unit) {
-    action.subscribe { block(it) }.addTo(disposables)
+interface NavigationDelegate {
+    fun clear() {}
 }
 
 interface ActivityEventDelegate : FeedbackMessageDelegate {

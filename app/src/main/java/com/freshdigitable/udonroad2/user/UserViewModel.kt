@@ -60,6 +60,11 @@ class UserViewModel(
     fun onOptionsItemSelected(item: MenuItem): Boolean {
         return eventDispatcher.postRelationshipEvent(tweetingUser.id, item)
     }
+
+    override fun onCleared() {
+        super.onCleared()
+        viewState.clear()
+    }
 }
 
 private fun EventDispatcher.postRelationshipEvent(userId: UserId, item: MenuItem): Boolean {

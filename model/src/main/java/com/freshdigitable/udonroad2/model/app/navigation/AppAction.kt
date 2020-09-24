@@ -31,7 +31,7 @@ typealias AppAction<T> = Observable<T>
 typealias AppViewState<T> = LiveData<T>
 
 inline fun <T, reified E> AppAction<T>.toViewState(
-    block: AppAction<T>.() -> Observable<E> = { cast(E::class.java) }
+    block: AppAction<T>.() -> AppAction<E> = { cast(E::class.java) }
 ): AppViewState<E> {
     return BehaviorSubject.create<E>().also { action ->
         this.block().subscribe(action)

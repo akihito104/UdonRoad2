@@ -41,7 +41,7 @@ import timber.log.Timber
 class TimelineViewModel(
     private val owner: ListOwner<TweetQueryType>,
     private val eventDispatcher: EventDispatcher,
-    viewStates: TimelineViewState,
+    private val viewStates: TimelineViewState,
     private val homeRepository: ListRepository<TweetQueryType>,
     pagedListProvider: PagedListProvider<TweetQueryType, TweetListItem>
 ) : ListItemLoadable<TweetQueryType, TweetListItem>,
@@ -69,6 +69,7 @@ class TimelineViewModel(
         Timber.tag("TimelineViewModel").d("onCleared: $owner")
         super.onCleared()
         homeRepository.clear(owner.value)
+        viewStates.clear()
     }
 
     override val selectedItemId: LiveData<SelectedItemId?> = viewStates.selectedItemId

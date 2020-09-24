@@ -40,7 +40,6 @@ import com.freshdigitable.udonroad2.model.user.UserListItem
 import com.freshdigitable.udonroad2.timeline.TimelineActions
 import com.freshdigitable.udonroad2.timeline.TimelineNavigationDelegate
 import com.freshdigitable.udonroad2.timeline.TimelineViewState
-import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragment
 import com.freshdigitable.udonroad2.timeline.viewmodel.MemberListListViewModel
 import com.freshdigitable.udonroad2.timeline.viewmodel.TimelineViewModel
 import com.freshdigitable.udonroad2.timeline.viewmodel.UserListViewModel
@@ -106,10 +105,9 @@ internal interface TimelineViewModelModule {
 
         @Provides
         fun provideTimelineNavigationDelegate(
-            fragment: ListItemFragment,
             activityEventDelegate: ActivityEventDelegate
         ): TimelineNavigationDelegate {
-            return TimelineNavigationDelegate(fragment, activityEventDelegate)
+            return TimelineNavigationDelegate(activityEventDelegate)
         }
 
         @Provides
