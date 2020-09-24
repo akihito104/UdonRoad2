@@ -42,8 +42,8 @@ class UserActivityRobot : ActivityRobot {
         private val fab: ViewInteraction = onView(withId(R.id.user_fab))
     }
 
-    fun clickPagerTabWithPosition(position: Int): ViewInteraction {
-        return onView(ofViewPagerTabWithPosition(R.id.user_tabContainer, position))
+    fun clickPagerTabWithPosition(position: Int) {
+        onView(ofViewPagerTabWithPosition(R.id.user_tabContainer, position))
             .perform(selectViewPagerTabItem())
     }
 
