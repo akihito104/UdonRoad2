@@ -21,7 +21,7 @@ object Versions {
     const val ANDROIDX_APPCOMPAT = "1.1.0"
     const val ANDROIDX_FRAGMENT = "1.2.4"
 
-    const val ANDROIDX_CORE = "1.3.0"
+    const val ANDROIDX_CORE = "1.3.1"
     const val ANDROIDX_LIFECYCLE = "2.2.0"
     const val ANDROIDX_PAGING = "2.1.0"
     const val ANDROIDX_ROOM = "2.2.5"
