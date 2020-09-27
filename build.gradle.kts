@@ -47,7 +47,7 @@ allprojects {
         resolutionStrategy {
             force(Libs.KOTLINX_COROUTINES)
             force(Libs.KOTLINX_COROUTINES_ANDROID)
-            force(Libs.KOTLIN_STDLIB_JDK7)
+            force(Libs.KOTLIN_STDLIB_JDK)
         }
     }
 }

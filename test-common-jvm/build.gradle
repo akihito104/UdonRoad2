@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018. Matsuda, Akihit (akihito104)
+ * Copyright (c) 2020. Matsuda, Akihit (akihito104)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,33 +22,25 @@ apply from: rootProject.file("android_build.gradle")
 
 android {
     defaultConfig {
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
     }
 
     buildTypes {
-        debug {
-            minifyEnabled true
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        }
         release {
-            minifyEnabled true
+            minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
-
 }
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-
+    implementation project(":data:repository")
+    implementation project(":model")
+    api project(":test-common")
     implementation Libs.KOTLIN_STDLIB_JDK
-    implementation Libs.ANDROIDX_APPCOMPAT
-    implementation Libs.ANDROIDX_LIFECYCLE_LIVEDATA_KTX
-    implementation Libs.MATERIAL_DESIGN
-    implementation Libs.ANDROIDX_CONSTRAINT_LAYOUT
-
-    testImplementation Libs.JUNIT
-
-    androidTestImplementation Libs.ANDROIDX_TEST_RUNNER
-    androidTestImplementation Libs.ANDROIDX_TEST_ESPRESSO
+    implementation(Libs.KOTLINX_TEST_COROUTINES)
+    implementation Libs.JUNIT
+    implementation Libs.MOCKK
 }

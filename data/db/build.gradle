@@ -29,7 +29,7 @@ dependencies {
     implementation project(':model')
     api project(':data:repository-api')
 
-    implementation Libs.KOTLIN_STDLIB_JDK7
+    implementation Libs.KOTLIN_STDLIB_JDK
     implementation Libs.KOTLINX_COROUTINES
     implementation Libs.KOTLINX_COROUTINES_ANDROID
 

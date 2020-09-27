@@ -16,7 +16,7 @@
 
 package com.freshdigitable.udonroad2.di
 
-import com.freshdigitable.udonroad2.data.impl.AppExecutor
+import com.freshdigitable.udonroad2.model.app.AppExecutor
 import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton

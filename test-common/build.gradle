@@ -17,12 +17,9 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
-
 apply from: rootProject.file("android_build.gradle")
 
 android {
-    compileSdkVersion 29
-
     defaultConfig {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
@@ -38,12 +35,7 @@ android {
 
 dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
-    implementation project(":data:repository")
-    implementation project(":model")
-    implementation Libs.KOTLIN_STDLIB_JDK7
-    implementation(Libs.KOTLINX_TEST_COROUTINES) {
-        exclude group: "org.jetbrains.kotlinx", module: "kotlinx-coroutines-debug"
-    }
+    implementation Libs.KOTLIN_STDLIB_JDK
     implementation Libs.JUNIT
     implementation Libs.MOCKK_ANDROID
 }

@@ -33,7 +33,6 @@ import com.freshdigitable.udonroad2.test.mainList
 import com.freshdigitable.udonroad2.test.oauth
 import com.freshdigitable.udonroad2.test.onMainActivity
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.experimental.runners.Enclosed
@@ -51,7 +50,6 @@ class MainActivityInstTest {
         @get:Rule
         val twitterRobot = TwitterRobot()
 
-        @Ignore("unexpected error occurred because of including kotlin-coroutines-test")
         @Test
         fun startOauth(): Unit = onMainActivity {
             // setup

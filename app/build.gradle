@@ -62,7 +62,7 @@ dependencies {
     implementation project(':data:restclient')
     implementation project(':model')
 
-    implementation Libs.KOTLIN_STDLIB_JDK7
+    implementation Libs.KOTLIN_STDLIB_JDK
     implementation Libs.KOTLINX_COROUTINES
     implementation Libs.KOTLINX_COROUTINES_ANDROID
 
@@ -97,7 +97,7 @@ dependencies {
     debugImplementation Libs.LEAKCANARY
 
     // test
-    testImplementation project(":test-common")
+    testImplementation project(":test-common-jvm")
     testImplementation Libs.JUNIT
     testImplementation Libs.MOCKK
     testImplementation Libs.TRUTH

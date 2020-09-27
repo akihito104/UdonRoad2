@@ -20,6 +20,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.freshdigitable.udonroad2.data.restclient.TwitterConfigApiClient
 import com.freshdigitable.udonroad2.model.TwitterApiConfigEntity
+import com.freshdigitable.udonroad2.model.app.AppExecutor
 import java.util.concurrent.TimeUnit
 
 class TwitterConfigRepository(

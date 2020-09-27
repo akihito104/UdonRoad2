@@ -10,4 +10,7 @@ include(
     ":data:repository-api",
     ":model"
 )
-include(":test-common")
+include(
+    ":test-common",
+    ":test-common-jvm"
+)
