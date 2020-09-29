@@ -38,6 +38,7 @@ import com.freshdigitable.udonroad2.model.user.User
 import com.freshdigitable.udonroad2.model.user.UserId
 import com.freshdigitable.udonroad2.test_common.MatcherScopedSuspendBlock
 import com.freshdigitable.udonroad2.test_common.MockVerified
+import com.freshdigitable.udonroad2.test_common.jvm.CoroutineTestRule
 import com.freshdigitable.udonroad2.user.RelationshipMenu.BLOCK
 import com.freshdigitable.udonroad2.user.RelationshipMenu.FOLLOW
 import com.freshdigitable.udonroad2.user.RelationshipMenu.MUTE
@@ -339,7 +340,7 @@ class UserViewModelTestRule : TestWatcher() {
     val relationshipRepositoryMock = MockVerified.create<RelationshipRepository>()
     val relationshipRepository: RelationshipRepository = relationshipRepositoryMock.mock
     val selectedItemRepository = SelectedItemRepository()
-    private val coroutineRule = com.freshdigitable.udonroad2.test_common.jvm.CoroutineTestRule()
+    private val coroutineRule = CoroutineTestRule()
     val navigationDelegate = mockk<UserActivityNavigationDelegate>(relaxed = true)
 
     val sut: UserViewModel by lazy {
