@@ -51,16 +51,16 @@ object Versions {
     const val ROBOLECTRIC = "4.3.1"
     const val TRUTH = "1.0.1"
     const val KOTLINX_TEST_COROUTINES = KOTLIN_COROUTINES
-    const val ANDROIDX_TEST_CORE = "1.2.0"
-    const val ANDROIDX_TEST_JUNIT_EXT = "1.1.1"
-    const val ANDROIDX_TEST_RULES = "1.2.0"
+    const val ANDROIDX_TEST_CORE = "1.3.0"
+    const val ANDROIDX_TEST_JUNIT_EXT = "1.1.2"
+    const val ANDROIDX_TEST_RULES = "1.3.0"
     const val ANDROIDX_TEST_TRUTH_EXT = "1.3.0"
     const val ANDROIDX_TEST_ARCH_CORE = "2.1.0"
 
     // android test
-    const val ANDROIDX_TEST_RUNNER = "1.2.0"
-    const val ANDROIDX_TEST_ESPRESSO = "3.2.0"
-    const val ANDROIDX_TEST_ORCHESTRATOR = "1.2.0"
+    const val ANDROIDX_TEST_RUNNER = "1.3.0"
+    const val ANDROIDX_TEST_ESPRESSO = "3.3.0"
+    const val ANDROIDX_TEST_ORCHESTRATOR = "1.3.0"
 
     // ktlint
     const val KTLINT_PLUGIN = "9.2.1"
