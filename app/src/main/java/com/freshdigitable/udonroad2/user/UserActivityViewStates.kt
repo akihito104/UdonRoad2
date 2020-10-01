@@ -88,7 +88,7 @@ class UserActivityViewStates @Inject constructor(
 
     @ExperimentalCoroutinesApi
     private val feedbackMessage: AppAction<FeedbackMessage> = AppAction.merge(listOf(
-        actions.changeFollowingStatus.suspendMap(executor.dispatcher.ioContext) {
+        actions.changeFollowingStatus.suspendMap(executor.dispatcher.mainContext) {
             relationshipRepository.updateFollowingStatus(it.targetUserId, it.wantsFollow)
         }.map {
             if (it.event.wantsFollow) {
@@ -103,7 +103,7 @@ class UserActivityViewStates @Inject constructor(
                 }
             }
         },
-        actions.changeBlockingStatus.suspendMap(executor.dispatcher.ioContext) {
+        actions.changeBlockingStatus.suspendMap(executor.dispatcher.mainContext) {
             relationshipRepository.updateBlockingStatus(it.targetUserId, it.wantsBlock)
         }.map {
             if (it.event.wantsBlock) {
@@ -118,7 +118,7 @@ class UserActivityViewStates @Inject constructor(
                 }
             }
         },
-        actions.changeMutingStatus.suspendMap(executor.dispatcher.ioContext) {
+        actions.changeMutingStatus.suspendMap(executor.dispatcher.mainContext) {
             relationshipRepository.updateMutingStatus(it.targetUserId, it.wantsMute)
         }.map {
             if (it.event.wantsMute) {
@@ -133,7 +133,7 @@ class UserActivityViewStates @Inject constructor(
                 }
             }
         },
-        actions.changeRetweetBlockingStatus.suspendMap(executor.dispatcher.ioContext) {
+        actions.changeRetweetBlockingStatus.suspendMap(executor.dispatcher.mainContext) {
             relationshipRepository.updateWantRetweetStatus(it.targetUserId, it.wantsRetweet)
         }.map {
             if (it.event.wantsRetweet) {
@@ -148,7 +148,7 @@ class UserActivityViewStates @Inject constructor(
                 }
             }
         },
-        actions.reportSpam.suspendMap(executor.dispatcher.ioContext) {
+        actions.reportSpam.suspendMap(executor.dispatcher.mainContext) {
             relationshipRepository.reportSpam(it.targetUserId)
         }.map {
             when {
