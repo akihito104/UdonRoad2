@@ -18,7 +18,6 @@ package com.freshdigitable.udonroad2.user
 
 import androidx.annotation.Keep
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.map
 import androidx.lifecycle.switchMap
@@ -32,6 +31,7 @@ import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.AppViewState
 import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
+import com.freshdigitable.udonroad2.model.app.navigation.onNull
 import com.freshdigitable.udonroad2.model.app.navigation.suspendMap
 import com.freshdigitable.udonroad2.model.app.navigation.toViewState
 import com.freshdigitable.udonroad2.model.user.Relationship
@@ -39,7 +39,6 @@ import com.freshdigitable.udonroad2.model.user.TweetingUser
 import com.freshdigitable.udonroad2.model.user.User
 import io.reactivex.disposables.CompositeDisposable
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.math.min
 
@@ -53,31 +52,13 @@ class UserActivityViewStates @Inject constructor(
     private val navigationDelegate: UserActivityNavigationDelegate,
     executor: AppExecutor,
 ) {
-    val user: AppViewState<User?> = MediatorLiveData<User?>().apply {
-        addSource(userRepository.getUserSource(tweetingUser.id)) { u ->
-            if (u != null) {
-                this.value = u
-            } else {
-                executor.launch(executor.dispatcher.mainContext) {
-                    val res = runCatching {
-                        userRepository.getUser(tweetingUser.id)
-                    }
-                    when {
-                        res.isSuccess -> this@apply.value = res.getOrNull()
-                        else -> {
-                            navigationDelegate.dispatchFeedbackMessage(
-                                UserResourceFeedbackMessage.FAILED_FETCH
-                            )
-                            val exception = res.exceptionOrNull()
-                            if (exception is RuntimeException) {
-                                throw exception
-                            }
-                        }
-                    }
-                }
-            }
+    val user: AppViewState<User?> = userRepository.getUserSource(tweetingUser.id).onNull(
+        executor = executor,
+        onNull = { userRepository.getUser(tweetingUser.id) },
+        onError = {
+            navigationDelegate.dispatchFeedbackMessage(UserResourceFeedbackMessage.FAILED_FETCH)
         }
-    }
+    )
     val relationship: AppViewState<Relationship?> = user.switchMap {
         when (it) {
             null -> MutableLiveData()
