@@ -30,13 +30,10 @@ import kotlin.coroutines.EmptyCoroutineContext
 typealias AppAction<T> = Observable<T>
 typealias AppViewState<T> = LiveData<T>
 
-inline fun <T, reified E> AppAction<T>.toViewState(
-    block: AppAction<T>.() -> AppAction<E> = { cast(E::class.java) }
-): AppViewState<E> {
-    return BehaviorSubject.create<E>().also { action ->
-        this.block().subscribe(action)
-    }
-        .toFlowable(BackpressureStrategy.BUFFER)
+inline fun <T, reified E> AppAction<T>.toViewState(): AppViewState<E> {
+    val subject = BehaviorSubject.create<E>()
+    this.cast(E::class.java).subscribe(subject)
+    return subject.toFlowable(BackpressureStrategy.BUFFER)
         .toLiveData()
         .distinctUntilChanged()
 }
