@@ -48,7 +48,7 @@ object Versions {
     // test
     const val JUNIT = "4.12"
     const val MOCKK = "1.10.0"
-    const val ROBOLECTRIC = "4.3.1"
+    const val ROBOLECTRIC = "4.4"
     const val TRUTH = "1.0.1"
     const val KOTLINX_TEST_COROUTINES = KOTLIN_COROUTINES
     const val ANDROIDX_TEST_CORE = "1.3.0"
