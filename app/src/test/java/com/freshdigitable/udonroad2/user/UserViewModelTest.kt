@@ -63,6 +63,7 @@ import org.junit.runner.Description
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 import org.junit.runners.model.Statement
+import java.io.IOException
 
 @ExperimentalCoroutinesApi
 @RunWith(Enclosed::class)
@@ -104,6 +105,36 @@ class UserViewModelTest {
 
             // verify
             assertThat(sut.fabVisible.value).isTrue()
+        }
+
+        @Test
+        fun user_whenNotFoundInLocal_then_getUserIsCalled(): Unit = with(rule) {
+            // setup
+            with(userRepositoryMock) {
+                coSetupResponseWithVerify({ mock.getUser(targetId) }, user)
+            }
+            setupRelation(targetId, relationship())
+
+            // exercise
+            userSource.value = null
+
+            // verify
+            assertThat(sut.user.value).isNotNull()
+        }
+
+        @Test
+        fun user_whenNotFoundInLocal_then_getUserIsCalledWithException(): Unit = with(rule) {
+            // setup
+            with(userRepositoryMock) {
+                coSetupThrowWithVerify({ mock.getUser(targetId) }, IOException())
+            }
+
+            // exercise
+            userSource.value = null
+
+            // verify
+            assertThat(sut.user.value).isNull()
+            verify { navigationDelegate.dispatchFeedbackMessage(any()) }
         }
     }
 
@@ -299,18 +330,6 @@ class UserViewModelTest {
                     setOf(UNFOLLOW, BLOCK, UNMUTE, RETWEET_BLOCKED, REPORT_SPAM)
                 ),
             )
-
-            private fun relationship(
-                givenFollowing: Boolean = false,
-                givenBlocking: Boolean = false,
-                givenMuting: Boolean = false,
-                givenWantRetweets: Boolean = false
-            ): Relationship = mockk<Relationship>().apply {
-                every { following } returns givenFollowing
-                every { blocking } returns givenBlocking
-                every { muting } returns givenMuting
-                every { wantRetweets } returns givenWantRetweets
-            }
         }
 
         @Test
@@ -319,9 +338,7 @@ class UserViewModelTest {
             setupRelation(targetId, param.givenRelationship)
 
             // exercise
-            userSource.value = mockk<User>().apply {
-                every { id } returns targetId
-            }
+            userSource.value = user
 
             // verify
             assertThat(sut.relationshipMenuItems.value).containsExactlyElementsIn(param.menuSet)
@@ -336,7 +353,10 @@ class UserViewModelTestRule : TestWatcher() {
         every { id } returns targetId
         every { screenName } returns "user1"
     }
-    private val userRepository = MockVerified.create<UserRepository>()
+    val user = mockk<User>().apply {
+        every { id } returns targetId
+    }
+    val userRepositoryMock = MockVerified.create<UserRepository>()
     val relationshipRepositoryMock = MockVerified.create<RelationshipRepository>()
     val relationshipRepository: RelationshipRepository = relationshipRepositoryMock.mock
     val selectedItemRepository = SelectedItemRepository()
@@ -348,7 +368,7 @@ class UserViewModelTestRule : TestWatcher() {
         val viewStates = UserActivityViewStates(
             targetUser,
             UserActivityActions(eventDispatcher),
-            userRepository.mock,
+            userRepositoryMock.mock,
             relationshipRepository,
             selectedItemRepository,
             ListOwnerGenerator(),
@@ -360,7 +380,7 @@ class UserViewModelTestRule : TestWatcher() {
 
     override fun starting(description: Description?) {
         super.starting(description)
-        setupUser(targetId)
+        setupUserSource(targetId)
 
         sut.setCurrentPage(0)
         sut.setAppBarScrollRate(0f)
@@ -375,7 +395,7 @@ class UserViewModelTestRule : TestWatcher() {
 
     override fun apply(base: Statement?, description: Description?): Statement {
         return RuleChain.outerRule(InstantTaskExecutorRule())
-            .around(userRepository)
+            .around(userRepositoryMock)
             .around(relationshipRepositoryMock)
             .around(coroutineRule)
             .apply(super.apply(base, description), description)
@@ -383,9 +403,9 @@ class UserViewModelTestRule : TestWatcher() {
 
     val userSource = MutableLiveData<User>()
 
-    private fun setupUser(targetId: UserId) {
-        with(userRepository) {
-            setupResponseWithVerify({ mock.getUser(targetId) }, userSource)
+    private fun setupUserSource(targetId: UserId) {
+        with(userRepositoryMock) {
+            setupResponseWithVerify({ mock.getUserSource(targetId) }, userSource)
         }
     }
 
@@ -397,4 +417,16 @@ class UserViewModelTestRule : TestWatcher() {
             { relationshipRepository.findRelationship(targetId) }, relationshipSource
         )
     }
+}
+
+private fun relationship(
+    givenFollowing: Boolean = false,
+    givenBlocking: Boolean = false,
+    givenMuting: Boolean = false,
+    givenWantRetweets: Boolean = false
+): Relationship = mockk<Relationship>().apply {
+    every { following } returns givenFollowing
+    every { blocking } returns givenBlocking
+    every { muting } returns givenMuting
+    every { wantRetweets } returns givenWantRetweets
 }

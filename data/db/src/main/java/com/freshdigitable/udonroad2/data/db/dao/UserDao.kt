@@ -50,9 +50,12 @@ abstract class UserDao {
     internal abstract suspend fun addUsers(users: List<UserEntity>)
 
     @Query("SELECT * FROM user WHERE id = :id")
-    internal abstract fun getUser(id: UserId): LiveData<UserEntity?>
+    internal abstract fun getUserSource(id: UserId): LiveData<UserEntity?>
+    open fun getUserSourceById(id: UserId): LiveData<out User?> = getUserSource(id)
 
-    open fun getUserById(id: UserId): LiveData<out User?> = getUser(id)
+    @Query("SELECT * FROM user WHERE id = :id")
+    internal abstract suspend fun getUser(id: UserId): UserEntity?
+    open suspend fun getUserById(id: UserId): User? = getUser(id)
 
     @Transaction
     internal open suspend fun addUsers(entities: List<UserEntity>, owner: String? = null) {
