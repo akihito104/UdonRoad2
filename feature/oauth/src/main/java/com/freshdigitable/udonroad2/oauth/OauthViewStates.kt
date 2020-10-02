@@ -19,11 +19,11 @@ package com.freshdigitable.udonroad2.oauth
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
-import com.freshdigitable.udonroad2.data.impl.AppExecutor
-import com.freshdigitable.udonroad2.data.impl.DispatcherProvider
 import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
 import com.freshdigitable.udonroad2.model.AccessTokenEntity
 import com.freshdigitable.udonroad2.model.RequestTokenItem
+import com.freshdigitable.udonroad2.model.app.AppExecutor
+import com.freshdigitable.udonroad2.model.app.DispatcherProvider
 import com.freshdigitable.udonroad2.model.app.ext.merge
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.AppViewState
@@ -41,7 +41,7 @@ class OauthViewStates(
     appExecutor: AppExecutor,
 ) {
     private val _requestToken: AppAction<EventResult<OauthEvent.LoginClicked, RequestTokenItem>> =
-        actions.authApp.suspendMap(appExecutor.dispatcher.ioContext) {
+        actions.authApp.suspendMap(appExecutor.dispatcher.mainContext) {
             val token = repository.getRequestTokenItem()
             savedState.setToken(token)
             token
@@ -57,7 +57,7 @@ class OauthViewStates(
     }
 
     private val completeAuthProcess: AppAction<EventResult<OauthEvent.SendPinClicked, AccessTokenEntity>> =
-        actions.sendPin.suspendMap(appExecutor.dispatcher.ioContext) {
+        actions.sendPin.suspendMap(appExecutor.dispatcher.mainContext) {
             val token = requireNotNull(requestToken.value)
             val verifier = pinText.value.toString()
             val t = repository.getAccessToken(token, verifier)

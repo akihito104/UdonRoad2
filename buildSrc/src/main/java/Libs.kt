@@ -71,7 +71,7 @@ object Libs {
     const val RXJAVA2_ANDROID = "io.reactivex.rxjava2:rxandroid:${Versions.RXJAVA_ANDROID}"
     const val RXJAVA2 = "io.reactivex.rxjava2:rxjava:${Versions.RXJAVA}"
     const val JUNIT = "junit:junit:${Versions.JUNIT}"
-    const val KOTLIN_STDLIB_JDK7 = "org.jetbrains.kotlin:kotlin-stdlib-jdk7:${Versions.KOTLIN}"
+    const val KOTLIN_STDLIB_JDK = "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${Versions.KOTLIN}"
     const val KOTLINX_COROUTINES_ANDROID =
         "org.jetbrains.kotlinx:kotlinx-coroutines-android:${Versions.KOTLIN_COROUTINES}"
     const val KOTLINX_COROUTINES =

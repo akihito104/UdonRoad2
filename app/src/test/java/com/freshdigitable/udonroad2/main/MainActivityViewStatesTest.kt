@@ -26,8 +26,8 @@ import com.freshdigitable.udonroad2.model.app.navigation.CommonEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.postEvents
 import com.freshdigitable.udonroad2.test_common.MockVerified
-import com.freshdigitable.udonroad2.test_common.OAuthTokenRepositoryRule
 import com.freshdigitable.udonroad2.test_common.RxExceptionHandler
+import com.freshdigitable.udonroad2.test_common.jvm.OAuthTokenRepositoryRule
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import io.mockk.verify
 import org.junit.Rule

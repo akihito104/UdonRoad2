@@ -39,7 +39,7 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation project(':model')
 
-    implementation Libs.KOTLIN_STDLIB_JDK7
+    implementation Libs.KOTLIN_STDLIB_JDK
 
     implementation Libs.ANDROIDX_CORE_KTX
     implementation Libs.ANDROIDX_APPCOMPAT

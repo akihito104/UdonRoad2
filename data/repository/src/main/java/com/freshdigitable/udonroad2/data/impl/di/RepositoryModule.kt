@@ -22,7 +22,6 @@ import com.freshdigitable.udonroad2.data.db.LocalListDataSourceModule
 import com.freshdigitable.udonroad2.data.db.LocalListDataSourceProvider
 import com.freshdigitable.udonroad2.data.db.PagedListDataSourceFactoryModule
 import com.freshdigitable.udonroad2.data.db.PagedListDataSourceFactoryProvider
-import com.freshdigitable.udonroad2.data.impl.AppExecutor
 import com.freshdigitable.udonroad2.data.impl.ListRepositoryImpl
 import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepositoryModule
 import com.freshdigitable.udonroad2.data.impl.PagedListProviderImpl
@@ -34,6 +33,7 @@ import com.freshdigitable.udonroad2.data.restclient.RemoteListDataSourceProvider
 import com.freshdigitable.udonroad2.data.restclient.TweetTimelineDataSourceModule
 import com.freshdigitable.udonroad2.data.restclient.UserListDataSourceModule
 import com.freshdigitable.udonroad2.model.QueryType
+import com.freshdigitable.udonroad2.model.app.AppExecutor
 import dagger.BindsInstance
 import dagger.Module
 import dagger.Subcomponent

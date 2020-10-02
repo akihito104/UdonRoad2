@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-package com.freshdigitable.udonroad2.test_common
+package com.freshdigitable.udonroad2.test_common.jvm
 
 import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
 import com.freshdigitable.udonroad2.model.AccessTokenEntity
 import com.freshdigitable.udonroad2.model.RequestTokenItem
 import com.freshdigitable.udonroad2.model.user.UserId
+import com.freshdigitable.udonroad2.test_common.MockVerified
 import org.junit.rules.TestRule
 import java.io.Serializable
 

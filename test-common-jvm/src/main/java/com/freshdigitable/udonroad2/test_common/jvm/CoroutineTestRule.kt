@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package com.freshdigitable.udonroad2.test_common
+package com.freshdigitable.udonroad2.test_common.jvm
 
-import com.freshdigitable.udonroad2.data.impl.DispatcherProvider
+import com.freshdigitable.udonroad2.model.app.DispatcherProvider
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestCoroutineDispatcher
