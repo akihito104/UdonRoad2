@@ -414,7 +414,10 @@ class UserViewModelTestRule : TestWatcher() {
     fun setupRelation(targetId: UserId, response: Relationship? = null) {
         relationshipSource.value = response
         relationshipRepositoryMock.setupResponseWithVerify(
-            { relationshipRepository.findRelationship(targetId) }, relationshipSource
+            { relationshipRepository.getRelationshipSource(targetId) }, relationshipSource
+        )
+        relationshipRepositoryMock.coSetupResponseWithVerify(
+            { relationshipRepository.findRelationship(targetId) }, response
         )
     }
 }

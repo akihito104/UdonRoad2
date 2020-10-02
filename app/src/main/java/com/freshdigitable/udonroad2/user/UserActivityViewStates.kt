@@ -18,7 +18,7 @@ package com.freshdigitable.udonroad2.user
 
 import androidx.annotation.Keep
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.liveData
 import androidx.lifecycle.map
 import androidx.lifecycle.switchMap
 import com.freshdigitable.udonroad2.R
@@ -60,9 +60,19 @@ class UserActivityViewStates @Inject constructor(
         }
     )
     val relationship: AppViewState<Relationship?> = user.switchMap {
-        when (it) {
-            null -> MutableLiveData()
-            else -> relationshipRepository.findRelationship(it.id)
+        liveData(executor.dispatcher.mainContext) {
+            if (it == null) {
+                return@liveData
+            }
+            emitSource(relationshipRepository.getRelationshipSource(it.id))
+            try {
+                emit(relationshipRepository.findRelationship(it.id))
+            } catch (t: Throwable) {
+                navigationDelegate.dispatchFeedbackMessage(RelationshipFeedbackMessage.FETCH_FAILED)
+                if (t is RuntimeException) {
+                    throw t
+                }
+            }
         }
     }
     val relationshipMenuItems: AppViewState<Set<RelationshipMenu>> = relationship.map {
@@ -202,7 +212,9 @@ internal enum class RelationshipFeedbackMessage(
     WANT_RETWEET_DESTROY_FAILURE(R.string.msg_want_retweet_destroy_failure),
 
     REPORT_SPAM_SUCCESS(R.string.msg_report_spam_success),
-    REPORT_SPAM_FAILURE(R.string.msg_report_spam_failed)
+    REPORT_SPAM_FAILURE(R.string.msg_report_spam_failed),
+
+    FETCH_FAILED(R.string.msg_fetch_relationship_failed),
     ;
 }
 
