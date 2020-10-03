@@ -65,10 +65,13 @@ class TweetDetailViewModelTest {
         val eventDispatcher = EventDispatcher()
         val actions = TweetDetailActions(eventDispatcher)
         TweetDetailViewModel(
-            tweet.originalId,
             eventDispatcher,
-            TweetDetailViewStates(actions, activityEventDelegate.mock),
-            tweetRepositoryRule.mock,
+            TweetDetailViewStates(
+                tweet.originalId,
+                actions,
+                tweetRepositoryRule.mock,
+                activityEventDelegate.mock
+            ),
         )
     }
     private val tweetSource: MutableLiveData<TweetListItem?> = MutableLiveData()

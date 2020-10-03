@@ -26,13 +26,11 @@ import io.reactivex.disposables.CompositeDisposable
 import javax.inject.Inject
 
 class TweetDetailViewModel(
-    tweetId: TweetId,
     private val eventDispatcher: EventDispatcher,
     private val viewStates: TweetDetailViewStates,
-    repository: TweetRepository,
 ) : TweetListItemClickListener, ViewModel() {
 
-    val tweetItem: LiveData<TweetListItem?> = repository.getTweetItem(tweetId)
+    val tweetItem: LiveData<TweetListItem?> = viewStates.tweetItem
 
     fun onOriginalUserClicked() {
         val user = tweetItem.value?.originalUser ?: return
@@ -70,9 +68,13 @@ class TweetDetailActions @Inject constructor(
 }
 
 class TweetDetailViewStates @Inject constructor(
+    tweetId: TweetId,
     actions: TweetDetailActions,
+    repository: TweetRepository,
     activityEventDelegate: ActivityEventDelegate,
 ) {
+    val tweetItem: LiveData<TweetListItem?> = repository.getTweetItem(tweetId)
+
     private val compositeDisposable = CompositeDisposable(
         actions.launchUserInfo.subscribe {
             activityEventDelegate.dispatchNavHostNavigate(TimelineEvent.Navigate.UserInfo(it.user))
