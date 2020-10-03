@@ -28,11 +28,10 @@ import com.freshdigitable.udonroad2.timeline.TimelineEvent.UserIconClicked
 
 class TimelineActions(
     dispatcher: EventDispatcher,
-) : UserIconClickedAction by UserIconClickedAction.create(dispatcher) {
+) : UserIconClickedAction by UserIconClickedAction.create(dispatcher),
+    LaunchMediaViewerAction by LaunchMediaViewerAction.create(dispatcher) {
     val showTimeline: AppAction<Init> = dispatcher.toAction()
     val showTweetDetail: AppAction<SelectedItemShortcut.TweetDetail> = dispatcher.toAction()
-
-    val launchMediaViewer: AppAction<MediaItemClicked> = dispatcher.toAction()
 
     val selectItem: AppAction<TweetItemSelection.Selected> = dispatcher.toAction {
         AppAction.merge(
@@ -55,12 +54,20 @@ interface UserIconClickedAction {
     companion object {
         fun create(
             eventDispatcher: EventDispatcher
-        ): UserIconClickedAction = UserIconClickedActionImpl(eventDispatcher)
+        ): UserIconClickedAction = object : UserIconClickedAction {
+            override val launchUserInfo: AppAction<UserIconClicked> = eventDispatcher.toAction()
+        }
     }
 }
 
-internal class UserIconClickedActionImpl(
-    eventDispatcher: EventDispatcher
-) : UserIconClickedAction {
-    override val launchUserInfo: AppAction<UserIconClicked> = eventDispatcher.toAction()
+interface LaunchMediaViewerAction {
+    val launchMediaViewer: AppAction<MediaItemClicked>
+
+    companion object {
+        fun create(
+            eventDispatcher: EventDispatcher
+        ): LaunchMediaViewerAction = object : LaunchMediaViewerAction {
+            override val launchMediaViewer: AppAction<MediaItemClicked> = eventDispatcher.toAction()
+        }
+    }
 }

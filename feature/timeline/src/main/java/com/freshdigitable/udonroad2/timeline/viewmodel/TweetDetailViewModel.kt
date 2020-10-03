@@ -14,6 +14,7 @@ import com.freshdigitable.udonroad2.model.app.navigation.toAction
 import com.freshdigitable.udonroad2.model.tweet.Tweet
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
+import com.freshdigitable.udonroad2.timeline.LaunchMediaViewerAction
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.TweetListItemClickListener
 import com.freshdigitable.udonroad2.timeline.UserIconClickedAction
@@ -68,7 +69,8 @@ class TweetDetailViewModel(
 
 class TweetDetailActions @Inject constructor(
     eventDispatcher: EventDispatcher
-) : UserIconClickedAction by UserIconClickedAction.create(eventDispatcher) {
+) : UserIconClickedAction by UserIconClickedAction.create(eventDispatcher),
+    LaunchMediaViewerAction by LaunchMediaViewerAction.create(eventDispatcher) {
     val launchOriginalTweetUserInfo: AppAction<TimelineEvent.RetweetUserClicked> =
         eventDispatcher.toAction()
 }
@@ -83,7 +85,10 @@ class TweetDetailViewStates @Inject constructor(
         },
         actions.launchOriginalTweetUserInfo.subscribe {
             activityEventDelegate.dispatchNavHostNavigate(TimelineEvent.Navigate.UserInfo(it.user))
-        }
+        },
+        actions.launchMediaViewer.subscribe {
+            activityEventDelegate.dispatchNavHostNavigate(TimelineEvent.Navigate.MediaViewer(it))
+        },
     )
 
     fun clear() {

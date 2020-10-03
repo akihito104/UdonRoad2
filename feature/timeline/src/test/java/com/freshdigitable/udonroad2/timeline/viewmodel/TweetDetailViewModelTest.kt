@@ -20,6 +20,7 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.MutableLiveData
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
+import com.freshdigitable.udonroad2.model.tweet.Tweet
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import com.freshdigitable.udonroad2.model.user.TweetingUser
@@ -47,6 +48,19 @@ class TweetDetailViewModelTest {
     @get:Rule
     val activityEventDelegate = MockVerified.create<ActivityEventDelegate>()
 
+    private val tweet = mockk<TweetListItem>().apply {
+        every { originalId } returns TweetId(1000)
+        every { originalUser } returns mockk<TweetingUser>().apply {
+            every { id } returns UserId(3000)
+        }
+        every { body } returns mockk<Tweet>().apply {
+            every { id } returns TweetId(1001)
+            every { user } returns mockk<TweetingUser>().apply {
+                every { id } returns UserId(3001)
+            }
+        }
+    }
+
     private val sut: TweetDetailViewModel by lazy {
         val eventDispatcher = EventDispatcher()
         val actions = TweetDetailActions(eventDispatcher)
@@ -72,11 +86,10 @@ class TweetDetailViewModelTest {
     @Test
     fun showTweetItem_beforeItemIsFound_tweetItemHasNoValue() {
         // setup
-        val tweetId = TweetId(1000)
-        tweetRepositoryRule.setupShowTweet(tweetId, MutableLiveData(null))
+        tweetRepositoryRule.setupShowTweet(tweet.originalId, MutableLiveData(null))
 
         // exercise
-        sut.showTweetItem(tweetId)
+        sut.showTweetItem(tweet.originalId)
 
         // verify
         assertThat(sut.tweetItem.value).isNull()
@@ -85,41 +98,73 @@ class TweetDetailViewModelTest {
     @Test
     fun showTweetItem_whenItemIsFound_then_tweetItemHasItem() {
         // setup
-        val tweetId = TweetId(1000)
         val response = MutableLiveData<TweetListItem?>()
-        tweetRepositoryRule.setupShowTweet(tweetId, response)
+        tweetRepositoryRule.setupShowTweet(tweet.originalId, response)
 
         // exercise
-        sut.showTweetItem(tweetId)
-        response.value = mockk()
+        sut.showTweetItem(tweet.originalId)
+        response.value = tweet
 
         // verify
-        assertThat(sut.tweetItem.value).isNotNull()
+        assertThat(sut.tweetItem.value).isEqualTo(tweet)
     }
 
     @Test
     fun onOriginalUserClicked_navigationDelegateIsCalled() {
         // setup
-        val tweetId = TweetId(1000)
-        val originalUser = mockk<TweetingUser>().apply {
-            every { id } returns UserId(3000)
-        }
-        val tweet = mockk<TweetListItem>().apply {
-            every { originalId } returns tweetId
-            every { this@apply.originalUser } returns originalUser
-        }
-        tweetRepositoryRule.setupShowTweet(tweetId, MutableLiveData(tweet))
+        tweetRepositoryRule.setupShowTweet(tweet.originalId, MutableLiveData(tweet))
         every { activityEventDelegate.mock.dispatchNavHostNavigate(any()) } just runs
-        sut.showTweetItem(tweetId)
+        sut.showTweetItem(tweet.originalId)
 
         // exercise
         sut.onOriginalUserClicked()
 
         // verify
-        assertThat(sut.tweetItem.value).isNotNull()
+        assertThat(sut.tweetItem.value).isEqualTo(tweet)
+        val tweetingUser = tweet.originalUser
         verify {
             activityEventDelegate.mock.dispatchNavHostNavigate(
-                TimelineEvent.Navigate.UserInfo(originalUser)
+                TimelineEvent.Navigate.UserInfo(tweetingUser)
+            )
+        }
+    }
+
+    @Test
+    fun onBodyUserClicked_navigationDelegateIsCalled() {
+        // setup
+        tweetRepositoryRule.setupShowTweet(tweet.originalId, MutableLiveData(tweet))
+        every { activityEventDelegate.mock.dispatchNavHostNavigate(any()) } just runs
+        sut.showTweetItem(tweet.originalId)
+
+        // exercise
+        sut.onBodyUserClicked()
+
+        // verify
+        assertThat(sut.tweetItem.value).isEqualTo(tweet)
+        val tweetingUser = tweet.body.user
+        verify {
+            activityEventDelegate.mock.dispatchNavHostNavigate(
+                TimelineEvent.Navigate.UserInfo(tweetingUser)
+            )
+        }
+    }
+
+    @Test
+    fun onMediaItemClicked_navigationDelegateIsCalled() {
+        // setup
+        tweetRepositoryRule.setupShowTweet(tweet.originalId, MutableLiveData(tweet))
+        every { activityEventDelegate.mock.dispatchNavHostNavigate(any()) } just runs
+        sut.showTweetItem(tweet.originalId)
+        val tweetId = tweet.body.id
+
+        // exercise
+        sut.onMediaItemClicked(tweet.originalId, tweetId, tweet.body, 0)
+
+        // verify
+        assertThat(sut.tweetItem.value).isEqualTo(tweet)
+        verify {
+            activityEventDelegate.mock.dispatchNavHostNavigate(
+                TimelineEvent.Navigate.MediaViewer(tweetId)
             )
         }
     }
