@@ -7,21 +7,27 @@ import androidx.lifecycle.switchMap
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
 import com.freshdigitable.udonroad2.model.app.di.FragmentScope
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
+import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
+import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
+import com.freshdigitable.udonroad2.model.app.navigation.toAction
 import com.freshdigitable.udonroad2.model.tweet.Tweet
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.TweetListItemClickListener
+import com.freshdigitable.udonroad2.timeline.UserIconClickedAction
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.multibindings.IntoMap
+import io.reactivex.disposables.CompositeDisposable
 import javax.inject.Inject
 
-class TweetDetailViewModel @Inject constructor(
+class TweetDetailViewModel(
     private val eventDispatcher: EventDispatcher,
-    private val repository: TweetRepository
+    private val viewStates: TweetDetailViewStates,
+    private val repository: TweetRepository,
 ) : TweetListItemClickListener, ViewModel() {
 
     private val targetId: MutableLiveData<TweetId> = MutableLiveData()
@@ -53,6 +59,36 @@ class TweetDetailViewModel @Inject constructor(
     ) {
         eventDispatcher.postEvent(TimelineEvent.MediaItemClicked(item.id, index))
     }
+
+    override fun onCleared() {
+        super.onCleared()
+        viewStates.clear()
+    }
+}
+
+class TweetDetailActions @Inject constructor(
+    eventDispatcher: EventDispatcher
+) : UserIconClickedAction by UserIconClickedAction.create(eventDispatcher) {
+    val launchOriginalTweetUserInfo: AppAction<TimelineEvent.RetweetUserClicked> =
+        eventDispatcher.toAction()
+}
+
+class TweetDetailViewStates @Inject constructor(
+    actions: TweetDetailActions,
+    activityEventDelegate: ActivityEventDelegate,
+) {
+    private val compositeDisposable = CompositeDisposable(
+        actions.launchUserInfo.subscribe {
+            activityEventDelegate.dispatchNavHostNavigate(TimelineEvent.Navigate.UserInfo(it.user))
+        },
+        actions.launchOriginalTweetUserInfo.subscribe {
+            activityEventDelegate.dispatchNavHostNavigate(TimelineEvent.Navigate.UserInfo(it.user))
+        }
+    )
+
+    fun clear() {
+        compositeDisposable.clear()
+    }
 }
 
 @Module
@@ -67,9 +103,10 @@ interface TweetDetailViewModelModule {
         @FragmentScope
         fun provideTweetDetailViewModel(
             eventDispatcher: EventDispatcher,
-            tweetRepository: TweetRepository
+            viewStates: TweetDetailViewStates,
+            tweetRepository: TweetRepository,
         ): TweetDetailViewModel {
-            return TweetDetailViewModel(eventDispatcher, tweetRepository)
+            return TweetDetailViewModel(eventDispatcher, viewStates, tweetRepository)
         }
     }
 }
