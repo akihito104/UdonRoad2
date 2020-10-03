@@ -2,10 +2,7 @@ package com.freshdigitable.udonroad2.timeline.viewmodel
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
-import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
-import com.freshdigitable.udonroad2.model.app.di.ViewModelScope
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
@@ -17,11 +14,6 @@ import com.freshdigitable.udonroad2.timeline.LaunchMediaViewerAction
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.TweetListItemClickListener
 import com.freshdigitable.udonroad2.timeline.UserIconClickedAction
-import dagger.BindsInstance
-import dagger.Module
-import dagger.Provides
-import dagger.Subcomponent
-import dagger.multibindings.IntoMap
 import io.reactivex.disposables.CompositeDisposable
 import javax.inject.Inject
 
@@ -91,35 +83,3 @@ class TweetDetailViewStates @Inject constructor(
         compositeDisposable.clear()
     }
 }
-
-@Module
-interface TweetDetailViewModelModule {
-    companion object {
-        @Provides
-        @IntoMap
-        @ViewModelKey(TweetDetailViewModel::class)
-        @ViewModelScope
-        fun provideTweetDetailViewModel(
-            tweetId: TweetId,
-            eventDispatcher: EventDispatcher,
-            viewStates: TweetDetailViewStates,
-            tweetRepository: TweetRepository,
-        ): ViewModel {
-            return TweetDetailViewModel(tweetId, eventDispatcher, viewStates, tweetRepository)
-        }
-    }
-}
-
-@ViewModelScope
-@Subcomponent(modules = [TweetDetailViewModelModule::class])
-interface TweetDetailViewModelComponent {
-    @Subcomponent.Factory
-    interface Factory {
-        fun create(@BindsInstance tweetId: TweetId): TweetDetailViewModelComponent
-    }
-
-    val viewModelProvider: ViewModelProvider
-}
-
-@Module(subcomponents = [TweetDetailViewModelComponent::class])
-interface TweetDetailViewModelComponentModule

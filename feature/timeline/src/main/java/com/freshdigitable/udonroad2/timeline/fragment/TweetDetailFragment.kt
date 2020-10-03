@@ -12,8 +12,8 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.observe
 import androidx.navigation.fragment.navArgs
 import com.freshdigitable.udonroad2.timeline.databinding.FragmentDetailBinding
+import com.freshdigitable.udonroad2.timeline.di.TweetDetailViewModelComponent
 import com.freshdigitable.udonroad2.timeline.viewmodel.TweetDetailViewModel
-import com.freshdigitable.udonroad2.timeline.viewmodel.TweetDetailViewModelComponent
 import dagger.android.support.AndroidSupportInjection
 import javax.inject.Inject
 
