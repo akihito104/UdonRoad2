@@ -19,7 +19,7 @@ package com.freshdigitable.udonroad2.di
 import com.freshdigitable.udonroad2.model.app.di.FragmentScope
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragment
 import com.freshdigitable.udonroad2.timeline.fragment.TweetDetailFragment
-import com.freshdigitable.udonroad2.timeline.viewmodel.TweetDetailViewModelModule
+import com.freshdigitable.udonroad2.timeline.viewmodel.TweetDetailViewModelComponentModule
 import dagger.Module
 import dagger.android.ContributesAndroidInjector
 
@@ -38,6 +38,6 @@ interface ListItemFragmentModule {
 @Module
 interface TweetDetailFragmentModule {
     @FragmentScope
-    @ContributesAndroidInjector(modules = [TweetDetailViewModelModule::class])
+    @ContributesAndroidInjector(modules = [TweetDetailViewModelComponentModule::class])
     fun contributeTweetDetailFragment(): TweetDetailFragment
 }

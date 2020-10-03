@@ -65,14 +65,17 @@ class TweetDetailViewModelTest {
         val eventDispatcher = EventDispatcher()
         val actions = TweetDetailActions(eventDispatcher)
         TweetDetailViewModel(
+            tweet.originalId,
             eventDispatcher,
             TweetDetailViewStates(actions, activityEventDelegate.mock),
-            tweetRepositoryRule.mock
+            tweetRepositoryRule.mock,
         )
     }
+    private val tweetSource: MutableLiveData<TweetListItem?> = MutableLiveData()
 
     @Before
     fun setup() {
+        tweetRepositoryRule.setupShowTweet(tweet.originalId, tweetSource)
         sut.tweetItem.observeForever { }
     }
 
@@ -84,26 +87,9 @@ class TweetDetailViewModelTest {
     }
 
     @Test
-    fun showTweetItem_beforeItemIsFound_tweetItemHasNoValue() {
-        // setup
-        tweetRepositoryRule.setupShowTweet(tweet.originalId, MutableLiveData(null))
-
-        // exercise
-        sut.showTweetItem(tweet.originalId)
-
-        // verify
-        assertThat(sut.tweetItem.value).isNull()
-    }
-
-    @Test
     fun showTweetItem_whenItemIsFound_then_tweetItemHasItem() {
-        // setup
-        val response = MutableLiveData<TweetListItem?>()
-        tweetRepositoryRule.setupShowTweet(tweet.originalId, response)
-
         // exercise
-        sut.showTweetItem(tweet.originalId)
-        response.value = tweet
+        tweetSource.value = tweet
 
         // verify
         assertThat(sut.tweetItem.value).isEqualTo(tweet)
@@ -112,9 +98,8 @@ class TweetDetailViewModelTest {
     @Test
     fun onOriginalUserClicked_navigationDelegateIsCalled() {
         // setup
-        tweetRepositoryRule.setupShowTweet(tweet.originalId, MutableLiveData(tweet))
         every { activityEventDelegate.mock.dispatchNavHostNavigate(any()) } just runs
-        sut.showTweetItem(tweet.originalId)
+        tweetSource.value = tweet
 
         // exercise
         sut.onOriginalUserClicked()
@@ -132,9 +117,8 @@ class TweetDetailViewModelTest {
     @Test
     fun onBodyUserClicked_navigationDelegateIsCalled() {
         // setup
-        tweetRepositoryRule.setupShowTweet(tweet.originalId, MutableLiveData(tweet))
+        tweetSource.value = tweet
         every { activityEventDelegate.mock.dispatchNavHostNavigate(any()) } just runs
-        sut.showTweetItem(tweet.originalId)
 
         // exercise
         sut.onBodyUserClicked()
@@ -152,9 +136,8 @@ class TweetDetailViewModelTest {
     @Test
     fun onMediaItemClicked_navigationDelegateIsCalled() {
         // setup
-        tweetRepositoryRule.setupShowTweet(tweet.originalId, MutableLiveData(tweet))
+        tweetSource.value = tweet
         every { activityEventDelegate.mock.dispatchNavHostNavigate(any()) } just runs
-        sut.showTweetItem(tweet.originalId)
         val tweetId = tweet.body.id
 
         // exercise

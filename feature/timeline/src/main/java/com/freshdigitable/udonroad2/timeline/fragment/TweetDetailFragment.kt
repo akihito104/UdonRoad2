@@ -9,11 +9,11 @@ import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.LinearLayout
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.observe
 import androidx.navigation.fragment.navArgs
 import com.freshdigitable.udonroad2.timeline.databinding.FragmentDetailBinding
 import com.freshdigitable.udonroad2.timeline.viewmodel.TweetDetailViewModel
+import com.freshdigitable.udonroad2.timeline.viewmodel.TweetDetailViewModelComponent
 import dagger.android.support.AndroidSupportInjection
 import javax.inject.Inject
 
@@ -22,7 +22,7 @@ class TweetDetailFragment : Fragment() {
     private lateinit var binding: FragmentDetailBinding
 
     @Inject
-    lateinit var viewModelFactory: ViewModelProvider
+    lateinit var viewModelComponentFactory: TweetDetailViewModelComponent.Factory
 
     override fun onAttach(context: Context) {
         AndroidSupportInjection.inject(this)
@@ -41,7 +41,8 @@ class TweetDetailFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.lifecycleOwner = viewLifecycleOwner
-        val viewModel = viewModelFactory[TweetDetailViewModel::class.java]
+        val viewModel = viewModelComponentFactory.create(args.tweetId)
+            .viewModelProvider[TweetDetailViewModel::class.java]
         binding.viewModel = viewModel
 
         viewModel.tweetItem.observe(viewLifecycleOwner) { item ->
@@ -69,7 +70,5 @@ class TweetDetailFragment : Fragment() {
                 )
             }
         }
-
-        viewModel.showTweetItem(args.tweetId)
     }
 }
