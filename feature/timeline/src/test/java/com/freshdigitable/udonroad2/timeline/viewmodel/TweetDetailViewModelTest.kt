@@ -18,6 +18,7 @@ package com.freshdigitable.udonroad2.timeline.viewmodel
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.MutableLiveData
+import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.tweet.Tweet
@@ -26,6 +27,7 @@ import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import com.freshdigitable.udonroad2.model.user.TweetingUser
 import com.freshdigitable.udonroad2.model.user.UserId
 import com.freshdigitable.udonroad2.test_common.MockVerified
+import com.freshdigitable.udonroad2.test_common.jvm.CoroutineTestRule
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.TweetRepositoryRule
 import com.google.common.truth.Truth.assertThat
@@ -34,19 +36,28 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.verify
+import org.hamcrest.CoreMatchers
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.ExpectedException
+import org.junit.rules.RuleChain
+import org.junit.rules.TestRule
+import java.io.IOException
 
 class TweetDetailViewModelTest {
-    @get:Rule
-    val tweetRepositoryRule = TweetRepositoryRule()
+
+    private val exceptions: ExpectedException = ExpectedException.none()
+    private val tweetRepositoryRule = TweetRepositoryRule()
+    private val activityEventDelegate = MockVerified.create<ActivityEventDelegate>()
+    private val coroutineRule = CoroutineTestRule()
 
     @get:Rule
-    val executorRule = InstantTaskExecutorRule()
-
-    @get:Rule
-    val activityEventDelegate = MockVerified.create<ActivityEventDelegate>()
+    val rules: TestRule = RuleChain.outerRule(exceptions)
+        .around(InstantTaskExecutorRule())
+        .around(coroutineRule)
+        .around(tweetRepositoryRule)
+        .around(activityEventDelegate)
 
     private val tweet = mockk<TweetListItem>().apply {
         every { originalId } returns TweetId(1000)
@@ -70,7 +81,8 @@ class TweetDetailViewModelTest {
                 tweet.originalId,
                 actions,
                 tweetRepositoryRule.mock,
-                activityEventDelegate.mock
+                activityEventDelegate.mock,
+                AppExecutor(dispatcher = coroutineRule.coroutineContextProvider),
             ),
         )
     }
@@ -90,12 +102,50 @@ class TweetDetailViewModelTest {
     }
 
     @Test
-    fun showTweetItem_whenItemIsFound_then_tweetItemHasItem() {
+    fun whenItemIsFound_then_tweetItemHasItem() {
         // exercise
         tweetSource.value = tweet
 
         // verify
         assertThat(sut.tweetItem.value).isEqualTo(tweet)
+    }
+
+    @Test
+    fun whenItemIsNotFoundInLocal_then_fetchTweetItem() {
+        // setup
+        tweetRepositoryRule.setupFindTweetItem(tweet.originalId, tweet)
+
+        // exercise
+        tweetSource.value = null
+
+        // verify
+        assertThat(sut.tweetItem.value).isEqualTo(tweet)
+    }
+
+    @Test
+    fun thrownExceptionWhenFetchTweet_then_recovered() {
+        // setup
+        tweetRepositoryRule.setupFindTweetItem(tweet.originalId, IOException("target"))
+
+        // exercise
+        tweetSource.value = null
+
+        // verify
+        assertThat(sut.tweetItem.value).isNull()
+    }
+
+    @Test
+    fun thrownRuntimeExceptionWhenFetchTweet_then_rethrown() {
+        // setup
+        val target = RuntimeException("target")
+        exceptions.expect(CoreMatchers.`is`(target))
+        tweetRepositoryRule.setupFindTweetItem(tweet.originalId, target)
+
+        // exercise
+        tweetSource.value = null
+
+        // verify
+        assertThat(sut.tweetItem.value).isNull()
     }
 
     @Test

@@ -33,7 +33,15 @@ class TweetRepositoryRule(
     val mock: TweetRepository = mockVerified.mock
 
     fun setupShowTweet(id: TweetId, response: LiveData<TweetListItem?>) {
-        mockVerified.setupResponseWithVerify({ mock.getTweetItem(id) }, response)
+        mockVerified.setupResponseWithVerify({ mock.getTweetItemSource(id) }, response)
+    }
+
+    fun setupFindTweetItem(id: TweetId, response: TweetListItem?) {
+        mockVerified.coSetupResponseWithVerify({ mock.findTweetListItem(id) }, response)
+    }
+
+    fun setupFindTweetItem(id: TweetId, throwable: Throwable) {
+        mockVerified.coSetupThrowWithVerify({ mock.findTweetListItem(id) }, throwable)
     }
 
     fun setupPostLikeForSuccess(tweetId: TweetId, liked: TweetEntity = mockk()) {

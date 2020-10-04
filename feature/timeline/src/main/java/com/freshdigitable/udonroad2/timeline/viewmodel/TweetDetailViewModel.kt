@@ -3,9 +3,11 @@ package com.freshdigitable.udonroad2.timeline.viewmodel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
+import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
+import com.freshdigitable.udonroad2.model.app.navigation.onNull
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
 import com.freshdigitable.udonroad2.model.tweet.Tweet
 import com.freshdigitable.udonroad2.model.tweet.TweetId
@@ -64,8 +66,13 @@ class TweetDetailViewStates @Inject constructor(
     actions: TweetDetailActions,
     repository: TweetRepository,
     activityEventDelegate: ActivityEventDelegate,
+    executor: AppExecutor,
 ) {
-    val tweetItem: LiveData<TweetListItem?> = repository.getTweetItem(tweetId)
+    val tweetItem: LiveData<TweetListItem?> = repository.getTweetItemSource(tweetId).onNull(
+        executor = executor,
+        onNull = { repository.findTweetListItem(tweetId) },
+        onError = { }
+    )
 
     private val compositeDisposable = CompositeDisposable(
         actions.launchUserInfo.subscribe {

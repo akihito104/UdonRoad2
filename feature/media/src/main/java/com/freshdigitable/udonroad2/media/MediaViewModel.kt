@@ -71,7 +71,7 @@ class MediaViewModel(
 
     private val id: MutableLiveData<TweetId?> = MutableLiveData()
     internal val tweet: LiveData<TweetListItem?> = id.switchMap {
-        if (it != null) tweetRepository.getTweetItem(it)
+        if (it != null) tweetRepository.getTweetItemSource(it)
         else MutableLiveData()
     }
     internal val mediaItems: LiveData<List<MediaItem>> = tweet.map {
