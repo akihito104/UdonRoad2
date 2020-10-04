@@ -1,12 +1,11 @@
 package com.freshdigitable.udonroad2.data.impl
 
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MediatorLiveData
+import androidx.lifecycle.map
 import com.freshdigitable.udonroad2.data.db.DaoModule
 import com.freshdigitable.udonroad2.data.db.dao.RelationshipDao
 import com.freshdigitable.udonroad2.data.restclient.AppTwitterException
 import com.freshdigitable.udonroad2.data.restclient.FriendshipRestClient
-import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.user.Relationship
 import com.freshdigitable.udonroad2.model.user.User
 import com.freshdigitable.udonroad2.model.user.UserId
@@ -17,25 +16,15 @@ import javax.inject.Inject
 class RelationshipRepository @Inject constructor(
     private val dao: RelationshipDao,
     private val restClient: FriendshipRestClient,
-    private val executor: AppExecutor
 ) {
-    fun findRelationship(targetUserId: UserId): LiveData<Relationship?> {
-        fetchFriendship(targetUserId)
-        val res = MediatorLiveData<Relationship?>()
-        res.addSource(dao.findRelationship(targetUserId)) { r ->
-            when {
-                r != null -> res.value = r
-                else -> fetchFriendship(targetUserId)
-            }
-        }
-        return res
+    fun getRelationshipSource(targetUserId: UserId): LiveData<Relationship?> {
+        return dao.getRelationshipSource(targetUserId).map { it }
     }
 
-    private fun fetchFriendship(targetUserId: UserId) {
-        executor.launchIO {
-            val f = restClient.fetchFriendship(targetUserId)
-            dao.addRelationship(f)
-        }
+    suspend fun findRelationship(targetUserId: UserId): Relationship {
+        val f = restClient.fetchFriendship(targetUserId)
+        dao.addRelationship(f)
+        return f
     }
 
     suspend fun updateFollowingStatus(targetUserId: UserId, isFollowing: Boolean): User {
@@ -47,7 +36,7 @@ class RelationshipRepository @Inject constructor(
             dao.updateFollowingStatus(user.id, isFollowing)
             return user
         } catch (e: AppTwitterException) {
-            fetchFriendship(targetUserId)
+            findRelationship(targetUserId)
             throw e
         }
     }
@@ -61,7 +50,7 @@ class RelationshipRepository @Inject constructor(
             dao.updateMutingStatus(user.id, isMuting)
             return user
         } catch (e: AppTwitterException) {
-            fetchFriendship(targetUserId)
+            findRelationship(targetUserId)
             throw e
         }
     }
@@ -75,7 +64,7 @@ class RelationshipRepository @Inject constructor(
             dao.updateBlockingStatusTransaction(user.id, isBlocking)
             return user
         } catch (e: AppTwitterException) {
-            fetchFriendship(targetUserId)
+            findRelationship(targetUserId)
             throw e
         }
     }
@@ -91,7 +80,7 @@ class RelationshipRepository @Inject constructor(
             dao.updateWantRetweetsStatus(updated.userId, updated.wantRetweets)
             return updated
         } catch (e: AppTwitterException) {
-            fetchFriendship(userId)
+            findRelationship(userId)
             throw e
         }
     }
@@ -113,8 +102,7 @@ object RelationshipRepositoryModule {
     fun provideRelationshipRepository(
         dao: RelationshipDao,
         restClient: FriendshipRestClient,
-        executor: AppExecutor
     ): RelationshipRepository {
-        return RelationshipRepository(dao, restClient, executor)
+        return RelationshipRepository(dao, restClient)
     }
 }

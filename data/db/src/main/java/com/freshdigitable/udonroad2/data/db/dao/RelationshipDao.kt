@@ -21,7 +21,7 @@ abstract class RelationshipDao {
         insertRelationship(r)
     }
 
-    fun findRelationship(targetUserId: UserId): LiveData<out Relationship?> {
+    fun getRelationshipSource(targetUserId: UserId): LiveData<out Relationship?> {
         return findRelationshipByTargetUserId(targetUserId)
     }
 

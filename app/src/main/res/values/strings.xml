@@ -1,12 +1,5 @@
 <resources>
     <string name="app_name" translatable="false">UdonRoad2</string>
-    <string name="user_tab_tweet">tweet\n%1$s</string>
-    <string name="user_tab_fav">fav\n%1$s</string>
-    <string name="user_tab_media">media</string>
-    <string name="user_tab_follower">follower\n%1$s</string>
-    <string name="user_tab_following">following\n%1$s</string>
-    <string name="user_tab_listed">listed\n%1$s</string>
-    <string name="following">following</string>
 
     <string name="drawer_menu_home">home</string>
     <string name="drawer_menu_license">OSS license</string>

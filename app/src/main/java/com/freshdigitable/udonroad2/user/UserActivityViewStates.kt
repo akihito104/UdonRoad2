@@ -18,7 +18,7 @@ package com.freshdigitable.udonroad2.user
 
 import androidx.annotation.Keep
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.liveData
 import androidx.lifecycle.map
 import androidx.lifecycle.switchMap
 import com.freshdigitable.udonroad2.R
@@ -31,6 +31,7 @@ import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.AppViewState
 import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
+import com.freshdigitable.udonroad2.model.app.navigation.onNull
 import com.freshdigitable.udonroad2.model.app.navigation.suspendMap
 import com.freshdigitable.udonroad2.model.app.navigation.toViewState
 import com.freshdigitable.udonroad2.model.user.Relationship
@@ -51,11 +52,27 @@ class UserActivityViewStates @Inject constructor(
     private val navigationDelegate: UserActivityNavigationDelegate,
     executor: AppExecutor,
 ) {
-    val user: LiveData<User?> = userRepository.getUser(tweetingUser.id)
+    val user: AppViewState<User?> = userRepository.getUserSource(tweetingUser.id).onNull(
+        executor = executor,
+        onNull = { userRepository.getUser(tweetingUser.id) },
+        onError = {
+            navigationDelegate.dispatchFeedbackMessage(UserResourceFeedbackMessage.FAILED_FETCH)
+        }
+    )
     val relationship: AppViewState<Relationship?> = user.switchMap {
-        when (it) {
-            null -> MutableLiveData()
-            else -> relationshipRepository.findRelationship(it.id)
+        liveData(executor.dispatcher.mainContext) {
+            if (it == null) {
+                return@liveData
+            }
+            emitSource(relationshipRepository.getRelationshipSource(it.id))
+            try {
+                emit(relationshipRepository.findRelationship(it.id))
+            } catch (t: Throwable) {
+                navigationDelegate.dispatchFeedbackMessage(RelationshipFeedbackMessage.FETCH_FAILED)
+                if (t is RuntimeException) {
+                    throw t
+                }
+            }
         }
     }
     val relationshipMenuItems: AppViewState<Set<RelationshipMenu>> = relationship.map {
@@ -88,7 +105,7 @@ class UserActivityViewStates @Inject constructor(
 
     @ExperimentalCoroutinesApi
     private val feedbackMessage: AppAction<FeedbackMessage> = AppAction.merge(listOf(
-        actions.changeFollowingStatus.suspendMap(executor.dispatcher.ioContext) {
+        actions.changeFollowingStatus.suspendMap(executor.dispatcher.mainContext) {
             relationshipRepository.updateFollowingStatus(it.targetUserId, it.wantsFollow)
         }.map {
             if (it.event.wantsFollow) {
@@ -103,7 +120,7 @@ class UserActivityViewStates @Inject constructor(
                 }
             }
         },
-        actions.changeBlockingStatus.suspendMap(executor.dispatcher.ioContext) {
+        actions.changeBlockingStatus.suspendMap(executor.dispatcher.mainContext) {
             relationshipRepository.updateBlockingStatus(it.targetUserId, it.wantsBlock)
         }.map {
             if (it.event.wantsBlock) {
@@ -118,7 +135,7 @@ class UserActivityViewStates @Inject constructor(
                 }
             }
         },
-        actions.changeMutingStatus.suspendMap(executor.dispatcher.ioContext) {
+        actions.changeMutingStatus.suspendMap(executor.dispatcher.mainContext) {
             relationshipRepository.updateMutingStatus(it.targetUserId, it.wantsMute)
         }.map {
             if (it.event.wantsMute) {
@@ -133,7 +150,7 @@ class UserActivityViewStates @Inject constructor(
                 }
             }
         },
-        actions.changeRetweetBlockingStatus.suspendMap(executor.dispatcher.ioContext) {
+        actions.changeRetweetBlockingStatus.suspendMap(executor.dispatcher.mainContext) {
             relationshipRepository.updateWantRetweetStatus(it.targetUserId, it.wantsRetweet)
         }.map {
             if (it.event.wantsRetweet) {
@@ -148,7 +165,7 @@ class UserActivityViewStates @Inject constructor(
                 }
             }
         },
-        actions.reportSpam.suspendMap(executor.dispatcher.ioContext) {
+        actions.reportSpam.suspendMap(executor.dispatcher.mainContext) {
             relationshipRepository.reportSpam(it.targetUserId)
         }.map {
             when {
@@ -195,6 +212,14 @@ internal enum class RelationshipFeedbackMessage(
     WANT_RETWEET_DESTROY_FAILURE(R.string.msg_want_retweet_destroy_failure),
 
     REPORT_SPAM_SUCCESS(R.string.msg_report_spam_success),
-    REPORT_SPAM_FAILURE(R.string.msg_report_spam_failed)
+    REPORT_SPAM_FAILURE(R.string.msg_report_spam_failed),
+
+    FETCH_FAILED(R.string.msg_fetch_relationship_failed),
     ;
+}
+
+internal enum class UserResourceFeedbackMessage(
+    override val messageRes: Int
+) : FeedbackMessage {
+    FAILED_FETCH(R.string.msg_user_fetch_failure)
 }

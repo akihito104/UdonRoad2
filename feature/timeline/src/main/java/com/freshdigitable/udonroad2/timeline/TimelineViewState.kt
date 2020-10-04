@@ -80,7 +80,7 @@ class TimelineViewState(
     val selectedItemId: AppViewState<SelectedItemId?> = _selectedItemId.map { it.value }
 
     private val updateTweet: AppAction<TimelineFeedbackMessage> = AppAction.merge(
-        actions.favTweet.suspendMap(executor.dispatcher.ioContext) { event ->
+        actions.favTweet.suspendMap(executor.dispatcher.mainContext) { event ->
             tweetRepository.postLike(event.tweetId)
         }.map {
             when {
@@ -91,7 +91,7 @@ class TimelineViewState(
                 else -> TimelineFeedbackMessage.FAV_CREATE_FAILURE
             }
         },
-        actions.retweet.suspendMap(executor.dispatcher.ioContext) { event ->
+        actions.retweet.suspendMap(executor.dispatcher.mainContext) { event ->
             tweetRepository.postRetweet(event.tweetId)
         }.map {
             when {

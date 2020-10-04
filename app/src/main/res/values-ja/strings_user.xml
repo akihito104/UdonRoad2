@@ -6,4 +6,6 @@
     <string name="user_tab_following">フォロー中\n%1$s</string>
     <string name="user_tab_listed">リスト\n%1$s</string>
     <string name="following">フォロー中</string>
+
+    <string name="msg_user_fetch_failure">ユーザー情報を取得できませんでした…</string>
 </resources>
