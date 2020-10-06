@@ -20,27 +20,18 @@ import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.filterByType
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
-import com.freshdigitable.udonroad2.model.user.TweetingUser
 import com.freshdigitable.udonroad2.timeline.TimelineEvent.Init
 import com.freshdigitable.udonroad2.timeline.TimelineEvent.MediaItemClicked
-import com.freshdigitable.udonroad2.timeline.TimelineEvent.RetweetUserClicked
 import com.freshdigitable.udonroad2.timeline.TimelineEvent.SelectedItemShortcut
 import com.freshdigitable.udonroad2.timeline.TimelineEvent.TweetItemSelection
 import com.freshdigitable.udonroad2.timeline.TimelineEvent.UserIconClicked
 
 class TimelineActions(
     dispatcher: EventDispatcher,
-) {
+) : UserIconClickedAction by UserIconClickedAction.create(dispatcher),
+    LaunchMediaViewerAction by LaunchMediaViewerAction.create(dispatcher) {
     val showTimeline: AppAction<Init> = dispatcher.toAction()
     val showTweetDetail: AppAction<SelectedItemShortcut.TweetDetail> = dispatcher.toAction()
-
-    val launchUserInfo: AppAction<TweetingUser> = dispatcher.toAction {
-        AppAction.merge(
-            filterByType<UserIconClicked>().map { it.user },
-            filterByType<RetweetUserClicked>().map { it.user }
-        )
-    }
-    val launchMediaViewer: AppAction<MediaItemClicked> = dispatcher.toAction()
 
     val selectItem: AppAction<TweetItemSelection.Selected> = dispatcher.toAction {
         AppAction.merge(
@@ -55,4 +46,28 @@ class TimelineActions(
 
     val favTweet: AppAction<SelectedItemShortcut.Like> = dispatcher.toAction()
     val retweet: AppAction<SelectedItemShortcut.Retweet> = dispatcher.toAction()
+}
+
+interface UserIconClickedAction {
+    val launchUserInfo: AppAction<UserIconClicked>
+
+    companion object {
+        fun create(
+            eventDispatcher: EventDispatcher
+        ): UserIconClickedAction = object : UserIconClickedAction {
+            override val launchUserInfo: AppAction<UserIconClicked> = eventDispatcher.toAction()
+        }
+    }
+}
+
+interface LaunchMediaViewerAction {
+    val launchMediaViewer: AppAction<MediaItemClicked>
+
+    companion object {
+        fun create(
+            eventDispatcher: EventDispatcher
+        ): LaunchMediaViewerAction = object : LaunchMediaViewerAction {
+            override val launchMediaViewer: AppAction<MediaItemClicked> = eventDispatcher.toAction()
+        }
+    }
 }

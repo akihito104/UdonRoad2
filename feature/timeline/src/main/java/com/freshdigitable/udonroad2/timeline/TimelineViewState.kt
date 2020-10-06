@@ -112,7 +112,7 @@ class TimelineViewState(
             )
         },
         actions.showTweetDetail.map { TimelineEvent.Navigate.Detail(it.tweetId) },
-        actions.launchUserInfo.map { TimelineEvent.Navigate.UserInfo(it) },
+        actions.launchUserInfo.map { TimelineEvent.Navigate.UserInfo(it.user) },
         actions.launchMediaViewer.filter { it.selectedItemId?.owner == owner }
             .map { TimelineEvent.Navigate.MediaViewer(it) }
     )

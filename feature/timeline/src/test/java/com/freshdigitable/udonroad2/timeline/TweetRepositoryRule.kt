@@ -16,10 +16,12 @@
 
 package com.freshdigitable.udonroad2.timeline
 
+import androidx.lifecycle.LiveData
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
 import com.freshdigitable.udonroad2.data.restclient.AppTwitterException
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
 import com.freshdigitable.udonroad2.model.tweet.TweetId
+import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import com.freshdigitable.udonroad2.test_common.MockVerified
 import io.mockk.every
 import io.mockk.mockk
@@ -29,6 +31,18 @@ class TweetRepositoryRule(
     private val mockVerified: MockVerified<TweetRepository> = MockVerified.create()
 ) : TestRule by mockVerified {
     val mock: TweetRepository = mockVerified.mock
+
+    fun setupShowTweet(id: TweetId, response: LiveData<TweetListItem?>) {
+        mockVerified.setupResponseWithVerify({ mock.getTweetItemSource(id) }, response)
+    }
+
+    fun setupFindTweetItem(id: TweetId, response: TweetListItem?) {
+        mockVerified.coSetupResponseWithVerify({ mock.findTweetListItem(id) }, response)
+    }
+
+    fun setupFindTweetItem(id: TweetId, throwable: Throwable) {
+        mockVerified.coSetupThrowWithVerify({ mock.findTweetListItem(id) }, throwable)
+    }
 
     fun setupPostLikeForSuccess(tweetId: TweetId, liked: TweetEntity = mockk()) {
         mockVerified.coSetupResponseWithVerify({ mock.postLike(tweetId) }, liked)

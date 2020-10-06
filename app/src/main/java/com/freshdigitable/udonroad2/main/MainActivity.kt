@@ -18,6 +18,7 @@ package com.freshdigitable.udonroad2.main
 
 import android.os.Bundle
 import android.view.View
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
@@ -36,8 +37,8 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
     lateinit var navigation: MainActivityNavigationDelegate
 
     @Inject
-    lateinit var viewModelProvider: ViewModelProvider
-    private val viewModel: MainViewModel by lazy { viewModelProvider[MainViewModel::class.java] }
+    lateinit var viewModelProviderFactory: ViewModelProvider.Factory
+    private val viewModel: MainViewModel by viewModels { viewModelProviderFactory }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)

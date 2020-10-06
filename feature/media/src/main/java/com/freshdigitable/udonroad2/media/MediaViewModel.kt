@@ -23,12 +23,15 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.liveData
 import androidx.lifecycle.map
 import androidx.lifecycle.switchMap
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
 import com.freshdigitable.udonroad2.model.MediaItem
+import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
 import com.freshdigitable.udonroad2.model.app.ext.merge
+import com.freshdigitable.udonroad2.model.app.navigation.onNull
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import dagger.Binds
@@ -39,7 +42,8 @@ import kotlin.math.min
 
 class MediaViewModel(
     tweetRepository: TweetRepository,
-    application: Application
+    application: Application,
+    executor: AppExecutor,
 ) : AndroidViewModel(application) {
 
     companion object {
@@ -71,8 +75,16 @@ class MediaViewModel(
 
     private val id: MutableLiveData<TweetId?> = MutableLiveData()
     internal val tweet: LiveData<TweetListItem?> = id.switchMap {
-        if (it != null) tweetRepository.getTweetItem(it)
-        else MutableLiveData()
+        liveData(executor.dispatcher.mainContext) {
+            if (it == null) {
+                return@liveData
+            }
+            emitSource(tweetRepository.getTweetItemSource(it).onNull(
+                executor = executor,
+                onNull = { tweetRepository.findTweetListItem(it) },
+                onError = { }
+            ))
+        }
     }
     internal val mediaItems: LiveData<List<MediaItem>> = tweet.map {
         it?.body?.mediaItems ?: listOf()
@@ -152,9 +164,10 @@ interface MediaViewModelModule {
         @Provides
         fun provideMediaViewModel(
             tweetRepository: TweetRepository,
-            application: Application
+            application: Application,
+            executor: AppExecutor,
         ): MediaViewModel {
-            return MediaViewModel(tweetRepository, application)
+            return MediaViewModel(tweetRepository, application, executor)
         }
     }
 }

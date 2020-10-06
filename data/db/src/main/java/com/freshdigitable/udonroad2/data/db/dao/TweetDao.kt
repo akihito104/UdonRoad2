@@ -45,6 +45,10 @@ import com.freshdigitable.udonroad2.model.tweet.TweetId
 abstract class TweetDao(
     private val db: AppDatabase
 ) {
+    companion object {
+        private const val QUERY_FIND_TWEET_LIST_ITEM_BY_ID =
+            "SELECT * FROM tweet_list_item WHERE original_id = :id"
+    }
 
     @Transaction
     @Query(
@@ -58,13 +62,19 @@ abstract class TweetDao(
     internal abstract fun getTimeline(owner: String): DataSource.Factory<Int, TweetListItem>
 
     @Transaction
-    @Query("SELECT * FROM tweet_list_item WHERE original_id = :id")
-    internal abstract fun findTweetItem(id: TweetId): LiveData<TweetListItem?>
-
-    open fun findTweetItemById(
+    @Query(QUERY_FIND_TWEET_LIST_ITEM_BY_ID)
+    internal abstract fun getTweetListItemSourceById(id: TweetId): LiveData<TweetListItem?>
+    open fun getTweetListItemSource(
         id: TweetId
     ): LiveData<com.freshdigitable.udonroad2.model.tweet.TweetListItem?> =
-        findTweetItem(id).map { it }
+        getTweetListItemSourceById(id).map { it }
+
+    @Transaction
+    @Query(QUERY_FIND_TWEET_LIST_ITEM_BY_ID)
+    internal abstract suspend fun findTweetListItemById(id: TweetId): TweetListItem?
+    open suspend fun findTweetListItem(
+        id: TweetId
+    ): com.freshdigitable.udonroad2.model.tweet.TweetListItem? = findTweetListItemById(id)
 
     suspend fun addTweet(tweet: TweetEntity, owner: String? = null) {
         addTweets(listOf(tweet), owner)

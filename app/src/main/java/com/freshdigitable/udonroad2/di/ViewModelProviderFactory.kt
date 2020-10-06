@@ -21,7 +21,6 @@ import androidx.lifecycle.AbstractSavedStateViewModelFactory
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelStoreOwner
 import androidx.savedstate.SavedStateRegistryOwner
 import com.freshdigitable.udonroad2.model.app.ClassKeyMap
 import com.freshdigitable.udonroad2.model.app.di.IntoSavedStateFactory
@@ -50,11 +49,9 @@ class ViewModelProviderFactory(
 interface ViewModelModule {
     companion object {
         @Provides
-        fun provideViewModelProvider(
-            viewModelStoreOwner: ViewModelStoreOwner,
+        fun provideViewModelProviderFactory(
             providers: ClassKeyMap<ViewModel, Provider<ViewModel>>
-        ): ViewModelProvider =
-            ViewModelProvider(viewModelStoreOwner, ViewModelProviderFactory(providers))
+        ): ViewModelProvider.Factory = ViewModelProviderFactory(providers)
     }
 }
 

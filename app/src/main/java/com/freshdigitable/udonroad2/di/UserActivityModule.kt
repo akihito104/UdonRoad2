@@ -18,7 +18,6 @@ package com.freshdigitable.udonroad2.di
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelStoreOwner
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
@@ -42,10 +41,9 @@ import dagger.multibindings.IntoMap
 )
 interface UserActivityModule {
     @Binds
-    fun bindViewModelStoreOwner(activity: UserActivity): ViewModelStoreOwner
-
-    @Binds
-    fun bindActivityEventDelegate(eventDelegate: UserActivityNavigationDelegate): ActivityEventDelegate
+    fun bindActivityEventDelegate(
+        eventDelegate: UserActivityNavigationDelegate
+    ): ActivityEventDelegate
 
     @Module
     companion object {
@@ -77,7 +75,7 @@ interface UserViewModelComponent {
         fun create(@BindsInstance user: TweetingUser): UserViewModelComponent
     }
 
-    val viewModelProvider: ViewModelProvider
+    val viewModelProviderFactory: ViewModelProvider.Factory
 }
 
 @Module(subcomponents = [UserViewModelComponent::class])
