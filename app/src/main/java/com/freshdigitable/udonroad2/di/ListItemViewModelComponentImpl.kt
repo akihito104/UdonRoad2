@@ -66,6 +66,9 @@ interface ListItemViewModelComponentImpl : ListItemViewModelComponent {
         @BindsInstance
         override fun firstArgs(bundle: Bundle?): Builder
 
+        @BindsInstance
+        override fun viewModelStoreOwner(storeOwner: ViewModelStoreOwner): Builder
+
         override fun build(): ListItemViewModelComponentImpl
     }
 

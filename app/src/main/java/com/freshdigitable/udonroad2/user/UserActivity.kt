@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
@@ -27,10 +28,8 @@ import kotlin.math.abs
 class UserActivity : HasAndroidInjector, AppCompatActivity() {
     @Inject
     lateinit var userViewModelComponentFactory: UserViewModelComponent.Factory
-
-    private val viewModel: UserViewModel by lazy {
-        userViewModelComponentFactory.create(user)
-            .viewModelProvider[UserViewModel::class.java]
+    private val viewModel: UserViewModel by viewModels {
+        userViewModelComponentFactory.create(user).viewModelProviderFactory
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

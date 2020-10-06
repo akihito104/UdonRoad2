@@ -22,13 +22,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.viewModels
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.freshdigitable.udonroad2.model.MediaItem
 import dagger.android.support.AndroidSupportInjection
-import javax.inject.Inject
 
 class PhotoMediaFragment : Fragment() {
 
@@ -43,8 +43,9 @@ class PhotoMediaFragment : Fragment() {
         }
     }
 
-    @Inject
-    lateinit var viewModelProvider: ViewModelProvider
+    private val mediaViewModel: MediaViewModel by viewModels(
+        ownerProducer = { activity as AppCompatActivity }
+    )
 
     private val url: String
         get() = requireNotNull(arguments?.getString(ARGS_URL)) {
@@ -67,7 +68,6 @@ class PhotoMediaFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val mediaViewModel = viewModelProvider[MediaViewModel::class.java]
         view.setOnClickListener { mediaViewModel.toggleUiVisibility() }
 
         val imageView = view as ImageView

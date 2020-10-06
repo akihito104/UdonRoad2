@@ -54,7 +54,7 @@ interface TweetDetailViewModelComponent {
         fun create(@BindsInstance tweetId: TweetId): TweetDetailViewModelComponent
     }
 
-    val viewModelProvider: ViewModelProvider
+    val viewModelProviderFactory: ViewModelProvider.Factory
 }
 
 @Module(subcomponents = [TweetDetailViewModelComponent::class])

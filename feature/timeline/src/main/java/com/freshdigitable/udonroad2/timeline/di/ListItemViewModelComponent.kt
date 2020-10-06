@@ -20,6 +20,7 @@ import android.os.Bundle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelStoreOwner
 import androidx.paging.PagedListAdapter
 import com.freshdigitable.udonroad2.model.ListOwner
 
@@ -28,6 +29,7 @@ interface ListItemViewModelComponent {
     interface Builder {
         fun owner(owner: ListOwner<*>): Builder
         fun firstArgs(bundle: Bundle?): Builder
+        fun viewModelStoreOwner(storeOwner: ViewModelStoreOwner): Builder
         fun build(): ListItemViewModelComponent
     }
 

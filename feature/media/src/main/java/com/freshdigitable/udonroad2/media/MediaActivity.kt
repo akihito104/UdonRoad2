@@ -19,16 +19,15 @@ package com.freshdigitable.udonroad2.media
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.observe
 import androidx.viewpager2.widget.ViewPager2
 import com.freshdigitable.udonroad2.media.databinding.ActivityMediaBinding
 import com.freshdigitable.udonroad2.model.app.di.FragmentScope
 import com.freshdigitable.udonroad2.model.tweet.TweetId
-import dagger.Binds
 import dagger.Module
 import dagger.android.AndroidInjection
 import dagger.android.AndroidInjector
@@ -40,14 +39,14 @@ import javax.inject.Inject
 class MediaActivity : AppCompatActivity(), HasAndroidInjector {
 
     @Inject
-    lateinit var viewModelProvider: ViewModelProvider
+    lateinit var viewModelProviderFactory: ViewModelProvider.Factory
+    private val viewModel: MediaViewModel by viewModels { viewModelProviderFactory }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
         super.onCreate(savedInstanceState)
         val binding =
             DataBindingUtil.setContentView<ActivityMediaBinding>(this, R.layout.activity_media)
-        val viewModel = viewModelProvider[MediaViewModel::class.java]
         binding.lifecycleOwner = this
         binding.viewModel = viewModel
 
@@ -122,7 +121,4 @@ interface MediaActivityModule {
     @FragmentScope
     @ContributesAndroidInjector
     fun contributeMovieMediaFragment(): MovieMediaFragment
-
-    @Binds
-    fun bindViewModelStoreOwner(activity: MediaActivity): ViewModelStoreOwner
 }
