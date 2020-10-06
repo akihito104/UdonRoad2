@@ -100,7 +100,7 @@ class TimelineViewModel(
     ) {
         eventDispatcher.postEvent(
             TimelineEvent.MediaItemClicked(
-                originalId,
+                item.id,
                 index,
                 SelectedItemId(owner, originalId, quotedId)
             )
