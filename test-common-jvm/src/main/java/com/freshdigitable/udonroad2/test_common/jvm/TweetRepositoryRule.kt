@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.freshdigitable.udonroad2.timeline
+package com.freshdigitable.udonroad2.test_common.jvm
 
 import androidx.lifecycle.LiveData
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
