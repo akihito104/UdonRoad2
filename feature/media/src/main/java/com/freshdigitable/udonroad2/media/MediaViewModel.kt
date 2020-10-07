@@ -16,10 +16,8 @@
 
 package com.freshdigitable.udonroad2.media
 
-import android.app.Application
 import android.os.Build
 import android.view.View
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -36,15 +34,14 @@ import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import dagger.Binds
 import dagger.Module
-import dagger.Provides
 import dagger.multibindings.IntoMap
+import javax.inject.Inject
 import kotlin.math.min
 
-class MediaViewModel(
+class MediaViewModel @Inject constructor(
     tweetRepository: TweetRepository,
-    application: Application,
     executor: AppExecutor,
-) : AndroidViewModel(application) {
+) : ViewModel() {
 
     companion object {
         private val SYSTEM_UI_FLAG_FULLSCREEN =
@@ -86,7 +83,7 @@ class MediaViewModel(
             ))
         }
     }
-    internal val mediaItems: LiveData<List<MediaItem>> = tweet.map {
+    val mediaItems: LiveData<List<MediaItem>> = tweet.map {
         it?.body?.mediaItems ?: listOf()
     }
 
@@ -123,7 +120,7 @@ class MediaViewModel(
     }
 
     private val _currentPosition = MutableLiveData<Int?>()
-    internal val currentPosition: LiveData<Int?> = merge(
+    val currentPosition: LiveData<Int?> = merge(
         _currentPosition, mediaItems
     ) { pos, items ->
         if (pos != null && pos < 0) {
@@ -138,19 +135,6 @@ class MediaViewModel(
     fun setCurrentPosition(pos: Int) {
         _currentPosition.value = pos
     }
-
-    val titleText: LiveData<String> = merge(
-        _currentPosition.map { it?.plus(1) },
-        mediaItems.map { it.size }
-    ) { curPos, mediaSize ->
-        if (curPos != null && mediaSize != null) {
-            getApplication<Application>().resources.getString(
-                R.string.media_current_position, curPos, mediaSize
-            )
-        } else {
-            ""
-        }
-    }
 }
 
 @Module
@@ -159,15 +143,4 @@ interface MediaViewModelModule {
     @IntoMap
     @ViewModelKey(MediaViewModel::class)
     fun bindMediaViewModel(viewModel: MediaViewModel): ViewModel
-
-    companion object {
-        @Provides
-        fun provideMediaViewModel(
-            tweetRepository: TweetRepository,
-            application: Application,
-            executor: AppExecutor,
-        ): MediaViewModel {
-            return MediaViewModel(tweetRepository, application, executor)
-        }
-    }
 }

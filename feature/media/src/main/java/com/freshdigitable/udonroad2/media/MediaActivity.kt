@@ -21,6 +21,8 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
+import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.observe
@@ -86,7 +88,7 @@ class MediaActivity : AppCompatActivity(), HasAndroidInjector {
         }
         viewModel.currentPosition.observe(this@MediaActivity) {
             if (it != null) {
-                this.currentItem = it
+                this.setCurrentItem(it, false)
             }
         }
         viewModel.setCurrentPosition(index)
@@ -110,6 +112,14 @@ class MediaActivity : AppCompatActivity(), HasAndroidInjector {
     lateinit var injector: DispatchingAndroidInjector<Any>
 
     override fun androidInjector(): AndroidInjector<Any> = injector
+}
+
+@BindingAdapter("currentPosition", "mediaSize", requireAll = false)
+fun Toolbar.setCurrentPositionTitle(currentPosition: Int?, size: Int?) {
+    title = when {
+        currentPosition == null || size == null || size > 0 -> ""
+        else -> context.getString(R.string.media_current_position, currentPosition + 1, size)
+    }
 }
 
 @Module(includes = [MediaViewModelModule::class])
