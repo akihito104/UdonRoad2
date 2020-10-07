@@ -18,12 +18,11 @@ package com.freshdigitable.udonroad2.timeline
 
 import androidx.lifecycle.LiveData
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
-import com.freshdigitable.udonroad2.data.restclient.AppTwitterException
+import com.freshdigitable.udonroad2.model.app.AppTwitterException
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import com.freshdigitable.udonroad2.test_common.MockVerified
-import io.mockk.every
 import io.mockk.mockk
 import org.junit.rules.TestRule
 
@@ -63,10 +62,6 @@ class TweetRepositoryRule(
     }
 
     private fun createException(exceptionType: AppTwitterException.ErrorType): AppTwitterException {
-        return mockk<AppTwitterException>().apply {
-            every { statusCode } returns exceptionType.statusCode
-            every { errorCode } returns exceptionType.errorCode
-            every { errorType } returns exceptionType
-        }
+        return AppTwitterException(exceptionType.statusCode, exceptionType.errorCode)
     }
 }

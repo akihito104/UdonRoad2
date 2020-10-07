@@ -17,6 +17,7 @@
 package com.freshdigitable.udonroad2.data.restclient
 
 import com.freshdigitable.udonroad2.model.AccessTokenEntity
+import com.freshdigitable.udonroad2.model.app.AppTwitterException
 import dagger.Module
 import dagger.Provides
 import kotlinx.coroutines.Dispatchers
@@ -65,7 +66,7 @@ class AppTwitter(
         try {
             block(twitter)
         } catch (ex: TwitterException) {
-            throw AppTwitterException(ex)
+            throw AppTwitterException.create(ex)
         }
     }
 }
