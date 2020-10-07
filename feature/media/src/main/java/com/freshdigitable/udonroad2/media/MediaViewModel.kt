@@ -42,34 +42,6 @@ class MediaViewModel @Inject constructor(
     tweetRepository: TweetRepository,
     executor: AppExecutor,
 ) : ViewModel() {
-
-    companion object {
-        private val SYSTEM_UI_FLAG_FULLSCREEN =
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                View.SYSTEM_UI_FLAG_FULLSCREEN
-            } else {
-                View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-            }
-        private val SYSTEM_UI_FLAG_SHOW =
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
-                    View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
-                    View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-            } else {
-                -1
-            }
-        private val SYSTEM_UI_FLAG_HIDE = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
-                View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
-                View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
-                View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or // hide nav bar
-                View.SYSTEM_UI_FLAG_FULLSCREEN or // hide status bar
-                View.SYSTEM_UI_FLAG_IMMERSIVE
-        } else {
-            View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
-        }
-    }
-
     private val id: MutableLiveData<TweetId?> = MutableLiveData()
     internal val tweet: LiveData<TweetListItem?> = id.switchMap {
         liveData(executor.dispatcher.mainContext) {
@@ -91,32 +63,19 @@ class MediaViewModel @Inject constructor(
         this.id.value = id
     }
 
-    private val _systemUiVisibility = MutableLiveData(SYSTEM_UI_FLAG_SHOW)
-    internal val isInImmersive: LiveData<Boolean> = _systemUiVisibility.map { v ->
-        !isSystemUiVisible(v)
-    }
-
-    private fun isSystemUiVisible(v: Int?): Boolean =
-        v?.let { SYSTEM_UI_FLAG_FULLSCREEN and it == 0 } ?: false
-
-    internal val systemUiVisibility: LiveData<Int> = isInImmersive.map {
-        if (it) {
-            SYSTEM_UI_FLAG_HIDE
-        } else {
-            SYSTEM_UI_FLAG_SHOW
-        }
+    private val _systemUiVisibility = MutableLiveData(SystemUiVisibility.SHOW)
+    internal val systemUiVisibility: LiveData<SystemUiVisibility> = _systemUiVisibility
+    internal val isInImmersive: LiveData<Boolean> = _systemUiVisibility.map {
+        it == SystemUiVisibility.HIDE
     }
 
     internal fun onSystemUiVisibilityChange(visibility: Int) {
-        _systemUiVisibility.value = visibility
+        _systemUiVisibility.value = SystemUiVisibility.get(visibility)
     }
 
     fun toggleUiVisibility() {
-        _systemUiVisibility.value = if (isSystemUiVisible(_systemUiVisibility.value)) {
-            SYSTEM_UI_FLAG_HIDE
-        } else {
-            SYSTEM_UI_FLAG_SHOW
-        }
+        val current = _systemUiVisibility.value ?: return
+        _systemUiVisibility.value = current.toggle()
     }
 
     private val _currentPosition = MutableLiveData<Int?>()
@@ -134,6 +93,51 @@ class MediaViewModel @Inject constructor(
 
     fun setCurrentPosition(pos: Int) {
         _currentPosition.value = pos
+    }
+}
+
+enum class SystemUiVisibility(val visibility: Int) {
+    SHOW(
+        when {
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN -> {
+                View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
+                    View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
+                    View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+            }
+            else -> -1
+        }
+    ),
+    HIDE(
+        when {
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT -> {
+                View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
+                    View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
+                    View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
+                    View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or // hide nav bar
+                    View.SYSTEM_UI_FLAG_FULLSCREEN or // hide status bar
+                    View.SYSTEM_UI_FLAG_IMMERSIVE
+            }
+            else -> View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
+        }
+    ),
+    ;
+
+    fun toggle(): SystemUiVisibility = when (this) {
+        SHOW -> HIDE
+        else -> SHOW
+    }
+
+    companion object {
+        private val FULLSCREEN = when {
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN ->
+                View.SYSTEM_UI_FLAG_FULLSCREEN
+            else -> View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+        }
+
+        fun get(visibility: Int): SystemUiVisibility = when {
+            visibility and FULLSCREEN == 0 -> HIDE
+            else -> SHOW
+        }
     }
 }
 

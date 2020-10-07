@@ -75,8 +75,8 @@ class MediaViewModelTest {
         assertThat(sut).isNotNull()
         assertThat(sut.tweet.value).isNull()
         assertThat(sut.currentPosition.value).isNull()
-        assertThat(sut.systemUiVisibility.value).isNotNull() // XXX
-        assertThat(sut.isInImmersive.value).isNotNull() // XXX
+        assertThat(sut.systemUiVisibility.value).isEqualTo(SystemUiVisibility.SHOW)
+        assertThat(sut.isInImmersive.value).isFalse()
     }
 
     @Test
@@ -150,5 +150,14 @@ class MediaViewModelTest {
         assertThat(sut.tweet.value).isNotNull()
         assertThat(sut.mediaItems.value).hasSize(1)
         assertThat(sut.currentPosition.value).isEqualTo(0)
+    }
+
+    @Test
+    fun toggleUiVisibility() {
+        // exercise
+        sut.toggleUiVisibility()
+
+        // verify
+        assertThat(sut.systemUiVisibility.value).isEqualTo(SystemUiVisibility.HIDE)
     }
 }

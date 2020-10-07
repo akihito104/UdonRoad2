@@ -66,7 +66,7 @@ class MediaActivity : AppCompatActivity(), HasAndroidInjector {
             viewModel.onSystemUiVisibilityChange(visibility)
         }
         viewModel.systemUiVisibility.observe(this) {
-            window.decorView.systemUiVisibility = it
+            window.decorView.systemUiVisibility = it.visibility
         }
 
         binding.mediaPager.setupPager(viewModel)
