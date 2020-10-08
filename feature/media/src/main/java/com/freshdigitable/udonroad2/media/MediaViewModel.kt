@@ -21,21 +21,14 @@ import android.view.View
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.map
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
 import com.freshdigitable.udonroad2.model.MediaItem
 import com.freshdigitable.udonroad2.model.app.AppExecutor
-import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
 import com.freshdigitable.udonroad2.model.app.ext.merge
 import com.freshdigitable.udonroad2.model.app.navigation.onNull
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
-import dagger.Binds
-import dagger.BindsInstance
-import dagger.Module
-import dagger.Subcomponent
-import dagger.multibindings.IntoMap
 import javax.inject.Inject
 import kotlin.math.min
 
@@ -132,27 +125,3 @@ enum class SystemUiVisibility(val visibility: Int) {
         }
     }
 }
-
-@Module
-interface MediaViewModelModule {
-    @Binds
-    @IntoMap
-    @ViewModelKey(MediaViewModel::class)
-    fun bindMediaViewModel(viewModel: MediaViewModel): ViewModel
-}
-
-@Subcomponent(modules = [MediaViewModelModule::class])
-interface MediaViewModelComponent {
-    @Subcomponent.Factory
-    interface Factory {
-        fun create(
-            @BindsInstance tweetId: TweetId,
-            @BindsInstance firstPosition: Int,
-        ): MediaViewModelComponent
-    }
-
-    val viewModelProviderFactory: ViewModelProvider.Factory
-}
-
-@Module(subcomponents = [MediaViewModelComponent::class])
-interface MediaViewModelComponentModule

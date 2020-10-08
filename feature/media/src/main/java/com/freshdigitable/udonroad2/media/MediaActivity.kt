@@ -27,11 +27,9 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.observe
 import androidx.viewpager2.widget.ViewPager2
 import com.freshdigitable.udonroad2.media.databinding.ActivityMediaBinding
-import com.freshdigitable.udonroad2.model.app.di.FragmentScope
-import dagger.Module
+import com.freshdigitable.udonroad2.media.di.MediaViewModelComponent
 import dagger.android.AndroidInjection
 import dagger.android.AndroidInjector
-import dagger.android.ContributesAndroidInjector
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasAndroidInjector
 import javax.inject.Inject
@@ -116,15 +114,4 @@ fun Toolbar.setCurrentPositionTitle(currentPosition: Int?, size: Int?) {
         currentPosition == null || size == null || size > 0 -> ""
         else -> context.getString(R.string.media_current_position, currentPosition + 1, size)
     }
-}
-
-@Module(includes = [MediaViewModelComponentModule::class])
-interface MediaActivityModule {
-    @FragmentScope
-    @ContributesAndroidInjector
-    fun contributePhotoMediaFragment(): PhotoMediaFragment
-
-    @FragmentScope
-    @ContributesAndroidInjector
-    fun contributeMovieMediaFragment(): MovieMediaFragment
 }
