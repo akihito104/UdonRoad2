@@ -19,7 +19,7 @@ package com.freshdigitable.udonroad2.timeline
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.postEvents
 import com.freshdigitable.udonroad2.model.tweet.TweetId
-import com.freshdigitable.udonroad2.timeline.TimelineEvent.SelectedItemShortcut
+import com.freshdigitable.udonroad2.shortcut_actions.SelectedItemShortcut
 import io.reactivex.observers.TestObserver
 import org.junit.Rule
 import org.junit.Test

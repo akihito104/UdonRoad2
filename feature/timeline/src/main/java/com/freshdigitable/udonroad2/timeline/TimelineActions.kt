@@ -20,18 +20,19 @@ import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.filterByType
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
+import com.freshdigitable.udonroad2.shortcut_actions.ShortcutActions
 import com.freshdigitable.udonroad2.timeline.TimelineEvent.Init
 import com.freshdigitable.udonroad2.timeline.TimelineEvent.MediaItemClicked
-import com.freshdigitable.udonroad2.timeline.TimelineEvent.SelectedItemShortcut
 import com.freshdigitable.udonroad2.timeline.TimelineEvent.TweetItemSelection
 import com.freshdigitable.udonroad2.timeline.TimelineEvent.UserIconClicked
 
 class TimelineActions(
     dispatcher: EventDispatcher,
 ) : UserIconClickedAction by UserIconClickedAction.create(dispatcher),
-    LaunchMediaViewerAction by LaunchMediaViewerAction.create(dispatcher) {
+    LaunchMediaViewerAction by LaunchMediaViewerAction.create(dispatcher),
+    ShortcutActions by ShortcutActions.create(dispatcher) {
+
     val showTimeline: AppAction<Init> = dispatcher.toAction()
-    val showTweetDetail: AppAction<SelectedItemShortcut.TweetDetail> = dispatcher.toAction()
 
     val selectItem: AppAction<TweetItemSelection.Selected> = dispatcher.toAction {
         AppAction.merge(
@@ -43,9 +44,6 @@ class TimelineActions(
     }
     val toggleItem: AppAction<TweetItemSelection.Toggle> = dispatcher.toAction()
     val unselectItem: AppAction<TweetItemSelection.Unselected> = dispatcher.toAction()
-
-    val favTweet: AppAction<SelectedItemShortcut.Like> = dispatcher.toAction()
-    val retweet: AppAction<SelectedItemShortcut.Retweet> = dispatcher.toAction()
 }
 
 interface UserIconClickedAction {

@@ -16,7 +16,6 @@
 
 package com.freshdigitable.udonroad2.timeline
 
-import androidx.annotation.StringRes
 import androidx.lifecycle.map
 import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
@@ -25,17 +24,14 @@ import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.app.AppExecutor
-import com.freshdigitable.udonroad2.model.app.AppTwitterException
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.AppViewState
-import com.freshdigitable.udonroad2.model.app.navigation.EventResult
-import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.StateHolder
-import com.freshdigitable.udonroad2.model.app.navigation.suspendMap
 import com.freshdigitable.udonroad2.model.app.navigation.toViewState
+import com.freshdigitable.udonroad2.shortcut_actions.ShortcutViewStates
 import io.reactivex.disposables.CompositeDisposable
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
@@ -48,7 +44,7 @@ class TimelineViewState(
     listOwnerGenerator: ListOwnerGenerator,
     private val navDelegate: TimelineNavigationDelegate,
     executor: AppExecutor,
-) {
+) : ShortcutViewStates by ShortcutViewStates.create(actions, tweetRepository, executor) {
     private val _selectedItemId: AppViewState<StateHolder<SelectedItemId>> = AppAction.merge(
         AppAction.just(owner).map {
             StateHolder(selectedItemRepository.find(it))
@@ -79,31 +75,6 @@ class TimelineViewState(
 
     val selectedItemId: AppViewState<SelectedItemId?> = _selectedItemId.map { it.value }
 
-    private val updateTweet: AppAction<TimelineFeedbackMessage> = AppAction.merge(
-        actions.favTweet.suspendMap(executor.dispatcher.mainContext) { event ->
-            tweetRepository.postLike(event.tweetId)
-        }.map {
-            when {
-                it.isSuccess -> TimelineFeedbackMessage.FAV_CREATE_SUCCESS
-                it.isExceptionTypeOf(AppTwitterException.ErrorType.ALREADY_FAVORITED) -> {
-                    TimelineFeedbackMessage.ALREADY_FAV
-                }
-                else -> TimelineFeedbackMessage.FAV_CREATE_FAILURE
-            }
-        },
-        actions.retweet.suspendMap(executor.dispatcher.mainContext) { event ->
-            tweetRepository.postRetweet(event.tweetId)
-        }.map {
-            when {
-                it.isSuccess -> TimelineFeedbackMessage.RT_CREATE_SUCCESS
-                it.isExceptionTypeOf(AppTwitterException.ErrorType.ALREADY_RETWEETED) -> {
-                    TimelineFeedbackMessage.ALREADY_RT
-                }
-                else -> TimelineFeedbackMessage.RT_CREATE_FAILURE
-            }
-        }
-    )
-
     private val updateNavHost: AppAction<out TimelineEvent.Navigate> = AppAction.merge(
         actions.showTimeline.map {
             TimelineEvent.Navigate.Timeline(
@@ -126,22 +97,6 @@ class TimelineViewState(
         disposables.clear()
         navDelegate.clear()
     }
-}
-
-internal enum class TimelineFeedbackMessage(
-    @StringRes override val messageRes: Int
-) : FeedbackMessage {
-    FAV_CREATE_SUCCESS(R.string.msg_fav_create_success),
-    FAV_CREATE_FAILURE(R.string.msg_fav_create_failure),
-    ALREADY_FAV(R.string.msg_already_fav),
-
-    RT_CREATE_SUCCESS(R.string.msg_rt_create_success),
-    RT_CREATE_FAILURE(R.string.msg_rt_create_failure),
-    ALREADY_RT(R.string.msg_already_rt),
-}
-
-fun EventResult<*, *>.isExceptionTypeOf(type: AppTwitterException.ErrorType): Boolean {
-    return (this.exception as? AppTwitterException)?.errorType == type
 }
 
 class TimelineNavigationDelegate(

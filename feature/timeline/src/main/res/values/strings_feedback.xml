@@ -15,21 +15,15 @@
   -->
 
 <resources>
-    <string name="msg_rt_create_failure">RT failure…</string>
-    <string name="msg_rt_create_success">RT successed</string>
     <string name="msg_rt_delete_success">RT destroyed</string>
     <string name="msg_rt_delete_failed">RT destroy failed…</string>
     <string name="msg_tweet_delete_success">tweet is destroyed</string>
     <string name="msg_tweet_delete_failed">failed to destroy tweet…</string>
-    <string name="msg_fav_create_success">fav successed</string>
-    <string name="msg_fav_create_failure">fav failure…</string>
     <string name="msg_fav_delete_failed">fav delete failure…</string>
     <string name="msg_fav_delete_success">fav destroy successed</string>
     <string name="msg_tweet_not_download">tweet was not downloaded…</string>
-    <string name="msg_already_fav">already faved</string>
     <string name="msg_follower_list_failed">failed to fetch followers…</string>
     <string name="msg_friends_list_failed">failed to fetch friends…</string>
-    <string name="msg_already_rt">already retweeted…</string>
     <string name="msg_updateStatus_failed">failed to send tweet…</string>
     <string name="msg_updateStatus_success">tweeted</string>
     <string name="msg_userId_failed">failed to get User ID…</string>

@@ -3,6 +3,7 @@ include(
     ":feature:oauth",
     ":feature:media",
     ":feature:timeline",
+    ":feature:shortcut-actions",
     ":candysh",
     ":data:db",
     ":data:restclient",

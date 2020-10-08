@@ -93,6 +93,7 @@ dependencies {
     debugImplementation Libs.LEAKCANARY
 
     // test
+    testImplementation project(":feature:shortcut-actions")
     testImplementation project(":test-common-jvm")
     testImplementation Libs.JUNIT
     testImplementation Libs.MOCKK

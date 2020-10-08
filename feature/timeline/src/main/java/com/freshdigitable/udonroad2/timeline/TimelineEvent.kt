@@ -10,7 +10,7 @@ import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.postEvents
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.user.TweetingUser
-import com.freshdigitable.udonroad2.timeline.TimelineEvent.SelectedItemShortcut
+import com.freshdigitable.udonroad2.shortcut_actions.SelectedItemShortcut
 import java.io.Serializable
 
 sealed class TimelineEvent : AppEvent {
@@ -33,16 +33,6 @@ sealed class TimelineEvent : AppEvent {
         }
 
         abstract val owner: ListOwner<*>
-    }
-
-    sealed class SelectedItemShortcut : TimelineEvent() {
-        data class TweetDetail(override val tweetId: TweetId) : SelectedItemShortcut()
-        data class Like(override val tweetId: TweetId) : SelectedItemShortcut()
-        data class Retweet(override val tweetId: TweetId) : SelectedItemShortcut()
-
-        abstract val tweetId: TweetId
-
-        companion object
     }
 
     data class MemberListClicked(val memberList: MemberListItem) : TimelineEvent()
