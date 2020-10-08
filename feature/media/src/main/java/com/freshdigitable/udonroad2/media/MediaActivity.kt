@@ -24,12 +24,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.observe
 import androidx.viewpager2.widget.ViewPager2
 import com.freshdigitable.udonroad2.media.databinding.ActivityMediaBinding
 import com.freshdigitable.udonroad2.model.app.di.FragmentScope
-import com.freshdigitable.udonroad2.model.tweet.TweetId
 import dagger.Module
 import dagger.android.AndroidInjection
 import dagger.android.AndroidInjector
@@ -41,8 +39,10 @@ import javax.inject.Inject
 class MediaActivity : AppCompatActivity(), HasAndroidInjector {
 
     @Inject
-    lateinit var viewModelProviderFactory: ViewModelProvider.Factory
-    private val viewModel: MediaViewModel by viewModels { viewModelProviderFactory }
+    lateinit var viewModelComponentFactory: MediaViewModelComponent.Factory
+    private val viewModel: MediaViewModel by viewModels {
+        viewModelComponentFactory.create(args.id, args.index).viewModelProviderFactory
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
@@ -70,7 +70,6 @@ class MediaActivity : AppCompatActivity(), HasAndroidInjector {
         }
 
         binding.mediaPager.setupPager(viewModel)
-        viewModel.setTweetId(this.tweetId)
     }
 
     private fun ViewPager2.setupPager(viewModel: MediaViewModel) {
@@ -91,14 +90,11 @@ class MediaActivity : AppCompatActivity(), HasAndroidInjector {
                 this.setCurrentItem(it, false)
             }
         }
-        viewModel.setCurrentPosition(index)
     }
 
     private val args: MediaActivityArgs by lazy {
         MediaActivityArgs.fromBundle(requireNotNull(intent.extras))
     }
-    private val tweetId: TweetId get() = args.id
-    private val index: Int get() = args.index
 
     companion object {
         fun start(context: Context, args: MediaActivityArgs) {
@@ -122,7 +118,7 @@ fun Toolbar.setCurrentPositionTitle(currentPosition: Int?, size: Int?) {
     }
 }
 
-@Module(includes = [MediaViewModelModule::class])
+@Module(includes = [MediaViewModelComponentModule::class])
 interface MediaActivityModule {
     @FragmentScope
     @ContributesAndroidInjector

@@ -21,9 +21,8 @@ import android.view.View
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.liveData
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.map
-import androidx.lifecycle.switchMap
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
 import com.freshdigitable.udonroad2.model.MediaItem
 import com.freshdigitable.udonroad2.model.app.AppExecutor
@@ -33,34 +32,27 @@ import com.freshdigitable.udonroad2.model.app.navigation.onNull
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import dagger.Binds
+import dagger.BindsInstance
 import dagger.Module
+import dagger.Subcomponent
 import dagger.multibindings.IntoMap
 import javax.inject.Inject
 import kotlin.math.min
 
 class MediaViewModel @Inject constructor(
+    tweetId: TweetId,
+    firstPosition: Int,
     tweetRepository: TweetRepository,
     executor: AppExecutor,
 ) : ViewModel() {
-    private val id: MutableLiveData<TweetId?> = MutableLiveData()
-    internal val tweet: LiveData<TweetListItem?> = id.switchMap {
-        liveData(executor.dispatcher.mainContext) {
-            if (it == null) {
-                return@liveData
-            }
-            emitSource(tweetRepository.getTweetItemSource(it).onNull(
-                executor = executor,
-                onNull = { tweetRepository.findTweetListItem(it) },
-                onError = { }
-            ))
-        }
-    }
+    internal val tweet: LiveData<TweetListItem?> = tweetRepository.getTweetItemSource(tweetId)
+        .onNull(
+            executor = executor,
+            onNull = { tweetRepository.findTweetListItem(tweetId) },
+            onError = { }
+        )
     val mediaItems: LiveData<List<MediaItem>> = tweet.map {
         it?.body?.mediaItems ?: listOf()
-    }
-
-    internal fun setTweetId(id: TweetId) {
-        this.id.value = id
     }
 
     private val _systemUiVisibility = MutableLiveData(SystemUiVisibility.SHOW)
@@ -78,7 +70,7 @@ class MediaViewModel @Inject constructor(
         _systemUiVisibility.value = current.toggle()
     }
 
-    private val _currentPosition = MutableLiveData<Int?>()
+    private val _currentPosition = MutableLiveData(firstPosition)
     val currentPosition: LiveData<Int?> = merge(
         _currentPosition, mediaItems
     ) { pos, items ->
@@ -148,3 +140,19 @@ interface MediaViewModelModule {
     @ViewModelKey(MediaViewModel::class)
     fun bindMediaViewModel(viewModel: MediaViewModel): ViewModel
 }
+
+@Subcomponent(modules = [MediaViewModelModule::class])
+interface MediaViewModelComponent {
+    @Subcomponent.Factory
+    interface Factory {
+        fun create(
+            @BindsInstance tweetId: TweetId,
+            @BindsInstance firstPosition: Int,
+        ): MediaViewModelComponent
+    }
+
+    val viewModelProviderFactory: ViewModelProvider.Factory
+}
+
+@Module(subcomponents = [MediaViewModelComponent::class])
+interface MediaViewModelComponentModule
