@@ -52,19 +52,16 @@ class MediaActivity : AppCompatActivity(), HasAndroidInjector {
 
         title = ""
         setSupportActionBar(binding.mediaToolbar)
-        viewModel.isInImmersive.observe(this) {
-            if (it) {
-                supportActionBar?.hide()
-            } else {
-                supportActionBar?.show()
-            }
-        }
 
         window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
             viewModel.onSystemUiVisibilityChange(visibility)
         }
         viewModel.systemUiVisibility.observe(this) {
             window.decorView.systemUiVisibility = it.visibility
+            when (it) {
+                SystemUiVisibility.SHOW -> supportActionBar?.show()
+                SystemUiVisibility.HIDE -> supportActionBar?.hide()
+            }
         }
 
         binding.mediaPager.setupPager(viewModel)
@@ -85,7 +82,7 @@ class MediaActivity : AppCompatActivity(), HasAndroidInjector {
         }
         viewModel.currentPosition.observe(this@MediaActivity) {
             if (it != null) {
-                this.setCurrentItem(it, false)
+                this.currentItem = it
             }
         }
     }
@@ -111,7 +108,7 @@ class MediaActivity : AppCompatActivity(), HasAndroidInjector {
 @BindingAdapter("currentPosition", "mediaSize", requireAll = false)
 fun Toolbar.setCurrentPositionTitle(currentPosition: Int?, size: Int?) {
     title = when {
-        currentPosition == null || size == null || size > 0 -> ""
+        currentPosition == null || size == null || size <= 0 -> ""
         else -> context.getString(R.string.media_current_position, currentPosition + 1, size)
     }
 }

@@ -19,6 +19,7 @@ package com.freshdigitable.udonroad2.media
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.MutableLiveData
 import com.freshdigitable.udonroad2.model.app.AppExecutor
+import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.tweet.Tweet
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
@@ -54,19 +55,22 @@ class MediaViewModelTest {
         }
     }
     private val sut: MediaViewModel by lazy {
-        MediaViewModel(
+        val eventDispatcher = EventDispatcher()
+        val viewStates = MediaViewModelViewStates(
             tweetListItem.originalId,
             0,
+            MediaViewModelActions(eventDispatcher),
             tweetRepositoryRule.mock,
             AppExecutor(dispatcher = coroutineRule.coroutineContextProvider),
         )
+        MediaViewModel(tweetListItem.originalId, eventDispatcher, viewStates)
     }
 
     @Before
     fun setup() {
         tweetRepositoryRule.setupShowTweet(tweetListItem.originalId, tweetItemSource)
         with(sut) {
-            listOf(tweet, currentPosition, systemUiVisibility, isInImmersive).forEach {
+            listOf(mediaItems, currentPosition, systemUiVisibility).forEach {
                 it.observeForever {}
             }
         }
@@ -76,11 +80,9 @@ class MediaViewModelTest {
     fun initialValue() {
         // verify
         assertThat(sut).isNotNull()
-        assertThat(sut.tweet.value).isNull()
         assertThat(sut.mediaItems.value).isNull()
         assertThat(sut.currentPosition.value).isNull()
         assertThat(sut.systemUiVisibility.value).isEqualTo(SystemUiVisibility.SHOW)
-        assertThat(sut.isInImmersive.value).isFalse()
     }
 
     @Test
@@ -89,7 +91,6 @@ class MediaViewModelTest {
         tweetItemSource.value = tweetListItem
 
         // verify
-        assertThat(sut.tweet.value).isNotNull()
         assertThat(sut.mediaItems.value).hasSize(1)
         assertThat(sut.currentPosition.value).isEqualTo(0)
     }
@@ -101,6 +102,5 @@ class MediaViewModelTest {
 
         // verify
         assertThat(sut.systemUiVisibility.value).isEqualTo(SystemUiVisibility.HIDE)
-        assertThat(sut.isInImmersive.value).isTrue()
     }
 }

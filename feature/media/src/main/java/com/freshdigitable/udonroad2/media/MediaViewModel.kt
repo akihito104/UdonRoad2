@@ -19,53 +19,99 @@ package com.freshdigitable.udonroad2.media
 import android.os.Build
 import android.view.View
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
 import com.freshdigitable.udonroad2.model.MediaItem
 import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.ext.merge
+import com.freshdigitable.udonroad2.model.app.navigation.AppAction
+import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
+import com.freshdigitable.udonroad2.model.app.navigation.AppViewState
+import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.onNull
+import com.freshdigitable.udonroad2.model.app.navigation.toAction
+import com.freshdigitable.udonroad2.model.app.navigation.toViewState
 import com.freshdigitable.udonroad2.model.tweet.TweetId
-import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import javax.inject.Inject
 import kotlin.math.min
 
 class MediaViewModel @Inject constructor(
+    tweetId: TweetId, // FIXME: for fav/RT
+    private val eventDispatcher: EventDispatcher,
+    viewStates: MediaViewModelViewStates,
+) : ViewModel() {
+    val mediaItems: LiveData<List<MediaItem>> = viewStates.mediaItems
+
+    internal val systemUiVisibility: LiveData<SystemUiVisibility> = viewStates.systemUiVisibility
+
+    internal fun onSystemUiVisibilityChange(visibility: Int) {
+        eventDispatcher.postEvent(
+            MediaViewerEvent.SystemUiVisibilityChanged(SystemUiVisibility.get(visibility))
+        )
+    }
+
+    fun toggleUiVisibility() {
+        eventDispatcher.postEvent(
+            MediaViewerEvent.SystemUiVisibilityToggled(checkNotNull(systemUiVisibility.value))
+        )
+    }
+
+    val currentPosition: LiveData<Int?> = viewStates.currentPosition
+
+    fun setCurrentPosition(pos: Int) {
+        eventDispatcher.postEvent(MediaViewerEvent.CurrentPositionChanged(pos))
+    }
+}
+
+internal sealed class MediaViewerEvent : AppEvent {
+    data class CurrentPositionChanged(val index: Int) : MediaViewerEvent()
+
+    data class SystemUiVisibilityChanged(val visibility: SystemUiVisibility) : MediaViewerEvent()
+    data class SystemUiVisibilityToggled(val currentVisibility: SystemUiVisibility) :
+        MediaViewerEvent()
+}
+
+class MediaViewModelActions @Inject constructor(
+    eventDispatcher: EventDispatcher
+) {
+    internal val changeCurrentPosition: AppAction<MediaViewerEvent.CurrentPositionChanged> =
+        eventDispatcher.toAction()
+    internal val changeSystemUiVisibility: AppAction<MediaViewerEvent.SystemUiVisibilityChanged> =
+        eventDispatcher.toAction()
+    internal val toggleSystemUiVisibility: AppAction<MediaViewerEvent.SystemUiVisibilityToggled> =
+        eventDispatcher.toAction()
+}
+
+class MediaViewModelViewStates @Inject constructor(
     tweetId: TweetId,
     firstPosition: Int,
+    actions: MediaViewModelActions,
     tweetRepository: TweetRepository,
     executor: AppExecutor,
-) : ViewModel() {
-    internal val tweet: LiveData<TweetListItem?> = tweetRepository.getTweetItemSource(tweetId)
-        .onNull(
+) {
+    internal val mediaItems: AppViewState<List<MediaItem>> =
+        tweetRepository.getTweetItemSource(tweetId).onNull(
             executor = executor,
             onNull = { tweetRepository.findTweetListItem(tweetId) },
             onError = { }
         )
-    val mediaItems: LiveData<List<MediaItem>> = tweet.map {
-        it?.body?.mediaItems ?: listOf()
-    }
+            .map { it?.body?.mediaItems ?: listOf() }
 
-    private val _systemUiVisibility = MutableLiveData(SystemUiVisibility.SHOW)
-    internal val systemUiVisibility: LiveData<SystemUiVisibility> = _systemUiVisibility
-    internal val isInImmersive: LiveData<Boolean> = _systemUiVisibility.map {
-        it == SystemUiVisibility.HIDE
-    }
+    internal val systemUiVisibility: AppViewState<SystemUiVisibility> = AppAction.merge(
+        AppAction.just(SystemUiVisibility.SHOW),
+        actions.changeSystemUiVisibility.map { it.visibility },
+        actions.toggleSystemUiVisibility.map { it.currentVisibility.toggle() }
+    )
+        .distinctUntilChanged()
+        .toViewState()
 
-    internal fun onSystemUiVisibilityChange(visibility: Int) {
-        _systemUiVisibility.value = SystemUiVisibility.get(visibility)
-    }
-
-    fun toggleUiVisibility() {
-        val current = _systemUiVisibility.value ?: return
-        _systemUiVisibility.value = current.toggle()
-    }
-
-    private val _currentPosition = MutableLiveData(firstPosition)
-    val currentPosition: LiveData<Int?> = merge(
-        _currentPosition, mediaItems
+    internal val currentPosition: AppViewState<Int?> = merge(
+        AppAction.merge(
+            AppAction.just(firstPosition),
+            actions.changeCurrentPosition.map { it.index }
+        ).distinctUntilChanged().toViewState<Int, Int>(),
+        mediaItems
     ) { pos, items ->
         if (pos != null && pos < 0) {
             0
@@ -74,10 +120,6 @@ class MediaViewModel @Inject constructor(
         } else {
             value
         }
-    }
-
-    fun setCurrentPosition(pos: Int) {
-        _currentPosition.value = pos
     }
 }
 
@@ -120,8 +162,8 @@ enum class SystemUiVisibility(val visibility: Int) {
         }
 
         fun get(visibility: Int): SystemUiVisibility = when {
-            visibility and FULLSCREEN == 0 -> HIDE
-            else -> SHOW
+            visibility and FULLSCREEN == 0 -> SHOW
+            else -> HIDE
         }
     }
 }
