@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ Copyright (c) 2016. Matsuda, Akihit (akihito104)
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,13 +27,6 @@
     <color name="text_primary_inverse">#FFFFFF</color>
     <color name="text_secondary_inverse">#CCFFFFFF</color>
     <color name="divider">#BDBDBD</color>
-
-    <color name="twitter_action_normal">#AAB8C2</color>
-    <color name="twitter_action_normal_transparent">#3FAAB8C2</color>
-    <color name="twitter_action_retweeted">#19CF86</color>
-    <color name="twitter_action_faved">#E81C4F</color>
-    <color name="twitter_primary">#1DA1F2</color>
-    <color name="twitter_muted">#C05050</color>
 
     <color name="layer_black_immersive">#33000000</color>
     <color name="layer_white_transparent">#88FFFFFF</color>
