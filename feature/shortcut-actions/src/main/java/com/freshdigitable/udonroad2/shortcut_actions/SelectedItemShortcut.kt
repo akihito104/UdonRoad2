@@ -16,7 +16,11 @@
 
 package com.freshdigitable.udonroad2.shortcut_actions
 
+import android.view.MenuItem
+import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
+import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
+import com.freshdigitable.udonroad2.model.app.navigation.postEvents
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 
 sealed class SelectedItemShortcut : AppEvent {
@@ -27,4 +31,21 @@ sealed class SelectedItemShortcut : AppEvent {
     abstract val tweetId: TweetId
 
     companion object
+}
+
+fun EventDispatcher.postSelectedItemShortcutEvent(
+    menuItem: MenuItem,
+    selectedItemId: SelectedItemId
+) {
+    val tweetId = selectedItemId.quoteId ?: selectedItemId.originalId
+    when (menuItem.itemId) {
+        R.id.iffabMenu_main_detail -> postEvent(SelectedItemShortcut.TweetDetail(tweetId))
+        R.id.iffabMenu_main_fav -> postEvent(SelectedItemShortcut.Like(tweetId))
+        R.id.iffabMenu_main_rt -> postEvent(SelectedItemShortcut.Retweet(tweetId))
+        R.id.iffabMenu_main_favRt -> postEvents(
+            SelectedItemShortcut.Like(tweetId),
+            SelectedItemShortcut.Retweet(tweetId)
+        )
+        else -> TODO()
+    }
 }

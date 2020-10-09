@@ -52,6 +52,7 @@ dependencies {
     implementation project(':feature:timeline')
     implementation project(':feature:media')
     implementation project(':feature:oauth')
+    implementation project(":feature:shortcut-actions")
     implementation project(':candysh')
     implementation project(':data:repository')
     implementation project(':data:db')
@@ -93,7 +94,6 @@ dependencies {
     debugImplementation Libs.LEAKCANARY
 
     // test
-    testImplementation project(":feature:shortcut-actions")
     testImplementation project(":test-common-jvm")
     testImplementation Libs.JUNIT
     testImplementation Libs.MOCKK
