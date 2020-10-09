@@ -29,6 +29,7 @@
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/media_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@color/media_background_black"
@@ -54,6 +55,20 @@
             app:currentPosition="@{viewModel.currentPosition}"
             app:mediaSize="@{viewModel.mediaItems.size()}"
             tools:title="1 / 4"
+            />
+
+        <com.freshdigitable.fabshortcut.FlingFAB
+            style="@style/Widget.FlingFAB.Immersive"
+            android:id="@+id/media_fab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/shortcut_marginBottom"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:menu="@menu/shortcut_main"
+            app:menuListener="@{viewModel::onFabMenuSelected}"
+            app:isVisible="@{viewModel.fabVisible}"
             />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
