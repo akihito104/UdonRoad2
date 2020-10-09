@@ -18,6 +18,7 @@ plugins {
     id("com.android.library")
     kotlin("android")
     kotlin("android.extensions")
+    kotlin("kapt")
 }
 apply(from = rootProject.file("android_build.gradle"))
 
@@ -36,6 +37,8 @@ android {
             )
         }
     }
+
+    buildFeatures.dataBinding = true
 }
 
 dependencies {
@@ -47,6 +50,7 @@ dependencies {
     implementation(Libs.KOTLINX_COROUTINES)
     implementation(Libs.ANDROIDX_CORE_KTX)
     implementation(Libs.ANDROIDX_APPCOMPAT)
+    implementation(Libs.MATERIAL_DESIGN)
 
     testImplementation(Libs.JUNIT)
 
