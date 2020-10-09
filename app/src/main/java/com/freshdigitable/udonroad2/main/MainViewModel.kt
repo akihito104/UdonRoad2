@@ -21,6 +21,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import com.freshdigitable.udonroad2.model.app.navigation.CommonEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
+import com.freshdigitable.udonroad2.shortcut.ShortcutViewModel
 import com.freshdigitable.udonroad2.shortcut.postSelectedItemShortcutEvent
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import timber.log.Timber
@@ -28,15 +29,15 @@ import timber.log.Timber
 class MainViewModel(
     private val eventDispatcher: EventDispatcher,
     private val viewStates: MainActivityViewStates
-) : ViewModel() {
+) : ViewModel(), ShortcutViewModel {
 
-    val isFabVisible: LiveData<Boolean> = viewStates.isFabVisible
+    override val isFabVisible: LiveData<Boolean> = viewStates.isFabVisible
 
     internal fun initialEvent(savedState: MainActivityViewState?) {
         eventDispatcher.postEvent(TimelineEvent.Setup(savedState))
     }
 
-    fun onFabMenuSelected(item: MenuItem) {
+    override fun onFabMenuSelected(item: MenuItem) {
         Timber.tag("MainViewModel").d("onFabSelected: $item")
         val selected =
             requireNotNull(currentState?.selectedItem) { "selectedItem should not be null." }
