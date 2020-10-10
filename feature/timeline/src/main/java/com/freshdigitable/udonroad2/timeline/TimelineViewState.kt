@@ -31,7 +31,7 @@ import com.freshdigitable.udonroad2.model.app.navigation.NavigationDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.StateHolder
 import com.freshdigitable.udonroad2.model.app.navigation.toViewState
-import com.freshdigitable.udonroad2.shortcut_actions.ShortcutViewStates
+import com.freshdigitable.udonroad2.shortcut.ShortcutViewStates
 import io.reactivex.disposables.CompositeDisposable
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 

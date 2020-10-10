@@ -23,7 +23,7 @@ import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.tweet.TweetId
-import com.freshdigitable.udonroad2.shortcut_actions.SelectedItemShortcut
+import com.freshdigitable.udonroad2.shortcut.SelectedItemShortcut
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.google.common.truth.Truth.assertThat
 import io.mockk.every

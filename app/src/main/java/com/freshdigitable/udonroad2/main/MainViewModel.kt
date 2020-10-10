@@ -21,7 +21,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import com.freshdigitable.udonroad2.model.app.navigation.CommonEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
-import com.freshdigitable.udonroad2.shortcut_actions.postSelectedItemShortcutEvent
+import com.freshdigitable.udonroad2.shortcut.postSelectedItemShortcutEvent
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import timber.log.Timber
 

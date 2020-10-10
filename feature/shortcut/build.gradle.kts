@@ -42,6 +42,7 @@ dependencies {
     implementation(fileTree("dir" to "libs", "include" to listOf("*.jar")))
     implementation(project(":data:repository"))
     implementation(project(":model"))
+    api(project(":candysh"))
     implementation(Libs.KOTLIN_STDLIB_JDK)
     implementation(Libs.KOTLINX_COROUTINES)
     implementation(Libs.ANDROIDX_CORE_KTX)
@@ -49,6 +50,6 @@ dependencies {
 
     testImplementation(Libs.JUNIT)
 
-    androidTestImplementation(Libs.ANDROIDX_TEST_CORE)
+    androidTestImplementation(Libs.ANDROIDX_TEST_EXT_JUNIT)
     androidTestImplementation(Libs.ANDROIDX_TEST_ESPRESSO)
 }

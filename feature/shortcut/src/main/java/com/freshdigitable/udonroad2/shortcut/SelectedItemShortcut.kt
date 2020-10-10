@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.freshdigitable.udonroad2.shortcut_actions
+package com.freshdigitable.udonroad2.shortcut
 
 import android.view.MenuItem
 import com.freshdigitable.udonroad2.model.SelectedItemId

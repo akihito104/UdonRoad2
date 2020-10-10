@@ -20,7 +20,7 @@ import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.filterByType
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
-import com.freshdigitable.udonroad2.shortcut_actions.ShortcutActions
+import com.freshdigitable.udonroad2.shortcut.ShortcutActions
 import com.freshdigitable.udonroad2.timeline.TimelineEvent.Init
 import com.freshdigitable.udonroad2.timeline.TimelineEvent.MediaItemClicked
 import com.freshdigitable.udonroad2.timeline.TimelineEvent.TweetItemSelection

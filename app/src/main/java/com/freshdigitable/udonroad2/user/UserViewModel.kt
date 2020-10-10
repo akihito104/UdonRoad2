@@ -13,7 +13,7 @@ import com.freshdigitable.udonroad2.model.user.Relationship
 import com.freshdigitable.udonroad2.model.user.TweetingUser
 import com.freshdigitable.udonroad2.model.user.User
 import com.freshdigitable.udonroad2.model.user.UserId
-import com.freshdigitable.udonroad2.shortcut_actions.postSelectedItemShortcutEvent
+import com.freshdigitable.udonroad2.shortcut.postSelectedItemShortcutEvent
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.user.UserActivityEvent.Relationships
 import timber.log.Timber

@@ -14,19 +14,19 @@
  * limitations under the License.
  */
 
-package com.freshdigitable.udonroad2.shortcut_actions
+package com.freshdigitable.udonroad2.shortcut
 
-import androidx.annotation.StringRes
-import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
+import org.junit.Assert.assertEquals
+import org.junit.Test
 
-internal enum class TweetFeedbackMessage(
-    @StringRes override val messageRes: Int
-) : FeedbackMessage {
-    FAV_CREATE_SUCCESS(R.string.msg_fav_create_success),
-    FAV_CREATE_FAILURE(R.string.msg_fav_create_failure),
-    ALREADY_FAV(R.string.msg_already_fav),
-
-    RT_CREATE_SUCCESS(R.string.msg_rt_create_success),
-    RT_CREATE_FAILURE(R.string.msg_rt_create_failure),
-    ALREADY_RT(R.string.msg_already_rt),
+/**
+ * Example local unit test, which will execute on the development machine (host).
+ *
+ * See [testing documentation](http://d.android.com/tools/testing).
+ */
+class ExampleUnitTest {
+    @Test
+    fun addition_isCorrect() {
+        assertEquals(4, 2 + 2)
+    }
 }
