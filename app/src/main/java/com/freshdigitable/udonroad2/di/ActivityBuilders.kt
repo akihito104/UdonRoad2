@@ -21,7 +21,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import com.freshdigitable.udonroad2.main.MainActivity
 import com.freshdigitable.udonroad2.media.MediaActivity
-import com.freshdigitable.udonroad2.media.MediaActivityModule
+import com.freshdigitable.udonroad2.media.di.MediaActivityModule
 import com.freshdigitable.udonroad2.model.app.di.ActivityScope
 import com.freshdigitable.udonroad2.user.UserActivity
 import dagger.Module

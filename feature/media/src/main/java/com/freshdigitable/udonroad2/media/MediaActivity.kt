@@ -21,17 +21,15 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
+import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.observe
 import androidx.viewpager2.widget.ViewPager2
 import com.freshdigitable.udonroad2.media.databinding.ActivityMediaBinding
-import com.freshdigitable.udonroad2.model.app.di.FragmentScope
-import com.freshdigitable.udonroad2.model.tweet.TweetId
-import dagger.Module
+import com.freshdigitable.udonroad2.media.di.MediaViewModelComponent
 import dagger.android.AndroidInjection
 import dagger.android.AndroidInjector
-import dagger.android.ContributesAndroidInjector
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasAndroidInjector
 import javax.inject.Inject
@@ -39,8 +37,10 @@ import javax.inject.Inject
 class MediaActivity : AppCompatActivity(), HasAndroidInjector {
 
     @Inject
-    lateinit var viewModelProviderFactory: ViewModelProvider.Factory
-    private val viewModel: MediaViewModel by viewModels { viewModelProviderFactory }
+    lateinit var viewModelComponentFactory: MediaViewModelComponent.Factory
+    private val viewModel: MediaViewModel by viewModels {
+        viewModelComponentFactory.create(args.id, args.index).viewModelProviderFactory
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
@@ -52,23 +52,19 @@ class MediaActivity : AppCompatActivity(), HasAndroidInjector {
 
         title = ""
         setSupportActionBar(binding.mediaToolbar)
-        viewModel.isInImmersive.observe(this) {
-            if (it) {
-                supportActionBar?.hide()
-            } else {
-                supportActionBar?.show()
-            }
-        }
 
         window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
             viewModel.onSystemUiVisibilityChange(visibility)
         }
         viewModel.systemUiVisibility.observe(this) {
-            window.decorView.systemUiVisibility = it
+            window.decorView.systemUiVisibility = it.visibility
+            when (it) {
+                SystemUiVisibility.SHOW -> supportActionBar?.show()
+                SystemUiVisibility.HIDE -> supportActionBar?.hide()
+            }
         }
 
         binding.mediaPager.setupPager(viewModel)
-        viewModel.setTweetId(this.tweetId)
     }
 
     private fun ViewPager2.setupPager(viewModel: MediaViewModel) {
@@ -89,14 +85,11 @@ class MediaActivity : AppCompatActivity(), HasAndroidInjector {
                 this.currentItem = it
             }
         }
-        viewModel.setCurrentPosition(index)
     }
 
     private val args: MediaActivityArgs by lazy {
         MediaActivityArgs.fromBundle(requireNotNull(intent.extras))
     }
-    private val tweetId: TweetId get() = args.id
-    private val index: Int get() = args.index
 
     companion object {
         fun start(context: Context, args: MediaActivityArgs) {
@@ -112,13 +105,10 @@ class MediaActivity : AppCompatActivity(), HasAndroidInjector {
     override fun androidInjector(): AndroidInjector<Any> = injector
 }
 
-@Module(includes = [MediaViewModelModule::class])
-interface MediaActivityModule {
-    @FragmentScope
-    @ContributesAndroidInjector
-    fun contributePhotoMediaFragment(): PhotoMediaFragment
-
-    @FragmentScope
-    @ContributesAndroidInjector
-    fun contributeMovieMediaFragment(): MovieMediaFragment
+@BindingAdapter("currentPosition", "mediaSize", requireAll = false)
+fun Toolbar.setCurrentPositionTitle(currentPosition: Int?, size: Int?) {
+    title = when {
+        currentPosition == null || size == null || size <= 0 -> ""
+        else -> context.getString(R.string.media_current_position, currentPosition + 1, size)
+    }
 }

@@ -28,8 +28,8 @@ import com.freshdigitable.udonroad2.model.user.TweetingUser
 import com.freshdigitable.udonroad2.model.user.UserId
 import com.freshdigitable.udonroad2.test_common.MockVerified
 import com.freshdigitable.udonroad2.test_common.jvm.CoroutineTestRule
+import com.freshdigitable.udonroad2.test_common.jvm.TweetRepositoryRule
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
-import com.freshdigitable.udonroad2.timeline.TweetRepositoryRule
 import com.google.common.truth.Truth.assertThat
 import io.mockk.every
 import io.mockk.just

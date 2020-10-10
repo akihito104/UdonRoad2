@@ -16,32 +16,9 @@
 
 package com.freshdigitable.udonroad2.data.restclient
 
+import com.freshdigitable.udonroad2.model.app.AppTwitterException
 import twitter4j.TwitterException
 
-class AppTwitterException(exception: TwitterException) : Exception(exception) {
-    val statusCode: Int = exception.statusCode
-    val errorCode: Int = exception.errorCode
-    val errorType: ErrorType? = findByCode(statusCode, errorCode)
-    val exceptionCode: String = exception.exceptionCode
-
-    companion object {
-        private const val STATUS_FORBIDDEN: Int = 403
-
-        private fun findByCode(statusCode: Int, errorCode: Int): ErrorType? {
-            return ErrorType.values().firstOrNull {
-                it.statusCode == statusCode && it.errorCode == errorCode
-            }
-        }
-    }
-
-    enum class ErrorType(
-        val statusCode: Int,
-        val errorCode: Int
-    ) {
-        // https://developer.twitter.com/ja/docs/basics/response-codes
-        ALREADY_FAVORITED(STATUS_FORBIDDEN, 139),
-        ALREADY_RETWEETED(STATUS_FORBIDDEN, 327),
-        ALREADY_FOLLOW_REQUESTED(STATUS_FORBIDDEN, 160),
-        REACHED_FOLLOW_LIMIT(STATUS_FORBIDDEN, 161),
-    }
-}
+internal fun AppTwitterException.Companion.create(
+    exception: TwitterException
+): AppTwitterException = AppTwitterException(exception.statusCode, exception.errorCode, exception)

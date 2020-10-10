@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ Copyright (c) 2019. Matsuda, Akihit (akihito104)
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,11 +14,14 @@
   ~ limitations under the License.
   -->
 
-<layout xmlns:android="http://schemas.android.com/apk/res/android"
+<layout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     >
+
     <data>
+
         <variable
             name="viewModel"
             type="com.freshdigitable.udonroad2.media.MediaViewModel"
@@ -32,12 +34,14 @@
         android:background="@color/media_background_black"
         android:fitsSystemWindows="true"
         >
+
         <androidx.viewpager2.widget.ViewPager2
             android:id="@+id/media_pager"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:onClick="@{v -> viewModel.toggleUiVisibility()}"
             />
+
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/media_toolbar"
             android:layout_width="0dp"
@@ -47,7 +51,8 @@
             app:layout_constraintEnd_toEndOf="parent"
             android:background="@color/layer_black_immersive"
             app:titleTextColor="#fff"
-            app:title="@{viewModel.titleText}"
+            app:currentPosition="@{viewModel.currentPosition}"
+            app:mediaSize="@{viewModel.mediaItems.size()}"
             tools:title="1 / 4"
             />
     </androidx.constraintlayout.widget.ConstraintLayout>

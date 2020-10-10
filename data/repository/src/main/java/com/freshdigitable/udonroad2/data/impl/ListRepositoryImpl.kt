@@ -24,11 +24,11 @@ import com.freshdigitable.udonroad2.data.ListRepository
 import com.freshdigitable.udonroad2.data.LocalListDataSource
 import com.freshdigitable.udonroad2.data.PagedListProvider
 import com.freshdigitable.udonroad2.data.RemoteListDataSource
-import com.freshdigitable.udonroad2.data.restclient.AppTwitterException
 import com.freshdigitable.udonroad2.model.ListQuery
 import com.freshdigitable.udonroad2.model.PageOption
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.app.AppExecutor
+import com.freshdigitable.udonroad2.model.app.AppTwitterException
 import timber.log.Timber
 import java.io.IOException
 

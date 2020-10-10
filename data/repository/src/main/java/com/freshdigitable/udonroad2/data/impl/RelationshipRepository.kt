@@ -4,8 +4,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.map
 import com.freshdigitable.udonroad2.data.db.DaoModule
 import com.freshdigitable.udonroad2.data.db.dao.RelationshipDao
-import com.freshdigitable.udonroad2.data.restclient.AppTwitterException
 import com.freshdigitable.udonroad2.data.restclient.FriendshipRestClient
+import com.freshdigitable.udonroad2.model.app.AppTwitterException
 import com.freshdigitable.udonroad2.model.user.Relationship
 import com.freshdigitable.udonroad2.model.user.User
 import com.freshdigitable.udonroad2.model.user.UserId
