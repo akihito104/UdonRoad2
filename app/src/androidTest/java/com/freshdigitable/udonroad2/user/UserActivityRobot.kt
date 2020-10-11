@@ -63,8 +63,8 @@ fun ofViewPagerTabWithPosition(
     }
 
     override fun matchesSafely(item: TabLayout.TabView): Boolean {
-        return item.tab?.parent?.id == tabLayoutId
-            && item.tab?.position == position
+        return item.tab?.parent?.id == tabLayoutId &&
+            item.tab?.position == position
     }
 }
 

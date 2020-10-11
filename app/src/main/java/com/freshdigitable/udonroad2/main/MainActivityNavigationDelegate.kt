@@ -35,7 +35,8 @@ import javax.inject.Inject
 @ActivityScope
 class MainActivityNavigationDelegate @Inject constructor(
     mainActivity: MainActivity,
-) : NavigationDelegate, ActivityEventDelegate,
+) : NavigationDelegate,
+    ActivityEventDelegate,
     FeedbackMessageDelegate by SnackbarFeedbackMessageDelegate(
         weakRef(mainActivity) { it.findViewById(R.id.main_container) }
     ) {

@@ -104,76 +104,78 @@ class UserActivityViewStates @Inject constructor(
         .toViewState()
 
     @ExperimentalCoroutinesApi
-    private val feedbackMessage: AppAction<FeedbackMessage> = AppAction.merge(listOf(
-        actions.changeFollowingStatus.suspendMap(executor.dispatcher.mainContext) {
-            relationshipRepository.updateFollowingStatus(it.targetUserId, it.wantsFollow)
-        }.map {
-            if (it.event.wantsFollow) {
-                when {
-                    it.isSuccess -> RelationshipFeedbackMessage.FOLLOW_CREATE_SUCCESS
-                    else -> RelationshipFeedbackMessage.FOLLOW_CREATE_FAILURE
+    private val feedbackMessage: AppAction<FeedbackMessage> = AppAction.merge(
+        listOf(
+            actions.changeFollowingStatus.suspendMap(executor.dispatcher.mainContext) {
+                relationshipRepository.updateFollowingStatus(it.targetUserId, it.wantsFollow)
+            }.map {
+                if (it.event.wantsFollow) {
+                    when {
+                        it.isSuccess -> RelationshipFeedbackMessage.FOLLOW_CREATE_SUCCESS
+                        else -> RelationshipFeedbackMessage.FOLLOW_CREATE_FAILURE
+                    }
+                } else {
+                    when {
+                        it.isSuccess -> RelationshipFeedbackMessage.FOLLOW_DESTROY_SUCCESS
+                        else -> RelationshipFeedbackMessage.FOLLOW_DESTROY_FAILURE
+                    }
                 }
-            } else {
+            },
+            actions.changeBlockingStatus.suspendMap(executor.dispatcher.mainContext) {
+                relationshipRepository.updateBlockingStatus(it.targetUserId, it.wantsBlock)
+            }.map {
+                if (it.event.wantsBlock) {
+                    when {
+                        it.isSuccess -> RelationshipFeedbackMessage.BLOCK_CREATE_SUCCESS
+                        else -> RelationshipFeedbackMessage.BLOCK_CREATE_FAILURE
+                    }
+                } else {
+                    when {
+                        it.isSuccess -> RelationshipFeedbackMessage.BLOCK_DESTROY_SUCCESS
+                        else -> RelationshipFeedbackMessage.BLOCK_DESTROY_FAILURE
+                    }
+                }
+            },
+            actions.changeMutingStatus.suspendMap(executor.dispatcher.mainContext) {
+                relationshipRepository.updateMutingStatus(it.targetUserId, it.wantsMute)
+            }.map {
+                if (it.event.wantsMute) {
+                    when {
+                        it.isSuccess -> RelationshipFeedbackMessage.MUTE_CREATE_SUCCESS
+                        else -> RelationshipFeedbackMessage.MUTE_CREATE_FAILURE
+                    }
+                } else {
+                    when {
+                        it.isSuccess -> RelationshipFeedbackMessage.MUTE_DESTROY_SUCCESS
+                        else -> RelationshipFeedbackMessage.MUTE_DESTROY_FAILURE
+                    }
+                }
+            },
+            actions.changeRetweetBlockingStatus.suspendMap(executor.dispatcher.mainContext) {
+                relationshipRepository.updateWantRetweetStatus(it.targetUserId, it.wantsRetweet)
+            }.map {
+                if (it.event.wantsRetweet) {
+                    when (it.isSuccess) {
+                        it.isSuccess -> RelationshipFeedbackMessage.WANT_RETWEET_CREATE_SUCCESS
+                        else -> RelationshipFeedbackMessage.WANT_RETWEET_CREATE_FAILURE
+                    }
+                } else {
+                    when {
+                        it.isSuccess -> RelationshipFeedbackMessage.WANT_RETWEET_DESTROY_SUCCESS
+                        else -> RelationshipFeedbackMessage.WANT_RETWEET_DESTROY_FAILURE
+                    }
+                }
+            },
+            actions.reportSpam.suspendMap(executor.dispatcher.mainContext) {
+                relationshipRepository.reportSpam(it.targetUserId)
+            }.map {
                 when {
-                    it.isSuccess -> RelationshipFeedbackMessage.FOLLOW_DESTROY_SUCCESS
-                    else -> RelationshipFeedbackMessage.FOLLOW_DESTROY_FAILURE
+                    it.isSuccess -> RelationshipFeedbackMessage.REPORT_SPAM_SUCCESS
+                    else -> RelationshipFeedbackMessage.REPORT_SPAM_FAILURE
                 }
             }
-        },
-        actions.changeBlockingStatus.suspendMap(executor.dispatcher.mainContext) {
-            relationshipRepository.updateBlockingStatus(it.targetUserId, it.wantsBlock)
-        }.map {
-            if (it.event.wantsBlock) {
-                when {
-                    it.isSuccess -> RelationshipFeedbackMessage.BLOCK_CREATE_SUCCESS
-                    else -> RelationshipFeedbackMessage.BLOCK_CREATE_FAILURE
-                }
-            } else {
-                when {
-                    it.isSuccess -> RelationshipFeedbackMessage.BLOCK_DESTROY_SUCCESS
-                    else -> RelationshipFeedbackMessage.BLOCK_DESTROY_FAILURE
-                }
-            }
-        },
-        actions.changeMutingStatus.suspendMap(executor.dispatcher.mainContext) {
-            relationshipRepository.updateMutingStatus(it.targetUserId, it.wantsMute)
-        }.map {
-            if (it.event.wantsMute) {
-                when {
-                    it.isSuccess -> RelationshipFeedbackMessage.MUTE_CREATE_SUCCESS
-                    else -> RelationshipFeedbackMessage.MUTE_CREATE_FAILURE
-                }
-            } else {
-                when {
-                    it.isSuccess -> RelationshipFeedbackMessage.MUTE_DESTROY_SUCCESS
-                    else -> RelationshipFeedbackMessage.MUTE_DESTROY_FAILURE
-                }
-            }
-        },
-        actions.changeRetweetBlockingStatus.suspendMap(executor.dispatcher.mainContext) {
-            relationshipRepository.updateWantRetweetStatus(it.targetUserId, it.wantsRetweet)
-        }.map {
-            if (it.event.wantsRetweet) {
-                when (it.isSuccess) {
-                    it.isSuccess -> RelationshipFeedbackMessage.WANT_RETWEET_CREATE_SUCCESS
-                    else -> RelationshipFeedbackMessage.WANT_RETWEET_CREATE_FAILURE
-                }
-            } else {
-                when {
-                    it.isSuccess -> RelationshipFeedbackMessage.WANT_RETWEET_DESTROY_SUCCESS
-                    else -> RelationshipFeedbackMessage.WANT_RETWEET_DESTROY_FAILURE
-                }
-            }
-        },
-        actions.reportSpam.suspendMap(executor.dispatcher.mainContext) {
-            relationshipRepository.reportSpam(it.targetUserId)
-        }.map {
-            when {
-                it.isSuccess -> RelationshipFeedbackMessage.REPORT_SPAM_SUCCESS
-                else -> RelationshipFeedbackMessage.REPORT_SPAM_FAILURE
-            }
-        }
-    ))
+        )
+    )
 
     private val disposables = CompositeDisposable(
         feedbackMessage.subscribe { navigationDelegate.dispatchFeedbackMessage(it) },

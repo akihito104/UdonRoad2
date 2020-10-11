@@ -33,31 +33,32 @@ private class PagedListDataSource<Q : QueryType, E>(
 class FollowerListDataSource @Inject constructor(
     twitter: AppTwitter
 ) : RemoteListDataSource<UserQueryType.Follower, User> by PagedListDataSource(
-    twitter,
-    { query, nextCursor ->
-        getFollowersList(query.type.userId.value, nextCursor).toPagedResponseList(
-            twitter4j.User::toEntity
-        )
-    }
-)
+        twitter,
+        { query, nextCursor ->
+            getFollowersList(query.type.userId.value, nextCursor).toPagedResponseList(
+                twitter4j.User::toEntity
+            )
+        }
+    )
 
 class FollowingListDataSource @Inject constructor(
     twitter: AppTwitter
 ) : RemoteListDataSource<UserQueryType.Following, User> by PagedListDataSource(
-    twitter,
-    { query, nextCursor ->
-        getFriendsList(query.type.userId.value, nextCursor).toPagedResponseList(
-            twitter4j.User::toEntity
-        )
-    }
-)
+        twitter,
+        { query, nextCursor ->
+            getFriendsList(query.type.userId.value, nextCursor).toPagedResponseList(
+                twitter4j.User::toEntity
+            )
+        }
+    )
 
 class ListMembershipListDataSource @Inject constructor(
     twitter: AppTwitter
-) : RemoteListDataSource<QueryType.UserListMembership, MemberList> by PagedListDataSource(twitter,
-    { query, nextCursor ->
-        getUserListMemberships(
-            query.type.userId.value, query.pageOption.count, nextCursor
-        ).toPagedResponseList(UserList::toEntity)
-    }
-)
+) : RemoteListDataSource<QueryType.UserListMembership, MemberList> by PagedListDataSource(
+        twitter,
+        { query, nextCursor ->
+            getUserListMemberships(
+                query.type.userId.value, query.pageOption.count, nextCursor
+            ).toPagedResponseList(UserList::toEntity)
+        }
+    )

@@ -158,9 +158,10 @@ class MediaViewModelViewStates @Inject constructor(
 
 class MediaActivityEventDelegate @Inject constructor(
     activity: MediaActivity
-) : ActivityEventDelegate, FeedbackMessageDelegate by SnackbarFeedbackMessageDelegate(
-    weakRef(activity) { it.findViewById(R.id.media_container) }
-)
+) : ActivityEventDelegate,
+    FeedbackMessageDelegate by SnackbarFeedbackMessageDelegate(
+        weakRef(activity) { it.findViewById(R.id.media_container) }
+    )
 
 enum class SystemUiVisibility(val visibility: Int) {
     SHOW(

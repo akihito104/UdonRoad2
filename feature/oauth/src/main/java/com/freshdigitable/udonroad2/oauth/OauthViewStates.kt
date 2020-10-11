@@ -69,7 +69,8 @@ class OauthViewStates(
     private val disposables = CompositeDisposable(
         _requestToken.subscribe {
             when {
-                it.isSuccess -> navDelegate.launchTwitterOauth(requireNotNull(it.value).authorizationUrl)
+                it.isSuccess ->
+                    navDelegate.launchTwitterOauth(requireNotNull(it.value).authorizationUrl)
                 else -> it.rethrow() // FIXME: send feedback
             }
         },

@@ -8,7 +8,7 @@ import com.freshdigitable.udonroad2.model.user.UserListItem
 @DatabaseView(
     viewName = "user_list_item",
     value =
-    """
+        """
      SELECT id, name, screen_name, icon_url, description,
       follower_count, following_count, verified, is_protected
      FROM user

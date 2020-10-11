@@ -56,19 +56,24 @@ class UserActivityInstTest {
         val user = createUser(tweetingUser.id.value, tweetingUser.name, tweetingUser.screenName)
         twitterRobot.setupShowUser(user)
         twitterRobot.setupRelationships(UserId(100), tweetingUser.id)
-        twitterRobot.setupGetUserTimeline(tweetingUser.id, response = (0 until 10).map {
-            createStatus(
-                100L + it,
-                "tweet: $it",
-                user,
-                Date(100000L + it),
-                arrayOf(mockk<MediaEntity>(relaxed = true).apply {
-                    every { id } returns (3000L + it)
-                    every { type } returns "photo"
-                    every { sizes } returns mapOf()
-                })
-            )
-        })
+        twitterRobot.setupGetUserTimeline(
+            tweetingUser.id,
+            response = (0 until 10).map {
+                createStatus(
+                    100L + it,
+                    "tweet: $it",
+                    user,
+                    Date(100000L + it),
+                    arrayOf(
+                        mockk<MediaEntity>(relaxed = true).apply {
+                            every { id } returns (3000L + it)
+                            every { type } returns "photo"
+                            every { sizes } returns mapOf()
+                        }
+                    )
+                )
+            }
+        )
         twitterRobot.setupGetUserTimeline(tweetingUser.id, { any() }, emptyList())
         twitterRobot.setupGetFollowersList(tweetingUser.id, emptyList())
 
