@@ -14,19 +14,13 @@
   ~ limitations under the License.
   -->
 <resources>
-    <string name="msg_rt_create_failure">RTできませんでした…</string>
-    <string name="msg_rt_create_success">RTしました</string>
     <string name="msg_rt_delete_success">RTを消しました</string>
     <string name="msg_rt_delete_failed">RTを消せませんでした…</string>
-    <string name="msg_fav_create_success">ふぁぼしました</string>
-    <string name="msg_fav_create_failure">ふぁぼできませんでした…</string>
     <string name="msg_fav_delete_failed">ふぁぼを消せませんでした…</string>
     <string name="msg_fav_delete_success">ふぁぼを消しました</string>
-    <string name="msg_already_fav">もうふぁぼしてました</string>
     <string name="msg_tweet_not_download">ツイートをダウンロードできませんでした…</string>
     <string name="msg_follower_list_failed">フォロワーを取得できませんでした…</string>
     <string name="msg_friends_list_failed">フォロー中のユーザを取得できませんでした…</string>
-    <string name="msg_already_rt">もうRTしてました</string>
     <string name="msg_updateStatus_failed">ツイートを送信できませんでした…</string>
     <string name="msg_updateStatus_success">ツイートしました</string>
     <string name="msg_faved_by_someone">ふぁぼられました: \@%1$s</string>

@@ -33,8 +33,8 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation project(':candysh')
     implementation project(':feature:media')
+    implementation project(":feature:shortcut")
     implementation project(':data:repository')
     implementation project(':data:db')
     implementation project(':data:restclient')
