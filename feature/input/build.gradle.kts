@@ -18,10 +18,15 @@ plugins {
     id("com.android.library")
     kotlin("android")
     kotlin("android.extensions")
+    kotlin("kapt")
 }
 apply(from = rootProject.file("android_build.gradle"))
 
 android {
+
+    buildFeatures {
+        dataBinding = true
+    }
 
     defaultConfig {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -41,9 +46,13 @@ android {
 
 dependencies {
     implementation(fileTree("dir" to "libs", "include" to listOf("*.jar")))
+    implementation(project(":feature:media"))
+    implementation(project(":model"))
     implementation(Libs.KOTLIN_STDLIB_JDK)
     implementation(Libs.ANDROIDX_CORE_KTX)
     implementation(Libs.ANDROIDX_APPCOMPAT)
+    implementation(Libs.ANDROIDX_CONSTRAINT_LAYOUT)
+    implementation(Libs.MATERIAL_DESIGN)
 
     testImplementation(Libs.JUNIT)
 

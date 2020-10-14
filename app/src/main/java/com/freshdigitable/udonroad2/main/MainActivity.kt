@@ -21,9 +21,12 @@ import android.view.View
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
+import androidx.fragment.app.add
+import androidx.fragment.app.commit
 import androidx.lifecycle.ViewModelProvider
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.databinding.ActivityMainBinding
+import com.freshdigitable.udonroad2.input.TweetInputFragment
 import com.freshdigitable.udonroad2.oauth.OauthEvent
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import dagger.android.AndroidInjection
@@ -44,17 +47,21 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
         AndroidInjection.inject(this)
         super.onCreate(savedInstanceState)
         val binding: ActivityMainBinding = findViewById<View>(R.id.main_drawer)?.let {
-            DataBindingUtil.findBinding<ActivityMainBinding>(it)
+            DataBindingUtil.findBinding(it)
         } ?: DataBindingUtil.setContentView(this, R.layout.activity_main)
 
         binding.lifecycleOwner = this
         binding.viewModel = viewModel
+        setSupportActionBar(binding.mainToolbar)
 
         viewModel.initialEvent(savedInstanceState?.savedViewState)
 
         supportActionBar?.apply {
             setDisplayHomeAsUpEnabled(true)
             setHomeButtonEnabled(true)
+        }
+        supportFragmentManager.commit {
+            add<TweetInputFragment>(binding.mainInputContainer.id)
         }
 
         binding.mainGlobalMenu.setNavigationItemSelectedListener { item ->
