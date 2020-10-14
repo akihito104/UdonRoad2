@@ -38,6 +38,13 @@ fun EventDispatcher.postSelectedItemShortcutEvent(
     selectedItemId: SelectedItemId
 ) {
     val tweetId = selectedItemId.quoteId ?: selectedItemId.originalId
+    postSelectedItemShortcutEvent(menuItem, tweetId)
+}
+
+fun EventDispatcher.postSelectedItemShortcutEvent(
+    menuItem: MenuItem,
+    tweetId: TweetId
+) {
     when (menuItem.itemId) {
         R.id.iffabMenu_main_detail -> postEvent(SelectedItemShortcut.TweetDetail(tweetId))
         R.id.iffabMenu_main_fav -> postEvent(SelectedItemShortcut.Like(tweetId))

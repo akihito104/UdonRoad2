@@ -18,11 +18,13 @@ package com.freshdigitable.udonroad2.media.di
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.freshdigitable.udonroad2.media.MediaActivityEventDelegate
 import com.freshdigitable.udonroad2.media.MediaViewModel
 import com.freshdigitable.udonroad2.media.MovieMediaFragment
 import com.freshdigitable.udonroad2.media.PhotoMediaFragment
 import com.freshdigitable.udonroad2.model.app.di.FragmentScope
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
+import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import dagger.Binds
 import dagger.BindsInstance
@@ -48,6 +50,9 @@ interface MediaViewModelModule {
     @IntoMap
     @ViewModelKey(MediaViewModel::class)
     fun bindMediaViewModel(viewModel: MediaViewModel): ViewModel
+
+    @Binds
+    fun bindActivityEventDelegate(eventDelegate: MediaActivityEventDelegate): ActivityEventDelegate
 }
 
 @Subcomponent(modules = [MediaViewModelModule::class])

@@ -28,7 +28,6 @@
     <color name="text_secondary_inverse">#CCFFFFFF</color>
     <color name="divider">#BDBDBD</color>
 
-    <color name="layer_black_immersive">#33000000</color>
     <color name="layer_white_transparent">#88FFFFFF</color>
 
     <color name="fab_disabled">#CCCCCC</color>

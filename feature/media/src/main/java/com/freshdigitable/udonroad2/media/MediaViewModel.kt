@@ -17,6 +17,7 @@
 package com.freshdigitable.udonroad2.media
 
 import android.os.Build
+import android.view.MenuItem
 import android.view.View
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
@@ -25,22 +26,31 @@ import com.freshdigitable.udonroad2.data.impl.TweetRepository
 import com.freshdigitable.udonroad2.model.MediaItem
 import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.ext.merge
+import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.AppViewState
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
+import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessageDelegate
+import com.freshdigitable.udonroad2.model.app.navigation.SnackbarFeedbackMessageDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.onNull
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
 import com.freshdigitable.udonroad2.model.app.navigation.toViewState
+import com.freshdigitable.udonroad2.model.app.weakRef
 import com.freshdigitable.udonroad2.model.tweet.TweetId
+import com.freshdigitable.udonroad2.shortcut.ShortcutActions
+import com.freshdigitable.udonroad2.shortcut.ShortcutViewModel
+import com.freshdigitable.udonroad2.shortcut.ShortcutViewStates
+import com.freshdigitable.udonroad2.shortcut.postSelectedItemShortcutEvent
+import io.reactivex.disposables.CompositeDisposable
 import javax.inject.Inject
 import kotlin.math.min
 
 class MediaViewModel @Inject constructor(
-    tweetId: TweetId, // FIXME: for fav/RT
+    private val tweetId: TweetId,
     private val eventDispatcher: EventDispatcher,
-    viewStates: MediaViewModelViewStates,
-) : ViewModel() {
+    private val viewStates: MediaViewModelViewStates,
+) : ViewModel(), ShortcutViewModel {
     val mediaItems: LiveData<List<MediaItem>> = viewStates.mediaItems
 
     internal val systemUiVisibility: LiveData<SystemUiVisibility> = viewStates.systemUiVisibility
@@ -62,6 +72,17 @@ class MediaViewModel @Inject constructor(
     fun setCurrentPosition(pos: Int) {
         eventDispatcher.postEvent(MediaViewerEvent.CurrentPositionChanged(pos))
     }
+
+    override val isFabVisible: LiveData<Boolean> = viewStates.isFabVisible
+
+    override fun onFabMenuSelected(item: MenuItem) {
+        eventDispatcher.postSelectedItemShortcutEvent(item, tweetId)
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        viewStates.clear()
+    }
 }
 
 internal sealed class MediaViewerEvent : AppEvent {
@@ -74,7 +95,7 @@ internal sealed class MediaViewerEvent : AppEvent {
 
 class MediaViewModelActions @Inject constructor(
     eventDispatcher: EventDispatcher
-) {
+) : ShortcutActions by ShortcutActions.create(eventDispatcher) {
     internal val changeCurrentPosition: AppAction<MediaViewerEvent.CurrentPositionChanged> =
         eventDispatcher.toAction()
     internal val changeSystemUiVisibility: AppAction<MediaViewerEvent.SystemUiVisibilityChanged> =
@@ -88,8 +109,9 @@ class MediaViewModelViewStates @Inject constructor(
     firstPosition: Int,
     actions: MediaViewModelActions,
     tweetRepository: TweetRepository,
+    eventDelegate: ActivityEventDelegate,
     executor: AppExecutor,
-) {
+) : ShortcutViewStates by ShortcutViewStates.create(actions, tweetRepository, executor) {
     internal val mediaItems: AppViewState<List<MediaItem>> =
         tweetRepository.getTweetItemSource(tweetId).onNull(
             executor = executor,
@@ -105,6 +127,9 @@ class MediaViewModelViewStates @Inject constructor(
     )
         .distinctUntilChanged()
         .toViewState()
+    internal val isFabVisible: LiveData<Boolean> = systemUiVisibility.map {
+        it == SystemUiVisibility.SHOW
+    }
 
     internal val currentPosition: AppViewState<Int?> = merge(
         AppAction.merge(
@@ -121,7 +146,21 @@ class MediaViewModelViewStates @Inject constructor(
             value
         }
     }
+
+    private val compositeDisposable = CompositeDisposable(
+        updateTweet.subscribe { eventDelegate.dispatchFeedbackMessage(it) }
+    )
+
+    fun clear() {
+        compositeDisposable.clear()
+    }
 }
+
+class MediaActivityEventDelegate @Inject constructor(
+    activity: MediaActivity
+) : ActivityEventDelegate, FeedbackMessageDelegate by SnackbarFeedbackMessageDelegate(
+    weakRef(activity) { it.findViewById(R.id.media_container) }
+)
 
 enum class SystemUiVisibility(val visibility: Int) {
     SHOW(

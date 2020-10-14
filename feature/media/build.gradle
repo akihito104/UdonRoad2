@@ -41,8 +41,10 @@ android {
 }
 
 dependencies {
+    implementation project(":feature:shortcut")
     implementation project(':data:repository')
     implementation project(':model')
+    implementation project(":candysh")
 
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation Libs.KOTLIN_STDLIB_JDK

@@ -36,7 +36,7 @@
                 android:id="@+id/main_fab"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="56dp"
+                android:layout_marginBottom="@dimen/shortcut_marginBottom"
                 android:layout_gravity="center_horizontal|bottom"
                 app:menu="@menu/shortcut_main"
                 style="@style/Widget.FlingFAB"

@@ -61,6 +61,7 @@ class MediaViewModelTest {
             0,
             MediaViewModelActions(eventDispatcher),
             tweetRepositoryRule.mock,
+            mockk(relaxed = true),
             AppExecutor(dispatcher = coroutineRule.coroutineContextProvider),
         )
         MediaViewModel(tweetListItem.originalId, eventDispatcher, viewStates)
@@ -70,7 +71,7 @@ class MediaViewModelTest {
     fun setup() {
         tweetRepositoryRule.setupShowTweet(tweetListItem.originalId, tweetItemSource)
         with(sut) {
-            listOf(mediaItems, currentPosition, systemUiVisibility).forEach {
+            listOf(mediaItems, currentPosition, systemUiVisibility, isFabVisible).forEach {
                 it.observeForever {}
             }
         }
@@ -83,6 +84,7 @@ class MediaViewModelTest {
         assertThat(sut.mediaItems.value).isNull()
         assertThat(sut.currentPosition.value).isNull()
         assertThat(sut.systemUiVisibility.value).isEqualTo(SystemUiVisibility.SHOW)
+        assertThat(sut.isFabVisible.value).isTrue()
     }
 
     @Test
@@ -102,5 +104,6 @@ class MediaViewModelTest {
 
         // verify
         assertThat(sut.systemUiVisibility.value).isEqualTo(SystemUiVisibility.HIDE)
+        assertThat(sut.isFabVisible.value).isFalse()
     }
 }
