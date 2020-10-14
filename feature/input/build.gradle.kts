@@ -19,6 +19,7 @@ plugins {
     kotlin("android")
     kotlin("android.extensions")
     kotlin("kapt")
+    id("androidx.navigation.safeargs.kotlin")
 }
 apply(from = rootProject.file("android_build.gradle"))
 
@@ -53,6 +54,8 @@ dependencies {
     implementation(Libs.ANDROIDX_APPCOMPAT)
     implementation(Libs.ANDROIDX_CONSTRAINT_LAYOUT)
     implementation(Libs.MATERIAL_DESIGN)
+    implementation(Libs.ANDROIDX_NAVIGATION_FRAGMENT_KTX)
+    implementation(Libs.ANDROIDX_NAVIGATION_UI_KTX)
 
     testImplementation(Libs.JUNIT)
 

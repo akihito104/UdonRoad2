@@ -23,16 +23,17 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.view.ActionMode
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.navArgs
 import com.freshdigitable.udonroad2.input.databinding.FragmentTweetInputBinding
 
 class TweetInputFragment : Fragment() {
+    private val args: TweetInputFragmentArgs by navArgs()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setHasOptionsMenu(true)
+        setHasOptionsMenu(args.hasOptionsMenu)
     }
 
     override fun onCreateView(
@@ -53,39 +54,17 @@ class TweetInputFragment : Fragment() {
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
-        inflater.inflate(R.menu.input_tweet_write, menu)
+        if (args.hasOptionsMenu) {
+            inflater.inflate(R.menu.input_tweet_send, menu)
+        }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if (!args.hasOptionsMenu) return false
+
         return when (item.itemId) {
-            R.id.input_tweet_write -> {
-                view?.visibility = View.VISIBLE
-                (requireActivity() as AppCompatActivity).startSupportActionMode(object :
-                    ActionMode.Callback {
-                    override fun onCreateActionMode(mode: ActionMode?, menu: Menu?): Boolean {
-                        mode?.setTitle(R.string.title_input_send_tweet)
-                        mode?.menuInflater?.inflate(R.menu.input_tweet_send, menu)
-                        return true
-                    }
-
-                    override fun onPrepareActionMode(mode: ActionMode?, menu: Menu?): Boolean =
-                        false
-
-                    override fun onActionItemClicked(mode: ActionMode?, item: MenuItem?): Boolean {
-                        return when (item?.itemId) {
-                            R.id.input_tweet_send -> {
-                                // TODO: send tweet
-                                mode?.finish()
-                                true
-                            }
-                            else -> false
-                        }
-                    }
-
-                    override fun onDestroyActionMode(mode: ActionMode?) {
-                        view?.visibility = View.GONE
-                    }
-                })
+            R.id.input_tweet_send -> {
+                // TODO: send tweet
                 true
             }
             else -> super.onOptionsItemSelected(item)
