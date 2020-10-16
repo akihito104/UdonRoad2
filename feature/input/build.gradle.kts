@@ -48,14 +48,21 @@ android {
 dependencies {
     implementation(fileTree("dir" to "libs", "include" to listOf("*.jar")))
     implementation(project(":feature:media"))
+    implementation(project(":data:repository"))
     implementation(project(":model"))
     implementation(Libs.KOTLIN_STDLIB_JDK)
     implementation(Libs.ANDROIDX_CORE_KTX)
     implementation(Libs.ANDROIDX_APPCOMPAT)
+    implementation(Libs.ANDROIDX_LIFECYCLE_LIVEDATA_KTX)
     implementation(Libs.ANDROIDX_CONSTRAINT_LAYOUT)
     implementation(Libs.MATERIAL_DESIGN)
     implementation(Libs.ANDROIDX_NAVIGATION_FRAGMENT_KTX)
     implementation(Libs.ANDROIDX_NAVIGATION_UI_KTX)
+
+    implementation(Libs.DAGGER_ANDROID)
+    implementation(Libs.DAGGER_ANDROID_SUPPORT)
+    kapt(Libs.DAGGER_COMPILER)
+    kapt(Libs.DAGGER_ANDROID_PROCESSOR)
 
     testImplementation(Libs.JUNIT)
 

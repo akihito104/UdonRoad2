@@ -18,6 +18,7 @@ package com.freshdigitable.udonroad2.di
 
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModel
+import com.freshdigitable.udonroad2.input.TweetInputFragmentModule
 import com.freshdigitable.udonroad2.main.MainActivity
 import com.freshdigitable.udonroad2.main.MainActivityNavigationDelegate
 import com.freshdigitable.udonroad2.main.MainActivityViewStates
@@ -33,7 +34,8 @@ import dagger.multibindings.IntoMap
 @Module(
     includes = [
         ListItemFragmentModule::class,
-        TweetDetailFragmentModule::class
+        TweetDetailFragmentModule::class,
+        TweetInputFragmentModule::class
     ]
 )
 interface MainActivityModule {
@@ -51,7 +53,7 @@ interface MainActivityModule {
         @ViewModelKey(MainViewModel::class)
         fun provideMainViewModel(
             navigator: EventDispatcher,
-            viewState: MainActivityViewStates
+            viewState: MainActivityViewStates,
         ): ViewModel = MainViewModel(navigator, viewState)
     }
 }

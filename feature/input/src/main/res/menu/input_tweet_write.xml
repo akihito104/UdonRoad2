@@ -20,7 +20,19 @@
     <item
         android:id="@+id/input_tweet_write"
         android:icon="@drawable/selector_write_tweet"
-        android:title="@string/label_input_send_tweet"
+        android:title="@string/label_input_write_tweet"
         app:showAsAction="always"
+        />
+    <item
+        android:id="@+id/input_tweet_send"
+        android:icon="@drawable/selector_send_tweet"
+        android:title="@string/label_input_send_tweet"
+        app:showAsAction="ifRoom"
+        />
+    <item
+        android:id="@+id/input_tweet_error"
+        android:icon="@drawable/ic_send_error"
+        android:title="retry"
+        app:showAsAction="ifRoom"
         />
 </menu>

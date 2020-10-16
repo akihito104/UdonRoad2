@@ -10,9 +10,8 @@ import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import dagger.Module
 import dagger.Provides
-import javax.inject.Inject
 
-class TweetRepository @Inject constructor(
+class TweetRepository(
     private val dao: TweetDao,
     private val restClient: TweetApiClient,
 ) {

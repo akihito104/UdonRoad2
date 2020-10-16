@@ -26,7 +26,7 @@
         tools:layout="@layout/fragment_tweet_input"
         >
         <argument
-            android:name="hasOptionsMenu"
+            android:name="collapsable"
             app:argType="boolean"
             />
     </fragment>

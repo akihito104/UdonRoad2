@@ -19,6 +19,7 @@ package com.freshdigitable.udonroad2.main
 import android.view.MenuItem
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
+import com.freshdigitable.udonroad2.input.TweetInputEvent
 import com.freshdigitable.udonroad2.model.app.navigation.CommonEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.shortcut.ShortcutViewModel
@@ -28,7 +29,7 @@ import timber.log.Timber
 
 class MainViewModel(
     private val eventDispatcher: EventDispatcher,
-    private val viewStates: MainActivityViewStates
+    private val viewStates: MainActivityViewStates,
 ) : ViewModel(), ShortcutViewModel {
 
     override val isFabVisible: LiveData<Boolean> = viewStates.isFabVisible
@@ -42,6 +43,10 @@ class MainViewModel(
         val selected =
             requireNotNull(currentState?.selectedItem) { "selectedItem should not be null." }
         eventDispatcher.postSelectedItemShortcutEvent(item, selected)
+    }
+
+    fun onTweetSendClicked() {
+        eventDispatcher.postEvent(TweetInputEvent.Send)
     }
 
     fun onBackPressed() {

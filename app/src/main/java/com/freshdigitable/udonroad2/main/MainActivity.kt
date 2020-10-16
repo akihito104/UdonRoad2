@@ -75,7 +75,7 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
         supportFragmentManager.commit {
             add<TweetInputFragment>(
                 binding.mainInputContainer.id,
-                args = TweetInputFragmentArgs(false).toBundle()
+                args = TweetInputFragmentArgs(true).toBundle()
             )
         }
 
@@ -93,12 +93,6 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
         }
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        super.onCreateOptionsMenu(menu)
-        menuInflater.inflate(R.menu.input_tweet_write, menu)
-        return true
-    }
-
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.input_tweet_write -> {
@@ -107,8 +101,14 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
                 view.setupExpendAnim()
                 startSupportActionMode(object : ActionMode.Callback {
                     override fun onCreateActionMode(mode: ActionMode?, menu: Menu?): Boolean {
-                        mode?.setTitle(R.string.title_input_send_tweet)
-                        mode?.menuInflater?.inflate(R.menu.input_tweet_send, menu)
+                        mode?.apply {
+                            setTitle(R.string.title_input_send_tweet)
+                            menuInflater.inflate(R.menu.input_tweet_write, menu)
+                        }
+                        menu?.apply {
+                            removeItem(R.id.input_tweet_write)
+                            removeItem(R.id.input_tweet_error)
+                        }
                         return true
                     }
 
@@ -118,7 +118,7 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
                     override fun onActionItemClicked(mode: ActionMode?, item: MenuItem?): Boolean {
                         return when (item?.itemId) {
                             id.input_tweet_send -> {
-                                // TODO: send tweet
+                                viewModel.onTweetSendClicked()
                                 mode?.finish()
                                 true
                             }
