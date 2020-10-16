@@ -30,7 +30,7 @@ import org.threeten.bp.Instant
 @DatabaseView(
     viewName = "view_tweet",
     value =
-    """
+        """
     SELECT
      t.id, text, created_at, is_retweeted, retweet_count, is_favorited, favorite_count, source, 
      u.id AS user_id,
@@ -110,7 +110,7 @@ internal data class Tweet(
 @DatabaseView(
     viewName = "tweet_list_item",
     value =
-    """
+        """
     WITH
     original AS (
     SELECT

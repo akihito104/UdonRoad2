@@ -109,14 +109,16 @@ class MainActivityInstTest {
             val countingIdlingResource = CountingIdlingResource("load_timeline")
             twitterRobot.setupSetOAuthAccessToken { any() }
             val user = createUser(2000, "user2000", "_user2000")
-            twitterRobot.setupGetHomeTimeline(response = (0 until 10).map {
-                createStatus(
-                    100L + it,
-                    "tweet: $it",
-                    user,
-                    Date(100000L + it)
-                )
-            }) {
+            twitterRobot.setupGetHomeTimeline(
+                response = (0 until 10).map {
+                    createStatus(
+                        100L + it,
+                        "tweet: $it",
+                        user,
+                        Date(100000L + it)
+                    )
+                }
+            ) {
                 countingIdlingResource.decrement()
             }
             twitterRobot.setupGetHomeTimeline({ any() }, emptyList())

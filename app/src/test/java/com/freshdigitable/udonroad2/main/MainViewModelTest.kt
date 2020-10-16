@@ -55,9 +55,11 @@ class MainViewModelTest {
 
             // verify
             verify {
-                stateModelRule.navDelegate.dispatchNavHostNavigate(match {
-                    it is TimelineEvent.Navigate.Timeline && it.owner.query == QueryType.Oauth
-                })
+                stateModelRule.navDelegate.dispatchNavHostNavigate(
+                    match {
+                        it is TimelineEvent.Navigate.Timeline && it.owner.query == QueryType.Oauth
+                    }
+                )
             }
         }
     }

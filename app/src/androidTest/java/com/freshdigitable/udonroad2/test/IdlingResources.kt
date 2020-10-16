@@ -58,11 +58,14 @@ inline fun <reified T : Activity> waitForActivity(
     crossinline onActivity: (T) -> Boolean = { true },
     noinline afterTask: () -> Unit
 ) {
-    waitWithIdlingResource(name, {
-        val a =
-            ActivityLifecycleMonitorRegistry.getInstance().getActivitiesInStage(stage).firstOrNull {
-                it is T
-            } ?: return@waitWithIdlingResource false
-        return@waitWithIdlingResource onActivity(a as T)
-    }, afterTask)
+    waitWithIdlingResource(
+        name,
+        {
+            val a = ActivityLifecycleMonitorRegistry.getInstance()
+                .getActivitiesInStage(stage)
+                .firstOrNull { it is T } ?: return@waitWithIdlingResource false
+            return@waitWithIdlingResource onActivity(a as T)
+        },
+        afterTask
+    )
 }

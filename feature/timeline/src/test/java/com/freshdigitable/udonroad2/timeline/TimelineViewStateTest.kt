@@ -188,9 +188,9 @@ class TimelineViewStateTest {
             // verify
             assertThat(sut.selectedItemId.value?.originalId).isEqualTo(TweetId(200L))
             verify {
-                activityEventDelegate.dispatchFeedbackMessage(match {
-                    it.messageRes == R.string.msg_already_rt
-                })
+                activityEventDelegate.dispatchFeedbackMessage(
+                    match { it.messageRes == R.string.msg_already_rt }
+                )
             }
         }
 }

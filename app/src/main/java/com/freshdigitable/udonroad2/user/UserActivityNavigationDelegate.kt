@@ -14,7 +14,8 @@ import com.freshdigitable.udonroad2.timeline.TimelineEvent
 
 class UserActivityNavigationDelegate(
     userActivity: UserActivity,
-) : NavigationDelegate, ActivityEventDelegate,
+) : NavigationDelegate,
+    ActivityEventDelegate,
     FeedbackMessageDelegate by SnackbarFeedbackMessageDelegate(
         weakRef(userActivity) { it.findViewById<View>(R.id.user_pager).parent as View }
     ) {

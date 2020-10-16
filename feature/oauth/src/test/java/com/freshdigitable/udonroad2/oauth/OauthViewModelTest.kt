@@ -104,10 +104,12 @@ class OauthViewModelTest {
             .assertValueAt(1) { actual -> actual is OauthEvent.PinTextChanged }
             .assertValueAt(2) { actual -> actual is OauthEvent.SendPinClicked }
         verify {
-            activityEventDelegate.dispatchNavHostNavigate(match {
-                it is TimelineEvent.Navigate.Timeline &&
-                    it.owner.query is QueryType.TweetQueryType.Timeline
-            })
+            activityEventDelegate.dispatchNavHostNavigate(
+                match {
+                    it is TimelineEvent.Navigate.Timeline &&
+                        it.owner.query is QueryType.TweetQueryType.Timeline
+                }
+            )
         }
         assertThat(sut.sendPinButtonEnabled.value).isFalse()
     }

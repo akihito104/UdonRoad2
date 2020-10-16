@@ -281,10 +281,12 @@ class UserViewModelTest {
             val menuSet: Iterable<RelationshipMenu>
         ) {
             override fun toString(): String {
-                return "relationship:" + (givenRelationship?.let {
-                    "{following:${it.following}, blocking:${it.blocking}, " +
-                        "muting:${it.muting}, wantRetweets:${it.wantRetweets}}"
-                } ?: "null") +
+                return "relationship:" + (
+                    givenRelationship?.let {
+                        "{following:${it.following}, blocking:${it.blocking}, " +
+                            "muting:${it.muting}, wantRetweets:${it.wantRetweets}}"
+                    } ?: "null"
+                    ) +
                     ", menuSet:$menuSet"
             }
         }

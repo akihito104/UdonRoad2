@@ -52,9 +52,9 @@ class MainActivityViewStatesTest {
 
         // verify
         verify {
-            navDelegate.dispatchNavHostNavigate(match {
-                it is TimelineEvent.Navigate.Timeline && it.owner.query is QueryType.Oauth
-            })
+            navDelegate.dispatchNavHostNavigate(
+                match { it is TimelineEvent.Navigate.Timeline && it.owner.query is QueryType.Oauth }
+            )
         }
     }
 
@@ -68,10 +68,12 @@ class MainActivityViewStatesTest {
 
         // verify
         verify {
-            navDelegate.dispatchNavHostNavigate(match {
-                it is TimelineEvent.Navigate.Timeline &&
-                    it.owner.query is QueryType.TweetQueryType.Timeline
-            })
+            navDelegate.dispatchNavHostNavigate(
+                match {
+                    it is TimelineEvent.Navigate.Timeline &&
+                        it.owner.query is QueryType.TweetQueryType.Timeline
+                }
+            )
         }
     }
 
@@ -85,9 +87,9 @@ class MainActivityViewStatesTest {
 
         // verify
         verify {
-            navDelegate.dispatchNavHostNavigate(match {
-                it is TimelineEvent.Navigate.Timeline && it.owner.query == QueryType.Oauth
-            })
+            navDelegate.dispatchNavHostNavigate(
+                match { it is TimelineEvent.Navigate.Timeline && it.owner.query == QueryType.Oauth }
+            )
         }
     }
 
