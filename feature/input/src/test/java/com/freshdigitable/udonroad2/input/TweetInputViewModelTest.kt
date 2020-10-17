@@ -20,65 +20,93 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.freshdigitable.udonroad2.data.impl.TweetInputRepository
 import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
+import com.freshdigitable.udonroad2.test_common.MockVerified
 import com.freshdigitable.udonroad2.test_common.jvm.CoroutineTestRule
 import com.google.common.truth.Truth.assertThat
-import io.mockk.every
-import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.Rule
 import org.junit.Test
+import org.junit.experimental.runners.Enclosed
 import org.junit.rules.RuleChain
+import org.junit.rules.TestWatcher
+import org.junit.runner.Description
+import org.junit.runner.RunWith
+import org.junit.runners.model.Statement
 
 @ExperimentalCoroutinesApi
+@RunWith(Enclosed::class)
 class TweetInputViewModelTest {
-    private val coroutineTestRule = CoroutineTestRule()
 
-    @get:Rule
-    val rule: RuleChain = RuleChain.outerRule(coroutineTestRule)
-        .around(InstantTaskExecutorRule())
+    class WhenCollapsibleIsTrue {
+        @get:Rule
+        val rule = TweetInputViewModelRule(collapsible = true)
 
-    @Test
-    fun initialValue_collapsableIsTrue_then_menuItemIsWriteEnabled() {
-        // setup
-        val repository = mockk<TweetInputRepository>().apply {
-            every { text } returns MutableStateFlow("")
+        @Test
+        fun initialValue(): Unit = with(rule) {
+            // verify
+            assertThat(sut).isNotNull()
+            assertThat(sut.text.value).isEmpty()
+            assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.WRITE_ENABLED)
+            assertThat(sut.isVisible.value).isFalse()
         }
 
-        // exercise
-        val sut = TweetInputViewModel(
-            true,
-            EventDispatcher(),
-            repository,
-            AppExecutor(dispatcher = coroutineTestRule.coroutineContextProvider)
-        )
-        listOf(sut.text, sut.menuItem).forEach { it.observeForever {} }
+        @Test
+        fun onWriteClicked_then_isVisibleIsTrue(): Unit = with(rule) {
+            // exercise
+            sut.onWriteClicked()
 
-        // verify
-        assertThat(sut).isNotNull()
-        assertThat(sut.text.value).isEmpty()
-        assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.WRITE_ENABLED)
+            // verify
+            assertThat(sut.text.value).isEmpty()
+            assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.SEND_DISABLED)
+            assertThat(sut.isVisible.value).isTrue()
+        }
     }
 
-    @Test
-    fun initialValue_collapsableIsFalse_then_menuItemIsSendDisabled() {
-        // setup
-        val repository = mockk<TweetInputRepository>().apply {
-            every { text } returns MutableStateFlow("")
-        }
+    class WhenCollapsibleIsFalse {
+        @get:Rule
+        val rule = TweetInputViewModelRule(collapsible = false)
 
-        // exercise
-        val sut = TweetInputViewModel(
-            false,
+        @Test
+        fun initialValue(): Unit = with(rule) {
+            // verify
+            assertThat(sut).isNotNull()
+            assertThat(sut.text.value).isEmpty()
+            assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.SEND_DISABLED)
+            assertThat(sut.isVisible.value).isTrue()
+        }
+    }
+}
+
+@ExperimentalCoroutinesApi
+class TweetInputViewModelRule(
+    collapsible: Boolean
+) : TestWatcher() {
+    private val coroutineTestRule = CoroutineTestRule()
+    private val repository = MockVerified.create<TweetInputRepository>().apply {
+        setupResponseWithVerify({ mock.text }, MutableStateFlow(""))
+    }
+
+    val sut: TweetInputViewModel by lazy {
+        TweetInputViewModel(
+            collapsible,
             EventDispatcher(),
-            repository,
+            repository.mock,
             AppExecutor(dispatcher = coroutineTestRule.coroutineContextProvider)
         )
-        listOf(sut.text, sut.menuItem).forEach { it.observeForever {} }
+    }
 
-        // verify
-        assertThat(sut).isNotNull()
-        assertThat(sut.text.value).isEmpty()
-        assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.SEND_DISABLED)
+    override fun starting(description: Description?) {
+        super.starting(description)
+        with(sut) {
+            listOf(isVisible, menuItem, text).forEach { it.observeForever { } }
+        }
+    }
+
+    override fun apply(base: Statement?, description: Description?): Statement {
+        return RuleChain.outerRule(coroutineTestRule)
+            .around(InstantTaskExecutorRule())
+            .around(repository)
+            .apply(super.apply(base, description), description)
     }
 }

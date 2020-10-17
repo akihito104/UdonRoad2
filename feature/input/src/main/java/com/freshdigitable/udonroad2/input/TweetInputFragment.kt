@@ -41,7 +41,7 @@ class TweetInputFragment : Fragment() {
     @Inject
     lateinit var viewModelProviderFactory: TweetInputViewModelComponent.Factory
     private val viewModel: TweetInputViewModel by viewModels {
-        viewModelProviderFactory.create(args.collapsable)
+        viewModelProviderFactory.create(args.collapsible)
             .viewModelProviderFactory
     }
 
@@ -107,6 +107,10 @@ class TweetInputFragment : Fragment() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
+            R.id.input_tweet_write -> {
+                viewModel.onWriteClicked()
+                true
+            }
             R.id.input_tweet_send -> {
                 viewModel.onSendClicked()
                 true

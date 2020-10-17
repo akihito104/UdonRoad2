@@ -20,6 +20,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
+import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
 import com.freshdigitable.udonroad2.data.impl.TweetInputRepository
 import com.freshdigitable.udonroad2.model.app.AppExecutor
@@ -32,21 +33,22 @@ import java.io.IOException
 import javax.inject.Inject
 
 class TweetInputViewModel @Inject constructor(
-    collapsable: Boolean,
-    eventDispatcher: EventDispatcher,
+    collapsible: Boolean,
+    private val eventDispatcher: EventDispatcher,
     private val repository: TweetInputRepository,
     private val executor: AppExecutor,
 ) : ViewModel() {
 
-    private val disposable = CompositeDisposable(
-        eventDispatcher.toAction<TweetInputEvent.Send>().subscribe {
-            onSendClicked()
-        }
-    )
-
     private val _state = MutableLiveData(
-        if (collapsable) TweetInputState.IDLING else TweetInputState.OPENED
+        if (collapsible) TweetInputState.IDLING else TweetInputState.OPENED
     )
+    val isVisible: LiveData<Boolean> = _state.map {
+        when (it) {
+            TweetInputState.OPENED -> true
+            else -> false
+        }
+    }
+
     val text: LiveData<String> = repository.text.asLiveData(executor.dispatcher.mainContext)
     val menuItem: LiveData<InputMenuItem> = merge(_state, text) { s, t ->
         when (s) {
@@ -62,11 +64,28 @@ class TweetInputViewModel @Inject constructor(
         }
     }
 
+    private val disposable = CompositeDisposable(
+        eventDispatcher.toAction<TweetInputEvent.Open>().subscribe {
+            _state.value = TweetInputState.OPENED
+        },
+        eventDispatcher.toAction<TweetInputEvent.Send>().subscribe {
+            postTweet()
+        },
+    )
+
+    fun onWriteClicked() {
+        eventDispatcher.postEvent(TweetInputEvent.Open)
+    }
+
     fun onTweetTextChanged(text: String) {
         repository.updateText(text)
     }
 
     fun onSendClicked() {
+        eventDispatcher.postEvent(TweetInputEvent.Send)
+    }
+
+    private fun postTweet() {
         _state.value = TweetInputState.SENDING
         viewModelScope.launch(executor.dispatcher.mainContext) {
             try {
