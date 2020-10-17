@@ -61,6 +61,87 @@ class TweetInputViewModelTest {
             assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.SEND_DISABLED)
             assertThat(sut.isVisible.value).isTrue()
         }
+
+        @Test
+        fun onCloseClicked_then_isVisibleIsFalse(): Unit = with(rule) {
+            // setup
+            setupClear()
+            sut.onWriteClicked()
+
+            // exercise
+            sut.onCloseClicked()
+
+            // verify
+            assertThat(sut.text.value).isEmpty()
+            assertThat(sut.isVisible.value).isFalse()
+            assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.WRITE_ENABLED)
+        }
+
+        @Test
+        fun onTweetTextChanged_addedText_then_menuItemIsSendEnabled(): Unit = with(rule) {
+            // setup
+            setupUpdateText("a")
+            sut.onWriteClicked()
+
+            // exercise
+            sut.onTweetTextChanged("a")
+
+            // verify
+            assertThat(sut.text.value).isEqualTo("a")
+            assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.SEND_ENABLED)
+            assertThat(sut.isVisible.value).isTrue()
+        }
+
+        @Test
+        fun onCloseClicked_textAdded_then_textCleared(): Unit = with(rule) {
+            // setup
+            setupUpdateText("a")
+            setupClear()
+            sut.onWriteClicked()
+            sut.onTweetTextChanged("a")
+
+            // exercise
+            sut.onCloseClicked()
+
+            // verify
+            assertThat(sut.text.value).isEmpty()
+            assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.WRITE_ENABLED)
+            assertThat(sut.isVisible.value).isFalse()
+        }
+
+        @Test
+        fun onTweetTextChanged_removedText_then_menuItemIsSendDisabled(): Unit = with(rule) {
+            // setup
+            setupUpdateText("")
+            setupUpdateText("a")
+            sut.onWriteClicked()
+
+            // exercise
+            sut.onTweetTextChanged("a")
+            sut.onTweetTextChanged("")
+
+            // verify
+            assertThat(sut.text.value).isEmpty()
+            assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.SEND_DISABLED)
+            assertThat(sut.isVisible.value).isTrue()
+        }
+
+        @Test
+        fun onSendClicked_whenSendIsSucceeded_then_menuItemIsWriteEnabled(): Unit = with(rule) {
+            // setup
+            setupUpdateText("a")
+            setupPost()
+            sut.onWriteClicked()
+            sut.onTweetTextChanged("a")
+
+            // exercise
+            sut.onSendClicked()
+
+            // verify
+            assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.WRITE_ENABLED)
+            assertThat(sut.text.value).isEmpty()
+            assertThat(sut.isVisible.value).isFalse()
+        }
     }
 
     class WhenCollapsibleIsFalse {
@@ -83,8 +164,9 @@ class TweetInputViewModelRule(
     collapsible: Boolean
 ) : TestWatcher() {
     private val coroutineTestRule = CoroutineTestRule()
+    private val textFlow = MutableStateFlow("")
     private val repository = MockVerified.create<TweetInputRepository>().apply {
-        setupResponseWithVerify({ mock.text }, MutableStateFlow(""))
+        setupResponseWithVerify({ mock.text }, textFlow)
     }
 
     val sut: TweetInputViewModel by lazy {
@@ -101,6 +183,27 @@ class TweetInputViewModelRule(
         with(sut) {
             listOf(isVisible, menuItem, text).forEach { it.observeForever { } }
         }
+    }
+
+    fun setupUpdateText(text: String) {
+        repository.setupResponseWithVerify(
+            { repository.mock.updateText(text) },
+            Unit,
+            alsoOnAnswer = { textFlow.value = text }
+        )
+    }
+
+    fun setupPost() {
+        repository.coSetupResponseWithVerify({ repository.mock.post() }, Unit)
+        setupClear()
+    }
+
+    fun setupClear() {
+        repository.setupResponseWithVerify(
+            { repository.mock.clear() },
+            Unit,
+            alsoOnAnswer = { textFlow.value = "" }
+        )
     }
 
     override fun apply(base: Statement?, description: Description?): Statement {

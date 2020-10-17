@@ -71,6 +71,10 @@ class TweetInputViewModel @Inject constructor(
         eventDispatcher.toAction<TweetInputEvent.Send>().subscribe {
             postTweet()
         },
+        eventDispatcher.toAction<TweetInputEvent.Close>().subscribe {
+            _state.value = TweetInputState.IDLING
+            repository.clear()
+        }
     )
 
     fun onWriteClicked() {
@@ -97,6 +101,10 @@ class TweetInputViewModel @Inject constructor(
                 _state.value = TweetInputState.FAILED
             }
         }
+    }
+
+    fun onCloseClicked() {
+        eventDispatcher.postEvent(TweetInputEvent.Close)
     }
 
     override fun onCleared() {

@@ -115,6 +115,10 @@ class TweetInputFragment : Fragment() {
                 viewModel.onSendClicked()
                 true
             }
+            android.R.id.closeButton -> {
+                viewModel.onCloseClicked()
+                true
+            }
             else -> super.onOptionsItemSelected(item)
         }
     }
