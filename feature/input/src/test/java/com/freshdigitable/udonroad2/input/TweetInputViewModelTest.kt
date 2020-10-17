@@ -19,6 +19,7 @@ package com.freshdigitable.udonroad2.input
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.freshdigitable.udonroad2.data.impl.TweetInputRepository
 import com.freshdigitable.udonroad2.model.app.AppExecutor
+import com.freshdigitable.udonroad2.model.app.AppTwitterException
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.test_common.MockVerified
 import com.freshdigitable.udonroad2.test_common.jvm.CoroutineTestRule
@@ -142,6 +143,23 @@ class TweetInputViewModelTest {
             assertThat(sut.text.value).isEmpty()
             assertThat(sut.isVisible.value).isFalse()
         }
+
+        @Test
+        fun onSendClicked_whenSendIsFailed_then_menuItemIsRetryEnabled(): Unit = with(rule) {
+            // setup
+            setupUpdateText("a")
+            setupPost(withError = AppTwitterException(403, 123))
+            sut.onWriteClicked()
+            sut.onTweetTextChanged("a")
+
+            // exercise
+            sut.onSendClicked()
+
+            // verify
+            assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.RETRY_ENABLED)
+            assertThat(sut.text.value).isEqualTo("a")
+            assertThat(sut.isVisible.value).isFalse()
+        }
     }
 
     class WhenCollapsibleIsFalse {
@@ -193,9 +211,13 @@ class TweetInputViewModelRule(
         )
     }
 
-    fun setupPost() {
-        repository.coSetupResponseWithVerify({ repository.mock.post() }, Unit)
-        setupClear()
+    fun setupPost(withError: Throwable? = null) {
+        if (withError == null) {
+            repository.coSetupResponseWithVerify({ repository.mock.post() }, Unit)
+            setupClear()
+        } else {
+            repository.coSetupThrowWithVerify({ repository.mock.post() }, withError)
+        }
     }
 
     fun setupClear() {

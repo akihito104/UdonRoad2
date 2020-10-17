@@ -24,12 +24,12 @@ import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
 import com.freshdigitable.udonroad2.data.impl.TweetInputRepository
 import com.freshdigitable.udonroad2.model.app.AppExecutor
+import com.freshdigitable.udonroad2.model.app.AppTwitterException
 import com.freshdigitable.udonroad2.model.app.ext.merge
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
 import io.reactivex.disposables.CompositeDisposable
 import kotlinx.coroutines.launch
-import java.io.IOException
 import javax.inject.Inject
 
 class TweetInputViewModel @Inject constructor(
@@ -97,7 +97,7 @@ class TweetInputViewModel @Inject constructor(
                 _state.value = TweetInputState.SUCCEEDED
                 repository.clear()
                 _state.value = TweetInputState.IDLING
-            } catch (e: IOException) {
+            } catch (e: AppTwitterException) {
                 _state.value = TweetInputState.FAILED
             }
         }
