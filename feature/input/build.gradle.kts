@@ -64,7 +64,15 @@ dependencies {
     kapt(Libs.DAGGER_COMPILER)
     kapt(Libs.DAGGER_ANDROID_PROCESSOR)
 
+    testImplementation(project(":test-common-jvm"))
     testImplementation(Libs.JUNIT)
+    testImplementation(Libs.ANDROIDX_TEST_CORE)
+    testImplementation(Libs.ANDROIDX_TEST_ARCH_CORE)
+    testImplementation(Libs.ANDROIDX_TEST_EXT_JUNIT)
+    testImplementation(Libs.ANDROIDX_TEST_RULES)
+    testImplementation(Libs.ANDROIDX_TEST_EXT_TRUTH)
+    testImplementation(Libs.TRUTH)
+    testImplementation(Libs.MOCKK)
 
     androidTestImplementation(Libs.ANDROIDX_TEST_EXT_JUNIT)
     androidTestImplementation(Libs.ANDROIDX_TEST_ESPRESSO)

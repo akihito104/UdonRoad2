@@ -28,30 +28,11 @@ import androidx.core.widget.doAfterTextChanged
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.asLiveData
-import androidx.lifecycle.map
-import androidx.lifecycle.viewModelScope
 import androidx.navigation.fragment.navArgs
-import com.freshdigitable.udonroad2.data.impl.TweetInputRepository
 import com.freshdigitable.udonroad2.input.databinding.FragmentTweetInputBinding
-import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
+import com.freshdigitable.udonroad2.input.di.TweetInputViewModelComponent
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
-import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
-import com.freshdigitable.udonroad2.model.app.navigation.toAction
-import dagger.Binds
-import dagger.BindsInstance
-import dagger.Module
-import dagger.Subcomponent
-import dagger.android.ContributesAndroidInjector
 import dagger.android.support.AndroidSupportInjection
-import dagger.multibindings.IntoMap
-import io.reactivex.disposables.CompositeDisposable
-import kotlinx.coroutines.launch
-import java.io.IOException
 import javax.inject.Inject
 
 class TweetInputFragment : Fragment() {
@@ -162,71 +143,4 @@ sealed class TweetInputEvent : AppEvent {
     object Open : TweetInputEvent()
     object Close : TweetInputEvent()
     object Send : TweetInputEvent()
-}
-
-class TweetInputViewModel @Inject constructor(
-    collapsable: Boolean,
-    eventDispatcher: EventDispatcher,
-    private val repository: TweetInputRepository
-) : ViewModel() {
-
-    private val disposable = CompositeDisposable(
-        eventDispatcher.toAction<TweetInputEvent.Send>().subscribe {
-            onSendClicked()
-        }
-    )
-
-    private val _state = MutableLiveData(
-        if (collapsable) TweetInputState.IDLING else TweetInputState.OPENED
-    )
-    val menuItem: LiveData<InputMenuItem> = _state.map { it.toMenuItem() }
-    val text: LiveData<String> = repository.text.asLiveData()
-
-    fun onTweetTextChanged(text: String) {
-        repository.updateText(text)
-    }
-
-    fun onSendClicked() {
-        _state.value = TweetInputState.SENDING
-        viewModelScope.launch {
-            try {
-                repository.post()
-                _state.value = TweetInputState.SUCCEEDED
-                repository.clear()
-                _state.value = TweetInputState.IDLING
-            } catch (e: IOException) {
-                _state.value = TweetInputState.FAILED
-            }
-        }
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        disposable.clear()
-    }
-}
-
-@Module
-interface TweetInputViewModelModule {
-    @Binds
-    @IntoMap
-    @ViewModelKey(TweetInputViewModel::class)
-    fun bindTweetInputViewModel(viewModel: TweetInputViewModel): ViewModel
-
-}
-
-@Subcomponent(modules = [TweetInputViewModelModule::class])
-interface TweetInputViewModelComponent {
-    @Subcomponent.Factory
-    interface Factory {
-        fun create(@BindsInstance collapsable: Boolean): TweetInputViewModelComponent
-    }
-
-    val viewModelProviderFactory: ViewModelProvider.Factory
-}
-
-@Module(subcomponents = [TweetInputViewModelComponent::class])
-interface TweetInputFragmentModule {
-    @ContributesAndroidInjector
-    fun contributeTweetInputFragment(): TweetInputFragment
 }
