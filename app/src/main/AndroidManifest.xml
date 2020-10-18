@@ -20,7 +20,7 @@
 
         <activity
             android:name=".main.MainActivity"
-            android:theme="@style/AppTheme"
+            android:theme="@style/AppTheme.NoActionBar"
             />
 
         <activity-alias

@@ -53,6 +53,7 @@ dependencies {
     implementation project(':feature:media')
     implementation project(':feature:oauth')
     implementation project(":feature:shortcut")
+    implementation project(":feature:input")
     implementation project(':data:repository')
     implementation project(':data:db')
     implementation project(':data:restclient')

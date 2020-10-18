@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?><!--
-  ~ Copyright (c) 2018. Matsuda, Akihit (akihito104)
+  ~ Copyright (c) 2020. Matsuda, Akihit (akihito104)
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -14,4 +14,8 @@
   ~ limitations under the License.
   -->
 
-<resources></resources>
+<resources>
+    <string name="title_input_send_tweet">いまどうしてる?</string>
+    <string name="label_input_write_tweet">ツイートする</string>
+    <string name="label_input_send_tweet">送信する</string>
+</resources>

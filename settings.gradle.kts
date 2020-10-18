@@ -4,6 +4,7 @@ include(
     ":feature:media",
     ":feature:timeline",
     ":feature:shortcut",
+    ":feature:input",
     ":candysh",
     ":data:db",
     ":data:restclient",

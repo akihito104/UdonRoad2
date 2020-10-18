@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?><!--
-  ~ Copyright (c) 2018. Matsuda, Akihit (akihito104)
+  ~ Copyright (c) 2020. Matsuda, Akihit (akihito104)
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -14,4 +14,20 @@
   ~ limitations under the License.
   -->
 
-<resources></resources>
+<navigation
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_input_tweet"
+    >
+    <fragment
+        android:name="com.freshdigitable.udonroad2.input.TweetInputFragment"
+        android:id="@+id/fragment_tweetInput"
+        tools:layout="@layout/fragment_tweet_input"
+        >
+        <argument
+            android:name="hasOptionsMenu"
+            app:argType="boolean"
+            />
+    </fragment>
+</navigation>
