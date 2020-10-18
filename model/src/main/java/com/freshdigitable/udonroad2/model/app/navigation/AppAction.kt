@@ -25,6 +25,7 @@ import io.reactivex.BackpressureStrategy
 import io.reactivex.Observable
 import io.reactivex.subjects.BehaviorSubject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.channels.ProducerScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx2.rxObservable
 import kotlin.coroutines.CoroutineContext
@@ -54,6 +55,16 @@ inline fun <E : AppEvent, R> AppAction<E>.suspendMap(
         val result = kotlin.runCatching { block(event) }
         channel.send(EventResult(event, result))
     }
+}
+
+@ExperimentalCoroutinesApi
+inline fun <E : AppEvent, R> AppAction<E>.suspendCreate(
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    crossinline block: suspend ProducerScope<Result<R>>.() -> Unit
+): AppAction<EventResult<E, R>> = flatMap { event ->
+    rxObservable(coroutineContext) {
+        block()
+    }.map { EventResult(event, it) }
 }
 
 inline fun <E> AppViewState<out E?>.onNull(

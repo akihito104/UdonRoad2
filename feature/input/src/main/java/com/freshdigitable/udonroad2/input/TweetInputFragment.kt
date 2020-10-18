@@ -31,7 +31,6 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.navArgs
 import com.freshdigitable.udonroad2.input.databinding.FragmentTweetInputBinding
 import com.freshdigitable.udonroad2.input.di.TweetInputViewModelComponent
-import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import dagger.android.support.AndroidSupportInjection
 import javax.inject.Inject
 
@@ -145,10 +144,4 @@ fun TweetInputState.toMenuItem(): InputMenuItem {
         TweetInputState.SUCCEEDED -> InputMenuItem.WRITE_DISABLED
         TweetInputState.FAILED -> InputMenuItem.RETRY_ENABLED
     }
-}
-
-sealed class TweetInputEvent : AppEvent {
-    object Open : TweetInputEvent()
-    object Close : TweetInputEvent()
-    object Send : TweetInputEvent()
 }
