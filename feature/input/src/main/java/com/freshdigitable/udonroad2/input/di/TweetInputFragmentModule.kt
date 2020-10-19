@@ -20,6 +20,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.freshdigitable.udonroad2.input.TweetInputFragment
 import com.freshdigitable.udonroad2.input.TweetInputViewModel
+import com.freshdigitable.udonroad2.model.app.di.FragmentScope
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
 import dagger.Binds
 import dagger.BindsInstance
@@ -49,6 +50,7 @@ interface TweetInputViewModelComponent {
 
 @Module(subcomponents = [TweetInputViewModelComponent::class])
 interface TweetInputFragmentModule {
+    @FragmentScope
     @ContributesAndroidInjector
     fun contributeTweetInputFragment(): TweetInputFragment
 }
