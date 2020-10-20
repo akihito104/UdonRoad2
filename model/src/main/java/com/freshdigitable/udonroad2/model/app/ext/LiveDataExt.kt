@@ -33,3 +33,13 @@ fun <I1, I2, O> merge(
     }
     return res
 }
+
+fun <T> LiveData<T?>.filterNotNull(): LiveData<T> {
+    val res = MediatorLiveData<T>()
+    res.addSource(this) {
+        if (it != null) {
+            res.value = it
+        }
+    }
+    return res
+}

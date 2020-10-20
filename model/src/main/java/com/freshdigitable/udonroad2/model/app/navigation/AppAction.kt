@@ -60,10 +60,10 @@ inline fun <E : AppEvent, R> AppAction<E>.suspendMap(
 @ExperimentalCoroutinesApi
 inline fun <E : AppEvent, R> AppAction<E>.suspendCreate(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
-    crossinline block: suspend ProducerScope<Result<R>>.() -> Unit
+    crossinline block: suspend ProducerScope<Result<R>>.(E) -> Unit
 ): AppAction<EventResult<E, R>> = flatMap { event ->
     rxObservable(coroutineContext) {
-        block()
+        block(event)
     }.map { EventResult(event, it) }
 }
 
