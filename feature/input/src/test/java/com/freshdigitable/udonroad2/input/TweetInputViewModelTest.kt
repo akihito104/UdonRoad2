@@ -18,6 +18,7 @@ package com.freshdigitable.udonroad2.input
 
 import android.text.Editable
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.lifecycle.Observer
 import com.freshdigitable.udonroad2.data.impl.TweetInputRepository
 import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.AppTwitterException
@@ -26,7 +27,11 @@ import com.freshdigitable.udonroad2.test_common.MockVerified
 import com.freshdigitable.udonroad2.test_common.jvm.CoroutineTestRule
 import com.google.common.truth.Truth.assertThat
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
+import io.mockk.spyk
+import io.mockk.verifyOrder
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Rule
 import org.junit.Test
@@ -145,6 +150,14 @@ class TweetInputViewModelTest {
             sut.onSendClicked()
 
             // verify
+            inputTaskObserver.verifyOrderOfOnChanged(
+                InputTaskState.IDLING,
+                InputTaskState.OPENED,
+                InputTaskState.SENDING,
+                InputTaskState.SUCCEEDED,
+                InputTaskState.IDLING
+            )
+            assertThat(sut.inputTask.value).isEqualTo(InputTaskState.IDLING)
             assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.WRITE_ENABLED)
             assertThat(sut.text.value).isEmpty()
             assertThat(sut.isExpanded.value).isFalse()
@@ -161,6 +174,13 @@ class TweetInputViewModelTest {
             sut.onSendClicked()
 
             // verify
+            inputTaskObserver.verifyOrderOfOnChanged(
+                InputTaskState.IDLING,
+                InputTaskState.OPENED,
+                InputTaskState.SENDING,
+                InputTaskState.FAILED
+            )
+            assertThat(sut.inputTask.value).isEqualTo(InputTaskState.FAILED)
             assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.RETRY_ENABLED)
             assertThat(sut.text.value).isEqualTo("a")
             assertThat(sut.isExpanded.value).isFalse()
@@ -188,6 +208,9 @@ class TweetInputViewModelRule(
 ) : TestWatcher() {
     private val coroutineTestRule = CoroutineTestRule()
     private val repository = MockVerified.create<TweetInputRepository>()
+    val inputTaskObserver: Observer<InputTaskState> = spyk<Observer<InputTaskState>>().apply {
+        every { onChanged(any()) } just runs
+    }
 
     val sut: TweetInputViewModel by lazy {
         val eventDispatcher = EventDispatcher()
@@ -205,7 +228,8 @@ class TweetInputViewModelRule(
     override fun starting(description: Description?) {
         super.starting(description)
         with(sut) {
-            listOf(inputTask, isExpanded, menuItem, text).forEach { it.observeForever { } }
+            inputTask.observeForever(inputTaskObserver)
+            listOf(isExpanded, menuItem, text).forEach { it.observeForever { } }
         }
     }
 
@@ -214,6 +238,12 @@ class TweetInputViewModelRule(
             repository.coSetupResponseWithVerify({ repository.mock.post(text) }, Unit)
         } else {
             repository.coSetupThrowWithVerify({ repository.mock.post(text) }, withError)
+        }
+    }
+
+    fun Observer<InputTaskState>.verifyOrderOfOnChanged(vararg state: InputTaskState) {
+        verifyOrder {
+            state.forEach { onChanged(it) }
         }
     }
 
