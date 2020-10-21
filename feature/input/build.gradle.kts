@@ -64,6 +64,8 @@ dependencies {
     kapt(Libs.DAGGER_COMPILER)
     kapt(Libs.DAGGER_ANDROID_PROCESSOR)
 
+    implementation(Libs.TIMBER)
+
     testImplementation(project(":test-common-jvm"))
     testImplementation(Libs.JUNIT)
     testImplementation(Libs.ANDROIDX_TEST_CORE)

@@ -19,7 +19,6 @@ package com.freshdigitable.udonroad2.main
 import android.view.MenuItem
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
-import com.freshdigitable.udonroad2.input.TweetInputEvent
 import com.freshdigitable.udonroad2.model.app.navigation.CommonEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.shortcut.ShortcutViewModel
@@ -45,16 +44,15 @@ class MainViewModel(
         eventDispatcher.postSelectedItemShortcutEvent(item, selected)
     }
 
-    fun onTweetSendClicked() {
-        eventDispatcher.postEvent(TweetInputEvent.Send)
-    }
-
     fun onBackPressed() {
         val selectedItem = currentState?.selectedItem
-        val event = if (selectedItem != null) {
-            TimelineEvent.TweetItemSelection.Unselected(selectedItem.owner)
-        } else {
-            CommonEvent.Back
+        val event = when {
+            selectedItem != null -> {
+                TimelineEvent.TweetItemSelection.Unselected(selectedItem.owner)
+            }
+            else -> {
+                CommonEvent.Back
+            }
         }
         eventDispatcher.postEvent(event)
     }

@@ -16,6 +16,7 @@
 
 package com.freshdigitable.udonroad2.input
 
+import android.animation.ValueAnimator
 import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -24,10 +25,15 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.widget.doAfterTextChanged
+import androidx.core.animation.doOnEnd
+import androidx.core.animation.doOnStart
+import androidx.core.view.doOnPreDraw
+import androidx.core.view.updateLayoutParams
+import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.activityViewModels
+import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import androidx.navigation.fragment.navArgs
 import com.freshdigitable.udonroad2.input.databinding.FragmentTweetInputBinding
 import com.freshdigitable.udonroad2.input.di.TweetInputViewModelComponent
@@ -39,7 +45,7 @@ class TweetInputFragment : Fragment() {
 
     @Inject
     lateinit var viewModelProviderFactory: TweetInputViewModelComponent.Factory
-    private val viewModel: TweetInputViewModel by viewModels {
+    private val viewModel: TweetInputViewModel by activityViewModels {
         viewModelProviderFactory.create(args.collapsible)
             .viewModelProviderFactory
     }
@@ -68,15 +74,9 @@ class TweetInputFragment : Fragment() {
             twName.text = "test"
             twIcon.setImageResource(R.drawable.ic_like)
         } ?: return
+        binding.viewModel = viewModel
+        binding.lifecycleOwner = viewLifecycleOwner
 
-        binding.twIntext.doAfterTextChanged {
-            viewModel.onTweetTextChanged(it?.toString() ?: "")
-        }
-        viewModel.text.observe(viewLifecycleOwner) {
-            if (binding.twIntext.text.toString() != it) {
-                binding.twIntext.setText(it)
-            }
-        }
         viewModel.menuItem.observe(viewLifecycleOwner) {
             requireActivity().invalidateOptionsMenu()
         }
@@ -90,18 +90,7 @@ class TweetInputFragment : Fragment() {
     override fun onPrepareOptionsMenu(menu: Menu) {
         super.onPrepareOptionsMenu(menu)
         val available = viewModel.menuItem.value ?: return
-        InputMenuItem.values().map { it.itemId }.distinct().forEach {
-            val item = menu.findItem(it)
-            when (item.itemId) {
-                available.itemId -> {
-                    item.isVisible = true
-                    item.isEnabled = available.enabled
-                }
-                else -> {
-                    item.isVisible = false
-                }
-            }
-        }
+        menu.prepareItem(available)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -115,15 +104,13 @@ class TweetInputFragment : Fragment() {
                 true
             }
             android.R.id.closeButton -> {
-                viewModel.onCloseClicked()
+                viewModel.onCancelClicked()
                 true
             }
             else -> super.onOptionsItemSelected(item)
         }
     }
 }
-
-enum class TweetInputState { IDLING, OPENED, SENDING, SUCCEEDED, FAILED }
 
 enum class InputMenuItem(
     val itemId: Int,
@@ -136,12 +123,80 @@ enum class InputMenuItem(
     RETRY_ENABLED(R.id.input_tweet_error, true),
 }
 
-fun TweetInputState.toMenuItem(): InputMenuItem {
-    return when (this) {
-        TweetInputState.IDLING -> InputMenuItem.WRITE_ENABLED
-        TweetInputState.OPENED -> InputMenuItem.SEND_ENABLED
-        TweetInputState.SENDING -> InputMenuItem.SEND_DISABLED
-        TweetInputState.SUCCEEDED -> InputMenuItem.WRITE_DISABLED
-        TweetInputState.FAILED -> InputMenuItem.RETRY_ENABLED
+fun Menu.prepareItem(available: InputMenuItem) {
+    InputMenuItem.values().map { it.itemId }.distinct().forEach {
+        val item = findItem(it)
+        when (item.itemId) {
+            available.itemId -> {
+                item.isVisible = true
+                item.isEnabled = available.enabled
+            }
+            else -> {
+                item.isVisible = false
+            }
+        }
     }
+}
+
+@BindingAdapter("isExpanded")
+fun View.expand(isExpanded: Boolean?) {
+    when (isExpanded) {
+        true -> setupExpendAnim()
+        else -> collapseWithAnim()
+    }
+}
+
+private fun View.setupExpendAnim() {
+    measure(
+        View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+        View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+    )
+    when {
+        measuredHeight > 0 -> expandWithAnim()
+        else -> doOnPreDraw { it.expandWithAnim() }
+    }
+}
+
+private fun View.expandWithAnim() {
+    val container = parent as View
+    val h = measuredHeight
+    ValueAnimator.ofInt(-h, 0).apply {
+        duration = 200
+        interpolator = FastOutSlowInInterpolator()
+        doOnStart {
+            this@expandWithAnim.visibility = View.VISIBLE
+        }
+        addUpdateListener {
+            val animValue = it.animatedValue as Int
+            this@expandWithAnim.translationY = animValue.toFloat()
+            container.updateLayoutParams {
+                height = h + animValue
+            }
+        }
+        doOnEnd {
+            this@expandWithAnim.translationY = 0f
+            container.updateLayoutParams {
+                height = ViewGroup.LayoutParams.WRAP_CONTENT
+            }
+        }
+    }.start()
+}
+
+fun View.collapseWithAnim() {
+    val container = parent as View
+    val h = measuredHeight
+    ValueAnimator.ofInt(-h).apply {
+        duration = 200
+        interpolator = FastOutSlowInInterpolator()
+        addUpdateListener {
+            val animValue = it.animatedValue as Int
+            this@collapseWithAnim.translationY = animValue.toFloat()
+            container.updateLayoutParams {
+                height = h + animValue
+            }
+        }
+        doOnEnd {
+            this@collapseWithAnim.visibility = View.GONE
+        }
+    }.start()
 }

@@ -16,35 +16,35 @@
 
 package com.freshdigitable.udonroad2.main
 
-import android.animation.ValueAnimator
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.view.ViewGroup
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
-import androidx.core.animation.doOnEnd
-import androidx.core.animation.doOnStart
-import androidx.core.view.doOnPreDraw
-import androidx.core.view.updateLayoutParams
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.add
 import androidx.fragment.app.commit
-import androidx.interpolator.view.animation.FastOutSlowInInterpolator
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelProvider
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.databinding.ActivityMainBinding
-import com.freshdigitable.udonroad2.input.R.id
+import com.freshdigitable.udonroad2.input.InputTaskState
 import com.freshdigitable.udonroad2.input.TweetInputFragment
 import com.freshdigitable.udonroad2.input.TweetInputFragmentArgs
+import com.freshdigitable.udonroad2.input.TweetInputViewModel
+import com.freshdigitable.udonroad2.input.prepareItem
 import com.freshdigitable.udonroad2.oauth.OauthEvent
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import dagger.android.AndroidInjection
 import dagger.android.AndroidInjector
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasAndroidInjector
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
 import javax.inject.Inject
 
 class MainActivity : AppCompatActivity(), HasAndroidInjector {
@@ -54,6 +54,7 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
     @Inject
     lateinit var viewModelProviderFactory: ViewModelProvider.Factory
     private val viewModel: MainViewModel by viewModels { viewModelProviderFactory }
+    private val tweetInputViewModel: TweetInputViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
@@ -93,44 +94,14 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
         }
     }
 
+    private var tweetInputMode: ActionMode? = null
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.input_tweet_write -> {
-                val view = supportFragmentManager.findFragmentById(R.id.main_inputContainer)?.view
-                    ?: return false
-                view.setupExpendAnim()
-                startSupportActionMode(object : ActionMode.Callback {
-                    override fun onCreateActionMode(mode: ActionMode?, menu: Menu?): Boolean {
-                        mode?.apply {
-                            setTitle(R.string.title_input_send_tweet)
-                            menuInflater.inflate(R.menu.input_tweet_write, menu)
-                        }
-                        menu?.apply {
-                            removeItem(R.id.input_tweet_write)
-                            removeItem(R.id.input_tweet_error)
-                        }
-                        return true
-                    }
-
-                    override fun onPrepareActionMode(mode: ActionMode?, menu: Menu?): Boolean =
-                        false
-
-                    override fun onActionItemClicked(mode: ActionMode?, item: MenuItem?): Boolean {
-                        return when (item?.itemId) {
-                            id.input_tweet_send -> {
-                                viewModel.onTweetSendClicked()
-                                mode?.finish()
-                                true
-                            }
-                            else -> false
-                        }
-                    }
-
-                    override fun onDestroyActionMode(mode: ActionMode?) {
-                        view.collapseWithAnim()
-                    }
-                })
-                true
+                tweetInputMode = startSupportActionMode(
+                    InputTweetActionModeCallback(this, tweetInputViewModel)
+                )
+                false
             }
             else -> super.onOptionsItemSelected(item)
         }
@@ -142,6 +113,10 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
     }
 
     override fun onBackPressed() {
+        if (tweetInputViewModel.isExpanded.value == true) {
+            tweetInputMode?.finish()
+            tweetInputMode = null
+        }
         viewModel.onBackPressed()
     }
 
@@ -166,57 +141,46 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
     }
 }
 
-fun View.setupExpendAnim() {
-    measure(
-        View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
-        View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
-    )
-    when {
-        measuredHeight > 0 -> expandWithAnim()
-        else -> doOnPreDraw { it.expandWithAnim() }
+private class InputTweetActionModeCallback(
+    private val lifecycleOwner: LifecycleOwner,
+    private val viewModel: TweetInputViewModel,
+) : ActionMode.Callback,
+    CoroutineScope by CoroutineScope(Dispatchers.Main + Job()) {
+    private val menuItem = viewModel.menuItem
+    override fun onCreateActionMode(mode: ActionMode?, menu: Menu?): Boolean {
+        mode?.apply {
+            setTitle(R.string.title_input_send_tweet)
+            menuInflater.inflate(R.menu.input_tweet_write, menu)
+        }
+        menuItem.observe(lifecycleOwner) { mode?.invalidate() }
+        viewModel.inputTask.observe(lifecycleOwner) {
+            when (it) {
+                InputTaskState.SUCCEEDED, InputTaskState.CANCELED -> mode?.finish()
+                else -> Unit
+            }
+        }
+        return true
     }
-}
 
-fun View.expandWithAnim() {
-    val container = parent as View
-    val h = measuredHeight
-    ValueAnimator.ofInt(-h, 0).apply {
-        duration = 200
-        interpolator = FastOutSlowInInterpolator()
-        doOnStart {
-            this@expandWithAnim.visibility = View.VISIBLE
-        }
-        addUpdateListener {
-            val animValue = it.animatedValue as Int
-            this@expandWithAnim.translationY = animValue.toFloat()
-            container.updateLayoutParams {
-                height = h + animValue
-            }
-        }
-        doOnEnd {
-            this@expandWithAnim.translationY = 0f
-            container.updateLayoutParams {
-                height = ViewGroup.LayoutParams.WRAP_CONTENT
-            }
-        }
-    }.start()
-}
+    override fun onPrepareActionMode(mode: ActionMode?, menu: Menu?): Boolean {
+        val available = menuItem.value ?: return false
+        menu?.prepareItem(available) ?: return false
+        return true
+    }
 
-fun View.collapseWithAnim() {
-    val container = parent as View
-    val h = measuredHeight
-    ValueAnimator.ofInt(-h).apply {
-        duration = 200
-        interpolator = FastOutSlowInInterpolator()
-        addUpdateListener {
-            val animValue = it.animatedValue as Int
-            this@collapseWithAnim.translationY = animValue.toFloat()
-            container.updateLayoutParams {
-                height = h + animValue
+    override fun onActionItemClicked(mode: ActionMode?, item: MenuItem?): Boolean {
+        return when (item?.itemId) {
+            R.id.input_tweet_send, R.id.input_tweet_error -> {
+                viewModel.onSendClicked()
+                true
             }
+            else -> false
         }
-        doOnEnd {
-            this@collapseWithAnim.visibility = View.GONE
-        }
-    }.start()
+    }
+
+    override fun onDestroyActionMode(mode: ActionMode?) {
+        menuItem.removeObservers(lifecycleOwner)
+        cancel()
+        viewModel.onCancelClicked()
+    }
 }

@@ -49,6 +49,9 @@ interface TweetInputViewModelComponent {
 }
 
 @Module(subcomponents = [TweetInputViewModelComponent::class])
+interface TweetInputViewModelComponentModule
+
+@Module
 interface TweetInputFragmentModule {
     @FragmentScope
     @ContributesAndroidInjector

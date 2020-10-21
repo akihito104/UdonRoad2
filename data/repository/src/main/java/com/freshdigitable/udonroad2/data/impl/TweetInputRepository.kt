@@ -17,30 +17,13 @@
 package com.freshdigitable.udonroad2.data.impl
 
 import com.freshdigitable.udonroad2.data.restclient.TweetApiClient
-import com.freshdigitable.udonroad2.model.app.di.ActivityScope
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.distinctUntilChanged
 import javax.inject.Inject
 
-@ActivityScope
 class TweetInputRepository @Inject constructor(
     private val remoteSource: TweetApiClient
 ) {
-    private val _text: MutableStateFlow<String> = MutableStateFlow("")
-    val text: Flow<String> = _text.distinctUntilChanged { old, new -> old == new }
-
-    fun updateText(text: String) {
-        _text.value = text
-    }
-
-    suspend fun post(): TweetEntity {
-        val t = _text.value
-        return remoteSource.postTweet(t)
-    }
-
-    fun clear() {
-        _text.value = ""
+    suspend fun post(text: String): TweetEntity {
+        return remoteSource.postTweet(text)
     }
 }

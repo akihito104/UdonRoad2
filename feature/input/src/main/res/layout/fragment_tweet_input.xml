@@ -22,6 +22,10 @@
 
     <data>
 
+        <variable
+            name="viewModel"
+            type="com.freshdigitable.udonroad2.input.TweetInputViewModel"
+            />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -29,6 +33,7 @@
         android:layout_height="wrap_content"
         android:visibility="gone"
         tools:visibility="visible"
+        app:isExpanded="@{viewModel.isExpanded}"
         >
 
         <ImageView
@@ -116,6 +121,8 @@
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintRight_toRightOf="parent"
+            android:text="@{viewModel.text}"
+            android:afterTextChanged="@{viewModel::onTweetTextChanged}"
             android:inputType="textImeMultiLine|textMultiLine"
             android:maxLines="5"
             />

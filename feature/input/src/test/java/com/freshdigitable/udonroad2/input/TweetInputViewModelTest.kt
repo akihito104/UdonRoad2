@@ -16,6 +16,7 @@
 
 package com.freshdigitable.udonroad2.input
 
+import android.text.Editable
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.freshdigitable.udonroad2.data.impl.TweetInputRepository
 import com.freshdigitable.udonroad2.model.app.AppExecutor
@@ -24,8 +25,9 @@ import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.test_common.MockVerified
 import com.freshdigitable.udonroad2.test_common.jvm.CoroutineTestRule
 import com.google.common.truth.Truth.assertThat
+import io.mockk.every
+import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.Rule
 import org.junit.Test
 import org.junit.experimental.runners.Enclosed
@@ -49,7 +51,18 @@ class TweetInputViewModelTest {
             assertThat(sut).isNotNull()
             assertThat(sut.text.value).isEmpty()
             assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.WRITE_ENABLED)
-            assertThat(sut.isVisible.value).isFalse()
+            assertThat(sut.isExpanded.value).isFalse()
+        }
+
+        @Test
+        fun onCancelClicked_whenInputIsCollapsed_menuItemIsNotChanged(): Unit = with(rule) {
+            // exercise
+            sut.onCancelClicked()
+
+            // verify
+            assertThat(sut.text.value).isEmpty()
+            assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.WRITE_ENABLED)
+            assertThat(sut.isExpanded.value).isFalse()
         }
 
         @Test
@@ -60,80 +73,73 @@ class TweetInputViewModelTest {
             // verify
             assertThat(sut.text.value).isEmpty()
             assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.SEND_DISABLED)
-            assertThat(sut.isVisible.value).isTrue()
+            assertThat(sut.isExpanded.value).isTrue()
         }
 
         @Test
-        fun onCloseClicked_then_isVisibleIsFalse(): Unit = with(rule) {
+        fun onCancelClicked_then_isVisibleIsFalse(): Unit = with(rule) {
             // setup
-            setupClear()
             sut.onWriteClicked()
 
             // exercise
-            sut.onCloseClicked()
+            sut.onCancelClicked()
 
             // verify
             assertThat(sut.text.value).isEmpty()
-            assertThat(sut.isVisible.value).isFalse()
+            assertThat(sut.isExpanded.value).isFalse()
             assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.WRITE_ENABLED)
         }
 
         @Test
         fun onTweetTextChanged_addedText_then_menuItemIsSendEnabled(): Unit = with(rule) {
             // setup
-            setupUpdateText("a")
             sut.onWriteClicked()
 
             // exercise
-            sut.onTweetTextChanged("a")
+            sut.onTweetTextChanged(editable("a"))
 
             // verify
             assertThat(sut.text.value).isEqualTo("a")
             assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.SEND_ENABLED)
-            assertThat(sut.isVisible.value).isTrue()
+            assertThat(sut.isExpanded.value).isTrue()
         }
 
         @Test
-        fun onCloseClicked_textAdded_then_textCleared(): Unit = with(rule) {
+        fun onCancelClicked_textAdded_then_textCleared(): Unit = with(rule) {
             // setup
-            setupUpdateText("a")
-            setupClear()
             sut.onWriteClicked()
-            sut.onTweetTextChanged("a")
+            sut.onTweetTextChanged(editable("a"))
 
             // exercise
-            sut.onCloseClicked()
+            sut.onCancelClicked()
 
             // verify
             assertThat(sut.text.value).isEmpty()
             assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.WRITE_ENABLED)
-            assertThat(sut.isVisible.value).isFalse()
+            assertThat(sut.isExpanded.value).isFalse()
         }
 
         @Test
         fun onTweetTextChanged_removedText_then_menuItemIsSendDisabled(): Unit = with(rule) {
             // setup
-            setupUpdateText("")
-            setupUpdateText("a")
             sut.onWriteClicked()
 
             // exercise
-            sut.onTweetTextChanged("a")
-            sut.onTweetTextChanged("")
+            sut.onTweetTextChanged(editable("a"))
+            sut.onTweetTextChanged(editable(""))
 
             // verify
             assertThat(sut.text.value).isEmpty()
             assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.SEND_DISABLED)
-            assertThat(sut.isVisible.value).isTrue()
+            assertThat(sut.isExpanded.value).isTrue()
         }
 
         @Test
         fun onSendClicked_whenSendIsSucceeded_then_menuItemIsWriteEnabled(): Unit = with(rule) {
             // setup
-            setupUpdateText("a")
-            setupPost()
+            setupPost("a")
             sut.onWriteClicked()
-            sut.onTweetTextChanged("a")
+            sut.onTweetTextChanged(editable("a"))
 
             // exercise
             sut.onSendClicked()
@@ -141,16 +147,15 @@ class TweetInputViewModelTest {
             // verify
             assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.WRITE_ENABLED)
             assertThat(sut.text.value).isEmpty()
-            assertThat(sut.isVisible.value).isFalse()
+            assertThat(sut.isExpanded.value).isFalse()
         }
 
         @Test
         fun onSendClicked_whenSendIsFailed_then_menuItemIsRetryEnabled(): Unit = with(rule) {
             // setup
-            setupUpdateText("a")
-            setupPost(withError = AppTwitterException(403, 123))
+            setupPost("a", withError = AppTwitterException(403, 123))
             sut.onWriteClicked()
-            sut.onTweetTextChanged("a")
+            sut.onTweetTextChanged(editable("a"))
 
             // exercise
             sut.onSendClicked()
@@ -158,7 +163,7 @@ class TweetInputViewModelTest {
             // verify
             assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.RETRY_ENABLED)
             assertThat(sut.text.value).isEqualTo("a")
-            assertThat(sut.isVisible.value).isFalse()
+            assertThat(sut.isExpanded.value).isFalse()
         }
     }
 
@@ -172,7 +177,7 @@ class TweetInputViewModelTest {
             assertThat(sut).isNotNull()
             assertThat(sut.text.value).isEmpty()
             assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.SEND_DISABLED)
-            assertThat(sut.isVisible.value).isTrue()
+            assertThat(sut.isExpanded.value).isTrue()
         }
     }
 }
@@ -182,10 +187,7 @@ class TweetInputViewModelRule(
     collapsible: Boolean
 ) : TestWatcher() {
     private val coroutineTestRule = CoroutineTestRule()
-    private val textFlow = MutableStateFlow("")
-    private val repository = MockVerified.create<TweetInputRepository>().apply {
-        setupResponseWithVerify({ mock.text }, textFlow)
-    }
+    private val repository = MockVerified.create<TweetInputRepository>()
 
     val sut: TweetInputViewModel by lazy {
         val eventDispatcher = EventDispatcher()
@@ -195,7 +197,7 @@ class TweetInputViewModelRule(
                 collapsible,
                 TweetInputActions(eventDispatcher),
                 repository.mock,
-                AppExecutor(dispatcher = coroutineTestRule.coroutineContextProvider)
+                AppExecutor(dispatcher = coroutineTestRule.coroutineContextProvider),
             ),
         )
     }
@@ -203,33 +205,20 @@ class TweetInputViewModelRule(
     override fun starting(description: Description?) {
         super.starting(description)
         with(sut) {
-            listOf(isVisible, menuItem, text).forEach { it.observeForever { } }
+            listOf(inputTask, isExpanded, menuItem, text).forEach { it.observeForever { } }
         }
     }
 
-    fun setupUpdateText(text: String) {
-        repository.setupResponseWithVerify(
-            { repository.mock.updateText(text) },
-            Unit,
-            alsoOnAnswer = { textFlow.value = text }
-        )
-    }
-
-    fun setupPost(withError: Throwable? = null) {
+    fun setupPost(text: String, withError: Throwable? = null) {
         if (withError == null) {
-            repository.coSetupResponseWithVerify({ repository.mock.post() }, Unit)
-            setupClear()
+            repository.coSetupResponseWithVerify({ repository.mock.post(text) }, Unit)
         } else {
-            repository.coSetupThrowWithVerify({ repository.mock.post() }, withError)
+            repository.coSetupThrowWithVerify({ repository.mock.post(text) }, withError)
         }
     }
 
-    fun setupClear() {
-        repository.setupResponseWithVerify(
-            { repository.mock.clear() },
-            Unit,
-            alsoOnAnswer = { textFlow.value = "" }
-        )
+    fun editable(text: String): Editable = mockk<Editable>().apply {
+        every { this@apply.toString() } returns text
     }
 
     override fun apply(base: Statement?, description: Description?): Statement {

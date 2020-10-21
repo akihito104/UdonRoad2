@@ -62,6 +62,7 @@ dependencies {
     implementation Libs.KOTLIN_STDLIB_JDK
     implementation Libs.KOTLINX_COROUTINES
     implementation Libs.KOTLINX_COROUTINES_ANDROID
+    implementation Libs.KOTLINX_COROUTINES_RX2
 
     implementation Libs.ANDROIDX_APPCOMPAT
     implementation Libs.ANDROIDX_CORE_KTX

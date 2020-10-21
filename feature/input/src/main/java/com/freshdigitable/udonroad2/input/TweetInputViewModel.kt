@@ -16,22 +16,23 @@
 
 package com.freshdigitable.udonroad2.input
 
+import android.text.Editable
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.asLiveData
 import androidx.lifecycle.map
 import com.freshdigitable.udonroad2.data.impl.TweetInputRepository
 import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.AppTwitterException
-import com.freshdigitable.udonroad2.model.app.ext.merge
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.AppViewState
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.suspendCreate
+import com.freshdigitable.udonroad2.model.app.navigation.suspendMap
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
 import com.freshdigitable.udonroad2.model.app.navigation.toViewState
 import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.subjects.PublishSubject
 import javax.inject.Inject
 
 class TweetInputViewModel @Inject constructor(
@@ -39,24 +40,25 @@ class TweetInputViewModel @Inject constructor(
     private val viewState: TweetInputViewState,
 ) : ViewModel() {
 
-    val isVisible: LiveData<Boolean> = viewState.isVisible
+    val isExpanded: LiveData<Boolean> = viewState.isExpanded
     val text: LiveData<String> = viewState.text
     val menuItem: LiveData<InputMenuItem> = viewState.menuItem
+    val inputTask: LiveData<InputTaskState> = viewState.taskState
 
     fun onWriteClicked() {
         eventDispatcher.postEvent(TweetInputEvent.Open)
     }
 
-    fun onTweetTextChanged(text: String) {
-        eventDispatcher.postEvent(TweetInputEvent.TextUpdated(text))
+    fun onTweetTextChanged(text: Editable) {
+        eventDispatcher.postEvent(TweetInputEvent.TextUpdated(text.toString()))
     }
 
     fun onSendClicked() {
-        eventDispatcher.postEvent(TweetInputEvent.Send)
+        eventDispatcher.postEvent(TweetInputEvent.Send(checkNotNull(text.value)))
     }
 
-    fun onCloseClicked() {
-        eventDispatcher.postEvent(TweetInputEvent.Close)
+    fun onCancelClicked() {
+        eventDispatcher.postEvent(TweetInputEvent.Cancel)
     }
 
     override fun onCleared() {
@@ -68,10 +70,22 @@ class TweetInputViewModel @Inject constructor(
 class TweetInputActions @Inject constructor(
     eventDispatcher: EventDispatcher
 ) {
-    val openInput: AppAction<TweetInputEvent.Open> = eventDispatcher.toAction()
-    val sendTweet: AppAction<TweetInputEvent.Send> = eventDispatcher.toAction()
-    val closeInput: AppAction<TweetInputEvent.Close> = eventDispatcher.toAction()
-    val updateText: AppAction<TweetInputEvent.TextUpdated> = eventDispatcher.toAction()
+    internal val openInput: AppAction<TweetInputEvent.Open> = eventDispatcher.toAction()
+    internal val sendTweet: AppAction<TweetInputEvent.Send> = eventDispatcher.toAction()
+    internal val cancelInput: AppAction<TweetInputEvent.Cancel> = eventDispatcher.toAction()
+    internal val updateText: AppAction<TweetInputEvent.TextUpdated> = eventDispatcher.toAction()
+}
+
+enum class InputTaskState(val isExpanded: Boolean) {
+    IDLING(false),
+
+    OPENED(true),
+
+    SENDING(false),
+    FAILED(false),
+
+    SUCCEEDED(false),
+    CANCELED(false)
 }
 
 class TweetInputViewState @Inject constructor(
@@ -80,70 +94,74 @@ class TweetInputViewState @Inject constructor(
     private val repository: TweetInputRepository,
     executor: AppExecutor,
 ) {
-    private val _state: AppViewState<TweetInputState> = AppAction.merge(
+    private val stateEventOnSend = PublishSubject.create<InputTaskState>()
+    private val _taskState: AppAction<InputTaskState> = AppAction.merge(
         AppAction.just(collapsible).map {
-            if (it) TweetInputState.IDLING else TweetInputState.OPENED
+            if (it) InputTaskState.IDLING else InputTaskState.OPENED
         },
-        actions.openInput.map { TweetInputState.OPENED },
-        actions.sendTweet.suspendCreate<TweetInputEvent.Send, TweetInputState>(
-            executor.dispatcher.mainContext
-        ) {
-            send(Result.success(TweetInputState.SENDING))
-            try {
-                repository.post()
-                send(Result.success(TweetInputState.SUCCEEDED))
-                repository.clear()
-                send(Result.success(TweetInputState.IDLING))
-            } catch (e: AppTwitterException) {
-                send(Result.success(TweetInputState.FAILED))
-            } catch (t: Throwable) {
-                send(Result.failure(t))
-            }
-        }.map {
-            when (it.isSuccess) {
-                true -> it.value
-                else -> it.rethrow()
-            }
-        },
-        actions.closeInput.map {
-            repository.clear()
-            TweetInputState.IDLING
-        },
-    ).toViewState()
-    val isVisible: LiveData<Boolean> = _state.map {
-        when (it) {
-            TweetInputState.OPENED -> true
-            else -> false
-        }
-    }
+        actions.openInput.map { InputTaskState.OPENED },
+        stateEventOnSend,
+        actions.cancelInput.suspendCreate<TweetInputEvent.Cancel, InputTaskState>(executor.dispatcher.mainContext) {
+            channel.send(Result.success(InputTaskState.CANCELED))
+            channel.send(Result.success(if (collapsible) InputTaskState.IDLING else InputTaskState.OPENED))
+        }.map { it.value }
+    )
+    internal val taskState: AppViewState<InputTaskState> = _taskState.toViewState()
 
-    val text: LiveData<String> = repository.text.asLiveData(executor.dispatcher.mainContext)
-    val menuItem: LiveData<InputMenuItem> = merge(_state, text) { s, t ->
-        when (s) {
-            null -> throw IllegalStateException()
-            TweetInputState.OPENED -> {
-                if (t.isNullOrBlank()) {
-                    InputMenuItem.SEND_DISABLED
-                } else {
-                    InputMenuItem.SEND_ENABLED
+    internal val isExpanded: AppViewState<Boolean> = taskState.map { it.isExpanded }
+
+    private val _text: AppAction<String> = AppAction.merge(
+        AppAction.just(""),
+        actions.updateText.map { it.text },
+        _taskState.filter { it == InputTaskState.SUCCEEDED || it == InputTaskState.CANCELED }
+            .map { "" }
+    )
+    internal val text: AppViewState<String> = _text.toViewState()
+
+    internal val menuItem: AppViewState<InputMenuItem> = AppAction.combineLatest(
+        _taskState,
+        _text.map { it.isNotBlank() }.distinctUntilChanged()
+    ) { state, contentAvailable ->
+        when (state) {
+            InputTaskState.IDLING -> InputMenuItem.WRITE_ENABLED
+            InputTaskState.OPENED -> {
+                if (contentAvailable) InputMenuItem.SEND_ENABLED else InputMenuItem.SEND_DISABLED
+            }
+            InputTaskState.SENDING -> InputMenuItem.SEND_DISABLED
+            InputTaskState.FAILED -> InputMenuItem.RETRY_ENABLED
+            InputTaskState.SUCCEEDED,
+            InputTaskState.CANCELED -> InputMenuItem.SEND_DISABLED
+        }
+    }.toViewState()
+
+    private val disposable = CompositeDisposable(
+        actions.sendTweet.suspendMap(executor.dispatcher.mainContext) {
+            stateEventOnSend.onNext(InputTaskState.SENDING)
+            repository.post(it.text)
+        }.subscribe {
+            when {
+                it.isSuccess -> {
+                    stateEventOnSend.onNext(InputTaskState.SUCCEEDED)
+                    stateEventOnSend.onNext(
+                        if (collapsible) InputTaskState.IDLING else InputTaskState.OPENED
+                    )
+                }
+                it.exception is AppTwitterException -> {
+                    stateEventOnSend.onNext(InputTaskState.FAILED)
                 }
             }
-            else -> s.toMenuItem()
         }
-    }
-    private val disposable = CompositeDisposable(
-        actions.updateText.subscribe { repository.updateText(it.text) }
     )
 
-    fun clear() {
+    internal fun clear() {
         disposable.clear()
     }
 }
 
 sealed class TweetInputEvent : AppEvent {
     object Open : TweetInputEvent()
-    object Close : TweetInputEvent()
-    object Send : TweetInputEvent()
+    data class Send(val text: String) : TweetInputEvent()
+    object Cancel : TweetInputEvent()
 
     data class TextUpdated(val text: String) : TweetInputEvent()
 }
