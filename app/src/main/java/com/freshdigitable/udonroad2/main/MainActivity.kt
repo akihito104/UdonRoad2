@@ -45,6 +45,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class MainActivity : AppCompatActivity(), HasAndroidInjector {
@@ -98,10 +101,11 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.input_tweet_write -> {
-                tweetInputMode = startSupportActionMode(
+                tweetInputViewModel.onWriteClicked()
+                startSupportActionMode(
                     InputTweetActionModeCallback(this, tweetInputViewModel)
                 )
-                false
+                true
             }
             else -> super.onOptionsItemSelected(item)
         }
@@ -113,15 +117,25 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
     }
 
     override fun onBackPressed() {
-        if (tweetInputViewModel.isExpanded.value == true) {
+        if (tweetInputMode != null) {
             tweetInputMode?.finish()
-            tweetInputMode = null
+            return
         }
         viewModel.onBackPressed()
     }
 
     override fun onSupportNavigateUp(): Boolean {
         return navigation.onSupportNavigateUp() || super.onSupportNavigateUp()
+    }
+
+    override fun onSupportActionModeStarted(mode: ActionMode) {
+        super.onSupportActionModeStarted(mode)
+        tweetInputMode = mode
+    }
+
+    override fun onSupportActionModeFinished(mode: ActionMode) {
+        super.onSupportActionModeFinished(mode)
+        tweetInputMode = null
     }
 
     @Inject
@@ -153,11 +167,10 @@ private class InputTweetActionModeCallback(
             menuInflater.inflate(R.menu.input_tweet_write, menu)
         }
         menuItem.observe(lifecycleOwner) { mode?.invalidate() }
-        viewModel.inputTask.observe(lifecycleOwner) {
-            when (it) {
-                InputTaskState.SUCCEEDED, InputTaskState.CANCELED -> mode?.finish()
-                else -> Unit
-            }
+        launch {
+            viewModel.inputTaskEvent
+                .filter { it == InputTaskState.SUCCEEDED || it == InputTaskState.CANCELED }
+                .collect { mode?.finish() }
         }
         return true
     }

@@ -19,6 +19,7 @@ package com.freshdigitable.udonroad2.input
 import android.text.Editable
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.map
 import com.freshdigitable.udonroad2.data.impl.TweetInputRepository
 import com.freshdigitable.udonroad2.model.app.AppExecutor
@@ -31,8 +32,10 @@ import com.freshdigitable.udonroad2.model.app.navigation.suspendCreate
 import com.freshdigitable.udonroad2.model.app.navigation.suspendMap
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
 import com.freshdigitable.udonroad2.model.app.navigation.toViewState
+import io.reactivex.BackpressureStrategy
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.subjects.PublishSubject
+import kotlinx.coroutines.reactive.asFlow
 import javax.inject.Inject
 
 class TweetInputViewModel @Inject constructor(
@@ -44,6 +47,7 @@ class TweetInputViewModel @Inject constructor(
     val text: LiveData<String> = viewState.text
     val menuItem: LiveData<InputMenuItem> = viewState.menuItem
     val inputTask: LiveData<InputTaskState> = viewState.taskState
+    val inputTaskEvent = viewState.taskEvent
 
     fun onWriteClicked() {
         eventDispatcher.postEvent(TweetInputEvent.Open)
@@ -101,14 +105,19 @@ class TweetInputViewState @Inject constructor(
         },
         actions.openInput.map { InputTaskState.OPENED },
         stateEventOnSend,
-        actions.cancelInput.suspendCreate<TweetInputEvent.Cancel, InputTaskState>(executor.dispatcher.mainContext) {
+        actions.cancelInput.suspendCreate<TweetInputEvent.Cancel, InputTaskState>(
+            executor.dispatcher.mainContext
+        ) {
             channel.send(Result.success(InputTaskState.CANCELED))
             channel.send(Result.success(if (collapsible) InputTaskState.IDLING else InputTaskState.OPENED))
         }.map { it.value }
     )
     internal val taskState: AppViewState<InputTaskState> = _taskState.toViewState()
+    val taskEvent = _taskState.toFlowable(BackpressureStrategy.BUFFER).asFlow()
 
-    internal val isExpanded: AppViewState<Boolean> = taskState.map { it.isExpanded }
+    internal val isExpanded: AppViewState<Boolean> = taskState.map {
+        it.isExpanded
+    }.distinctUntilChanged()
 
     private val _text: AppAction<String> = AppAction.merge(
         AppAction.just(""),

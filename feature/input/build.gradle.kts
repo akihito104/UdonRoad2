@@ -51,6 +51,7 @@ dependencies {
     implementation(project(":data:repository"))
     implementation(project(":model"))
     implementation(Libs.KOTLIN_STDLIB_JDK)
+    implementation(Libs.KOTLINX_COROUTINES_RX2)
     implementation(Libs.ANDROIDX_CORE_KTX)
     implementation(Libs.ANDROIDX_APPCOMPAT)
     implementation(Libs.ANDROIDX_LIFECYCLE_LIVEDATA_KTX)
