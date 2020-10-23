@@ -32,10 +32,10 @@ import com.freshdigitable.udonroad2.model.app.navigation.suspendCreate
 import com.freshdigitable.udonroad2.model.app.navigation.suspendMap
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
 import com.freshdigitable.udonroad2.model.app.navigation.toViewState
-import io.reactivex.BackpressureStrategy
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.subjects.PublishSubject
-import kotlinx.coroutines.reactive.asFlow
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.rx2.asFlow
 import javax.inject.Inject
 
 class TweetInputViewModel @Inject constructor(
@@ -47,7 +47,8 @@ class TweetInputViewModel @Inject constructor(
     val text: LiveData<String> = viewState.text
     val menuItem: LiveData<InputMenuItem> = viewState.menuItem
     val inputTask: LiveData<InputTaskState> = viewState.taskState
-    val inputTaskEvent = viewState.taskEvent
+    val expandAnimationEvent: Flow<TweetInputEvent.Opened> =
+        eventDispatcher.toAction<TweetInputEvent.Opened>().asFlow()
 
     fun onWriteClicked() {
         eventDispatcher.postEvent(TweetInputEvent.Open)
@@ -63,6 +64,10 @@ class TweetInputViewModel @Inject constructor(
 
     fun onCancelClicked() {
         eventDispatcher.postEvent(TweetInputEvent.Cancel)
+    }
+
+    fun onExpandAnimationEnd() {
+        eventDispatcher.postEvent(TweetInputEvent.Opened)
     }
 
     override fun onCleared() {
@@ -113,7 +118,6 @@ class TweetInputViewState @Inject constructor(
         }.map { it.value }
     )
     internal val taskState: AppViewState<InputTaskState> = _taskState.toViewState()
-    val taskEvent = _taskState.toFlowable(BackpressureStrategy.BUFFER).asFlow()
 
     internal val isExpanded: AppViewState<Boolean> = taskState.map {
         it.isExpanded
@@ -169,6 +173,7 @@ class TweetInputViewState @Inject constructor(
 
 sealed class TweetInputEvent : AppEvent {
     object Open : TweetInputEvent()
+    object Opened : TweetInputEvent()
     data class Send(val text: String) : TweetInputEvent()
     object Cancel : TweetInputEvent()
 

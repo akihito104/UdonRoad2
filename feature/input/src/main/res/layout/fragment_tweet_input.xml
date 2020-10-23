@@ -34,6 +34,7 @@
         android:visibility="gone"
         tools:visibility="visible"
         app:isExpanded="@{viewModel.isExpanded}"
+        app:onExpandAnimationEnd="@{viewModel::onExpandAnimationEnd}"
         >
 
         <ImageView

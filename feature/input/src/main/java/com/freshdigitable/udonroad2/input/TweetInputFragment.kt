@@ -25,6 +25,7 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
 import androidx.core.animation.doOnEnd
 import androidx.core.animation.doOnStart
 import androidx.core.view.doOnPreDraw
@@ -34,10 +35,12 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.navArgs
 import com.freshdigitable.udonroad2.input.databinding.FragmentTweetInputBinding
 import com.freshdigitable.udonroad2.input.di.TweetInputViewModelComponent
 import dagger.android.support.AndroidSupportInjection
+import kotlinx.coroutines.flow.collect
 import javax.inject.Inject
 
 class TweetInputFragment : Fragment() {
@@ -79,6 +82,20 @@ class TweetInputFragment : Fragment() {
 
         viewModel.menuItem.observe(viewLifecycleOwner) {
             requireActivity().invalidateOptionsMenu()
+        }
+        binding.twIntext.setOnFocusChangeListener { v, hasFocus ->
+            val inputMethod =
+                v.context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            if (!hasFocus && viewModel.isExpanded.value == false) {
+                inputMethod.hideSoftInputFromWindow(v.windowToken, 0)
+            } else {
+                inputMethod.showSoftInput(v, InputMethodManager.SHOW_FORCED)
+            }
+        }
+        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
+            viewModel.expandAnimationEvent.collect {
+                binding.twIntext.requestFocus()
+            }
         }
     }
 
@@ -138,26 +155,26 @@ fun Menu.prepareItem(available: InputMenuItem) {
     }
 }
 
-@BindingAdapter("isExpanded")
-fun View.expand(isExpanded: Boolean?) {
+@BindingAdapter("isExpanded", "onExpandAnimationEnd", requireAll = false)
+fun View.expand(isExpanded: Boolean?, onExpandAnimationEnd: (() -> Unit)?) {
     when (isExpanded) {
-        true -> setupExpendAnim()
+        true -> setupExpendAnim(onExpandAnimationEnd)
         else -> collapseWithAnim()
     }
 }
 
-private fun View.setupExpendAnim() {
+private fun View.setupExpendAnim(onExpandAnimEnd: (() -> Unit)?) {
     measure(
         View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
         View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
     )
     when {
-        measuredHeight > 0 -> expandWithAnim()
-        else -> doOnPreDraw { it.expandWithAnim() }
+        measuredHeight > 0 -> expandWithAnim(onExpandAnimEnd)
+        else -> doOnPreDraw { it.expandWithAnim(onExpandAnimEnd) }
     }
 }
 
-private fun View.expandWithAnim() {
+private fun View.expandWithAnim(onExpandAnimEnd: (() -> Unit)?) {
     val container = parent as View
     val h = measuredHeight
     ValueAnimator.ofInt(-h, 0).apply {
@@ -178,6 +195,7 @@ private fun View.expandWithAnim() {
             container.updateLayoutParams {
                 height = ViewGroup.LayoutParams.WRAP_CONTENT
             }
+            onExpandAnimEnd?.invoke()
         }
     }.start()
 }

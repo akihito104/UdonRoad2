@@ -17,37 +17,23 @@
 package com.freshdigitable.udonroad2.main
 
 import android.os.Bundle
-import android.view.Menu
-import android.view.MenuItem
 import android.view.View
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.view.ActionMode
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.add
 import androidx.fragment.app.commit
-import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelProvider
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.databinding.ActivityMainBinding
-import com.freshdigitable.udonroad2.input.InputTaskState
 import com.freshdigitable.udonroad2.input.TweetInputFragment
 import com.freshdigitable.udonroad2.input.TweetInputFragmentArgs
-import com.freshdigitable.udonroad2.input.TweetInputViewModel
-import com.freshdigitable.udonroad2.input.prepareItem
 import com.freshdigitable.udonroad2.oauth.OauthEvent
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import dagger.android.AndroidInjection
 import dagger.android.AndroidInjector
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasAndroidInjector
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class MainActivity : AppCompatActivity(), HasAndroidInjector {
@@ -57,7 +43,6 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
     @Inject
     lateinit var viewModelProviderFactory: ViewModelProvider.Factory
     private val viewModel: MainViewModel by viewModels { viewModelProviderFactory }
-    private val tweetInputViewModel: TweetInputViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
@@ -97,45 +82,17 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
         }
     }
 
-    private var tweetInputMode: ActionMode? = null
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            R.id.input_tweet_write -> {
-                tweetInputViewModel.onWriteClicked()
-                startSupportActionMode(
-                    InputTweetActionModeCallback(this, tweetInputViewModel)
-                )
-                true
-            }
-            else -> super.onOptionsItemSelected(item)
-        }
-    }
-
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.saveViewState(viewModel.currentState)
     }
 
     override fun onBackPressed() {
-        if (tweetInputMode != null) {
-            tweetInputMode?.finish()
-            return
-        }
         viewModel.onBackPressed()
     }
 
     override fun onSupportNavigateUp(): Boolean {
         return navigation.onSupportNavigateUp() || super.onSupportNavigateUp()
-    }
-
-    override fun onSupportActionModeStarted(mode: ActionMode) {
-        super.onSupportActionModeStarted(mode)
-        tweetInputMode = mode
-    }
-
-    override fun onSupportActionModeFinished(mode: ActionMode) {
-        super.onSupportActionModeFinished(mode)
-        tweetInputMode = null
     }
 
     @Inject
@@ -152,48 +109,5 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
         private fun Bundle.saveViewState(viewState: MainActivityViewState?) {
             putSerializable(KEY_VIEW_STATE, viewState)
         }
-    }
-}
-
-private class InputTweetActionModeCallback(
-    private val lifecycleOwner: LifecycleOwner,
-    private val viewModel: TweetInputViewModel,
-) : ActionMode.Callback,
-    CoroutineScope by CoroutineScope(Dispatchers.Main + Job()) {
-    private val menuItem = viewModel.menuItem
-    override fun onCreateActionMode(mode: ActionMode?, menu: Menu?): Boolean {
-        mode?.apply {
-            setTitle(R.string.title_input_send_tweet)
-            menuInflater.inflate(R.menu.input_tweet_write, menu)
-        }
-        menuItem.observe(lifecycleOwner) { mode?.invalidate() }
-        launch {
-            viewModel.inputTaskEvent
-                .filter { it == InputTaskState.SUCCEEDED || it == InputTaskState.CANCELED }
-                .collect { mode?.finish() }
-        }
-        return true
-    }
-
-    override fun onPrepareActionMode(mode: ActionMode?, menu: Menu?): Boolean {
-        val available = menuItem.value ?: return false
-        menu?.prepareItem(available) ?: return false
-        return true
-    }
-
-    override fun onActionItemClicked(mode: ActionMode?, item: MenuItem?): Boolean {
-        return when (item?.itemId) {
-            R.id.input_tweet_send, R.id.input_tweet_error -> {
-                viewModel.onSendClicked()
-                true
-            }
-            else -> false
-        }
-    }
-
-    override fun onDestroyActionMode(mode: ActionMode?) {
-        menuItem.removeObservers(lifecycleOwner)
-        cancel()
-        viewModel.onCancelClicked()
     }
 }

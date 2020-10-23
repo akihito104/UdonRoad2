@@ -44,6 +44,8 @@ class MainViewModel(
         eventDispatcher.postSelectedItemShortcutEvent(item, selected)
     }
 
+    // FIXME: close opened item (DrawerLayout or TweetInput) is first
+    // TODO: make opened state observable
     fun onBackPressed() {
         val selectedItem = currentState?.selectedItem
         val event = when {
