@@ -35,7 +35,6 @@ interface TweetInputViewModelModule {
     @IntoMap
     @ViewModelKey(TweetInputViewModel::class)
     fun bindTweetInputViewModel(viewModel: TweetInputViewModel): ViewModel
-
 }
 
 @Subcomponent(modules = [TweetInputViewModelModule::class])
