@@ -88,7 +88,7 @@ class MockVerified<T>(
         coEvery(target).answers(object : Answer<R> {
             override fun answer(call: Call): R = answer()
         })
-        expectedBlocks.add { coVerify { target() } }
+        expectedBlocks.add { coVerify(exactly = 1) { target() } } // TODO make `exactly` argument
     }
 
     override fun succeeded(description: Description?) {

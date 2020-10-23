@@ -11,9 +11,8 @@ import com.freshdigitable.udonroad2.model.user.User
 import com.freshdigitable.udonroad2.model.user.UserId
 import dagger.Module
 import dagger.Provides
-import javax.inject.Inject
 
-class RelationshipRepository @Inject constructor(
+class RelationshipRepository(
     private val dao: RelationshipDao,
     private val restClient: FriendshipRestClient,
 ) {

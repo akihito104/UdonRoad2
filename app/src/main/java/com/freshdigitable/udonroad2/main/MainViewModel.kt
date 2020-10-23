@@ -28,7 +28,7 @@ import timber.log.Timber
 
 class MainViewModel(
     private val eventDispatcher: EventDispatcher,
-    private val viewStates: MainActivityViewStates
+    private val viewStates: MainActivityViewStates,
 ) : ViewModel(), ShortcutViewModel {
 
     override val isFabVisible: LiveData<Boolean> = viewStates.isFabVisible
@@ -44,12 +44,17 @@ class MainViewModel(
         eventDispatcher.postSelectedItemShortcutEvent(item, selected)
     }
 
+    // FIXME: close opened item (DrawerLayout or TweetInput) is first
+    // TODO: make opened state observable
     fun onBackPressed() {
         val selectedItem = currentState?.selectedItem
-        val event = if (selectedItem != null) {
-            TimelineEvent.TweetItemSelection.Unselected(selectedItem.owner)
-        } else {
-            CommonEvent.Back
+        val event = when {
+            selectedItem != null -> {
+                TimelineEvent.TweetItemSelection.Unselected(selectedItem.owner)
+            }
+            else -> {
+                CommonEvent.Back
+            }
         }
         eventDispatcher.postEvent(event)
     }

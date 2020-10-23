@@ -14,20 +14,16 @@
  * limitations under the License.
  */
 
-package com.freshdigitable.udonroad2.input
+package com.freshdigitable.udonroad2.data.impl
 
-import org.junit.Test
+import com.freshdigitable.udonroad2.data.restclient.TweetApiClient
+import com.freshdigitable.udonroad2.model.tweet.TweetEntity
+import javax.inject.Inject
 
-import org.junit.Assert.*
-
-/**
- * Example local unit test, which will execute on the development machine (host).
- *
- * See [testing documentation](http://d.android.com/tools/testing).
- */
-class ExampleUnitTest {
-    @Test
-    fun addition_isCorrect() {
-        assertEquals(4, 2 + 2)
+class TweetInputRepository @Inject constructor(
+    private val remoteSource: TweetApiClient
+) {
+    suspend fun post(text: String): TweetEntity {
+        return remoteSource.postTweet(text)
     }
 }
