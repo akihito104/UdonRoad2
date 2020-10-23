@@ -28,7 +28,6 @@ import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.AppViewState
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
-import com.freshdigitable.udonroad2.model.app.navigation.suspendCreate
 import com.freshdigitable.udonroad2.model.app.navigation.suspendMap
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
 import com.freshdigitable.udonroad2.model.app.navigation.toViewState
@@ -110,12 +109,12 @@ class TweetInputViewState @Inject constructor(
         },
         actions.openInput.map { InputTaskState.OPENED },
         stateEventOnSend,
-        actions.cancelInput.suspendCreate<TweetInputEvent.Cancel, InputTaskState>(
-            executor.dispatcher.mainContext
-        ) {
-            channel.send(Result.success(InputTaskState.CANCELED))
-            channel.send(Result.success(if (collapsible) InputTaskState.IDLING else InputTaskState.OPENED))
-        }.map { it.value }
+        actions.cancelInput.flatMap {
+            AppAction.just(
+                InputTaskState.CANCELED,
+                if (collapsible) InputTaskState.IDLING else InputTaskState.OPENED
+            )
+        }
     )
     internal val taskState: AppViewState<InputTaskState> = _taskState.toViewState()
 
