@@ -33,7 +33,7 @@ object Versions {
     const val ANDROIDX_VIEWPAGER2 = "1.0.0-beta03"
     const val ANDROIDX_SWIPE_REFRESH_LAYOUT = "1.0.0"
 
-    const val DAGGER = "2.27"
+    const val DAGGER = "2.29.1"
 
     const val RXJAVA = "2.2.19"
     const val RXJAVA_ANDROID = "2.1.1"
