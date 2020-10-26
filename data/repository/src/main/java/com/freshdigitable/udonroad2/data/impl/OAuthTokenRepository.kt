@@ -75,7 +75,6 @@ class OAuthTokenRepository(
 
 @Module
 interface OAuthTokenRepositoryModule {
-    @Module
     companion object {
         @Provides
         fun provideOAuthTokenRepository(
