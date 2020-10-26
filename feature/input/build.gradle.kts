@@ -48,6 +48,7 @@ android {
 dependencies {
     implementation(fileTree("dir" to "libs", "include" to listOf("*.jar")))
     implementation(project(":feature:media"))
+    implementation(project(":feature:timeline"))
     implementation(project(":data:repository"))
     implementation(project(":model"))
     implementation(Libs.KOTLIN_STDLIB_JDK)
