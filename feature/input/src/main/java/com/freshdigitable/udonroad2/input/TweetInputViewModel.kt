@@ -19,9 +19,12 @@ package com.freshdigitable.udonroad2.input
 import android.text.Editable
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.map
+import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
 import com.freshdigitable.udonroad2.data.impl.TweetInputRepository
+import com.freshdigitable.udonroad2.data.impl.UserRepository
 import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.AppTwitterException
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
@@ -31,9 +34,13 @@ import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.suspendMap
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
 import com.freshdigitable.udonroad2.model.app.navigation.toViewState
+import com.freshdigitable.udonroad2.model.user.User
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.subjects.PublishSubject
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.rx2.asFlow
 import javax.inject.Inject
 
@@ -48,6 +55,8 @@ class TweetInputViewModel @Inject constructor(
     val inputTask: LiveData<InputTaskState> = viewState.taskState
     val expandAnimationEvent: Flow<TweetInputEvent.Opened> =
         eventDispatcher.toAction<TweetInputEvent.Opened>().asFlow()
+
+    val user: LiveData<User?> = viewState.user
 
     fun onWriteClicked() {
         eventDispatcher.postEvent(TweetInputEvent.Open)
@@ -100,6 +109,8 @@ class TweetInputViewState @Inject constructor(
     collapsible: Boolean,
     actions: TweetInputActions,
     private val repository: TweetInputRepository,
+    oauthRepository: OAuthTokenRepository,
+    userRepository: UserRepository,
     executor: AppExecutor,
 ) {
     private val stateEventOnSend = PublishSubject.create<InputTaskState>()
@@ -145,6 +156,14 @@ class TweetInputViewState @Inject constructor(
             InputTaskState.CANCELED -> InputMenuItem.SEND_DISABLED
         }
     }.toViewState()
+
+    val user: AppViewState<User?> = oauthRepository.getCurrentUserIdFlow()
+        .flatMapLatest { id ->
+            userRepository.getUserFlow(id)
+                .mapLatest { it ?: userRepository.getUser(id) }
+        }
+        .flowOn(executor.dispatcher.ioContext)
+        .asLiveData(executor.dispatcher.mainContext)
 
     private val disposable = CompositeDisposable(
         actions.sendTweet.suspendMap(executor.dispatcher.mainContext) {

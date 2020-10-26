@@ -20,11 +20,15 @@ import android.text.Editable
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.Observer
 import com.freshdigitable.udonroad2.data.impl.TweetInputRepository
+import com.freshdigitable.udonroad2.data.impl.UserRepository
 import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.AppTwitterException
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
+import com.freshdigitable.udonroad2.model.user.User
+import com.freshdigitable.udonroad2.model.user.UserId
 import com.freshdigitable.udonroad2.test_common.MockVerified
 import com.freshdigitable.udonroad2.test_common.jvm.CoroutineTestRule
+import com.freshdigitable.udonroad2.test_common.jvm.OAuthTokenRepositoryRule
 import com.google.common.truth.Truth.assertThat
 import io.mockk.every
 import io.mockk.just
@@ -33,6 +37,7 @@ import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.verifyOrder
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.flow
 import org.junit.Rule
 import org.junit.Test
 import org.junit.experimental.runners.Enclosed
@@ -57,6 +62,7 @@ class TweetInputViewModelTest {
             assertThat(sut.text.value).isEmpty()
             assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.WRITE_ENABLED)
             assertThat(sut.isExpanded.value).isFalse()
+            assertThat(sut.user.value).isNotNull()
         }
 
         @Test
@@ -211,6 +217,8 @@ class TweetInputViewModelRule(
     val inputTaskObserver: Observer<InputTaskState> = spyk<Observer<InputTaskState>>().apply {
         every { onChanged(any()) } just runs
     }
+    private val oAuthTokenRepositoryRule = OAuthTokenRepositoryRule()
+    private val userRepositoryRule: MockVerified<UserRepository> = MockVerified.create()
 
     val sut: TweetInputViewModel by lazy {
         val eventDispatcher = EventDispatcher()
@@ -220,6 +228,8 @@ class TweetInputViewModelRule(
                 collapsible,
                 TweetInputActions(eventDispatcher),
                 repository.mock,
+                oAuthTokenRepositoryRule.mock,
+                userRepositoryRule.mock,
                 AppExecutor(dispatcher = coroutineTestRule.coroutineContextProvider),
             ),
         )
@@ -227,9 +237,20 @@ class TweetInputViewModelRule(
 
     override fun starting(description: Description?) {
         super.starting(description)
+        oAuthTokenRepositoryRule.setupCurrentUserIdSource(1000)
+        userRepositoryRule.setupResponseWithVerify(
+            { userRepositoryRule.mock.getUserFlow(UserId(1000)) },
+            flow {
+                emit(mockk<User>().apply {
+                    every { id } returns UserId(1000)
+                    every { name } returns "user1"
+                    every { screenName } returns "User1"
+                })
+            }
+        )
         with(sut) {
             inputTask.observeForever(inputTaskObserver)
-            listOf(isExpanded, menuItem, text).forEach { it.observeForever { } }
+            listOf(isExpanded, menuItem, text, user).forEach { it.observeForever { } }
         }
     }
 
@@ -255,6 +276,8 @@ class TweetInputViewModelRule(
         return RuleChain.outerRule(coroutineTestRule)
             .around(InstantTaskExecutorRule())
             .around(repository)
+            .around(oAuthTokenRepositoryRule)
+            .around(userRepositoryRule)
             .apply(super.apply(base, description), description)
     }
 }
