@@ -20,6 +20,11 @@ import android.content.SharedPreferences
 import androidx.core.content.edit
 import com.freshdigitable.udonroad2.model.AccessTokenEntity
 import com.freshdigitable.udonroad2.model.user.UserId
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.channels.sendBlocking
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.onStart
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -53,6 +58,22 @@ class SharedPreferenceDataSource @Inject constructor(
     fun getCurrentUserId(): UserId? {
         val userId = prefs.getLong(CURRENT_USER_ID, -1)
         return if (userId != -1L) UserId(userId) else null
+    }
+
+    fun getCurrentUserIdFlow(): Flow<UserId> = callbackFlow {
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { sp, k ->
+            if (k == CURRENT_USER_ID) {
+                val id = sp.getLong(CURRENT_USER_ID, -1)
+                sendBlocking(UserId(id))
+            }
+        }
+        prefs.registerOnSharedPreferenceChangeListener(listener)
+        awaitClose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
+    }.onStart {
+        val userId = getCurrentUserId()
+        if (userId != null) {
+            emit(userId)
+        }
     }
 
     fun getCurrentUserAccessToken(): AccessTokenEntity? {
