@@ -23,11 +23,14 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.add
 import androidx.fragment.app.commit
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.get
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.databinding.ActivityMainBinding
 import com.freshdigitable.udonroad2.input.TweetInputFragment
 import com.freshdigitable.udonroad2.input.TweetInputFragmentArgs
+import com.freshdigitable.udonroad2.input.TweetInputViewModel
 import com.freshdigitable.udonroad2.oauth.OauthEvent
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import dagger.android.AndroidInjection
@@ -80,6 +83,32 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
             }
             return@setNavigationItemSelectedListener event != null
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val tweetInputViewModel: TweetInputViewModel =
+            ViewModelProvider(this, viewModelProviderFactory).get()
+        tweetInputViewModel.isExpanded.observe(this, object : Observer<Boolean> {
+            private var navHostTitle: CharSequence? = null
+            override fun onChanged(expanded: Boolean?) {
+                when (expanded) {
+                    true -> {
+                        if (navHostTitle != null) {
+                            throw IllegalStateException("navHostTitle: $navHostTitle")
+                        }
+                        navHostTitle = supportActionBar?.title
+                        supportActionBar?.setTitle(R.string.title_input_send_tweet)
+                    }
+                    false -> {
+                        if (navHostTitle != null) {
+                            supportActionBar?.title = navHostTitle
+                            navHostTitle = null
+                        }
+                    }
+                }
+            }
+        })
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
