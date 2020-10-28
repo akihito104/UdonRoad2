@@ -16,7 +16,9 @@
 
 package com.freshdigitable.udonroad2.main
 
+import android.graphics.drawable.Drawable
 import android.os.Bundle
+import android.view.MenuItem
 import android.view.View
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -79,6 +81,8 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
         }
         tweetInputViewModel.isExpanded.observe(this, object : Observer<Boolean> {
             private var navHostTitle: CharSequence? = null
+            private var navIcon: Drawable? = null
+            private var navIconDesc: CharSequence? = null
             override fun onChanged(expanded: Boolean?) {
                 when (expanded) {
                     true -> {
@@ -87,11 +91,25 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
                         }
                         navHostTitle = supportActionBar?.title
                         supportActionBar?.setTitle(R.string.title_input_send_tweet)
+
+                        navIconDesc = binding.mainToolbar.navigationContentDescription
+                        binding.mainToolbar.setNavigationContentDescription(android.R.string.cancel)
+
+                        navIcon = binding.mainToolbar.navigationIcon
+                        binding.mainToolbar.setNavigationIcon(R.drawable.ic_clear_white)
                     }
                     false -> {
                         if (navHostTitle != null) {
                             supportActionBar?.title = navHostTitle
                             navHostTitle = null
+                        }
+                        if (navIcon != null) {
+                            binding.mainToolbar.navigationIcon = navIcon
+                            navIcon = null
+                        }
+                        if (navIconDesc != null) {
+                            binding.mainToolbar.navigationContentDescription = navIconDesc
+                            navIconDesc = null
                         }
                     }
                 }
@@ -112,12 +130,28 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
         }
     }
 
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if (tweetInputViewModel.isExpanded.value == true) {
+            when (item.itemId) {
+                android.R.id.home -> {
+                    tweetInputViewModel.onCancelClicked()
+                    return true
+                }
+            }
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.saveViewState(viewModel.currentState)
     }
 
     override fun onBackPressed() {
+        if (tweetInputViewModel.isExpanded.value == true) {
+            tweetInputViewModel.onCancelClicked()
+            return
+        }
         viewModel.onBackPressed()
     }
 
