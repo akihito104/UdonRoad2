@@ -25,12 +25,12 @@ import androidx.fragment.app.add
 import androidx.fragment.app.commit
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.get
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.databinding.ActivityMainBinding
 import com.freshdigitable.udonroad2.input.TweetInputFragment
 import com.freshdigitable.udonroad2.input.TweetInputFragmentArgs
 import com.freshdigitable.udonroad2.input.TweetInputViewModel
+import com.freshdigitable.udonroad2.input.di.TweetInputViewModelComponent
 import com.freshdigitable.udonroad2.oauth.OauthEvent
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import dagger.android.AndroidInjection
@@ -46,6 +46,13 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
     @Inject
     lateinit var viewModelProviderFactory: ViewModelProvider.Factory
     private val viewModel: MainViewModel by viewModels { viewModelProviderFactory }
+
+    @Inject
+    lateinit var tweetInputComponentFactory: TweetInputViewModelComponent.Factory
+    private val tweetInputViewModel: TweetInputViewModel by viewModels {
+        tweetInputComponentFactory.create(true)
+            .viewModelProviderFactory
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
@@ -70,25 +77,6 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
                 args = TweetInputFragmentArgs(true).toBundle()
             )
         }
-
-        binding.mainGlobalMenu.setNavigationItemSelectedListener { item ->
-            val event = when (item.itemId) {
-                R.id.drawer_menu_home -> TimelineEvent.Init
-                R.id.drawer_menu_add_account -> OauthEvent.Init
-                else -> null
-            }
-            if (event != null) {
-//                navigation.navigator.postEvent(event)
-                binding.mainDrawer.closeDrawer(binding.mainGlobalMenu)
-            }
-            return@setNavigationItemSelectedListener event != null
-        }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        val tweetInputViewModel: TweetInputViewModel =
-            ViewModelProvider(this, viewModelProviderFactory).get()
         tweetInputViewModel.isExpanded.observe(this, object : Observer<Boolean> {
             private var navHostTitle: CharSequence? = null
             override fun onChanged(expanded: Boolean?) {
@@ -109,6 +97,19 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
                 }
             }
         })
+
+        binding.mainGlobalMenu.setNavigationItemSelectedListener { item ->
+            val event = when (item.itemId) {
+                R.id.drawer_menu_home -> TimelineEvent.Init
+                R.id.drawer_menu_add_account -> OauthEvent.Init
+                else -> null
+            }
+            if (event != null) {
+//                navigation.navigator.postEvent(event)
+                binding.mainDrawer.closeDrawer(binding.mainGlobalMenu)
+            }
+            return@setNavigationItemSelectedListener event != null
+        }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

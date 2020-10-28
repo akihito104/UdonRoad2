@@ -19,6 +19,7 @@ package com.freshdigitable.udonroad2.di
 import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
+import com.freshdigitable.udonroad2.input.di.TweetInputViewModelComponentModule
 import com.freshdigitable.udonroad2.main.MainActivity
 import com.freshdigitable.udonroad2.media.MediaActivity
 import com.freshdigitable.udonroad2.media.di.MediaActivityModule
@@ -35,7 +36,8 @@ interface ActivityBuilders {
     @ContributesAndroidInjector(
         modules = [
             MainActivityModule::class,
-            ViewModelModule::class
+            ViewModelModule::class,
+            TweetInputViewModelComponentModule::class,
         ]
     )
     fun contributesMainActivity(): MainActivity
