@@ -16,12 +16,17 @@
 
 package com.freshdigitable.udonroad2.main
 
+import android.animation.Animator
+import android.animation.ObjectAnimator
 import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.graphics.drawable.DrawerArrowDrawable
+import androidx.appcompat.widget.Toolbar
+import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.add
 import androidx.fragment.app.commit
@@ -73,6 +78,10 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
             setDisplayHomeAsUpEnabled(true)
             setHomeButtonEnabled(true)
         }
+        viewModel.appBarTitle.observe(this) {
+            supportActionBar?.title = it?.invoke(this) ?: ""
+        }
+
         supportFragmentManager.commit {
             add<TweetInputFragment>(
                 binding.mainInputContainer.id,
@@ -174,4 +183,44 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
             putSerializable(KEY_VIEW_STATE, viewState)
         }
     }
+}
+
+@BindingAdapter("appBarNavigationIcon")
+fun Toolbar.bindNavigationIcon(type: NavigationIconType?) {
+    if (type == null) {
+        navigationIcon = null
+        contentDescription = ""
+        return
+    }
+    if (type == NavigationIconType.CLOSE) {
+        setTag(R.id.tag_main_app_bar_nav_icon, navigationIcon)
+        setNavigationIcon(R.drawable.ic_clear_white)
+        // todo content description
+        return
+    }
+    val description = when (type) {
+        NavigationIconType.MENU -> R.string.nav_app_bar_open_drawer_description
+        NavigationIconType.UP -> R.string.nav_app_bar_navigate_up_description
+        else -> throw IllegalStateException()
+    }
+    contentDescription = context.getString(description)
+
+    val icon = navigationIcon as? DrawerArrowDrawable
+        ?: getTag(R.id.tag_main_app_bar_nav_icon) as? DrawerArrowDrawable
+    if (icon == null) { // for the first time of set icon
+        navigationIcon = DrawerArrowDrawable(context).apply {
+            progress = 0f
+        }
+        return
+    }
+    navigationIcon = icon
+    (getTag(R.id.tag_main_app_bar_nav_icon_anim) as? Animator)?.cancel()
+    val start = icon.progress
+    val end = when (type) {
+        NavigationIconType.UP -> 1f
+        else -> 0f
+    }
+    val anim = ObjectAnimator.ofFloat(icon, "progress", start, end)
+    setTag(R.id.tag_main_app_bar_nav_icon_anim, anim)
+    anim.start()
 }

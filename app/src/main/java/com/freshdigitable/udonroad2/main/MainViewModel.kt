@@ -32,6 +32,8 @@ class MainViewModel(
 ) : ViewModel(), ShortcutViewModel {
 
     override val isFabVisible: LiveData<Boolean> = viewStates.isFabVisible
+    val appBarTitle: LiveData<AppBarTitle> = viewStates.appBarTitle
+    val navIconType: LiveData<NavigationIconType> = viewStates.navIconType
 
     internal fun initialEvent(savedState: MainActivityViewState?) {
         eventDispatcher.postEvent(TimelineEvent.Setup(savedState))
@@ -44,8 +46,6 @@ class MainViewModel(
         eventDispatcher.postSelectedItemShortcutEvent(item, selected)
     }
 
-    // FIXME: close opened item (DrawerLayout or TweetInput) is first
-    // TODO: make opened state observable
     fun onBackPressed() {
         val selectedItem = currentState?.selectedItem
         val event = when {

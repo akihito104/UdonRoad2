@@ -70,6 +70,8 @@ class MainActivityViewStates @Inject constructor(
     )
 
     private val currentNavHost: AppViewState<MainNavHostState> = navDelegate.containerState
+    val appBarTitle: AppViewState<AppBarTitle> = currentNavHost.map { it.appBarTitle }
+    val navIconType: AppViewState<NavigationIconType> = navDelegate.navIconType
 
     private val selectedItemId: AppViewState<SelectedItemId?> = currentNavHost.switchMap {
         when (it) {
