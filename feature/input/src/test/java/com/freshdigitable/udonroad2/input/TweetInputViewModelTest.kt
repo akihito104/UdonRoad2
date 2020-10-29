@@ -227,6 +227,7 @@ class TweetInputViewModelRule(
             TweetInputViewState(
                 collapsible,
                 TweetInputActions(eventDispatcher),
+                TweetInputSharedState(),
                 repository.mock,
                 oAuthTokenRepositoryRule.mock,
                 userRepositoryRule.mock,

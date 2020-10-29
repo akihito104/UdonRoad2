@@ -19,6 +19,7 @@ package com.freshdigitable.udonroad2.main
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.MutableLiveData
 import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
+import com.freshdigitable.udonroad2.input.TweetInputSharedState
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
@@ -29,6 +30,7 @@ import com.freshdigitable.udonroad2.test_common.MockVerified
 import com.freshdigitable.udonroad2.test_common.RxExceptionHandler
 import com.freshdigitable.udonroad2.test_common.jvm.OAuthTokenRepositoryRule
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
+import io.mockk.every
 import io.mockk.verify
 import org.junit.Rule
 import org.junit.Test
@@ -131,10 +133,16 @@ class MainActivityStateModelTestRule : TestWatcher() {
     val navDelegateRule = MainActivityNavigationDelegateRule()
     val navDelegate: MainActivityNavigationDelegate = navDelegateRule.mock
 
+    val isExpandedSource = MutableLiveData<Boolean>()
+    private val tweetInputSharedState = MockVerified.create<TweetInputSharedState>().apply {
+        every { mock.isExpanded } returns isExpandedSource
+    }
+
     val sut = MainActivityViewStates(
         MainActivityActions(dispatcher),
         selectedItemRepository,
         oauthTokenRepositoryMock.mock,
+        tweetInputSharedState.mock,
         ListOwnerGenerator(),
         navDelegateRule.mock
     )

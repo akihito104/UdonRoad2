@@ -18,7 +18,6 @@ package com.freshdigitable.udonroad2.main
 
 import android.animation.Animator
 import android.animation.ObjectAnimator
-import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
@@ -30,7 +29,6 @@ import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.add
 import androidx.fragment.app.commit
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.databinding.ActivityMainBinding
@@ -88,42 +86,6 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
                 args = TweetInputFragmentArgs(true).toBundle()
             )
         }
-        tweetInputViewModel.isExpanded.observe(this, object : Observer<Boolean> {
-            private var navHostTitle: CharSequence? = null
-            private var navIcon: Drawable? = null
-            private var navIconDesc: CharSequence? = null
-            override fun onChanged(expanded: Boolean?) {
-                when (expanded) {
-                    true -> {
-                        if (navHostTitle != null) {
-                            throw IllegalStateException("navHostTitle: $navHostTitle")
-                        }
-                        navHostTitle = supportActionBar?.title
-                        supportActionBar?.setTitle(R.string.title_input_send_tweet)
-
-                        navIconDesc = binding.mainToolbar.navigationContentDescription
-                        binding.mainToolbar.setNavigationContentDescription(android.R.string.cancel)
-
-                        navIcon = binding.mainToolbar.navigationIcon
-                        binding.mainToolbar.setNavigationIcon(R.drawable.ic_clear_white)
-                    }
-                    false -> {
-                        if (navHostTitle != null) {
-                            supportActionBar?.title = navHostTitle
-                            navHostTitle = null
-                        }
-                        if (navIcon != null) {
-                            binding.mainToolbar.navigationIcon = navIcon
-                            navIcon = null
-                        }
-                        if (navIconDesc != null) {
-                            binding.mainToolbar.navigationContentDescription = navIconDesc
-                            navIconDesc = null
-                        }
-                    }
-                }
-            }
-        })
 
         binding.mainGlobalMenu.setNavigationItemSelectedListener { item ->
             val event = when (item.itemId) {

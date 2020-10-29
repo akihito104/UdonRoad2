@@ -82,6 +82,17 @@ class MainViewModelTest {
                 // verify
                 assertThat(sut.navIconType.value).isEqualTo(NavigationIconType.UP)
             }
+
+        @Test
+        fun navIconType_WhenIsInTopLevelDestinationIsTrueAndTweetInputIsExpanded_then_navIconTypeIsClose(): Unit =
+            with(rule) {
+                // setup
+                stateModelRule.navDelegateRule.setIsInTopLevelDestination(false)
+                stateModelRule.isExpandedSource.value = true
+
+                // verify
+                assertThat(sut.navIconType.value).isEqualTo(NavigationIconType.CLOSE)
+            }
     }
 
     class WhenItemSelected {
