@@ -34,8 +34,6 @@ import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.databinding.ActivityMainBinding
 import com.freshdigitable.udonroad2.input.TweetInputFragment
 import com.freshdigitable.udonroad2.input.TweetInputFragmentArgs
-import com.freshdigitable.udonroad2.input.TweetInputViewModel
-import com.freshdigitable.udonroad2.input.di.TweetInputViewModelComponent
 import com.freshdigitable.udonroad2.oauth.OauthEvent
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import dagger.android.AndroidInjection
@@ -51,13 +49,6 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
     @Inject
     lateinit var viewModelProviderFactory: ViewModelProvider.Factory
     private val viewModel: MainViewModel by viewModels { viewModelProviderFactory }
-
-    @Inject
-    lateinit var tweetInputComponentFactory: TweetInputViewModelComponent.Factory
-    private val tweetInputViewModel: TweetInputViewModel by viewModels {
-        tweetInputComponentFactory.create(true)
-            .viewModelProviderFactory
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
@@ -102,10 +93,10 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (tweetInputViewModel.isExpanded.value == true) {
+        if (viewModel.isTweetInputExpanded) {
             when (item.itemId) {
                 android.R.id.home -> {
-                    tweetInputViewModel.onCancelClicked()
+                    viewModel.collapseTweetInput()
                     return true
                 }
             }
@@ -119,10 +110,6 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
     }
 
     override fun onBackPressed() {
-        if (tweetInputViewModel.isExpanded.value == true) {
-            tweetInputViewModel.onCancelClicked()
-            return
-        }
         viewModel.onBackPressed()
     }
 

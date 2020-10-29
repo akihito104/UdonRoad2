@@ -19,6 +19,7 @@ package com.freshdigitable.udonroad2.main
 import android.view.MenuItem
 import androidx.annotation.IdRes
 import com.freshdigitable.udonroad2.R
+import com.freshdigitable.udonroad2.input.TweetInputEvent
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
@@ -33,6 +34,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.experimental.runners.Enclosed
+import org.junit.rules.ExpectedException
 import org.junit.rules.RuleChain
 import org.junit.rules.TestWatcher
 import org.junit.runner.Description
@@ -64,7 +66,7 @@ class MainViewModelTest {
         }
 
         @Test
-        fun navIconType_WhenIsInTopLevelDestinationIsTrue_then_navIconTypeIsMenu(): Unit =
+        fun navIconType_WhenInTopLevelDestination_then_navIconIsMenu(): Unit =
             with(rule) {
                 // setup
                 stateModelRule.navDelegateRule.setIsInTopLevelDestination(true)
@@ -74,7 +76,7 @@ class MainViewModelTest {
             }
 
         @Test
-        fun navIconType_WhenIsInTopLevelDestinationIsFalse_then_navIconTypeIsUp(): Unit =
+        fun navIconType_WhenNotInTopLevelDestination_then_navIconIsUp(): Unit =
             with(rule) {
                 // setup
                 stateModelRule.navDelegateRule.setIsInTopLevelDestination(false)
@@ -84,7 +86,18 @@ class MainViewModelTest {
             }
 
         @Test
-        fun navIconType_WhenIsInTopLevelDestinationIsTrueAndTweetInputIsExpanded_then_navIconTypeIsClose(): Unit =
+        fun navIconType_WhenInTopLevelDestinationAndTweetInputIsExpanded_then_navIconIsClose(): Unit =
+            with(rule) {
+                // setup
+                stateModelRule.navDelegateRule.setIsInTopLevelDestination(true)
+                stateModelRule.isExpandedSource.value = true
+
+                // verify
+                assertThat(sut.navIconType.value).isEqualTo(NavigationIconType.CLOSE)
+            }
+
+        @Test
+        fun navIconType_WhenNotInTopLevelDestinationAndTweetInputIsExpanded_then_navIconIsClose(): Unit =
             with(rule) {
                 // setup
                 stateModelRule.navDelegateRule.setIsInTopLevelDestination(false)
@@ -92,6 +105,35 @@ class MainViewModelTest {
 
                 // verify
                 assertThat(sut.navIconType.value).isEqualTo(NavigationIconType.CLOSE)
+            }
+
+        @Test
+        fun collapseTweetInput_whenTweetInputIsExpanded_then_dispatchCancelEvent(): Unit =
+            with(rule) {
+                // setup
+                val eventObserver = stateModelRule.dispatcher.emitter.test()
+                stateModelRule.isExpandedSource.value = true
+
+                // exercise
+                sut.collapseTweetInput()
+
+                // verify
+                eventObserver.assertValueCount(1)
+                    .assertValueAt(0) { it is TweetInputEvent.Cancel }
+            }
+
+        @get:Rule
+        val expectedException: ExpectedException = ExpectedException.none()
+
+        @Test
+        fun collapseTweetInput_whenTweetInputIsNotExpanded_then_throwIllegalStateException(): Unit =
+            with(rule) {
+                // setup
+                stateModelRule.isExpandedSource.value = false
+                expectedException.expect(IllegalStateException::class.java)
+
+                // exercise
+                sut.collapseTweetInput()
             }
     }
 
@@ -127,7 +169,7 @@ class MainViewModelTest {
         }
 
         @Test
-        fun onBackPressed_then_UnselectedEventDispatched(): Unit = with(rule) {
+        fun onBackPressed_then_dispatchUnselectedEvent(): Unit = with(rule) {
             // setup
             val dispatcherObserver = stateModelRule.dispatcher.emitter.test()
 
@@ -139,6 +181,22 @@ class MainViewModelTest {
                 .assertValueCount(1)
                 .assertValueAt(0) { it is TimelineEvent.TweetItemSelection.Unselected }
         }
+
+        @Test
+        fun onBackPressed_whenTweetInputIsExpanded_then_dispatchInputCancelEvent(): Unit =
+            with(rule) {
+                // setup
+                val dispatcherObserver = stateModelRule.dispatcher.emitter.test()
+                stateModelRule.isExpandedSource.value = true
+
+                // exercise
+                sut.onBackPressed()
+
+                // verify
+                dispatcherObserver
+                    .assertValueCount(1)
+                    .assertValueAt(0) { it is TweetInputEvent.Cancel }
+            }
     }
 }
 

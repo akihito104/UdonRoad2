@@ -42,7 +42,7 @@ class MainActivityViewStates @Inject constructor(
     actions: MainActivityActions,
     selectedItemRepository: SelectedItemRepository,
     tokenRepository: OAuthTokenRepository,
-    tweetInputSharedState: TweetInputSharedState,
+    private val tweetInputSharedState: TweetInputSharedState,
     listOwnerGenerator: ListOwnerGenerator,
     private val navDelegate: MainActivityNavigationDelegate,
 ) {
@@ -74,6 +74,9 @@ class MainActivityViewStates @Inject constructor(
     )
 
     private val currentNavHost: AppViewState<MainNavHostState> = navDelegate.containerState
+    val isTweetInputExpanded: Boolean
+        get() = tweetInputSharedState.isExpanded.value ?: false
+
     val appBarTitle: AppViewState<AppBarTitle> = merge(
         tweetInputSharedState.isExpanded,
         currentNavHost

@@ -19,6 +19,7 @@ package com.freshdigitable.udonroad2.main
 import android.view.MenuItem
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
+import com.freshdigitable.udonroad2.input.TweetInputEvent
 import com.freshdigitable.udonroad2.model.app.navigation.CommonEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.shortcut.ShortcutViewModel
@@ -31,9 +32,11 @@ class MainViewModel(
     private val viewStates: MainActivityViewStates,
 ) : ViewModel(), ShortcutViewModel {
 
-    override val isFabVisible: LiveData<Boolean> = viewStates.isFabVisible
-    val appBarTitle: LiveData<AppBarTitle> = viewStates.appBarTitle
     val navIconType: LiveData<NavigationIconType> = viewStates.navIconType
+    val appBarTitle: LiveData<AppBarTitle> = viewStates.appBarTitle
+    val isTweetInputExpanded: Boolean
+        get() = viewStates.isTweetInputExpanded
+    override val isFabVisible: LiveData<Boolean> = viewStates.isFabVisible
 
     internal fun initialEvent(savedState: MainActivityViewState?) {
         eventDispatcher.postEvent(TimelineEvent.Setup(savedState))
@@ -46,15 +49,17 @@ class MainViewModel(
         eventDispatcher.postSelectedItemShortcutEvent(item, selected)
     }
 
+    fun collapseTweetInput() {
+        check(isTweetInputExpanded)
+        eventDispatcher.postEvent(TweetInputEvent.Cancel)
+    }
+
     fun onBackPressed() {
         val selectedItem = currentState?.selectedItem
         val event = when {
-            selectedItem != null -> {
-                TimelineEvent.TweetItemSelection.Unselected(selectedItem.owner)
-            }
-            else -> {
-                CommonEvent.Back
-            }
+            isTweetInputExpanded -> TweetInputEvent.Cancel
+            selectedItem != null -> TimelineEvent.TweetItemSelection.Unselected(selectedItem.owner)
+            else -> CommonEvent.Back
         }
         eventDispatcher.postEvent(event)
     }
