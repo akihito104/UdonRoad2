@@ -6,7 +6,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.map
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.findNavController
@@ -57,12 +56,7 @@ class MainActivityNavigationDelegate @Inject constructor(
             _isInTopLevelDest.value = destination.isTopLevelDestination(nc)
         }
     private val _isInTopLevelDest = MutableLiveData<Boolean>()
-    val navIconType: LiveData<NavigationIconType> = _isInTopLevelDest.map {
-        when (it) {
-            false -> NavigationIconType.UP
-            else -> NavigationIconType.MENU
-        }
-    }
+    val isInTopLevelDest: LiveData<Boolean> = _isInTopLevelDest
 
     private fun NavDestination.isTopLevelDestination(nc: NavController): Boolean {
         val topLevelDestinations = AppBarConfiguration(nc.graph).topLevelDestinations

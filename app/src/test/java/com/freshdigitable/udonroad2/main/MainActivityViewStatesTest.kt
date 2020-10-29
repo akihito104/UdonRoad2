@@ -108,13 +108,19 @@ class MainActivityNavigationDelegateRule(
 ) : TestRule by _mock {
     val mock: MainActivityNavigationDelegate = _mock.mock
     private val containerStateSource = MutableLiveData<MainNavHostState>()
+    private val isInTopLevelDestSource = MutableLiveData<Boolean>()
 
     init {
         _mock.setupResponseWithVerify({ mock.containerState }, containerStateSource)
+        _mock.setupResponseWithVerify({ mock.isInTopLevelDest }, isInTopLevelDestSource)
     }
 
     fun setupContainerState(state: MainNavHostState) {
         containerStateSource.value = state
+    }
+
+    fun setIsInTopLevelDestination(isInTop: Boolean) {
+        isInTopLevelDestSource.value = isInTop
     }
 }
 
@@ -140,7 +146,7 @@ class MainActivityStateModelTestRule : TestWatcher() {
     override fun starting(description: Description?) {
         super.starting(description)
         listOf(
-            sut.isFabVisible,
+            sut.isFabVisible, sut.appBarTitle, sut.navIconType
         ).forEach { it.observeForever {} }
     }
 

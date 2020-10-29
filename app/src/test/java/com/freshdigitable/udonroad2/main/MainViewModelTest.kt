@@ -62,6 +62,26 @@ class MainViewModelTest {
                 )
             }
         }
+
+        @Test
+        fun navIconType_WhenIsInTopLevelDestinationIsTrue_then_navIconTypeIsMenu(): Unit =
+            with(rule) {
+                // setup
+                stateModelRule.navDelegateRule.setIsInTopLevelDestination(true)
+
+                // verify
+                assertThat(sut.navIconType.value).isEqualTo(NavigationIconType.MENU)
+            }
+
+        @Test
+        fun navIconType_WhenIsInTopLevelDestinationIsFalse_then_navIconTypeIsUp(): Unit =
+            with(rule) {
+                // setup
+                stateModelRule.navDelegateRule.setIsInTopLevelDestination(false)
+
+                // verify
+                assertThat(sut.navIconType.value).isEqualTo(NavigationIconType.UP)
+            }
     }
 
     class WhenItemSelected {

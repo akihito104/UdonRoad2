@@ -71,7 +71,12 @@ class MainActivityViewStates @Inject constructor(
 
     private val currentNavHost: AppViewState<MainNavHostState> = navDelegate.containerState
     val appBarTitle: AppViewState<AppBarTitle> = currentNavHost.map { it.appBarTitle }
-    val navIconType: AppViewState<NavigationIconType> = navDelegate.navIconType
+    val navIconType: AppViewState<NavigationIconType> = navDelegate.isInTopLevelDest.map {
+        when (it) {
+            false -> NavigationIconType.UP
+            else -> NavigationIconType.MENU
+        }
+    }
 
     private val selectedItemId: AppViewState<SelectedItemId?> = currentNavHost.switchMap {
         when (it) {
