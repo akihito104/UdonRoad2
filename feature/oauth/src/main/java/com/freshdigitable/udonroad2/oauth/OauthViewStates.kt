@@ -24,7 +24,7 @@ import com.freshdigitable.udonroad2.model.AccessTokenEntity
 import com.freshdigitable.udonroad2.model.RequestTokenItem
 import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.DispatcherProvider
-import com.freshdigitable.udonroad2.model.app.ext.merge
+import com.freshdigitable.udonroad2.model.app.ext.combineLatest
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.AppViewState
 import com.freshdigitable.udonroad2.model.app.navigation.EventResult
@@ -52,9 +52,10 @@ class OauthViewStates(
         it.text
     }.toViewState()
 
-    internal val sendPinEnabled: AppViewState<Boolean> = merge(requestToken, pinText) { t, p ->
-        t != null && p?.isNotEmpty() == true
-    }
+    internal val sendPinEnabled: AppViewState<Boolean> =
+        combineLatest(requestToken, pinText) { t, p ->
+            t != null && p?.isNotEmpty() == true
+        }
 
     private val completeAuthProcess: AppAction<EventResult<OauthEvent.SendPinClicked, AccessTokenEntity>> =
         actions.sendPin.suspendMap(appExecutor.dispatcher.mainContext) {

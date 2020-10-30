@@ -27,7 +27,7 @@ import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.app.di.ActivityScope
-import com.freshdigitable.udonroad2.model.app.ext.merge
+import com.freshdigitable.udonroad2.model.app.ext.combineLatest
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.AppViewState
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
@@ -77,7 +77,7 @@ class MainActivityViewStates @Inject constructor(
     val isTweetInputExpanded: Boolean
         get() = tweetInputSharedState.isExpanded.value ?: false
 
-    val appBarTitle: AppViewState<AppBarTitle> = merge(
+    val appBarTitle: AppViewState<AppBarTitle> = combineLatest(
         tweetInputSharedState.isExpanded,
         currentNavHost
     ) { expanded, navHost ->
@@ -88,7 +88,7 @@ class MainActivityViewStates @Inject constructor(
             else -> navHost?.appBarTitle ?: { "" }
         }
     }
-    val navIconType: AppViewState<NavigationIconType> = merge(
+    val navIconType: AppViewState<NavigationIconType> = combineLatest(
         tweetInputSharedState.isExpanded,
         navDelegate.isInTopLevelDest
     ) { expanded, inTopLevel ->
