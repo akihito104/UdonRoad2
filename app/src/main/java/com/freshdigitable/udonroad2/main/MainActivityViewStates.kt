@@ -106,7 +106,16 @@ class MainActivityViewStates @Inject constructor(
         }
     }
 
-    val isFabVisible: AppViewState<Boolean> = selectedItemId.map { it != null }
+    val isFabVisible: AppViewState<Boolean> = combineLatest(
+        selectedItemId.map { it != null },
+        tweetInputSharedState.isExpanded
+    ) { selected, expanded ->
+        when {
+            expanded == true -> false
+            selected == true -> true
+            else -> false
+        }
+    }
 
     val current: MainActivityViewState?
         get() {

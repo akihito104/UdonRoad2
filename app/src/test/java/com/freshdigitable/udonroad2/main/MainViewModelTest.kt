@@ -197,6 +197,15 @@ class MainViewModelTest {
                     .assertValueCount(1)
                     .assertValueAt(0) { it is TweetInputEvent.Cancel }
             }
+
+        @Test
+        fun isFabVisible_tweetInputIsExpanded_then_fabIsDisappeared(): Unit = with(rule) {
+            // exercise
+            stateModelRule.isExpandedSource.value = true
+
+            // verify
+            assertThat(sut.isFabVisible.value).isFalse()
+        }
     }
 }
 
