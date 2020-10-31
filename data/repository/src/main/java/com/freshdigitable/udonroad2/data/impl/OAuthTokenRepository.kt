@@ -22,6 +22,7 @@ import com.freshdigitable.udonroad2.model.RequestTokenItem
 import com.freshdigitable.udonroad2.model.user.UserId
 import dagger.Module
 import dagger.Provides
+import kotlinx.coroutines.flow.Flow
 
 class OAuthTokenRepository(
     private val apiClient: OAuthApiClient,
@@ -63,6 +64,8 @@ class OAuthTokenRepository(
         return prefs.getCurrentUserId()
     }
 
+    fun getCurrentUserIdFlow(): Flow<UserId> = prefs.getCurrentUserIdFlow()
+
     private fun setCurrentUserId(userId: UserId) {
         require(prefs.isAuthenticatedUser(userId)) { "unregistered userId: $userId" }
         prefs.setCurrentUserId(userId)
@@ -75,7 +78,6 @@ class OAuthTokenRepository(
 
 @Module
 interface OAuthTokenRepositoryModule {
-    @Module
     companion object {
         @Provides
         fun provideOAuthTokenRepository(

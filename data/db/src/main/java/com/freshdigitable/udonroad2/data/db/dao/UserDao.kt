@@ -17,6 +17,7 @@
 package com.freshdigitable.udonroad2.data.db.dao
 
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.map
 import androidx.paging.DataSource
 import androidx.room.ColumnInfo
 import androidx.room.Dao
@@ -32,6 +33,8 @@ import com.freshdigitable.udonroad2.data.db.entity.UserEntity
 import com.freshdigitable.udonroad2.data.db.ext.toEntity
 import com.freshdigitable.udonroad2.model.user.User
 import com.freshdigitable.udonroad2.model.user.UserId
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 @Dao
 abstract class UserDao {
@@ -51,11 +54,15 @@ abstract class UserDao {
 
     @Query("SELECT * FROM user WHERE id = :id")
     internal abstract fun getUserSource(id: UserId): LiveData<UserEntity?>
-    open fun getUserSourceById(id: UserId): LiveData<out User?> = getUserSource(id)
+    open fun getUserSourceById(id: UserId): LiveData<User?> = getUserSource(id).map { it }
 
     @Query("SELECT * FROM user WHERE id = :id")
     internal abstract suspend fun getUser(id: UserId): UserEntity?
     open suspend fun getUserById(id: UserId): User? = getUser(id)
+
+    @Query("SELECT * FROM user WHERE id = :id")
+    internal abstract fun getUserFlow(id: UserId): Flow<UserEntity?>
+    open fun getUserFlowById(id: UserId): Flow<User?> = getUserFlow(id).distinctUntilChanged()
 
     @Transaction
     internal open suspend fun addUsers(entities: List<UserEntity>, owner: String? = null) {

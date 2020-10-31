@@ -8,12 +8,14 @@ import com.freshdigitable.udonroad2.model.user.User
 import com.freshdigitable.udonroad2.model.user.UserId
 import dagger.Module
 import dagger.Provides
+import kotlinx.coroutines.flow.Flow
 
 class UserRepository(
     private val dao: UserDao,
     private val restClient: UserRestClient,
 ) {
-    fun getUserSource(id: UserId): LiveData<out User?> = dao.getUserSourceById(id)
+    fun getUserSource(id: UserId): LiveData<User?> = dao.getUserSourceById(id)
+    fun getUserFlow(id: UserId): Flow<User?> = dao.getUserFlowById(id)
 
     suspend fun getUser(id: UserId): User? {
         return dao.getUserById(id) ?: restClient.showUser(id).also { dao.addUsers(listOf(it)) }

@@ -21,6 +21,7 @@ import com.freshdigitable.udonroad2.model.AccessTokenEntity
 import com.freshdigitable.udonroad2.model.RequestTokenItem
 import com.freshdigitable.udonroad2.model.user.UserId
 import com.freshdigitable.udonroad2.test_common.MockVerified
+import kotlinx.coroutines.flow.flow
 import org.junit.rules.TestRule
 import java.io.Serializable
 
@@ -35,6 +36,13 @@ class OAuthTokenRepositoryRule(
         if (id != null) {
             setupLogin(id)
         }
+    }
+
+    fun setupCurrentUserIdSource(userId: Long?) {
+        mockVerified.setupResponseWithVerify(
+            { mock.getCurrentUserIdFlow() },
+            flow { emit(UserId.create(userId)) }
+        )
     }
 
     fun setupLogin(id: UserId) {

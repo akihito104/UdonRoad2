@@ -73,10 +73,7 @@ class TweetInputFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val binding = DataBindingUtil.findBinding<FragmentTweetInputBinding>(view)?.apply { // FIXME
-            twName.text = "test"
-            twIcon.setImageResource(R.drawable.ic_like)
-        } ?: return
+        val binding: FragmentTweetInputBinding = DataBindingUtil.findBinding(view) ?: return
         binding.viewModel = viewModel
         binding.lifecycleOwner = viewLifecycleOwner
 
