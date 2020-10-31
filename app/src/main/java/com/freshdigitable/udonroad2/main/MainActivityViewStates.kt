@@ -16,7 +16,9 @@
 
 package com.freshdigitable.udonroad2.main
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.map
 import androidx.lifecycle.switchMap
 import com.freshdigitable.udonroad2.R
@@ -74,6 +76,9 @@ class MainActivityViewStates @Inject constructor(
     )
 
     private val currentNavHost: AppViewState<MainNavHostState> = navDelegate.containerState
+    val isTweetInputMenuVisible: LiveData<Boolean> = currentNavHost.map {
+        !(it is MainNavHostState.Timeline && it.owner.query is QueryType.Oauth)
+    }.distinctUntilChanged()
     val isTweetInputExpanded: Boolean
         get() = tweetInputSharedState.isExpanded.value ?: false
 

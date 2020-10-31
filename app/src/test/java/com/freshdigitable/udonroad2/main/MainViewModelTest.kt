@@ -214,6 +214,18 @@ class MainViewModelTestRule(
 ) : TestWatcher() {
     val sut: MainViewModel = MainViewModel(stateModelRule.dispatcher, stateModelRule.sut)
 
+    override fun starting(description: Description?) {
+        super.starting(description)
+        with(sut) {
+            listOf(
+                navIconType,
+                appBarTitle,
+                isTweetInputMenuVisible,
+                isFabVisible,
+            ).forEach { it.observeForever { } }
+        }
+    }
+
     override fun apply(base: Statement?, description: Description?): Statement {
         return RuleChain.outerRule(stateModelRule)
             .apply(super.apply(base, description), description)
