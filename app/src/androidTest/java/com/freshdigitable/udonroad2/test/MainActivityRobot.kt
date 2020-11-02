@@ -16,12 +16,18 @@
 
 package com.freshdigitable.udonroad2.test
 
+import android.widget.TextView
 import androidx.annotation.StringRes
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.ViewInteraction
 import androidx.test.espresso.action.ViewActions.swipeLeft
+import androidx.test.espresso.assertion.ViewAssertions.matches
+import androidx.test.espresso.matcher.ViewMatchers.isAssignableFrom
 import androidx.test.espresso.matcher.ViewMatchers.withId
+import androidx.test.espresso.matcher.ViewMatchers.withParent
+import androidx.test.espresso.matcher.ViewMatchers.withText
 import com.freshdigitable.udonroad2.R
+import org.hamcrest.CoreMatchers.allOf
 
 fun onMainActivity(block: MainActivityRobot.() -> Unit) {
     MainActivityRobot().apply(block)
@@ -49,5 +55,14 @@ class MainActivityRobot : ActivityRobot {
         verifyRobot.apply(block)
     }
 
-    class Verify : ActivityRobot.VerifyRobot, FabVerify by FabVerify.get(fab)
+    class Verify : ActivityRobot.VerifyRobot, FabVerify by FabVerify.get(fab) {
+        override fun actionBarTitle(titleRes: Int) {
+            onView(
+                allOf(
+                    withParent(withId(R.id.main_toolbar)),
+                    isAssignableFrom(TextView::class.java)
+                )
+            ).check(matches(withText(titleRes)))
+        }
+    }
 }
