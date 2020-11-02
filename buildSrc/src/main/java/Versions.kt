@@ -19,7 +19,8 @@ object Versions {
     const val KOTLIN_COROUTINES = "1.3.9"
 
     const val ANDROIDX_APPCOMPAT = "1.2.0"
-    const val ANDROIDX_FRAGMENT = "1.2.4"
+    const val ANDROIDX_ACTIVITY = "1.2.0-beta01"
+    const val ANDROIDX_FRAGMENT = "1.3.0-beta01"
 
     const val ANDROIDX_CORE = "1.3.1"
     const val ANDROIDX_LIFECYCLE = "2.2.0"

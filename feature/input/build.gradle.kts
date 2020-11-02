@@ -55,6 +55,7 @@ dependencies {
     implementation(Libs.KOTLINX_COROUTINES_RX2)
     implementation(Libs.ANDROIDX_CORE_KTX)
     implementation(Libs.ANDROIDX_APPCOMPAT)
+    implementation(Libs.ANDROIDX_FRAGMENT_KTX)
     implementation(Libs.ANDROIDX_LIFECYCLE_LIVEDATA_KTX)
     implementation(Libs.ANDROIDX_CONSTRAINT_LAYOUT)
     implementation(Libs.MATERIAL_DESIGN)
