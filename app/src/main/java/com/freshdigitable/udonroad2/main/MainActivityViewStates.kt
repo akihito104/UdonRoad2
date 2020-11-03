@@ -19,12 +19,15 @@ package com.freshdigitable.udonroad2.main
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.map
 import androidx.lifecycle.switchMap
+import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
 import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
+import com.freshdigitable.udonroad2.input.TweetInputSharedState
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.app.di.ActivityScope
+import com.freshdigitable.udonroad2.model.app.ext.merge
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.AppViewState
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
@@ -39,6 +42,7 @@ class MainActivityViewStates @Inject constructor(
     actions: MainActivityActions,
     selectedItemRepository: SelectedItemRepository,
     tokenRepository: OAuthTokenRepository,
+    private val tweetInputSharedState: TweetInputSharedState,
     listOwnerGenerator: ListOwnerGenerator,
     private val navDelegate: MainActivityNavigationDelegate,
 ) {
@@ -70,6 +74,30 @@ class MainActivityViewStates @Inject constructor(
     )
 
     private val currentNavHost: AppViewState<MainNavHostState> = navDelegate.containerState
+    val isTweetInputExpanded: Boolean
+        get() = tweetInputSharedState.isExpanded.value ?: false
+
+    val appBarTitle: AppViewState<AppBarTitle> = merge(
+        tweetInputSharedState.isExpanded,
+        currentNavHost
+    ) { expanded, navHost ->
+        when (expanded) {
+            true -> {
+                { it.getString(R.string.title_input_send_tweet) }
+            }
+            else -> navHost?.appBarTitle ?: { "" }
+        }
+    }
+    val navIconType: AppViewState<NavigationIconType> = merge(
+        tweetInputSharedState.isExpanded,
+        navDelegate.isInTopLevelDest
+    ) { expanded, inTopLevel ->
+        when {
+            expanded == true -> NavigationIconType.CLOSE
+            inTopLevel == false -> NavigationIconType.UP
+            else -> NavigationIconType.MENU
+        }
+    }
 
     private val selectedItemId: AppViewState<SelectedItemId?> = currentNavHost.switchMap {
         when (it) {

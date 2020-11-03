@@ -1,5 +1,6 @@
 package com.freshdigitable.udonroad2.main
 
+import android.content.Context
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.drawerlayout.widget.DrawerLayout
@@ -8,8 +9,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.findNavController
+import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
-import androidx.navigation.ui.setupActionBarWithNavController
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.media.MediaActivityArgs
 import com.freshdigitable.udonroad2.model.ListOwner
@@ -29,6 +30,7 @@ import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentArgs
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentDirections
 import com.freshdigitable.udonroad2.timeline.fragment.TweetDetailFragmentArgs
 import com.freshdigitable.udonroad2.user.UserActivityDirections
+import timber.log.Timber
 import java.io.Serializable
 import javax.inject.Inject
 
@@ -45,12 +47,28 @@ class MainActivityNavigationDelegate @Inject constructor(
         it.findViewById<DrawerLayout>(R.id.main_drawer)
     }
     private val onDestinationChanged =
-        NavController.OnDestinationChangedListener { _, destination, arguments ->
+        NavController.OnDestinationChangedListener { nc, destination, arguments ->
+            Timber.tag("MainNavDelegate").d("onDestinationChanged: $destination, $arguments")
             val containerState = requireNotNull(
                 MainNavHostState.create(destination, arguments)
             )
             _containerState.value = containerState
+            _isInTopLevelDest.value = destination.isTopLevelDestination(nc)
         }
+    private val _isInTopLevelDest = MutableLiveData<Boolean>()
+    val isInTopLevelDest: LiveData<Boolean> = _isInTopLevelDest
+
+    private fun NavDestination.isTopLevelDestination(nc: NavController): Boolean {
+        val topLevelDestinations = AppBarConfiguration(nc.graph).topLevelDestinations
+        var d: NavDestination? = this
+        while (d != null) {
+            if (topLevelDestinations.contains(d.id)) {
+                return true
+            }
+            d = d.parent
+        }
+        return false
+    }
 
     private val navController: NavController by weakRef(mainActivity) { a ->
         a.findNavController(R.id.main_nav_host).also {
@@ -102,7 +120,6 @@ class MainActivityNavigationDelegate @Inject constructor(
                     R.navigation.nav_main,
                     ListItemFragment.bundle(nextState.owner, getString(nextState.label))
                 )
-                setupActionBarWithNavController(navController, drawerLayout)
             }
             NavigationEvent.Type.NAVIGATE -> TODO()
         }
@@ -119,9 +136,12 @@ class MainActivityNavigationDelegate @Inject constructor(
     }
 }
 
+typealias AppBarTitle = (Context) -> CharSequence
+
 sealed class MainNavHostState : FragmentContainerState, Serializable {
     data class Timeline(
-        val owner: ListOwner<*>
+        val owner: ListOwner<*>,
+        override val appBarTitle: AppBarTitle = { "" },
     ) : MainNavHostState() {
         override val fragmentId: Int = R.id.fragment_timeline
 
@@ -134,6 +154,7 @@ sealed class MainNavHostState : FragmentContainerState, Serializable {
         val tweetId: TweetId
     ) : MainNavHostState() {
         override val fragmentId: Int = R.id.fragment_detail
+        override val appBarTitle: AppBarTitle = { it.getString(R.string.title_detail) }
 
         override fun isDestinationEqualTo(other: NavigationEvent?): Boolean {
             return (other as? TimelineEvent.Navigate.Detail)?.id == this.tweetId
@@ -141,6 +162,7 @@ sealed class MainNavHostState : FragmentContainerState, Serializable {
     }
 
     abstract val fragmentId: Int
+    abstract val appBarTitle: AppBarTitle
     abstract fun isDestinationEqualTo(other: NavigationEvent?): Boolean
 
     companion object
@@ -164,7 +186,10 @@ private fun MainNavHostState.Companion.create(
     return when (destination?.id) {
         R.id.fragment_timeline -> {
             val args = ListItemFragmentArgs.fromBundle(requireNotNull(arguments))
-            MainNavHostState.Timeline(ListOwner(args.ownerId, args.query))
+            MainNavHostState.Timeline(
+                ListOwner(args.ownerId, args.query),
+                appBarTitle = { args.label }
+            )
         }
         R.id.fragment_detail -> {
             val args = TweetDetailFragmentArgs.fromBundle(requireNotNull(arguments))
@@ -173,3 +198,5 @@ private fun MainNavHostState.Companion.create(
         else -> null
     }
 }
+
+enum class NavigationIconType { MENU, UP, CLOSE }

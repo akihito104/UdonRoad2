@@ -41,7 +41,7 @@ interface TweetInputViewModelModule {
 interface TweetInputViewModelComponent {
     @Subcomponent.Factory
     interface Factory {
-        fun create(@BindsInstance collapsable: Boolean): TweetInputViewModelComponent
+        fun create(@BindsInstance collapsible: Boolean): TweetInputViewModelComponent
     }
 
     val viewModelProviderFactory: ViewModelProvider.Factory

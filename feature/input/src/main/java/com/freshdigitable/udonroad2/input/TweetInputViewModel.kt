@@ -18,6 +18,7 @@ package com.freshdigitable.udonroad2.input
 
 import android.text.Editable
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.distinctUntilChanged
@@ -27,6 +28,7 @@ import com.freshdigitable.udonroad2.data.impl.TweetInputRepository
 import com.freshdigitable.udonroad2.data.impl.UserRepository
 import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.AppTwitterException
+import com.freshdigitable.udonroad2.model.app.di.ActivityScope
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.AppViewState
@@ -105,9 +107,16 @@ enum class InputTaskState(val isExpanded: Boolean) {
     CANCELED(false)
 }
 
+@ActivityScope
+class TweetInputSharedState @Inject constructor() {
+    internal val taskState: MutableLiveData<InputTaskState> = MutableLiveData()
+    val isExpanded: AppViewState<Boolean> = taskState.map { it.isExpanded }.distinctUntilChanged()
+}
+
 class TweetInputViewState @Inject constructor(
     collapsible: Boolean,
     actions: TweetInputActions,
+    sharedState: TweetInputSharedState,
     private val repository: TweetInputRepository,
     oauthRepository: OAuthTokenRepository,
     userRepository: UserRepository,
@@ -127,11 +136,8 @@ class TweetInputViewState @Inject constructor(
             )
         }
     )
-    internal val taskState: AppViewState<InputTaskState> = _taskState.toViewState()
-
-    internal val isExpanded: AppViewState<Boolean> = taskState.map {
-        it.isExpanded
-    }.distinctUntilChanged()
+    internal val taskState: AppViewState<InputTaskState> = sharedState.taskState
+    internal val isExpanded: AppViewState<Boolean> = sharedState.isExpanded
 
     private val _text: AppAction<String> = AppAction.merge(
         AppAction.just(""),
@@ -166,6 +172,9 @@ class TweetInputViewState @Inject constructor(
         .asLiveData(executor.dispatcher.mainContext)
 
     private val disposable = CompositeDisposable(
+        _taskState.subscribe {
+            sharedState.taskState.value = it
+        },
         actions.sendTweet.suspendMap(executor.dispatcher.mainContext) {
             stateEventOnSend.onNext(InputTaskState.SENDING)
             repository.post(it.text)

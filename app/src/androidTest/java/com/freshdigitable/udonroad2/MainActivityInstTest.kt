@@ -32,6 +32,7 @@ import com.freshdigitable.udonroad2.test.intendingToAuthorizationUrl
 import com.freshdigitable.udonroad2.test.mainList
 import com.freshdigitable.udonroad2.test.oauth
 import com.freshdigitable.udonroad2.test.onMainActivity
+import com.freshdigitable.udonroad2.user.TweetingUserImpl
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -53,11 +54,16 @@ class MainActivityInstTest {
         @Test
         fun startOauth(): Unit = onMainActivity {
             // setup
+            val authedUserId = UserId(10000)
+            val tweetingUser = TweetingUserImpl(authedUserId, "user1", "user1", "")
+            val user = createUser(tweetingUser.id.value, tweetingUser.name, tweetingUser.screenName)
+            twitterRobot.setupShowUser(user)
+
             val requestToken = createRequestToken(
-                10000, "verified_token", "verified_secret_token"
+                authedUserId.value, "verified_token", "verified_secret_token"
             )
             twitterRobot.setupSetOAuthAccessToken { null }
-            twitterRobot.setupSetOAuthAccessToken { match { it.userId == 10000L } }
+            twitterRobot.setupSetOAuthAccessToken { match { it.userId == authedUserId.value } }
             twitterRobot.setupGetOAuthRequestToken(response = requestToken)
             twitterRobot.setupGetOAuthAccessToken(
                 { any() },
@@ -103,8 +109,11 @@ class MainActivityInstTest {
             val sp = ApplicationProvider.getApplicationContext<TestApplicationBase>()
                 .component
                 .sharedPreferencesDao
-            sp.storeAccessToken(AccessTokenEntity.create(UserId(10000), "token", "tokensecret"))
-            sp.setCurrentUserId(UserId(10000))
+            val userId = UserId(10000)
+            sp.storeAccessToken(AccessTokenEntity.create(userId, "token", "tokensecret"))
+            sp.setCurrentUserId(userId)
+            val authedUser = createUser(userId.value, "user1", "User1")
+            twitterRobot.setupShowUser(authedUser)
 
             val countingIdlingResource = CountingIdlingResource("load_timeline")
             twitterRobot.setupSetOAuthAccessToken { any() }
