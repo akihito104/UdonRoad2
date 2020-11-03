@@ -16,7 +16,10 @@
 
 package com.freshdigitable.udonroad2.input
 
+import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
 import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
@@ -25,6 +28,8 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -34,10 +39,20 @@ import com.freshdigitable.udonroad2.input.databinding.FragmentTweetInputBinding
 import com.freshdigitable.udonroad2.input.di.TweetInputViewModelComponent
 import dagger.android.support.AndroidSupportInjection
 import kotlinx.coroutines.flow.collect
+import timber.log.Timber
 import javax.inject.Inject
 
 class TweetInputFragment : Fragment() {
     private val args: TweetInputFragmentArgs by navArgs()
+    private val mediaChooser = registerForActivityResult(MediaChooserResultContract()) {
+        Timber.tag("TweetInputFragment").d("mediaChooser.onResult: $it")
+    }
+    private val requestPermission =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) {
+            if (it == true) {
+                mediaChooser.launch(Unit)
+            }
+        }
 
     @Inject
     lateinit var viewModelProviderFactory: TweetInputViewModelComponent.Factory
@@ -83,6 +98,18 @@ class TweetInputFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launchWhenResumed {
             viewModel.expandAnimationEvent.collect {
                 binding.twIntext.requestFocus()
+            }
+        }
+        binding.twAppendImage.setOnClickListener {
+            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.JELLY_BEAN_MR2 &&
+                ActivityCompat.checkSelfPermission(
+                    it.context,
+                    WRITE_EXTERNAL_STORAGE
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                requestPermission.launch(WRITE_EXTERNAL_STORAGE)
+            } else {
+                mediaChooser.launch(Unit)
             }
         }
     }

@@ -14,4 +14,14 @@
   ~ limitations under the License.
   -->
 
-<manifest package="com.freshdigitable.udonroad2.input" />
+<manifest
+    package="com.freshdigitable.udonroad2.input"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    >
+
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="18"
+        />
+</manifest>
