@@ -77,6 +77,12 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
                 args = TweetInputFragmentArgs(true).toBundle()
             )
         }
+        viewModel.isTweetInputMenuVisible.observe(this) {
+            val tweetInputFragment =
+                supportFragmentManager.findFragmentById(binding.mainInputContainer.id)
+                    ?: return@observe
+            tweetInputFragment.setMenuVisibility(it)
+        }
 
         binding.mainGlobalMenu.setNavigationItemSelectedListener { item ->
             val event = when (item.itemId) {

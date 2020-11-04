@@ -30,7 +30,6 @@ import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentArgs
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentDirections
 import com.freshdigitable.udonroad2.timeline.fragment.TweetDetailFragmentArgs
 import com.freshdigitable.udonroad2.user.UserActivityDirections
-import timber.log.Timber
 import java.io.Serializable
 import javax.inject.Inject
 
@@ -48,7 +47,6 @@ class MainActivityNavigationDelegate @Inject constructor(
     }
     private val onDestinationChanged =
         NavController.OnDestinationChangedListener { nc, destination, arguments ->
-            Timber.tag("MainNavDelegate").d("onDestinationChanged: $destination, $arguments")
             val containerState = requireNotNull(
                 MainNavHostState.create(destination, arguments)
             )

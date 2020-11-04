@@ -30,7 +30,6 @@ import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.AppTwitterException
 import com.freshdigitable.udonroad2.model.app.di.ActivityScope
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
-import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.AppViewState
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.suspendMap
@@ -84,15 +83,6 @@ class TweetInputViewModel @Inject constructor(
         super.onCleared()
         viewState.clear()
     }
-}
-
-class TweetInputActions @Inject constructor(
-    eventDispatcher: EventDispatcher
-) {
-    internal val openInput: AppAction<TweetInputEvent.Open> = eventDispatcher.toAction()
-    internal val sendTweet: AppAction<TweetInputEvent.Send> = eventDispatcher.toAction()
-    internal val cancelInput: AppAction<TweetInputEvent.Cancel> = eventDispatcher.toAction()
-    internal val updateText: AppAction<TweetInputEvent.TextUpdated> = eventDispatcher.toAction()
 }
 
 enum class InputTaskState(val isExpanded: Boolean) {
@@ -196,13 +186,4 @@ class TweetInputViewState @Inject constructor(
     internal fun clear() {
         disposable.clear()
     }
-}
-
-sealed class TweetInputEvent : AppEvent {
-    object Open : TweetInputEvent()
-    object Opened : TweetInputEvent()
-    data class Send(val text: String) : TweetInputEvent()
-    object Cancel : TweetInputEvent()
-
-    data class TextUpdated(val text: String) : TweetInputEvent()
 }

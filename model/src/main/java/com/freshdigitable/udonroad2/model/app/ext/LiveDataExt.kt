@@ -19,7 +19,7 @@ package com.freshdigitable.udonroad2.model.app.ext
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 
-fun <I1, I2, O> merge(
+fun <I1, I2, O> combineLatest(
     d1: LiveData<I1>,
     d2: LiveData<I2>,
     block: LiveData<O>.(I1?, I2?) -> O

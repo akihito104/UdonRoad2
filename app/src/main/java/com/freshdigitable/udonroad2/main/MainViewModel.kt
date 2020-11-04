@@ -36,6 +36,7 @@ class MainViewModel(
     val appBarTitle: LiveData<AppBarTitle> = viewStates.appBarTitle
     val isTweetInputExpanded: Boolean
         get() = viewStates.isTweetInputExpanded
+    val isTweetInputMenuVisible: LiveData<Boolean> = viewStates.isTweetInputMenuVisible
     override val isFabVisible: LiveData<Boolean> = viewStates.isFabVisible
 
     internal fun initialEvent(savedState: MainActivityViewState?) {

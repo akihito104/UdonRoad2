@@ -25,7 +25,7 @@ import androidx.lifecycle.map
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
 import com.freshdigitable.udonroad2.model.MediaItem
 import com.freshdigitable.udonroad2.model.app.AppExecutor
-import com.freshdigitable.udonroad2.model.app.ext.merge
+import com.freshdigitable.udonroad2.model.app.ext.combineLatest
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
@@ -131,7 +131,7 @@ class MediaViewModelViewStates @Inject constructor(
         it == SystemUiVisibility.SHOW
     }
 
-    internal val currentPosition: AppViewState<Int?> = merge(
+    internal val currentPosition: AppViewState<Int?> = combineLatest(
         AppAction.merge(
             AppAction.just(firstPosition),
             actions.changeCurrentPosition.map { it.index }

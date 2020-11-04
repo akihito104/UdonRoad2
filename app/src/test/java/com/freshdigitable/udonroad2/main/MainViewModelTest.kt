@@ -197,6 +197,15 @@ class MainViewModelTest {
                     .assertValueCount(1)
                     .assertValueAt(0) { it is TweetInputEvent.Cancel }
             }
+
+        @Test
+        fun isFabVisible_tweetInputIsExpanded_then_fabIsDisappeared(): Unit = with(rule) {
+            // exercise
+            stateModelRule.isExpandedSource.value = true
+
+            // verify
+            assertThat(sut.isFabVisible.value).isFalse()
+        }
     }
 }
 
@@ -204,6 +213,18 @@ class MainViewModelTestRule(
     val stateModelRule: MainActivityStateModelTestRule = MainActivityStateModelTestRule()
 ) : TestWatcher() {
     val sut: MainViewModel = MainViewModel(stateModelRule.dispatcher, stateModelRule.sut)
+
+    override fun starting(description: Description?) {
+        super.starting(description)
+        with(sut) {
+            listOf(
+                navIconType,
+                appBarTitle,
+                isTweetInputMenuVisible,
+                isFabVisible,
+            ).forEach { it.observeForever { } }
+        }
+    }
 
     override fun apply(base: Statement?, description: Description?): Statement {
         return RuleChain.outerRule(stateModelRule)
