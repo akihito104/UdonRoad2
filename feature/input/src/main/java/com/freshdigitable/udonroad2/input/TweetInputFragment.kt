@@ -19,6 +19,7 @@ package com.freshdigitable.udonroad2.input
 import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
 import android.content.Context
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -28,8 +29,11 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
+import android.widget.ImageView
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
+import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -37,6 +41,8 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.navArgs
 import com.freshdigitable.udonroad2.input.databinding.FragmentTweetInputBinding
 import com.freshdigitable.udonroad2.input.di.TweetInputViewModelComponent
+import com.freshdigitable.udonroad2.media.MediaThumbnailContainer
+import com.freshdigitable.udonroad2.media.mediaViews
 import dagger.android.support.AndroidSupportInjection
 import kotlinx.coroutines.flow.collect
 import timber.log.Timber
@@ -44,15 +50,6 @@ import javax.inject.Inject
 
 class TweetInputFragment : Fragment() {
     private val args: TweetInputFragmentArgs by navArgs()
-    private val mediaChooser = registerForActivityResult(MediaChooserResultContract()) {
-        Timber.tag("TweetInputFragment").d("mediaChooser.onResult: $it")
-    }
-    private val requestPermission =
-        registerForActivityResult(ActivityResultContracts.RequestPermission()) {
-            if (it == true) {
-                mediaChooser.launch(Unit)
-            }
-        }
 
     @Inject
     lateinit var viewModelProviderFactory: TweetInputViewModelComponent.Factory
@@ -60,6 +57,20 @@ class TweetInputFragment : Fragment() {
         viewModelProviderFactory.create(args.collapsible)
             .viewModelProviderFactory
     }
+
+    private val mediaChooser: ActivityResultLauncher<Unit> = MediaChooserResultContract().run {
+        registerForActivityResult(this) { uris ->
+            Timber.tag("TweetInputFragment").d("mediaChooser.onResult: $uris")
+            viewModel.media.value = uris
+            context?.let { this.clear(it) }
+        }
+    }
+    private val requestPermission =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) {
+            if (it == true) {
+                mediaChooser.launch(Unit)
+            }
+        }
 
     override fun onAttach(context: Context) {
         AndroidSupportInjection.inject(this)
@@ -109,6 +120,7 @@ class TweetInputFragment : Fragment() {
             ) {
                 requestPermission.launch(WRITE_EXTERNAL_STORAGE)
             } else {
+                it.hideInputMethod()
                 mediaChooser.launch(Unit)
             }
         }
@@ -155,4 +167,16 @@ private fun View.showInputMethod() {
 
 private fun View.hideInputMethod() {
     context.inputMethodManager.hideSoftInputFromWindow(windowToken, 0)
+}
+
+@BindingAdapter("bindMediaByUri")
+fun MediaThumbnailContainer.bindMediaByUri(uris: Collection<Uri>?) {
+    if (uris == null) {
+        return
+    }
+    mediaCount = uris.size
+    uris.zip(mediaViews) { uri, v ->
+        v.setImageURI(uri)
+        v.scaleType = ImageView.ScaleType.CENTER_CROP
+    }
 }

@@ -16,6 +16,7 @@
 
 package com.freshdigitable.udonroad2.input
 
+import android.net.Uri
 import android.text.Editable
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -52,6 +53,7 @@ class TweetInputViewModel @Inject constructor(
 
     val isExpanded: LiveData<Boolean> = viewState.isExpanded
     val text: LiveData<String> = viewState.text
+    val media = MutableLiveData<Collection<Uri>>()
     val menuItem: LiveData<InputMenuItem> = viewState.menuItem
     val inputTask: LiveData<InputTaskState> = viewState.taskState
     val expandAnimationEvent: Flow<TweetInputEvent.Opened> =
