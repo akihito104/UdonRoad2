@@ -16,6 +16,7 @@
 
 package com.freshdigitable.udonroad2.input
 
+import android.net.Uri
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
@@ -38,4 +39,10 @@ sealed class TweetInputEvent : AppEvent {
     object Cancel : TweetInputEvent()
 
     data class TextUpdated(val text: String) : TweetInputEvent()
+
+    sealed class CameraApp : TweetInputEvent() {
+        data class CandidateQueried(val apps: List<String>, val uri: Uri) : CameraApp()
+        data class Selected(val app: String) : CameraApp()
+        object Finished : CameraApp()
+    }
 }
