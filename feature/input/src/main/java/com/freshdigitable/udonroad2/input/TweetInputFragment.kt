@@ -128,14 +128,14 @@ class TweetInputFragment : Fragment() {
             }
         }
         viewLifecycleOwner.lifecycleScope.launchWhenCreated {
-            viewModel.cameraAppCandidates.collect {
+            viewModel.chooserForCameraApp.collect {
                 when (it) {
-                    is TweetInputEvent.CameraApp.Selected -> {
+                    is CameraApp.State.Selected -> {
                         requireContext().grantUriPermission(
                             it.app.packageName, it.uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION
                         )
                     }
-                    is TweetInputEvent.CameraApp.Finished -> {
+                    is CameraApp.State.Finished -> {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                             requireContext().revokeUriPermission(
                                 it.app.packageName, it.uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION

@@ -158,9 +158,7 @@ class MediaChooserBroadcastReceiver : BroadcastReceiver() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
             val componentName: ComponentName =
                 intent?.getParcelableExtra(Intent.EXTRA_CHOSEN_COMPONENT) ?: return
-            eventDispatcher.postEvent(
-                TweetInputEvent.CameraApp.Chosen(Components.create(componentName))
-            )
+            eventDispatcher.postEvent(CameraApp.Event.Chosen(Components.create(componentName)))
         }
     }
 }

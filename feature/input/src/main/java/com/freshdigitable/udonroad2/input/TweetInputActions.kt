@@ -30,6 +30,7 @@ class TweetInputActions @Inject constructor(
     internal val sendTweet: AppAction<TweetInputEvent.Send> = eventDispatcher.toAction()
     internal val cancelInput: AppAction<TweetInputEvent.Cancel> = eventDispatcher.toAction()
     internal val updateText: AppAction<TweetInputEvent.TextUpdated> = eventDispatcher.toAction()
+    internal val cameraApp: AppAction<CameraApp.Event> = eventDispatcher.toAction()
 }
 
 sealed class TweetInputEvent : AppEvent {
@@ -39,17 +40,57 @@ sealed class TweetInputEvent : AppEvent {
     object Cancel : TweetInputEvent()
 
     data class TextUpdated(val text: String) : TweetInputEvent()
+}
 
-    sealed class CameraApp : TweetInputEvent() {
-        // incoming events
-        data class CandidateQueried(val apps: List<Components>, val uri: Uri) : CameraApp()
-        data class Chosen(val app: Components) : CameraApp()
-        object OnFinish : CameraApp()
+sealed class CameraApp : TweetInputEvent() {
+    sealed class Event : CameraApp() {
+        data class CandidateQueried(val apps: List<Components>, val uri: Uri) : Event()
+        data class Chosen(val app: Components) : Event()
+        object OnFinish : Event()
+    }
 
-        // outgoing events
-        object Idling : CameraApp()
-        data class Selected(val app: Components, val uri: Uri) : CameraApp()
-        data class Finished(val app: Components, val uri: Uri) : CameraApp()
+    sealed class State : CameraApp() {
+        object Idling : State() {
+            override fun transition(event: Event): State {
+                return when (event) {
+                    is Event.Chosen -> throw IllegalStateException()
+                    is Event.CandidateQueried -> WaitingForChosen(event.apps, event.uri)
+                    is Event.OnFinish -> this
+                }
+            }
+        }
+
+        data class WaitingForChosen(val apps: List<Components>, val uri: Uri) : State() {
+            override fun transition(event: Event): State {
+                return when (event) {
+                    is Event.Chosen -> {
+                        if (apps.contains(event.app)) Selected(event.app, uri) else Idling
+                    }
+                    is Event.CandidateQueried -> WaitingForChosen(event.apps, event.uri)
+                    is Event.OnFinish -> Idling
+                }
+            }
+        }
+
+        data class Selected(val app: Components, val uri: Uri) : State() {
+            override fun transition(event: Event): State {
+                return when (event) {
+                    is Event.OnFinish -> Finished(app, uri)
+                    is Event.Chosen, is Event.CandidateQueried -> throw IllegalStateException()
+                }
+            }
+        }
+
+        data class Finished(val app: Components, val uri: Uri) : State() {
+            override fun transition(event: Event): State {
+                return when (event) {
+                    is Event.CandidateQueried -> WaitingForChosen(event.apps, event.uri)
+                    is Event.Chosen, is Event.OnFinish -> throw IllegalStateException()
+                }
+            }
+        }
+
+        abstract fun transition(event: Event): State
     }
 }
 

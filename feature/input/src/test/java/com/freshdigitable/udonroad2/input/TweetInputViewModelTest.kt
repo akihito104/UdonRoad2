@@ -153,21 +153,21 @@ class TweetInputViewModelTest {
         @Test
         fun onCameraAppCandidatesQueried(): Unit = with(rule) {
             // setup
-            val actual = sut.cameraAppCandidates.testCollect(executor)
+            val actual = sut.chooserForCameraApp.testCollect(executor)
 
             // exercise
             sut.onCameraAppCandidatesQueried(listOf(cameraApp), mockk())
 
             // verify
             assertThat(actual).hasSize(2)
-            assertThat(actual[0]).isInstanceOf<TweetInputEvent.CameraApp.Idling>()
-            assertThat(actual[1]).isInstanceOf<TweetInputEvent.CameraApp.CandidateQueried>()
+            assertThat(actual[0]).isInstanceOf<CameraApp.State.Idling>()
+            assertThat(actual[1]).isInstanceOf<CameraApp.State.WaitingForChosen>()
         }
 
         @Test
         fun dispatchChosenWithCameraApp_then_dispatchSelectedEvent(): Unit = with(rule) {
             // setup
-            val actual = sut.cameraAppCandidates.testCollect(executor)
+            val actual = sut.chooserForCameraApp.testCollect(executor)
             sut.onCameraAppCandidatesQueried(listOf(cameraApp), mockk())
 
             // exercise
@@ -175,15 +175,15 @@ class TweetInputViewModelTest {
 
             // verify
             assertThat(actual).hasSize(3)
-            assertThat(actual[0]).isInstanceOf<TweetInputEvent.CameraApp.Idling>()
-            assertThat(actual[1]).isInstanceOf<TweetInputEvent.CameraApp.CandidateQueried>()
-            assertThat(actual[2]).isInstanceOf<TweetInputEvent.CameraApp.Selected>()
+            assertThat(actual[0]).isInstanceOf<CameraApp.State.Idling>()
+            assertThat(actual[1]).isInstanceOf<CameraApp.State.WaitingForChosen>()
+            assertThat(actual[2]).isInstanceOf<CameraApp.State.Selected>()
         }
 
         @Test
         fun dispatchChosenWithNotCameraApp_then_moveIdlingState(): Unit = with(rule) {
             // setup
-            val actual = sut.cameraAppCandidates.testCollect(executor)
+            val actual = sut.chooserForCameraApp.testCollect(executor)
             sut.onCameraAppCandidatesQueried(listOf(cameraApp), mockk())
 
             // exercise
@@ -191,15 +191,15 @@ class TweetInputViewModelTest {
 
             // verify
             assertThat(actual).hasSize(3)
-            assertThat(actual[0]).isInstanceOf<TweetInputEvent.CameraApp.Idling>()
-            assertThat(actual[1]).isInstanceOf<TweetInputEvent.CameraApp.CandidateQueried>()
-            assertThat(actual[2]).isInstanceOf<TweetInputEvent.CameraApp.Idling>()
+            assertThat(actual[0]).isInstanceOf<CameraApp.State.Idling>()
+            assertThat(actual[1]).isInstanceOf<CameraApp.State.WaitingForChosen>()
+            assertThat(actual[2]).isInstanceOf<CameraApp.State.Idling>()
         }
 
         @Test
         fun dispatchChosenNotAtCandidatesQueried_then_throwException(): Unit = with(rule) {
             // setup
-            sut.cameraAppCandidates.testCollect(executor)
+            sut.chooserForCameraApp.testCollect(executor)
             expectedException.expect(RuntimeException::class.java)
 
             // exercise
@@ -209,7 +209,7 @@ class TweetInputViewModelTest {
         @Test
         fun onCameraAppFinished(): Unit = with(rule) {
             // setup
-            val actual = sut.cameraAppCandidates.testCollect(executor)
+            val actual = sut.chooserForCameraApp.testCollect(executor)
             sut.onCameraAppCandidatesQueried(listOf(cameraApp), mockk())
             dispatchChosen(cameraApp)
 
@@ -218,16 +218,16 @@ class TweetInputViewModelTest {
 
             // verify
             assertThat(actual).hasSize(4)
-            assertThat(actual[0]).isInstanceOf<TweetInputEvent.CameraApp.Idling>()
-            assertThat(actual[1]).isInstanceOf<TweetInputEvent.CameraApp.CandidateQueried>()
-            assertThat(actual[2]).isInstanceOf<TweetInputEvent.CameraApp.Selected>()
-            assertThat(actual[3]).isInstanceOf<TweetInputEvent.CameraApp.Finished>()
+            assertThat(actual[0]).isInstanceOf<CameraApp.State.Idling>()
+            assertThat(actual[1]).isInstanceOf<CameraApp.State.WaitingForChosen>()
+            assertThat(actual[2]).isInstanceOf<CameraApp.State.Selected>()
+            assertThat(actual[3]).isInstanceOf<CameraApp.State.Finished>()
         }
 
         @Test
         fun onCameraAppFinishedAtIdlingState_then_stillIdling(): Unit = with(rule) {
             // setup
-            val actual = sut.cameraAppCandidates.testCollect(executor)
+            val actual = sut.chooserForCameraApp.testCollect(executor)
             sut.onCameraAppCandidatesQueried(listOf(cameraApp), mockk())
             dispatchChosen(galleryApp)
 
@@ -236,9 +236,9 @@ class TweetInputViewModelTest {
 
             // verify
             assertThat(actual).hasSize(3)
-            assertThat(actual[0]).isInstanceOf<TweetInputEvent.CameraApp.Idling>()
-            assertThat(actual[1]).isInstanceOf<TweetInputEvent.CameraApp.CandidateQueried>()
-            assertThat(actual[2]).isInstanceOf<TweetInputEvent.CameraApp.Idling>()
+            assertThat(actual[0]).isInstanceOf<CameraApp.State.Idling>()
+            assertThat(actual[1]).isInstanceOf<CameraApp.State.WaitingForChosen>()
+            assertThat(actual[2]).isInstanceOf<CameraApp.State.Idling>()
         }
 
         @Test
@@ -385,7 +385,7 @@ class TweetInputViewModelRule(
     }
 
     fun dispatchChosen(app: Components) {
-        eventDispatcher.postEvent(TweetInputEvent.CameraApp.Chosen(app))
+        eventDispatcher.postEvent(CameraApp.Event.Chosen(app))
     }
 }
 

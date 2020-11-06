@@ -58,30 +58,7 @@ class TweetInputViewModel @Inject constructor(
     val inputTask: LiveData<InputTaskState> = viewState.taskState
     val expandAnimationEvent: Flow<TweetInputEvent.Opened> =
         eventDispatcher.toAction<TweetInputEvent.Opened>().asFlow()
-    val cameraAppCandidates =
-        eventDispatcher.toAction<TweetInputEvent.CameraApp>()
-            .scan<TweetInputEvent.CameraApp>(TweetInputEvent.CameraApp.Idling) { old, new ->
-                when (new) {
-                    is TweetInputEvent.CameraApp.CandidateQueried -> new
-                    is TweetInputEvent.CameraApp.Chosen -> {
-                        if ((old as TweetInputEvent.CameraApp.CandidateQueried).apps.contains(new.app)) {
-                            TweetInputEvent.CameraApp.Selected(new.app, old.uri)
-                        } else {
-                            TweetInputEvent.CameraApp.Idling
-                        }
-                    }
-                    is TweetInputEvent.CameraApp.OnFinish -> {
-                        if (old is TweetInputEvent.CameraApp.Selected) {
-                            TweetInputEvent.CameraApp.Finished(old.app, old.uri)
-                        } else {
-                            TweetInputEvent.CameraApp.Idling
-                        }
-                    }
-                    else -> throw IllegalStateException()
-                }
-            }
-            .distinctUntilChanged()
-            .asFlow()
+    val chooserForCameraApp = viewState.chooserForCameraApp.asFlow()
 
     val user: LiveData<User?> = viewState.user
 
@@ -106,11 +83,11 @@ class TweetInputViewModel @Inject constructor(
     }
 
     fun onCameraAppCandidatesQueried(candidates: List<Components>, uri: Uri) {
-        eventDispatcher.postEvent(TweetInputEvent.CameraApp.CandidateQueried(candidates, uri))
+        eventDispatcher.postEvent(CameraApp.Event.CandidateQueried(candidates, uri))
     }
 
     fun onCameraAppFinished() {
-        eventDispatcher.postEvent(TweetInputEvent.CameraApp.OnFinish)
+        eventDispatcher.postEvent(CameraApp.Event.OnFinish)
     }
 
     override fun onCleared() {
@@ -194,6 +171,10 @@ class TweetInputViewState @Inject constructor(
         }
         .flowOn(executor.dispatcher.ioContext)
         .asLiveData(executor.dispatcher.mainContext)
+
+    val chooserForCameraApp: AppAction<CameraApp.State> = actions.cameraApp
+        .scan<CameraApp.State>(CameraApp.State.Idling) { state, event -> state.transition(event) }
+        .distinctUntilChanged()
 
     private val disposable = CompositeDisposable(
         _taskState.subscribe {
