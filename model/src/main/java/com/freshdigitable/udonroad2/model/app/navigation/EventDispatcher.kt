@@ -1,13 +1,13 @@
 package com.freshdigitable.udonroad2.model.app.navigation
 
-import com.freshdigitable.udonroad2.model.app.di.ActivityScope
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
 import io.reactivex.subjects.PublishSubject
 import timber.log.Timber
 import javax.inject.Inject
+import javax.inject.Singleton
 
-@ActivityScope
+@Singleton
 class EventDispatcher @Inject constructor() {
     val emitter = PublishSubject.create<AppEvent>()
 

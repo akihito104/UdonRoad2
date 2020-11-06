@@ -24,6 +24,7 @@ import com.freshdigitable.udonroad2.data.db.DatabaseModule
 import com.freshdigitable.udonroad2.data.impl.di.RepositoryModule
 import com.freshdigitable.udonroad2.data.restclient.AppTwitterModule
 import com.freshdigitable.udonroad2.data.restclient.TwitterModule
+import com.freshdigitable.udonroad2.input.di.MediaChooserModule
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import dagger.BindsInstance
 import dagger.Component
@@ -44,7 +45,8 @@ import javax.inject.Singleton
         TwitterModule::class,
         AppTwitterModule::class,
         AppSetupModule::class,
-        ListOwnerGeneratorProvider::class
+        ListOwnerGeneratorProvider::class,
+        MediaChooserModule::class,
     ]
 )
 interface AppComponent {

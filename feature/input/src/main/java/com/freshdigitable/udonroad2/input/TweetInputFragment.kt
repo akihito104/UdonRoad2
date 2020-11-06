@@ -18,6 +18,7 @@ package com.freshdigitable.udonroad2.input
 
 import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
@@ -58,13 +59,14 @@ class TweetInputFragment : Fragment() {
             .viewModelProviderFactory
     }
 
-    private val mediaChooser: ActivityResultLauncher<Unit> = MediaChooserResultContract().run {
-        registerForActivityResult(this) { uris ->
+    private val mediaChooser: ActivityResultLauncher<Unit> by lazy {
+        registerForActivityResult(MediaChooserResultContract(viewModel)) { uris ->
             Timber.tag("TweetInputFragment").d("mediaChooser.onResult: $uris")
             viewModel.media.value = uris
-            context?.let { this.clear(it) }
+            viewModel.onCameraAppFinished()
         }
     }
+
     private val requestPermission =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) {
             if (it == true) {
@@ -75,6 +77,7 @@ class TweetInputFragment : Fragment() {
     override fun onAttach(context: Context) {
         AndroidSupportInjection.inject(this)
         super.onAttach(context)
+        mediaChooser.contract // XXX
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -122,6 +125,29 @@ class TweetInputFragment : Fragment() {
             } else {
                 it.hideInputMethod()
                 mediaChooser.launch(Unit)
+            }
+        }
+        viewLifecycleOwner.lifecycleScope.launchWhenCreated {
+            viewModel.cameraAppCandidates.collect {
+                when (it) {
+                    is TweetInputEvent.CameraApp.Selected -> {
+                        requireContext().grantUriPermission(
+                            it.app.packageName, it.uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                        )
+                    }
+                    is TweetInputEvent.CameraApp.Finished -> {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            requireContext().revokeUriPermission(
+                                it.app.packageName, it.uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                            )
+                        } else {
+                            requireContext().revokeUriPermission(
+                                it.uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                            )
+                        }
+                    }
+                    else -> Unit
+                }
             }
         }
     }

@@ -41,8 +41,21 @@ sealed class TweetInputEvent : AppEvent {
     data class TextUpdated(val text: String) : TweetInputEvent()
 
     sealed class CameraApp : TweetInputEvent() {
-        data class CandidateQueried(val apps: List<String>, val uri: Uri) : CameraApp()
-        data class Selected(val app: String) : CameraApp()
-        object Finished : CameraApp()
+        // incoming events
+        data class CandidateQueried(val apps: List<Components>, val uri: Uri) : CameraApp()
+        data class Chosen(val app: Components) : CameraApp()
+        object OnFinish : CameraApp()
+
+        // outgoing events
+        object Idling : CameraApp()
+        data class Selected(val app: Components, val uri: Uri) : CameraApp()
+        data class Finished(val app: Components, val uri: Uri) : CameraApp()
     }
+}
+
+data class Components(
+    val packageName: String,
+    val className: String
+) {
+    companion object
 }

@@ -16,18 +16,27 @@
 
 package com.freshdigitable.udonroad2.input
 
+import android.app.PendingIntent
+import android.content.BroadcastReceiver
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ActivityInfo
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
+import android.provider.MediaStore
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.FileProvider
-import timber.log.Timber
+import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
+import dagger.android.AndroidInjection
 import java.io.File
+import javax.inject.Inject
 
-internal class MediaChooserResultContract : ActivityResultContract<Unit, Collection<Uri>>() {
+internal class MediaChooserResultContract(
+    private val viewModel: TweetInputViewModel
+) : ActivityResultContract<Unit, Collection<Uri>>() {
     private val pictureResultContract = PickPicture.create()
     private val cameraContract = TakePictureContract()
 
@@ -37,8 +46,24 @@ internal class MediaChooserResultContract : ActivityResultContract<Unit, Collect
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.M -> Intent.EXTRA_ALTERNATE_INTENTS
             else -> Intent.EXTRA_INITIAL_INTENTS
         }
-        return Intent.createChooser(pickMediaIntent, "追加する画像...").apply {
-            putExtra(altIntentName, arrayOf(cameraContract.createIntent(context, Unit)))
+        val cameraIntent = cameraContract.createIntent(context, Unit)
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+            val candidates = context.packageManager.queryIntentActivities(cameraIntent, 0)
+                .map { Components.create(it.activityInfo) }
+            viewModel.onCameraAppCandidatesQueried(
+                candidates, checkNotNull(cameraIntent.getParcelableExtra(MediaStore.EXTRA_OUTPUT))
+            )
+            val pendingIntent = PendingIntent.getBroadcast(
+                context,
+                0,
+                Intent(context, MediaChooserBroadcastReceiver::class.java),
+                PendingIntent.FLAG_UPDATE_CURRENT
+            )
+            Intent.createChooser(pickMediaIntent, "追加する画像...", pendingIntent.intentSender)
+        } else {
+            Intent.createChooser(pickMediaIntent, "追加する画像...")
+        }.apply {
+            putExtra(altIntentName, arrayOf(cameraIntent))
         }
     }
 
@@ -47,12 +72,11 @@ internal class MediaChooserResultContract : ActivityResultContract<Unit, Collect
         return if (pictureList.isNotEmpty()) {
             pictureList
         } else {
-            cameraContract.parseResult(resultCode, intent)
+            listOf(
+                viewModel.media.value ?: emptyList(),
+                cameraContract.parseResult(resultCode, intent)
+            ).flatten()
         }
-    }
-
-    fun clear(context: Context) {
-        cameraContract.clear(context)
     }
 }
 
@@ -62,53 +86,43 @@ private abstract class PickPicture : ActivityResultContract<Unit, Collection<Uri
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT -> {
                 object : PickPicture() {
                     private val openDocContract = ActivityResultContracts.OpenMultipleDocuments()
+                    override val contract: ActivityResultContract<*, out Collection<Uri>> =
+                        openDocContract
+
                     override fun createIntent(context: Context, input: Unit?): Intent {
                         return openDocContract.createIntent(context, arrayOf("image/*"))
                             .addCategory(Intent.CATEGORY_OPENABLE)
                     }
-
-                    override fun parseResult(
-                        resultCode: Int,
-                        intent: Intent?
-                    ): Collection<Uri> = openDocContract.parseResult(resultCode, intent)
                 }
             }
             else -> {
                 object : PickPicture() {
                     private val contentContract = ActivityResultContracts.GetMultipleContents()
+                    override val contract: ActivityResultContract<*, out Collection<Uri>> =
+                        contentContract
+
                     override fun createIntent(context: Context, input: Unit?): Intent {
                         return contentContract.createIntent(context, "image/*")
                     }
-
-                    override fun parseResult(
-                        resultCode: Int,
-                        intent: Intent?
-                    ): Collection<Uri> = contentContract.parseResult(resultCode, intent)
                 }
             }
         }
+    }
+
+    protected abstract val contract: ActivityResultContract<*, out Collection<Uri>>
+    override fun parseResult(resultCode: Int, intent: Intent?): Collection<Uri> {
+        return contract.parseResult(resultCode, intent)
     }
 }
 
 private class TakePictureContract : ActivityResultContract<Unit, Collection<Uri>>() {
     private val takePictureContract = ActivityResultContracts.TakePicture()
     private var pictureUri: Uri? = null
-    private var cameraAppPackage: String? = null
 
     override fun createIntent(context: Context, input: Unit?): Intent {
         val uri = createMedia(context)
         pictureUri = uri
-        return takePictureContract.createIntent(context, uri).also {
-            val component = it.resolveActivity(context.packageManager)
-            val packageName = component.packageName
-            Timber.tag("TakePictureContract").d("${component?.toShortString()}")
-            context.grantUriPermission(
-                packageName,
-                uri,
-                Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-            )
-            cameraAppPackage = packageName
-        }
+        return takePictureContract.createIntent(context, uri)
     }
 
     private fun createMedia(context: Context): Uri {
@@ -133,16 +147,28 @@ private class TakePictureContract : ActivityResultContract<Unit, Collection<Uri>
             emptyList()
         }
     }
+}
 
-    fun clear(context: Context) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val packageName = cameraAppPackage ?: return
-            val uri = pictureUri ?: return
-            context.revokeUriPermission(
-                packageName,
-                uri,
-                Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+class MediaChooserBroadcastReceiver : BroadcastReceiver() {
+    @Inject
+    lateinit var eventDispatcher: EventDispatcher
+
+    override fun onReceive(context: Context?, intent: Intent?) {
+        AndroidInjection.inject(this, context)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+            val componentName: ComponentName =
+                intent?.getParcelableExtra(Intent.EXTRA_CHOSEN_COMPONENT) ?: return
+            eventDispatcher.postEvent(
+                TweetInputEvent.CameraApp.Chosen(Components.create(componentName))
             )
         }
     }
+}
+
+private fun Components.Companion.create(info: ActivityInfo): Components {
+    return Components(info.packageName, info.name)
+}
+
+private fun Components.Companion.create(name: ComponentName): Components {
+    return Components(name.packageName, name.className)
 }

@@ -18,6 +18,7 @@ package com.freshdigitable.udonroad2.input.di
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.freshdigitable.udonroad2.input.MediaChooserBroadcastReceiver
 import com.freshdigitable.udonroad2.input.TweetInputFragment
 import com.freshdigitable.udonroad2.input.TweetInputViewModel
 import com.freshdigitable.udonroad2.model.app.di.FragmentScope
@@ -55,4 +56,10 @@ interface TweetInputFragmentModule {
     @FragmentScope
     @ContributesAndroidInjector
     fun contributeTweetInputFragment(): TweetInputFragment
+}
+
+@Module
+interface MediaChooserModule {
+    @ContributesAndroidInjector
+    fun contributeMediaChooserBroadcastReceiver(): MediaChooserBroadcastReceiver
 }
