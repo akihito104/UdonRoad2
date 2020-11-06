@@ -59,26 +59,29 @@ class TweetInputViewModel @Inject constructor(
     val expandAnimationEvent: Flow<TweetInputEvent.Opened> =
         eventDispatcher.toAction<TweetInputEvent.Opened>().asFlow()
     val cameraAppCandidates =
-        eventDispatcher.toAction<TweetInputEvent.CameraApp>().scan { old, new ->
-            when (new) {
-                is TweetInputEvent.CameraApp.CandidateQueried -> new
-                is TweetInputEvent.CameraApp.Chosen -> {
-                    if ((old as TweetInputEvent.CameraApp.CandidateQueried).apps.contains(new.app)) {
-                        TweetInputEvent.CameraApp.Selected(new.app, old.uri)
-                    } else {
-                        TweetInputEvent.CameraApp.Idling
+        eventDispatcher.toAction<TweetInputEvent.CameraApp>()
+            .scan<TweetInputEvent.CameraApp>(TweetInputEvent.CameraApp.Idling) { old, new ->
+                when (new) {
+                    is TweetInputEvent.CameraApp.CandidateQueried -> new
+                    is TweetInputEvent.CameraApp.Chosen -> {
+                        if ((old as TweetInputEvent.CameraApp.CandidateQueried).apps.contains(new.app)) {
+                            TweetInputEvent.CameraApp.Selected(new.app, old.uri)
+                        } else {
+                            TweetInputEvent.CameraApp.Idling
+                        }
                     }
-                }
-                is TweetInputEvent.CameraApp.OnFinish -> {
-                    if (old is TweetInputEvent.CameraApp.Selected) {
-                        TweetInputEvent.CameraApp.Finished(old.app, old.uri)
-                    } else {
-                        TweetInputEvent.CameraApp.Idling
+                    is TweetInputEvent.CameraApp.OnFinish -> {
+                        if (old is TweetInputEvent.CameraApp.Selected) {
+                            TweetInputEvent.CameraApp.Finished(old.app, old.uri)
+                        } else {
+                            TweetInputEvent.CameraApp.Idling
+                        }
                     }
+                    else -> throw IllegalStateException()
                 }
-                else -> throw IllegalStateException()
             }
-        }.asFlow()
+            .distinctUntilChanged()
+            .asFlow()
 
     val user: LiveData<User?> = viewState.user
 

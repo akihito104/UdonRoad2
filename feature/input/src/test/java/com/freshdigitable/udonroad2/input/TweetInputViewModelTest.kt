@@ -29,6 +29,7 @@ import com.freshdigitable.udonroad2.model.user.UserId
 import com.freshdigitable.udonroad2.test_common.MockVerified
 import com.freshdigitable.udonroad2.test_common.jvm.CoroutineTestRule
 import com.freshdigitable.udonroad2.test_common.jvm.OAuthTokenRepositoryRule
+import com.google.common.truth.Subject
 import com.google.common.truth.Truth.assertThat
 import io.mockk.every
 import io.mockk.just
@@ -37,10 +38,14 @@ import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.verifyOrder
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.launch
 import org.junit.Rule
 import org.junit.Test
 import org.junit.experimental.runners.Enclosed
+import org.junit.rules.ExpectedException
 import org.junit.rules.RuleChain
 import org.junit.rules.TestWatcher
 import org.junit.runner.Description
@@ -146,6 +151,97 @@ class TweetInputViewModelTest {
         }
 
         @Test
+        fun onCameraAppCandidatesQueried(): Unit = with(rule) {
+            // setup
+            val actual = sut.cameraAppCandidates.testCollect(executor)
+
+            // exercise
+            sut.onCameraAppCandidatesQueried(listOf(cameraApp), mockk())
+
+            // verify
+            assertThat(actual).hasSize(2)
+            assertThat(actual[0]).isInstanceOf<TweetInputEvent.CameraApp.Idling>()
+            assertThat(actual[1]).isInstanceOf<TweetInputEvent.CameraApp.CandidateQueried>()
+        }
+
+        @Test
+        fun dispatchChosenWithCameraApp_then_dispatchSelectedEvent(): Unit = with(rule) {
+            // setup
+            val actual = sut.cameraAppCandidates.testCollect(executor)
+            sut.onCameraAppCandidatesQueried(listOf(cameraApp), mockk())
+
+            // exercise
+            dispatchChosen(cameraApp)
+
+            // verify
+            assertThat(actual).hasSize(3)
+            assertThat(actual[0]).isInstanceOf<TweetInputEvent.CameraApp.Idling>()
+            assertThat(actual[1]).isInstanceOf<TweetInputEvent.CameraApp.CandidateQueried>()
+            assertThat(actual[2]).isInstanceOf<TweetInputEvent.CameraApp.Selected>()
+        }
+
+        @Test
+        fun dispatchChosenWithNotCameraApp_then_moveIdlingState(): Unit = with(rule) {
+            // setup
+            val actual = sut.cameraAppCandidates.testCollect(executor)
+            sut.onCameraAppCandidatesQueried(listOf(cameraApp), mockk())
+
+            // exercise
+            dispatchChosen(galleryApp)
+
+            // verify
+            assertThat(actual).hasSize(3)
+            assertThat(actual[0]).isInstanceOf<TweetInputEvent.CameraApp.Idling>()
+            assertThat(actual[1]).isInstanceOf<TweetInputEvent.CameraApp.CandidateQueried>()
+            assertThat(actual[2]).isInstanceOf<TweetInputEvent.CameraApp.Idling>()
+        }
+
+        @Test
+        fun dispatchChosenNotAtCandidatesQueried_then_throwException(): Unit = with(rule) {
+            // setup
+            sut.cameraAppCandidates.testCollect(executor)
+            expectedException.expect(RuntimeException::class.java)
+
+            // exercise
+            dispatchChosen(galleryApp)
+        }
+
+        @Test
+        fun onCameraAppFinished(): Unit = with(rule) {
+            // setup
+            val actual = sut.cameraAppCandidates.testCollect(executor)
+            sut.onCameraAppCandidatesQueried(listOf(cameraApp), mockk())
+            dispatchChosen(cameraApp)
+
+            // exercise
+            sut.onCameraAppFinished()
+
+            // verify
+            assertThat(actual).hasSize(4)
+            assertThat(actual[0]).isInstanceOf<TweetInputEvent.CameraApp.Idling>()
+            assertThat(actual[1]).isInstanceOf<TweetInputEvent.CameraApp.CandidateQueried>()
+            assertThat(actual[2]).isInstanceOf<TweetInputEvent.CameraApp.Selected>()
+            assertThat(actual[3]).isInstanceOf<TweetInputEvent.CameraApp.Finished>()
+        }
+
+        @Test
+        fun onCameraAppFinishedAtIdlingState_then_stillIdling(): Unit = with(rule) {
+            // setup
+            val actual = sut.cameraAppCandidates.testCollect(executor)
+            sut.onCameraAppCandidatesQueried(listOf(cameraApp), mockk())
+            dispatchChosen(galleryApp)
+
+            // exercise
+            sut.onCameraAppFinished()
+
+            // verify
+            assertThat(actual).hasSize(3)
+            assertThat(actual[0]).isInstanceOf<TweetInputEvent.CameraApp.Idling>()
+            assertThat(actual[1]).isInstanceOf<TweetInputEvent.CameraApp.CandidateQueried>()
+            assertThat(actual[2]).isInstanceOf<TweetInputEvent.CameraApp.Idling>()
+        }
+
+        @Test
         fun onSendClicked_whenSendIsSucceeded_then_menuItemIsWriteEnabled(): Unit = with(rule) {
             // setup
             setupPost("a")
@@ -212,6 +308,7 @@ class TweetInputViewModelTest {
 class TweetInputViewModelRule(
     collapsible: Boolean
 ) : TestWatcher() {
+    val expectedException: ExpectedException = ExpectedException.none()
     private val coroutineTestRule = CoroutineTestRule()
     private val repository = MockVerified.create<TweetInputRepository>()
     val inputTaskObserver: Observer<InputTaskState> = spyk<Observer<InputTaskState>>().apply {
@@ -219,9 +316,10 @@ class TweetInputViewModelRule(
     }
     private val oAuthTokenRepositoryRule = OAuthTokenRepositoryRule()
     private val userRepositoryRule: MockVerified<UserRepository> = MockVerified.create()
+    val executor = AppExecutor(dispatcher = coroutineTestRule.coroutineContextProvider)
+    private val eventDispatcher = EventDispatcher()
 
     val sut: TweetInputViewModel by lazy {
-        val eventDispatcher = EventDispatcher()
         TweetInputViewModel(
             eventDispatcher,
             TweetInputViewState(
@@ -231,10 +329,13 @@ class TweetInputViewModelRule(
                 repository.mock,
                 oAuthTokenRepositoryRule.mock,
                 userRepositoryRule.mock,
-                AppExecutor(dispatcher = coroutineTestRule.coroutineContextProvider),
+                executor,
             ),
         )
     }
+
+    val cameraApp = Components("com.example", "com.example.ExCameraActivity")
+    val galleryApp = Components("com.example", "com.example.ExGalleryActivity")
 
     override fun starting(description: Description?) {
         super.starting(description)
@@ -251,7 +352,7 @@ class TweetInputViewModelRule(
         )
         with(sut) {
             inputTask.observeForever(inputTaskObserver)
-            listOf(isExpanded, menuItem, text, user).forEach { it.observeForever { } }
+            listOf(isExpanded, menuItem, text, media, user).forEach { it.observeForever { } }
         }
     }
 
@@ -274,11 +375,28 @@ class TweetInputViewModelRule(
     }
 
     override fun apply(base: Statement?, description: Description?): Statement {
-        return RuleChain.outerRule(coroutineTestRule)
+        return RuleChain.outerRule(expectedException)
+            .around(coroutineTestRule)
             .around(InstantTaskExecutorRule())
             .around(repository)
             .around(oAuthTokenRepositoryRule)
             .around(userRepositoryRule)
             .apply(super.apply(base, description), description)
     }
+
+    fun dispatchChosen(app: Components) {
+        eventDispatcher.postEvent(TweetInputEvent.CameraApp.Chosen(app))
+    }
+}
+
+fun <T> Flow<T>.testCollect(executor: AppExecutor): List<T> {
+    val actual = mutableListOf<T>()
+    executor.launch(executor.dispatcher.mainContext) {
+        collect { actual.add(it) }
+    }
+    return actual
+}
+
+inline fun <reified T> Subject.isInstanceOf() {
+    this.isInstanceOf(T::class.java)
 }
