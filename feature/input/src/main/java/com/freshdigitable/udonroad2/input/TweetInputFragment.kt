@@ -44,6 +44,7 @@ import com.freshdigitable.udonroad2.input.databinding.FragmentTweetInputBinding
 import com.freshdigitable.udonroad2.input.di.TweetInputViewModelComponent
 import com.freshdigitable.udonroad2.media.MediaThumbnailContainer
 import com.freshdigitable.udonroad2.media.mediaViews
+import com.freshdigitable.udonroad2.model.app.AppFileProvider
 import dagger.android.support.AndroidSupportInjection
 import kotlinx.coroutines.flow.collect
 import timber.log.Timber
@@ -59,8 +60,11 @@ class TweetInputFragment : Fragment() {
             .viewModelProviderFactory
     }
 
+    @Inject
+    lateinit var fileProvider: AppFileProvider
+
     private val mediaChooser: ActivityResultLauncher<Unit> by lazy {
-        registerForActivityResult(MediaChooserResultContract(viewModel)) { uris ->
+        registerForActivityResult(MediaChooserResultContract(fileProvider, viewModel)) { uris ->
             Timber.tag("TweetInputFragment").d("mediaChooser.onResult: $uris")
             viewModel.media.value = uris
             viewModel.onCameraAppFinished()

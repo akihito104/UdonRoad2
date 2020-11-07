@@ -18,6 +18,7 @@ package com.freshdigitable.udonroad2.di
 
 import android.app.Application
 import com.freshdigitable.udonroad2.AppApplication
+import com.freshdigitable.udonroad2.AppFileProviderImpl
 import com.freshdigitable.udonroad2.AppSetup
 import com.freshdigitable.udonroad2.AppSetupModule
 import com.freshdigitable.udonroad2.data.db.DatabaseModule
@@ -26,6 +27,7 @@ import com.freshdigitable.udonroad2.data.restclient.AppTwitterModule
 import com.freshdigitable.udonroad2.data.restclient.TwitterModule
 import com.freshdigitable.udonroad2.input.di.MediaChooserModule
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
+import com.freshdigitable.udonroad2.model.app.AppFileProvider
 import dagger.BindsInstance
 import dagger.Component
 import dagger.Module
@@ -47,6 +49,7 @@ import javax.inject.Singleton
         AppSetupModule::class,
         ListOwnerGeneratorProvider::class,
         MediaChooserModule::class,
+        AppFileProviderModule::class
     ]
 )
 interface AppComponent {
@@ -70,4 +73,13 @@ object ListOwnerGeneratorProvider {
     @Singleton
     @Provides
     fun provideListOwnerGenerator(): ListOwnerGenerator = ListOwnerGenerator()
+}
+
+@Module
+interface AppFileProviderModule {
+    companion object {
+        @Singleton
+        @Provides
+        fun provideAppFileProvider(): AppFileProvider = AppFileProviderImpl()
+    }
 }

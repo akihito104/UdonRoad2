@@ -24,36 +24,36 @@ import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.net.Uri
 import android.os.Build
-import android.os.Environment
-import android.provider.MediaStore
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.content.FileProvider
+import com.freshdigitable.udonroad2.model.app.AppFileProvider
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import dagger.android.AndroidInjection
-import java.io.File
 import javax.inject.Inject
 
 internal class MediaChooserResultContract(
+    private val fileProvider: AppFileProvider,
     private val viewModel: TweetInputViewModel
 ) : ActivityResultContract<Unit, Collection<Uri>>() {
     private val pictureResultContract = PickPicture.create()
-    private val cameraContract = TakePictureContract()
+    private val cameraContract = ActivityResultContracts.TakePicture()
+    private var cameraOutputFileUri: Uri? = null
 
     override fun createIntent(context: Context, input: Unit?): Intent {
         val pickMediaIntent = pictureResultContract.createIntent(context, input)
-        val altIntentName = when {
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.M -> Intent.EXTRA_ALTERNATE_INTENTS
-            else -> Intent.EXTRA_INITIAL_INTENTS
+
+        val cameraOutputUri = fileProvider.createMediaUri(context).also {
+            cameraOutputFileUri = it
         }
-        val cameraIntent = cameraContract.createIntent(context, Unit)
+        val cameraIntent = cameraContract.createIntent(context, cameraOutputUri)
+
         val title = context.getString(R.string.media_chooser_title)
+
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
             val candidates = context.packageManager.queryIntentActivities(cameraIntent, 0)
                 .map { Components.create(it.activityInfo) }
-            viewModel.onCameraAppCandidatesQueried(
-                candidates, checkNotNull(cameraIntent.getParcelableExtra(MediaStore.EXTRA_OUTPUT))
-            )
+            viewModel.onCameraAppCandidatesQueried(candidates, cameraOutputUri)
+
             val pendingIntent = PendingIntent.getBroadcast(
                 context,
                 0,
@@ -64,19 +64,23 @@ internal class MediaChooserResultContract(
         } else {
             Intent.createChooser(pickMediaIntent, title)
         }.apply {
+            val altIntentName = when {
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.M -> Intent.EXTRA_ALTERNATE_INTENTS
+                else -> Intent.EXTRA_INITIAL_INTENTS
+            }
             putExtra(altIntentName, arrayOf(cameraIntent))
         }
     }
 
     override fun parseResult(resultCode: Int, intent: Intent?): Collection<Uri> {
         val pictureList = pictureResultContract.parseResult(resultCode, intent)
-        return if (pictureList.isNotEmpty()) {
-            pictureList
-        } else {
-            listOf(
-                viewModel.media.value ?: emptyList(),
-                cameraContract.parseResult(resultCode, intent)
-            ).flatten()
+        return when {
+            pictureList.isNotEmpty() -> pictureList
+            cameraContract.parseResult(resultCode, intent) -> {
+                val uri = checkNotNull(cameraOutputFileUri)
+                viewModel.media.value?.plus(uri) ?: listOf(uri)
+            }
+            else -> emptyList()
         }
     }
 }
@@ -116,38 +120,10 @@ private abstract class PickPicture : ActivityResultContract<Unit, Collection<Uri
     }
 }
 
-private class TakePictureContract : ActivityResultContract<Unit, Collection<Uri>>() {
-    private val takePictureContract = ActivityResultContracts.TakePicture()
-    private var pictureUri: Uri? = null
-
-    override fun createIntent(context: Context, input: Unit?): Intent {
-        val uri = createMedia(context)
-        pictureUri = uri
-        return takePictureContract.createIntent(context, uri)
-    }
-
-    private fun createMedia(context: Context): Uri {
-        val timeStamp = System.currentTimeMillis()
-        val filename = "$timeStamp.jpg"
-        val mediaRoot = when {
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP -> context.externalMediaDirs[0]
-            else -> context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-        }
-        val dir = File(mediaRoot, "images")
-        if (!dir.exists()) {
-            dir.mkdirs()
-        }
-        val file = File(dir, filename)
-        return FileProvider.getUriForFile(context, "com.freshdigitable.udonroad2", file)
-    }
-
-    override fun parseResult(resultCode: Int, intent: Intent?): Collection<Uri> {
-        return if (takePictureContract.parseResult(resultCode, intent)) {
-            listOf(checkNotNull(pictureUri))
-        } else {
-            emptyList()
-        }
-    }
+private fun AppFileProvider.createMediaUri(context: Context): Uri {
+    val timeStamp = System.currentTimeMillis()
+    val filename = "$timeStamp.jpg"
+    return getUriForFile(context, AppFileProvider.FileType.MEDIA, filename)
 }
 
 class MediaChooserBroadcastReceiver : BroadcastReceiver() {

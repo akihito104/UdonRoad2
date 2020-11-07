@@ -11,6 +11,10 @@ android {
         applicationId "com.freshdigitable.udonroad2"
         testInstrumentationRunner "com.freshdigitable.udonroad2.AppTestRunner"
         testInstrumentationRunnerArguments clearPackageData: 'true'
+
+        def fileAuthorityName = "${applicationId}.fileprovider"
+        manifestPlaceholders = [fileAuthority: fileAuthorityName]
+        buildConfigField("String", "FILE_AUTHORITY", "\"$fileAuthorityName\"")
     }
     buildTypes {
         debug {
