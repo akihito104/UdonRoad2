@@ -47,6 +47,7 @@ internal class MediaChooserResultContract(
             else -> Intent.EXTRA_INITIAL_INTENTS
         }
         val cameraIntent = cameraContract.createIntent(context, Unit)
+        val title = context.getString(R.string.media_chooser_title)
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
             val candidates = context.packageManager.queryIntentActivities(cameraIntent, 0)
                 .map { Components.create(it.activityInfo) }
@@ -59,9 +60,9 @@ internal class MediaChooserResultContract(
                 Intent(context, MediaChooserBroadcastReceiver::class.java),
                 PendingIntent.FLAG_UPDATE_CURRENT
             )
-            Intent.createChooser(pickMediaIntent, "追加する画像...", pendingIntent.intentSender)
+            Intent.createChooser(pickMediaIntent, title, pendingIntent.intentSender)
         } else {
-            Intent.createChooser(pickMediaIntent, "追加する画像...")
+            Intent.createChooser(pickMediaIntent, title)
         }.apply {
             putExtra(altIntentName, arrayOf(cameraIntent))
         }
