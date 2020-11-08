@@ -21,6 +21,7 @@ object Libs {
     const val ANDROIDX_CONSTRAINT_LAYOUT =
         "androidx.constraintlayout:constraintlayout:${Versions.ANDROIDX_CONSTRAINT_LAYOUT}"
     const val ANDROIDX_CORE_KTX = "androidx.core:core-ktx:${Versions.ANDROIDX_CORE}"
+    const val ANDROIDX_ACTIVITY_KTX = "androidx.activity:activity-ktx:${Versions.ANDROIDX_ACTIVITY}"
     const val ANDROIDX_FRAGMENT_KTX = "androidx.fragment:fragment-ktx:${Versions.ANDROIDX_FRAGMENT}"
     const val ANDROIDX_LIFECYCLE_EXT =
         "androidx.lifecycle:lifecycle-extensions:${Versions.ANDROIDX_LIFECYCLE}"

@@ -27,6 +27,7 @@ import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
 import com.freshdigitable.udonroad2.data.impl.TweetInputRepository
 import com.freshdigitable.udonroad2.data.impl.UserRepository
 import com.freshdigitable.udonroad2.model.app.AppExecutor
+import com.freshdigitable.udonroad2.model.app.AppFilePath
 import com.freshdigitable.udonroad2.model.app.AppTwitterException
 import com.freshdigitable.udonroad2.model.app.di.ActivityScope
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
@@ -52,10 +53,12 @@ class TweetInputViewModel @Inject constructor(
 
     val isExpanded: LiveData<Boolean> = viewState.isExpanded
     val text: LiveData<String> = viewState.text
+    val media = MutableLiveData<Collection<AppFilePath>>()
     val menuItem: LiveData<InputMenuItem> = viewState.menuItem
     val inputTask: LiveData<InputTaskState> = viewState.taskState
     val expandAnimationEvent: Flow<TweetInputEvent.Opened> =
         eventDispatcher.toAction<TweetInputEvent.Opened>().asFlow()
+    val chooserForCameraApp = viewState.chooserForCameraApp.asFlow()
 
     val user: LiveData<User?> = viewState.user
 
@@ -77,6 +80,14 @@ class TweetInputViewModel @Inject constructor(
 
     fun onExpandAnimationEnd() {
         eventDispatcher.postEvent(TweetInputEvent.Opened)
+    }
+
+    fun onCameraAppCandidatesQueried(candidates: List<Components>, path: AppFilePath) {
+        eventDispatcher.postEvent(CameraApp.Event.CandidateQueried(candidates, path))
+    }
+
+    fun onCameraAppFinished() {
+        eventDispatcher.postEvent(CameraApp.Event.OnFinish)
     }
 
     override fun onCleared() {
@@ -160,6 +171,10 @@ class TweetInputViewState @Inject constructor(
         }
         .flowOn(executor.dispatcher.ioContext)
         .asLiveData(executor.dispatcher.mainContext)
+
+    val chooserForCameraApp: AppAction<CameraApp.State> = actions.cameraApp
+        .scan<CameraApp.State>(CameraApp.State.Idling) { state, event -> state.transition(event) }
+        .distinctUntilChanged()
 
     private val disposable = CompositeDisposable(
         _taskState.subscribe {

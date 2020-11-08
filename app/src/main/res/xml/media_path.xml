@@ -14,10 +14,13 @@
   ~ limitations under the License.
   -->
 
-<resources>
-    <string name="title_input_send_tweet">いまどうしてる?</string>
-    <string name="label_input_write_tweet">ツイートする</string>
-    <string name="label_input_send_tweet">送信する</string>
-
-    <string name="media_chooser_title">添付する画像…</string>
-</resources>
+<paths>
+    <external-media-path
+        name="tw_uploaded_media_v21"
+        path="images/"
+        />
+    <external-files-path
+        name="tw_uploaded_media"
+        path="images/"
+        />
+</paths>
