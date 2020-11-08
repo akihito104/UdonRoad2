@@ -339,16 +339,15 @@ class TweetInputViewModelRule(
 
     override fun starting(description: Description?) {
         super.starting(description)
-        oAuthTokenRepositoryRule.setupCurrentUserIdSource(1000)
+        val authenticatedUser = mockk<User>().apply {
+            every { id } returns UserId(1000)
+            every { name } returns "user1"
+            every { screenName } returns "User1"
+        }
+        oAuthTokenRepositoryRule.setupCurrentUserIdSource(authenticatedUser.id.value)
         userRepositoryRule.setupResponseWithVerify(
-            { userRepositoryRule.mock.getUserFlow(UserId(1000)) },
-            flow {
-                emit(mockk<User>().apply {
-                    every { id } returns UserId(1000)
-                    every { name } returns "user1"
-                    every { screenName } returns "User1"
-                })
-            }
+            { userRepositoryRule.mock.getUserFlow(authenticatedUser.id) },
+            flow { emit(authenticatedUser) }
         )
         with(sut) {
             inputTask.observeForever(inputTaskObserver)
