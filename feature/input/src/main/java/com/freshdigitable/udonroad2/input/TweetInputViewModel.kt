@@ -16,7 +16,6 @@
 
 package com.freshdigitable.udonroad2.input
 
-import android.net.Uri
 import android.text.Editable
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -28,6 +27,7 @@ import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
 import com.freshdigitable.udonroad2.data.impl.TweetInputRepository
 import com.freshdigitable.udonroad2.data.impl.UserRepository
 import com.freshdigitable.udonroad2.model.app.AppExecutor
+import com.freshdigitable.udonroad2.model.app.AppFilePath
 import com.freshdigitable.udonroad2.model.app.AppTwitterException
 import com.freshdigitable.udonroad2.model.app.di.ActivityScope
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
@@ -53,7 +53,7 @@ class TweetInputViewModel @Inject constructor(
 
     val isExpanded: LiveData<Boolean> = viewState.isExpanded
     val text: LiveData<String> = viewState.text
-    val media = MutableLiveData<Collection<Uri>>()
+    val media = MutableLiveData<Collection<AppFilePath>>()
     val menuItem: LiveData<InputMenuItem> = viewState.menuItem
     val inputTask: LiveData<InputTaskState> = viewState.taskState
     val expandAnimationEvent: Flow<TweetInputEvent.Opened> =
@@ -82,8 +82,8 @@ class TweetInputViewModel @Inject constructor(
         eventDispatcher.postEvent(TweetInputEvent.Opened)
     }
 
-    fun onCameraAppCandidatesQueried(candidates: List<Components>, uri: Uri) {
-        eventDispatcher.postEvent(CameraApp.Event.CandidateQueried(candidates, uri))
+    fun onCameraAppCandidatesQueried(candidates: List<Components>, path: AppFilePath) {
+        eventDispatcher.postEvent(CameraApp.Event.CandidateQueried(candidates, path))
     }
 
     fun onCameraAppFinished() {

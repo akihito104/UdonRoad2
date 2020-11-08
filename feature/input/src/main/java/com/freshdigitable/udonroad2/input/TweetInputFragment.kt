@@ -20,7 +20,7 @@ import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.net.Uri
+import android.media.MediaScannerConnection
 import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -44,6 +44,7 @@ import com.freshdigitable.udonroad2.input.databinding.FragmentTweetInputBinding
 import com.freshdigitable.udonroad2.input.di.TweetInputViewModelComponent
 import com.freshdigitable.udonroad2.media.MediaThumbnailContainer
 import com.freshdigitable.udonroad2.media.mediaViews
+import com.freshdigitable.udonroad2.model.app.AppFilePath
 import com.freshdigitable.udonroad2.model.app.AppFileProvider
 import dagger.android.support.AndroidSupportInjection
 import kotlinx.coroutines.flow.collect
@@ -136,19 +137,27 @@ class TweetInputFragment : Fragment() {
                 when (it) {
                     is CameraApp.State.Selected -> {
                         requireContext().grantUriPermission(
-                            it.app.packageName, it.uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                            it.app.packageName, it.path.uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION
                         )
                     }
                     is CameraApp.State.Finished -> {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                             requireContext().revokeUriPermission(
-                                it.app.packageName, it.uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                                it.app.packageName,
+                                it.path.uri,
+                                Intent.FLAG_GRANT_WRITE_URI_PERMISSION
                             )
                         } else {
                             requireContext().revokeUriPermission(
-                                it.uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                                it.path.uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION
                             )
                         }
+
+                        MediaScannerConnection.scanFile(
+                            requireContext(),
+                            arrayOf(checkNotNull(it.path.file).toString()),
+                            arrayOf("image/jpg"), null
+                        )
                     }
                     else -> Unit
                 }
@@ -200,13 +209,13 @@ private fun View.hideInputMethod() {
 }
 
 @BindingAdapter("bindMediaByUri")
-fun MediaThumbnailContainer.bindMediaByUri(uris: Collection<Uri>?) {
-    if (uris == null) {
+fun MediaThumbnailContainer.bindMediaByUri(paths: Collection<AppFilePath>?) {
+    if (paths == null) {
         return
     }
-    mediaCount = uris.size
-    uris.zip(mediaViews) { uri, v ->
-        v.setImageURI(uri)
+    mediaCount = paths.size
+    paths.zip(mediaViews) { path, v ->
+        v.setImageURI(path.uri)
         v.scaleType = ImageView.ScaleType.CENTER_CROP
     }
 }

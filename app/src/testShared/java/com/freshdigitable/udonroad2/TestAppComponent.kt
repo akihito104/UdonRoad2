@@ -23,6 +23,7 @@ import com.freshdigitable.udonroad2.data.impl.di.RepositoryModule
 import com.freshdigitable.udonroad2.data.restclient.AppTwitterModule
 import com.freshdigitable.udonroad2.di.ActivityBuilders
 import com.freshdigitable.udonroad2.di.AppComponent
+import com.freshdigitable.udonroad2.di.AppFileProviderModule
 import com.freshdigitable.udonroad2.di.ExecutorModule
 import com.freshdigitable.udonroad2.di.ListOwnerGeneratorProvider
 import dagger.BindsInstance
@@ -43,7 +44,8 @@ import javax.inject.Singleton
         AppTwitterModule::class,
         TestSharedPreferencesModule::class,
         MockSetupModule::class,
-        ListOwnerGeneratorProvider::class
+        ListOwnerGeneratorProvider::class,
+        AppFileProviderModule::class,
     ]
 )
 interface TestAppComponent : AppComponent {

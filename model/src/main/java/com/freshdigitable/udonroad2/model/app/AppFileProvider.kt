@@ -18,9 +18,15 @@ package com.freshdigitable.udonroad2.model.app
 
 import android.content.Context
 import android.net.Uri
+import java.io.File
 
 interface AppFileProvider {
-    fun getUriForFile(context: Context, type: FileType, fileName: String): Uri
+    fun getFilePathForFile(context: Context, type: FileType, fileName: String): AppFilePath
 
     enum class FileType { MEDIA }
 }
+
+data class AppFilePath(
+    val file: File? = null,
+    val uri: Uri,
+)

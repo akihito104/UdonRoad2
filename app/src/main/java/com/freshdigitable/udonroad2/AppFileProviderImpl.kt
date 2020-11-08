@@ -17,19 +17,19 @@
 package com.freshdigitable.udonroad2
 
 import android.content.Context
-import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import androidx.core.content.FileProvider
+import com.freshdigitable.udonroad2.model.app.AppFilePath
 import com.freshdigitable.udonroad2.model.app.AppFileProvider
 import java.io.File
 
 internal class AppFileProviderImpl : AppFileProvider {
-    override fun getUriForFile(
+    override fun getFilePathForFile(
         context: Context,
         type: AppFileProvider.FileType,
         fileName: String
-    ): Uri {
+    ): AppFilePath {
         val dir = when (type) {
             AppFileProvider.FileType.MEDIA -> {
                 val mediaRoot = when {
@@ -44,6 +44,10 @@ internal class AppFileProviderImpl : AppFileProvider {
         if (!dir.exists()) {
             dir.mkdirs()
         }
-        return FileProvider.getUriForFile(context, BuildConfig.FILE_AUTHORITY, File(dir, fileName))
+        val file = File(dir, fileName)
+        return AppFilePath(
+            file,
+            FileProvider.getUriForFile(context, BuildConfig.FILE_AUTHORITY, file)
+        )
     }
 }
