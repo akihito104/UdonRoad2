@@ -111,10 +111,11 @@ enum class InputTaskState(val isExpanded: Boolean) {
 }
 
 @ActivityScope
-class TweetInputSharedState @Inject constructor() {
+class TweetInputSharedState @Inject constructor(executor: AppExecutor) {
     internal val taskStateSource = MutableStateFlow<InputTaskState?>(null)
-    val isExpanded: Flow<Boolean> = taskStateSource.map { it?.isExpanded == true }
+    val isExpanded: LiveData<Boolean> = taskStateSource.map { it?.isExpanded == true }
         .distinctUntilChanged()
+        .asLiveData(executor.dispatcher.mainContext)
     internal val textSource = MutableStateFlow("")
 }
 
@@ -192,8 +193,7 @@ class TweetInputViewState @Inject constructor(
     )
     internal val taskState: AppViewState<InputTaskState> =
         sharedState.taskStateSource.filterNotNull().asLiveData(executor.dispatcher.mainContext)
-    internal val isExpanded: AppViewState<Boolean> =
-        sharedState.isExpanded.asLiveData(executor.dispatcher.mainContext)
+    internal val isExpanded: AppViewState<Boolean> = sharedState.isExpanded
     internal val text: AppViewState<String> =
         sharedState.textSource.asLiveData(executor.dispatcher.mainContext)
 
