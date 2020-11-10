@@ -55,11 +55,11 @@ sealed class CameraApp : TweetInputEvent() {
         data class WaitingForChosen(val apps: List<Components>, val path: AppFilePath) : State()
         data class Selected(val app: Components, val path: AppFilePath) : State()
         data class Finished(val app: Components, val path: AppFilePath) : State()
-
-        fun transition(event: Event): State = stateGraph.transition(this, event)
     }
 
     companion object {
+        fun State.transition(event: Event): State = stateGraph.transition(this, event)
+
         private val stateGraph = StateGraph.create<State, Event> {
             state<State.Idling> {
                 accept<Event.CandidateQueried> { State.WaitingForChosen(it.apps, it.path) }

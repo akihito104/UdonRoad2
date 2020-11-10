@@ -23,14 +23,28 @@ class StateGraph<S : Any, E : Any>(
 ) {
     fun transition(s: S, e: E): S {
         @Suppress("UNCHECKED_CAST")
-        return graphs.first { it.state == s::class && it.event == e::class }.transition(s, e) as S
+        return graphs.first { it.matches(s, e) }.transition(s, e) as S
     }
 
     data class Graph<S : Any, E : Any>(
-        val state: KClass<S>,
-        val event: KClass<E>,
+        val state: GraphElement<S>,
+        val event: GraphElement<E>,
         val transition: S.(E) -> Any
-    )
+    ) {
+        fun matches(s: S, e: E): Boolean = state.matches(s) && event.matches(e)
+    }
+
+    sealed class GraphElement<T> {
+        class KClassGraphElement<T : Any>(private val elem: KClass<T>) : GraphElement<T>() {
+            override fun matches(t: T): Boolean = elem == t::class
+        }
+
+        class EnumGraphElement<T : Any>(private val elem: T) : GraphElement<T>() {
+            override fun matches(t: T): Boolean = elem == t
+        }
+
+        abstract fun matches(t: T): Boolean
+    }
 
     companion object {
         inline fun <reified S : Any, E : Any> create(
@@ -49,23 +63,29 @@ class StateGraph<S : Any, E : Any>(
         val gs: MutableList<Graph<out S, out E>> = mutableListOf()
 
         inline fun <reified SS : S> state(b: StateScope<S, SS, E>.() -> Unit) {
-            val s = StateScope<S, SS, E>(SS::class, pS)
+            val s = StateScope<S, SS, E>(GraphElement.KClassGraphElement(SS::class), pS)
+            s.b()
+            gs.addAll(s.gs)
+        }
+
+        fun state(ss: S, b: StateScope<S, S, E>.() -> Unit) {
+            val s = StateScope<S, S, E>(GraphElement.EnumGraphElement(ss), pS)
             s.b()
             gs.addAll(s.gs)
         }
 
         class StateScope<S : Any, SS : S, E : Any>(
-            val ss: KClass<SS>,
+            val ss: GraphElement<SS>,
             val pS: KClass<S>,
         ) {
             val gs = mutableListOf<Graph<out S, out E>>()
 
             inline fun <reified EE : E> accept(noinline b: SS.(EE) -> S) {
-                gs.add(Graph(ss, EE::class, b))
+                gs.add(Graph(ss, GraphElement.KClassGraphElement(EE::class), b))
             }
 
             inline fun <reified EE : E> doNotCare() {
-                gs.add(Graph(ss, EE::class) { this })
+                gs.add(Graph(ss, GraphElement.KClassGraphElement(EE::class)) { this })
             }
         }
     }

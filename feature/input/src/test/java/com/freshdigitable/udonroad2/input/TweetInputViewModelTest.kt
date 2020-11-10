@@ -72,8 +72,10 @@ class TweetInputViewModelTest {
 
         @Test
         fun onCancelClicked_whenInputIsCollapsed_menuItemIsNotChanged(): Unit = with(rule) {
-            // exercise
-            sut.onCancelClicked()
+            coroutineTestRule.runBlockingTest {
+                // exercise
+                sut.onCancelClicked()
+            }
 
             // verify
             assertThat(sut.text.value).isEmpty()
@@ -94,11 +96,13 @@ class TweetInputViewModelTest {
 
         @Test
         fun onCancelClicked_then_isVisibleIsFalse(): Unit = with(rule) {
-            // setup
-            sut.onWriteClicked()
+            coroutineTestRule.runBlockingTest {
+                // setup
+                sut.onWriteClicked()
 
-            // exercise
-            sut.onCancelClicked()
+                // exercise
+                sut.onCancelClicked()
+            }
 
             // verify
             assertThat(sut.text.value).isEmpty()
@@ -108,11 +112,13 @@ class TweetInputViewModelTest {
 
         @Test
         fun onTweetTextChanged_addedText_then_menuItemIsSendEnabled(): Unit = with(rule) {
-            // setup
-            sut.onWriteClicked()
+            coroutineTestRule.runBlockingTest {
+                // setup
+                sut.onWriteClicked()
 
-            // exercise
-            sut.onTweetTextChanged(editable("a"))
+                // exercise
+                sut.onTweetTextChanged(editable("a"))
+            }
 
             // verify
             assertThat(sut.text.value).isEqualTo("a")
@@ -122,12 +128,14 @@ class TweetInputViewModelTest {
 
         @Test
         fun onCancelClicked_textAdded_then_textCleared(): Unit = with(rule) {
-            // setup
-            sut.onWriteClicked()
-            sut.onTweetTextChanged(editable("a"))
+            coroutineTestRule.runBlockingTest {
+                // setup
+                sut.onWriteClicked()
+                sut.onTweetTextChanged(editable("a"))
 
-            // exercise
-            sut.onCancelClicked()
+                // exercise
+                sut.onCancelClicked()
+            }
 
             // verify
             assertThat(sut.text.value).isEmpty()
@@ -137,12 +145,14 @@ class TweetInputViewModelTest {
 
         @Test
         fun onTweetTextChanged_removedText_then_menuItemIsSendDisabled(): Unit = with(rule) {
-            // setup
-            sut.onWriteClicked()
+            coroutineTestRule.runBlockingTest {
+                // setup
+                sut.onWriteClicked()
 
-            // exercise
-            sut.onTweetTextChanged(editable("a"))
-            sut.onTweetTextChanged(editable(""))
+                // exercise
+                sut.onTweetTextChanged(editable("a"))
+                sut.onTweetTextChanged(editable(""))
+            }
 
             // verify
             assertThat(sut.text.value).isEmpty()
@@ -243,13 +253,15 @@ class TweetInputViewModelTest {
 
         @Test
         fun onSendClicked_whenSendIsSucceeded_then_menuItemIsWriteEnabled(): Unit = with(rule) {
-            // setup
-            setupPost("a")
-            sut.onWriteClicked()
-            sut.onTweetTextChanged(editable("a"))
+            coroutineTestRule.runBlockingTest {
+                // setup
+                setupPost("a")
+                sut.onWriteClicked()
+                sut.onTweetTextChanged(editable("a"))
 
-            // exercise
-            sut.onSendClicked()
+                // exercise
+                sut.onSendClicked()
+            }
 
             // verify
             inputTaskObserver.verifyOrderOfOnChanged(
@@ -267,13 +279,15 @@ class TweetInputViewModelTest {
 
         @Test
         fun onSendClicked_whenSendIsFailed_then_menuItemIsRetryEnabled(): Unit = with(rule) {
-            // setup
-            setupPost("a", withError = AppTwitterException(403, 123))
-            sut.onWriteClicked()
-            sut.onTweetTextChanged(editable("a"))
+            coroutineTestRule.runBlockingTest {
+                // setup
+                setupPost("a", withError = AppTwitterException(403, 123))
+                sut.onWriteClicked()
+                sut.onTweetTextChanged(editable("a"))
 
-            // exercise
-            sut.onSendClicked()
+                // exercise
+                sut.onSendClicked()
+            }
 
             // verify
             inputTaskObserver.verifyOrderOfOnChanged(
@@ -309,7 +323,7 @@ class TweetInputViewModelRule(
     collapsible: Boolean
 ) : TestWatcher() {
     val expectedException: ExpectedException = ExpectedException.none()
-    private val coroutineTestRule = CoroutineTestRule()
+    val coroutineTestRule = CoroutineTestRule()
     private val repository = MockVerified.create<TweetInputRepository>()
     val inputTaskObserver: Observer<InputTaskState> = spyk<Observer<InputTaskState>>().apply {
         every { onChanged(any()) } just runs
