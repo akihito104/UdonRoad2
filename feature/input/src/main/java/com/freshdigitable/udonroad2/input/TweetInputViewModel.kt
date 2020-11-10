@@ -21,11 +21,11 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
-import androidx.lifecycle.distinctUntilChanged
-import androidx.lifecycle.map
 import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
 import com.freshdigitable.udonroad2.data.impl.TweetInputRepository
 import com.freshdigitable.udonroad2.data.impl.UserRepository
+import com.freshdigitable.udonroad2.input.CameraApp.Companion.transition
+import com.freshdigitable.udonroad2.input.MediaChooserResultContract.MediaChooserResult
 import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.AppFilePath
 import com.freshdigitable.udonroad2.model.app.AppTwitterException
@@ -35,13 +35,16 @@ import com.freshdigitable.udonroad2.model.app.navigation.AppViewState
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.suspendMap
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
-import com.freshdigitable.udonroad2.model.app.navigation.toViewState
 import com.freshdigitable.udonroad2.model.user.User
 import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.subjects.PublishSubject
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combineTransform
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.rx2.asFlow
 import javax.inject.Inject
@@ -86,7 +89,14 @@ class TweetInputViewModel @Inject constructor(
         eventDispatcher.postEvent(CameraApp.Event.CandidateQueried(candidates, path))
     }
 
-    fun onCameraAppFinished() {
+    internal fun onMediaChooserFinished(result: MediaChooserResult) {
+        when (result) {
+            is MediaChooserResult.Replace -> media.value = result.paths
+            is MediaChooserResult.Add -> {
+                media.value = (media.value?.plus(result.paths) ?: result.paths)
+            }
+            is MediaChooserResult.Canceled -> Unit
+        }
         eventDispatcher.postEvent(CameraApp.Event.OnFinish)
     }
 
@@ -109,9 +119,12 @@ enum class InputTaskState(val isExpanded: Boolean) {
 }
 
 @ActivityScope
-class TweetInputSharedState @Inject constructor() {
-    internal val taskState: MutableLiveData<InputTaskState> = MutableLiveData()
-    val isExpanded: AppViewState<Boolean> = taskState.map { it.isExpanded }.distinctUntilChanged()
+class TweetInputSharedState @Inject constructor(executor: AppExecutor) {
+    internal val taskStateSource = MutableStateFlow<InputTaskState?>(null)
+    val isExpanded: LiveData<Boolean> = taskStateSource.map { it?.isExpanded == true }
+        .distinctUntilChanged()
+        .asLiveData(executor.dispatcher.mainContext)
+    internal val textSource = MutableStateFlow("")
 }
 
 class TweetInputViewState @Inject constructor(
@@ -123,46 +136,28 @@ class TweetInputViewState @Inject constructor(
     userRepository: UserRepository,
     executor: AppExecutor,
 ) {
-    private val stateEventOnSend = PublishSubject.create<InputTaskState>()
-    private val _taskState: AppAction<InputTaskState> = AppAction.merge(
-        AppAction.just(collapsible).map {
-            if (it) InputTaskState.IDLING else InputTaskState.OPENED
-        },
-        actions.openInput.map { InputTaskState.OPENED },
-        stateEventOnSend,
-        actions.cancelInput.flatMap {
-            AppAction.just(
-                InputTaskState.CANCELED,
-                if (collapsible) InputTaskState.IDLING else InputTaskState.OPENED
-            )
-        }
-    )
-    internal val taskState: AppViewState<InputTaskState> = sharedState.taskState
-    internal val isExpanded: AppViewState<Boolean> = sharedState.isExpanded
+    private val idlingState = if (collapsible) InputTaskState.IDLING else InputTaskState.OPENED
 
-    private val _text: AppAction<String> = AppAction.merge(
-        AppAction.just(""),
-        actions.updateText.map { it.text },
-        _taskState.filter { it == InputTaskState.SUCCEEDED || it == InputTaskState.CANCELED }
-            .map { "" }
-    )
-    internal val text: AppViewState<String> = _text.toViewState()
+    init {
+        sharedState.taskStateSource.value = idlingState
+    }
 
-    internal val menuItem: AppViewState<InputMenuItem> = AppAction.combineLatest(
-        _taskState,
-        _text.map { it.isNotBlank() }.distinctUntilChanged()
-    ) { state, contentAvailable ->
-        when (state) {
-            InputTaskState.IDLING -> InputMenuItem.WRITE_ENABLED
-            InputTaskState.OPENED -> {
-                if (contentAvailable) InputMenuItem.SEND_ENABLED else InputMenuItem.SEND_DISABLED
+    internal val menuItem: AppViewState<InputMenuItem> = sharedState.taskStateSource.filterNotNull()
+        .combineTransform(
+            sharedState.textSource.map { it.isNotBlank() }.distinctUntilChanged()
+        ) { state, hasContent ->
+            val menu = when (state) {
+                InputTaskState.IDLING -> InputMenuItem.WRITE_ENABLED
+                InputTaskState.OPENED -> {
+                    if (hasContent) InputMenuItem.SEND_ENABLED else InputMenuItem.SEND_DISABLED
+                }
+                InputTaskState.SENDING -> InputMenuItem.SEND_DISABLED
+                InputTaskState.FAILED -> InputMenuItem.RETRY_ENABLED
+                InputTaskState.SUCCEEDED,
+                InputTaskState.CANCELED -> InputMenuItem.SEND_DISABLED
             }
-            InputTaskState.SENDING -> InputMenuItem.SEND_DISABLED
-            InputTaskState.FAILED -> InputMenuItem.RETRY_ENABLED
-            InputTaskState.SUCCEEDED,
-            InputTaskState.CANCELED -> InputMenuItem.SEND_DISABLED
-        }
-    }.toViewState()
+            emit(menu)
+        }.asLiveData(executor.dispatcher.mainContext)
 
     val user: AppViewState<User?> = oauthRepository.getCurrentUserIdFlow()
         .flatMapLatest { id ->
@@ -177,26 +172,38 @@ class TweetInputViewState @Inject constructor(
         .distinctUntilChanged()
 
     private val disposable = CompositeDisposable(
-        _taskState.subscribe {
-            sharedState.taskState.value = it
+        actions.openInput.subscribe {
+            sharedState.taskStateSource.value = InputTaskState.OPENED
+        },
+        actions.updateText.subscribe {
+            sharedState.textSource.value = it.text
+        },
+        actions.cancelInput.subscribe {
+            sharedState.taskStateSource.value = InputTaskState.CANCELED
+            sharedState.textSource.value = ""
+            sharedState.taskStateSource.value = idlingState
         },
         actions.sendTweet.suspendMap(executor.dispatcher.mainContext) {
-            stateEventOnSend.onNext(InputTaskState.SENDING)
+            sharedState.taskStateSource.value = InputTaskState.SENDING
             repository.post(it.text)
         }.subscribe {
             when {
                 it.isSuccess -> {
-                    stateEventOnSend.onNext(InputTaskState.SUCCEEDED)
-                    stateEventOnSend.onNext(
-                        if (collapsible) InputTaskState.IDLING else InputTaskState.OPENED
-                    )
+                    sharedState.taskStateSource.value = InputTaskState.SUCCEEDED
+                    sharedState.textSource.value = ""
+                    sharedState.taskStateSource.value = idlingState
                 }
                 it.exception is AppTwitterException -> {
-                    stateEventOnSend.onNext(InputTaskState.FAILED)
+                    sharedState.taskStateSource.value = InputTaskState.FAILED
                 }
             }
         }
     )
+    internal val taskState: AppViewState<InputTaskState> =
+        sharedState.taskStateSource.filterNotNull().asLiveData(executor.dispatcher.mainContext)
+    internal val isExpanded: AppViewState<Boolean> = sharedState.isExpanded
+    internal val text: AppViewState<String> =
+        sharedState.textSource.asLiveData(executor.dispatcher.mainContext)
 
     internal fun clear() {
         disposable.clear()

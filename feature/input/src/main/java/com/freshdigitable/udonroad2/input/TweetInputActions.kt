@@ -17,6 +17,7 @@
 package com.freshdigitable.udonroad2.input
 
 import com.freshdigitable.udonroad2.model.app.AppFilePath
+import com.freshdigitable.udonroad2.model.app.StateGraph
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
@@ -50,47 +51,34 @@ sealed class CameraApp : TweetInputEvent() {
     }
 
     sealed class State : CameraApp() {
-        object Idling : State() {
-            override fun transition(event: Event): State {
-                return when (event) {
-                    is Event.Chosen -> throw IllegalStateException()
-                    is Event.CandidateQueried -> WaitingForChosen(event.apps, event.path)
-                    is Event.OnFinish -> this
+        object Idling : State()
+        data class WaitingForChosen(val apps: List<Components>, val path: AppFilePath) : State()
+        data class Selected(val app: Components, val path: AppFilePath) : State()
+        data class Finished(val app: Components, val path: AppFilePath) : State()
+    }
+
+    companion object {
+        fun State.transition(event: Event): State = stateGraph.transition(this, event)
+
+        private val stateGraph = StateGraph.create<State, Event> {
+            state<State.Idling> {
+                accept<Event.CandidateQueried> { State.WaitingForChosen(it.apps, it.path) }
+                doNotCare<Event.OnFinish>()
+            }
+            state<State.WaitingForChosen> {
+                accept<Event.Chosen> {
+                    if (apps.contains(it.app)) State.Selected(it.app, path) else State.Idling
                 }
+                accept<Event.CandidateQueried> { State.WaitingForChosen(it.apps, it.path) }
+                accept<Event.OnFinish> { State.Idling }
+            }
+            state<State.Selected> {
+                accept<Event.OnFinish> { State.Finished(app, path) }
+            }
+            state<State.Finished> {
+                accept<Event.CandidateQueried> { State.WaitingForChosen(it.apps, it.path) }
             }
         }
-
-        data class WaitingForChosen(val apps: List<Components>, val path: AppFilePath) : State() {
-            override fun transition(event: Event): State {
-                return when (event) {
-                    is Event.Chosen -> {
-                        if (apps.contains(event.app)) Selected(event.app, path) else Idling
-                    }
-                    is Event.CandidateQueried -> WaitingForChosen(event.apps, event.path)
-                    is Event.OnFinish -> Idling
-                }
-            }
-        }
-
-        data class Selected(val app: Components, val path: AppFilePath) : State() {
-            override fun transition(event: Event): State {
-                return when (event) {
-                    is Event.OnFinish -> Finished(app, path)
-                    is Event.Chosen, is Event.CandidateQueried -> throw IllegalStateException()
-                }
-            }
-        }
-
-        data class Finished(val app: Components, val path: AppFilePath) : State() {
-            override fun transition(event: Event): State {
-                return when (event) {
-                    is Event.CandidateQueried -> WaitingForChosen(event.apps, event.path)
-                    is Event.Chosen, is Event.OnFinish -> throw IllegalStateException()
-                }
-            }
-        }
-
-        abstract fun transition(event: Event): State
     }
 }
 

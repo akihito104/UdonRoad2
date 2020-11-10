@@ -21,7 +21,9 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.Observer
 import com.freshdigitable.udonroad2.data.impl.TweetInputRepository
 import com.freshdigitable.udonroad2.data.impl.UserRepository
+import com.freshdigitable.udonroad2.input.MediaChooserResultContract.MediaChooserResult
 import com.freshdigitable.udonroad2.model.app.AppExecutor
+import com.freshdigitable.udonroad2.model.app.AppFilePath
 import com.freshdigitable.udonroad2.model.app.AppTwitterException
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.user.User
@@ -72,8 +74,10 @@ class TweetInputViewModelTest {
 
         @Test
         fun onCancelClicked_whenInputIsCollapsed_menuItemIsNotChanged(): Unit = with(rule) {
-            // exercise
-            sut.onCancelClicked()
+            coroutineTestRule.runBlockingTest {
+                // exercise
+                sut.onCancelClicked()
+            }
 
             // verify
             assertThat(sut.text.value).isEmpty()
@@ -94,11 +98,13 @@ class TweetInputViewModelTest {
 
         @Test
         fun onCancelClicked_then_isVisibleIsFalse(): Unit = with(rule) {
-            // setup
-            sut.onWriteClicked()
+            coroutineTestRule.runBlockingTest {
+                // setup
+                sut.onWriteClicked()
 
-            // exercise
-            sut.onCancelClicked()
+                // exercise
+                sut.onCancelClicked()
+            }
 
             // verify
             assertThat(sut.text.value).isEmpty()
@@ -108,11 +114,13 @@ class TweetInputViewModelTest {
 
         @Test
         fun onTweetTextChanged_addedText_then_menuItemIsSendEnabled(): Unit = with(rule) {
-            // setup
-            sut.onWriteClicked()
+            coroutineTestRule.runBlockingTest {
+                // setup
+                sut.onWriteClicked()
 
-            // exercise
-            sut.onTweetTextChanged(editable("a"))
+                // exercise
+                sut.onTweetTextChanged(editable("a"))
+            }
 
             // verify
             assertThat(sut.text.value).isEqualTo("a")
@@ -122,12 +130,14 @@ class TweetInputViewModelTest {
 
         @Test
         fun onCancelClicked_textAdded_then_textCleared(): Unit = with(rule) {
-            // setup
-            sut.onWriteClicked()
-            sut.onTweetTextChanged(editable("a"))
+            coroutineTestRule.runBlockingTest {
+                // setup
+                sut.onWriteClicked()
+                sut.onTweetTextChanged(editable("a"))
 
-            // exercise
-            sut.onCancelClicked()
+                // exercise
+                sut.onCancelClicked()
+            }
 
             // verify
             assertThat(sut.text.value).isEmpty()
@@ -137,12 +147,14 @@ class TweetInputViewModelTest {
 
         @Test
         fun onTweetTextChanged_removedText_then_menuItemIsSendDisabled(): Unit = with(rule) {
-            // setup
-            sut.onWriteClicked()
+            coroutineTestRule.runBlockingTest {
+                // setup
+                sut.onWriteClicked()
 
-            // exercise
-            sut.onTweetTextChanged(editable("a"))
-            sut.onTweetTextChanged(editable(""))
+                // exercise
+                sut.onTweetTextChanged(editable("a"))
+                sut.onTweetTextChanged(editable(""))
+            }
 
             // verify
             assertThat(sut.text.value).isEmpty()
@@ -210,11 +222,12 @@ class TweetInputViewModelTest {
         fun onCameraAppFinished(): Unit = with(rule) {
             // setup
             val actual = sut.chooserForCameraApp.testCollect(executor)
-            sut.onCameraAppCandidatesQueried(listOf(cameraApp), mockk())
+            val path = mockk<AppFilePath>()
+            sut.onCameraAppCandidatesQueried(listOf(cameraApp), path)
             dispatchChosen(cameraApp)
 
             // exercise
-            sut.onCameraAppFinished()
+            sut.onMediaChooserFinished(MediaChooserResult.Add(listOf(path)))
 
             // verify
             assertThat(actual).hasSize(4)
@@ -222,6 +235,7 @@ class TweetInputViewModelTest {
             assertThat(actual[1]).isInstanceOf<CameraApp.State.WaitingForChosen>()
             assertThat(actual[2]).isInstanceOf<CameraApp.State.Selected>()
             assertThat(actual[3]).isInstanceOf<CameraApp.State.Finished>()
+            assertThat(sut.media.value).hasSize(1)
         }
 
         @Test
@@ -232,24 +246,27 @@ class TweetInputViewModelTest {
             dispatchChosen(galleryApp)
 
             // exercise
-            sut.onCameraAppFinished()
+            sut.onMediaChooserFinished(MediaChooserResult.Replace(listOf()))
 
             // verify
             assertThat(actual).hasSize(3)
             assertThat(actual[0]).isInstanceOf<CameraApp.State.Idling>()
             assertThat(actual[1]).isInstanceOf<CameraApp.State.WaitingForChosen>()
             assertThat(actual[2]).isInstanceOf<CameraApp.State.Idling>()
+            assertThat(sut.media.value).hasSize(0)
         }
 
         @Test
         fun onSendClicked_whenSendIsSucceeded_then_menuItemIsWriteEnabled(): Unit = with(rule) {
-            // setup
-            setupPost("a")
-            sut.onWriteClicked()
-            sut.onTweetTextChanged(editable("a"))
+            coroutineTestRule.runBlockingTest {
+                // setup
+                setupPost("a")
+                sut.onWriteClicked()
+                sut.onTweetTextChanged(editable("a"))
 
-            // exercise
-            sut.onSendClicked()
+                // exercise
+                sut.onSendClicked()
+            }
 
             // verify
             inputTaskObserver.verifyOrderOfOnChanged(
@@ -267,13 +284,15 @@ class TweetInputViewModelTest {
 
         @Test
         fun onSendClicked_whenSendIsFailed_then_menuItemIsRetryEnabled(): Unit = with(rule) {
-            // setup
-            setupPost("a", withError = AppTwitterException(403, 123))
-            sut.onWriteClicked()
-            sut.onTweetTextChanged(editable("a"))
+            coroutineTestRule.runBlockingTest {
+                // setup
+                setupPost("a", withError = AppTwitterException(403, 123))
+                sut.onWriteClicked()
+                sut.onTweetTextChanged(editable("a"))
 
-            // exercise
-            sut.onSendClicked()
+                // exercise
+                sut.onSendClicked()
+            }
 
             // verify
             inputTaskObserver.verifyOrderOfOnChanged(
@@ -309,7 +328,7 @@ class TweetInputViewModelRule(
     collapsible: Boolean
 ) : TestWatcher() {
     val expectedException: ExpectedException = ExpectedException.none()
-    private val coroutineTestRule = CoroutineTestRule()
+    val coroutineTestRule = CoroutineTestRule()
     private val repository = MockVerified.create<TweetInputRepository>()
     val inputTaskObserver: Observer<InputTaskState> = spyk<Observer<InputTaskState>>().apply {
         every { onChanged(any()) } just runs
@@ -325,7 +344,7 @@ class TweetInputViewModelRule(
             TweetInputViewState(
                 collapsible,
                 TweetInputActions(eventDispatcher),
-                TweetInputSharedState(),
+                TweetInputSharedState(executor),
                 repository.mock,
                 oAuthTokenRepositoryRule.mock,
                 userRepositoryRule.mock,
