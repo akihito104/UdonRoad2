@@ -32,10 +32,10 @@ import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import dagger.android.AndroidInjection
 import javax.inject.Inject
 
-internal class MediaChooserResultContract(
+internal class MediaChooserResultContract @Inject constructor(
     private val fileProvider: AppFileProvider,
-    private val viewModel: TweetInputViewModel
-) : ActivityResultContract<Unit, Collection<AppFilePath>>() {
+    private val eventDispatcher: EventDispatcher,
+) : ActivityResultContract<Unit, MediaChooserResultContract.MediaChooserResult>() {
     private val pictureResultContract = PickPicture.create()
     private val cameraContract = ActivityResultContracts.TakePicture()
     private var cameraOutputFilePath: AppFilePath? = null
@@ -53,7 +53,9 @@ internal class MediaChooserResultContract(
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
             val candidates = context.packageManager.queryIntentActivities(cameraIntent, 0)
                 .map { Components.create(it.activityInfo) }
-            viewModel.onCameraAppCandidatesQueried(candidates, cameraOutputPath)
+            eventDispatcher.postEvent(
+                CameraApp.Event.CandidateQueried(candidates, cameraOutputPath)
+            )
 
             val pendingIntent = PendingIntent.getBroadcast(
                 context,
@@ -73,18 +75,24 @@ internal class MediaChooserResultContract(
         }
     }
 
-    override fun parseResult(resultCode: Int, intent: Intent?): Collection<AppFilePath> {
+    override fun parseResult(resultCode: Int, intent: Intent?): MediaChooserResult {
         val pictureList = pictureResultContract.parseResult(resultCode, intent).map {
             AppFilePath(uri = it)
         }
         return when {
-            pictureList.isNotEmpty() -> pictureList
+            pictureList.isNotEmpty() -> MediaChooserResult.Replace(pictureList)
             cameraContract.parseResult(resultCode, intent) -> {
                 val path = checkNotNull(cameraOutputFilePath)
-                viewModel.media.value?.plus(path) ?: listOf(path)
+                MediaChooserResult.Add(listOf(path))
             }
-            else -> emptyList()
+            else -> MediaChooserResult.Canceled
         }
+    }
+
+    sealed class MediaChooserResult {
+        data class Replace(val paths: List<AppFilePath>) : MediaChooserResult()
+        data class Add(val paths: List<AppFilePath>) : MediaChooserResult()
+        object Canceled : MediaChooserResult()
     }
 }
 

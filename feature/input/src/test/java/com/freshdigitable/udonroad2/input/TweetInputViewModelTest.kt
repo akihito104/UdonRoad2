@@ -21,7 +21,9 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.Observer
 import com.freshdigitable.udonroad2.data.impl.TweetInputRepository
 import com.freshdigitable.udonroad2.data.impl.UserRepository
+import com.freshdigitable.udonroad2.input.MediaChooserResultContract.MediaChooserResult
 import com.freshdigitable.udonroad2.model.app.AppExecutor
+import com.freshdigitable.udonroad2.model.app.AppFilePath
 import com.freshdigitable.udonroad2.model.app.AppTwitterException
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.user.User
@@ -220,11 +222,12 @@ class TweetInputViewModelTest {
         fun onCameraAppFinished(): Unit = with(rule) {
             // setup
             val actual = sut.chooserForCameraApp.testCollect(executor)
-            sut.onCameraAppCandidatesQueried(listOf(cameraApp), mockk())
+            val path = mockk<AppFilePath>()
+            sut.onCameraAppCandidatesQueried(listOf(cameraApp), path)
             dispatchChosen(cameraApp)
 
             // exercise
-            sut.onCameraAppFinished()
+            sut.onMediaChooserFinished(MediaChooserResult.Add(listOf(path)))
 
             // verify
             assertThat(actual).hasSize(4)
@@ -232,6 +235,7 @@ class TweetInputViewModelTest {
             assertThat(actual[1]).isInstanceOf<CameraApp.State.WaitingForChosen>()
             assertThat(actual[2]).isInstanceOf<CameraApp.State.Selected>()
             assertThat(actual[3]).isInstanceOf<CameraApp.State.Finished>()
+            assertThat(sut.media.value).hasSize(1)
         }
 
         @Test
@@ -242,13 +246,14 @@ class TweetInputViewModelTest {
             dispatchChosen(galleryApp)
 
             // exercise
-            sut.onCameraAppFinished()
+            sut.onMediaChooserFinished(MediaChooserResult.Replace(listOf()))
 
             // verify
             assertThat(actual).hasSize(3)
             assertThat(actual[0]).isInstanceOf<CameraApp.State.Idling>()
             assertThat(actual[1]).isInstanceOf<CameraApp.State.WaitingForChosen>()
             assertThat(actual[2]).isInstanceOf<CameraApp.State.Idling>()
+            assertThat(sut.media.value).hasSize(0)
         }
 
         @Test

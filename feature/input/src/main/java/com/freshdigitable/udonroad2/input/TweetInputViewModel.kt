@@ -25,6 +25,7 @@ import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
 import com.freshdigitable.udonroad2.data.impl.TweetInputRepository
 import com.freshdigitable.udonroad2.data.impl.UserRepository
 import com.freshdigitable.udonroad2.input.CameraApp.Companion.transition
+import com.freshdigitable.udonroad2.input.MediaChooserResultContract.MediaChooserResult
 import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.AppFilePath
 import com.freshdigitable.udonroad2.model.app.AppTwitterException
@@ -88,7 +89,14 @@ class TweetInputViewModel @Inject constructor(
         eventDispatcher.postEvent(CameraApp.Event.CandidateQueried(candidates, path))
     }
 
-    fun onCameraAppFinished() {
+    internal fun onMediaChooserFinished(result: MediaChooserResult) {
+        when (result) {
+            is MediaChooserResult.Replace -> media.value = result.paths
+            is MediaChooserResult.Add -> {
+                media.value = (media.value?.plus(result.paths) ?: result.paths)
+            }
+            is MediaChooserResult.Canceled -> Unit
+        }
         eventDispatcher.postEvent(CameraApp.Event.OnFinish)
     }
 

@@ -45,7 +45,6 @@ import com.freshdigitable.udonroad2.input.di.TweetInputViewModelComponent
 import com.freshdigitable.udonroad2.media.MediaThumbnailContainer
 import com.freshdigitable.udonroad2.media.mediaViews
 import com.freshdigitable.udonroad2.model.app.AppFilePath
-import com.freshdigitable.udonroad2.model.app.AppFileProvider
 import dagger.android.support.AndroidSupportInjection
 import kotlinx.coroutines.flow.collect
 import timber.log.Timber
@@ -62,15 +61,8 @@ class TweetInputFragment : Fragment() {
     }
 
     @Inject
-    lateinit var fileProvider: AppFileProvider
-
-    private val mediaChooser: ActivityResultLauncher<Unit> by lazy {
-        registerForActivityResult(MediaChooserResultContract(fileProvider, viewModel)) { uris ->
-            Timber.tag("TweetInputFragment").d("mediaChooser.onResult: $uris")
-            viewModel.media.value = uris
-            viewModel.onCameraAppFinished()
-        }
-    }
+    internal lateinit var mediaChooserResultContract: MediaChooserResultContract
+    private lateinit var mediaChooser: ActivityResultLauncher<Unit>
 
     private val requestPermission =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) {
@@ -82,7 +74,10 @@ class TweetInputFragment : Fragment() {
     override fun onAttach(context: Context) {
         AndroidSupportInjection.inject(this)
         super.onAttach(context)
-        mediaChooser.contract // XXX
+        mediaChooser = registerForActivityResult(mediaChooserResultContract) { uris ->
+            Timber.tag("TweetInputFragment").d("mediaChooser.onResult: $uris")
+            viewModel.onMediaChooserFinished(uris)
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
