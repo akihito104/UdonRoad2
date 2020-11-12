@@ -39,7 +39,11 @@ class TweetInputActions @Inject constructor(
 sealed class TweetInputEvent : AppEvent {
     object Open : TweetInputEvent()
     object Opened : TweetInputEvent()
-    data class Send(val text: String) : TweetInputEvent()
+    data class Send(
+        val text: String,
+        val media: List<AppFilePath> = emptyList()
+    ) : TweetInputEvent()
+
     object Cancel : TweetInputEvent()
 
     data class TextUpdated(val text: String) : TweetInputEvent()

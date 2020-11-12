@@ -17,13 +17,19 @@
 package com.freshdigitable.udonroad2.data.impl
 
 import com.freshdigitable.udonroad2.data.restclient.TweetApiClient
+import com.freshdigitable.udonroad2.model.MediaId
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
+import java.io.InputStream
 import javax.inject.Inject
 
 class TweetInputRepository @Inject constructor(
     private val remoteSource: TweetApiClient
 ) {
-    suspend fun post(text: String): TweetEntity {
-        return remoteSource.postTweet(text)
+    suspend fun post(text: String, mediaIds: List<MediaId>): TweetEntity {
+        return remoteSource.postTweet(text, mediaIds)
+    }
+
+    suspend fun uploadMedia(filename: String, inputStream: InputStream): MediaId {
+        return remoteSource.uploadMedia(filename, inputStream)
     }
 }
