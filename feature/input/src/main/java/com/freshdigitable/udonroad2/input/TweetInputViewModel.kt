@@ -18,7 +18,6 @@ package com.freshdigitable.udonroad2.input
 
 import android.text.Editable
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
@@ -37,6 +36,8 @@ import com.freshdigitable.udonroad2.model.app.navigation.suspendMap
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
 import com.freshdigitable.udonroad2.model.user.User
 import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.disposables.Disposable
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combineTransform
@@ -56,12 +57,12 @@ class TweetInputViewModel @Inject constructor(
 
     val isExpanded: LiveData<Boolean> = viewState.isExpanded
     val text: LiveData<String> = viewState.text
-    val media = MutableLiveData<Collection<AppFilePath>>()
+    val media: LiveData<List<AppFilePath>> = viewState.media
     val menuItem: LiveData<InputMenuItem> = viewState.menuItem
     val inputTask: LiveData<InputTaskState> = viewState.taskState
     val expandAnimationEvent: Flow<TweetInputEvent.Opened> =
         eventDispatcher.toAction<TweetInputEvent.Opened>().asFlow()
-    val chooserForCameraApp = viewState.chooserForCameraApp.asFlow()
+    internal val chooserForCameraApp = viewState.chooserForCameraApp.asFlow()
 
     val user: LiveData<User?> = viewState.user
 
@@ -90,14 +91,7 @@ class TweetInputViewModel @Inject constructor(
     }
 
     internal fun onMediaChooserFinished(result: MediaChooserResult) {
-        when (result) {
-            is MediaChooserResult.Replace -> media.value = result.paths
-            is MediaChooserResult.Add -> {
-                media.value = (media.value?.plus(result.paths) ?: result.paths)
-            }
-            is MediaChooserResult.Canceled -> Unit
-        }
-        eventDispatcher.postEvent(CameraApp.Event.OnFinish)
+        eventDispatcher.postEvent(CameraApp.Event.OnFinish(result))
     }
 
     override fun onCleared() {
@@ -119,14 +113,17 @@ enum class InputTaskState(val isExpanded: Boolean) {
 }
 
 @ActivityScope
+@ExperimentalCoroutinesApi
 class TweetInputSharedState @Inject constructor(executor: AppExecutor) {
     internal val taskStateSource = MutableStateFlow<InputTaskState?>(null)
     val isExpanded: LiveData<Boolean> = taskStateSource.map { it?.isExpanded == true }
         .distinctUntilChanged()
         .asLiveData(executor.dispatcher.mainContext)
     internal val textSource = MutableStateFlow("")
+    internal val mediaSource = MutableStateFlow<List<AppFilePath>>(emptyList())
 }
 
+@ExperimentalCoroutinesApi
 class TweetInputViewState @Inject constructor(
     collapsible: Boolean,
     actions: TweetInputActions,
@@ -142,10 +139,14 @@ class TweetInputViewState @Inject constructor(
         sharedState.taskStateSource.value = idlingState
     }
 
+    private val hasContent: Flow<Boolean> = sharedState.textSource.combineTransform(
+        sharedState.mediaSource
+    ) { text, media ->
+        emit(text.isNotBlank() || media.isNotEmpty())
+    }.distinctUntilChanged()
+
     internal val menuItem: AppViewState<InputMenuItem> = sharedState.taskStateSource.filterNotNull()
-        .combineTransform(
-            sharedState.textSource.map { it.isNotBlank() }.distinctUntilChanged()
-        ) { state, hasContent ->
+        .combineTransform(hasContent) { state, hasContent ->
             val menu = when (state) {
                 InputTaskState.IDLING -> InputMenuItem.WRITE_ENABLED
                 InputTaskState.OPENED -> {
@@ -159,7 +160,7 @@ class TweetInputViewState @Inject constructor(
             emit(menu)
         }.asLiveData(executor.dispatcher.mainContext)
 
-    val user: AppViewState<User?> = oauthRepository.getCurrentUserIdFlow()
+    internal val user: AppViewState<User?> = oauthRepository.getCurrentUserIdFlow()
         .flatMapLatest { id ->
             userRepository.getUserFlow(id)
                 .mapLatest { it ?: userRepository.getUser(id) }
@@ -167,45 +168,70 @@ class TweetInputViewState @Inject constructor(
         .flowOn(executor.dispatcher.ioContext)
         .asLiveData(executor.dispatcher.mainContext)
 
-    val chooserForCameraApp: AppAction<CameraApp.State> = actions.cameraApp
+    internal val chooserForCameraApp: AppAction<CameraApp.State> = actions.cameraApp
         .scan<CameraApp.State>(CameraApp.State.Idling) { state, event -> state.transition(event) }
         .distinctUntilChanged()
 
     private val disposable = CompositeDisposable(
-        actions.openInput.subscribe {
-            sharedState.taskStateSource.value = InputTaskState.OPENED
+        actions.openInput.subscribeToUpdate(sharedState) {
+            taskStateSource.value = InputTaskState.OPENED
         },
-        actions.updateText.subscribe {
-            sharedState.textSource.value = it.text
+        actions.updateText.subscribeToUpdate(sharedState) {
+            textSource.value = it.text
         },
-        actions.cancelInput.subscribe {
-            sharedState.taskStateSource.value = InputTaskState.CANCELED
-            sharedState.textSource.value = ""
-            sharedState.taskStateSource.value = idlingState
+        actions.updateMedia.subscribeToUpdate(sharedState) {
+            when (val result = it.result) {
+                is MediaChooserResult.Replace -> mediaSource.value = result.paths
+                is MediaChooserResult.Add -> {
+                    mediaSource.value = mediaSource.value.plus(result.paths)
+                }
+                is MediaChooserResult.Canceled -> Unit
+            }
+        },
+        actions.cancelInput.subscribeToUpdate(sharedState) {
+            taskStateSource.value = InputTaskState.CANCELED
+            clearContents()
+            taskStateSource.value = idlingState
         },
         actions.sendTweet.suspendMap(executor.dispatcher.mainContext) {
             sharedState.taskStateSource.value = InputTaskState.SENDING
             repository.post(it.text)
-        }.subscribe {
+        }.subscribeToUpdate(sharedState) {
             when {
                 it.isSuccess -> {
-                    sharedState.taskStateSource.value = InputTaskState.SUCCEEDED
-                    sharedState.textSource.value = ""
-                    sharedState.taskStateSource.value = idlingState
+                    taskStateSource.value = InputTaskState.SUCCEEDED
+                    clearContents()
+                    taskStateSource.value = idlingState
                 }
                 it.exception is AppTwitterException -> {
-                    sharedState.taskStateSource.value = InputTaskState.FAILED
+                    taskStateSource.value = InputTaskState.FAILED
                 }
             }
         }
     )
-    internal val taskState: AppViewState<InputTaskState> =
-        sharedState.taskStateSource.filterNotNull().asLiveData(executor.dispatcher.mainContext)
+
+    internal val taskState: AppViewState<InputTaskState> = sharedState.taskStateSource
+        .filterNotNull().asLiveDataWithMain(executor)
     internal val isExpanded: AppViewState<Boolean> = sharedState.isExpanded
-    internal val text: AppViewState<String> =
-        sharedState.textSource.asLiveData(executor.dispatcher.mainContext)
+    internal val text: AppViewState<String> = sharedState.textSource.asLiveDataWithMain(executor)
+    internal val media: AppViewState<List<AppFilePath>> = sharedState.mediaSource
+        .asLiveDataWithMain(executor)
+
+    private fun TweetInputSharedState.clearContents() {
+        textSource.value = ""
+        mediaSource.value = emptyList()
+    }
 
     internal fun clear() {
         disposable.clear()
     }
 }
+
+private fun <T> Flow<T>.asLiveDataWithMain(executor: AppExecutor): AppViewState<T> {
+    return asLiveData(executor.dispatcher.mainContext)
+}
+
+private inline fun <T> AppAction<T>.subscribeToUpdate(
+    sharedState: TweetInputSharedState,
+    crossinline block: TweetInputSharedState.(T) -> Unit
+): Disposable = subscribe { sharedState.block(it) }

@@ -32,6 +32,8 @@ class TweetInputActions @Inject constructor(
     internal val cancelInput: AppAction<TweetInputEvent.Cancel> = eventDispatcher.toAction()
     internal val updateText: AppAction<TweetInputEvent.TextUpdated> = eventDispatcher.toAction()
     internal val cameraApp: AppAction<CameraApp.Event> = eventDispatcher.toAction()
+
+    internal val updateMedia: AppAction<CameraApp.Event.OnFinish> = eventDispatcher.toAction()
 }
 
 sealed class TweetInputEvent : AppEvent {
@@ -43,11 +45,11 @@ sealed class TweetInputEvent : AppEvent {
     data class TextUpdated(val text: String) : TweetInputEvent()
 }
 
-sealed class CameraApp : TweetInputEvent() {
+internal sealed class CameraApp : TweetInputEvent() {
     sealed class Event : CameraApp() {
         data class CandidateQueried(val apps: List<Components>, val path: AppFilePath) : Event()
         data class Chosen(val app: Components) : Event()
-        object OnFinish : Event()
+        data class OnFinish(val result: MediaChooserResultContract.MediaChooserResult) : Event()
     }
 
     sealed class State : CameraApp() {

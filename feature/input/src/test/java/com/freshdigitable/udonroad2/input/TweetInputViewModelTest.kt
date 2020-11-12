@@ -141,6 +141,7 @@ class TweetInputViewModelTest {
 
             // verify
             assertThat(sut.text.value).isEmpty()
+            assertThat(sut.media.value).isEmpty()
             assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.WRITE_ENABLED)
             assertThat(sut.isExpanded.value).isFalse()
         }
@@ -219,15 +220,18 @@ class TweetInputViewModelTest {
         }
 
         @Test
-        fun onCameraAppFinished(): Unit = with(rule) {
+        fun onMediaChooserFinished_whenCameraAppChosen_then_dispatchAddResult(): Unit = with(rule) {
             // setup
             val actual = sut.chooserForCameraApp.testCollect(executor)
             val path = mockk<AppFilePath>()
-            sut.onCameraAppCandidatesQueried(listOf(cameraApp), path)
-            dispatchChosen(cameraApp)
+            coroutineTestRule.runBlockingTest {
+                sut.onWriteClicked()
+                sut.onCameraAppCandidatesQueried(listOf(cameraApp), path)
+                dispatchChosen(cameraApp)
 
-            // exercise
-            sut.onMediaChooserFinished(MediaChooserResult.Add(listOf(path)))
+                // exercise
+                sut.onMediaChooserFinished(MediaChooserResult.Add(listOf(path)))
+            }
 
             // verify
             assertThat(actual).hasSize(4)
@@ -236,17 +240,43 @@ class TweetInputViewModelTest {
             assertThat(actual[2]).isInstanceOf<CameraApp.State.Selected>()
             assertThat(actual[3]).isInstanceOf<CameraApp.State.Finished>()
             assertThat(sut.media.value).hasSize(1)
+            assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.SEND_ENABLED)
         }
 
         @Test
-        fun onCameraAppFinishedAtIdlingState_then_stillIdling(): Unit = with(rule) {
+        fun onCancelClicked_whenHasMedia_then_mediaIsEmpty(): Unit = with(rule) {
             // setup
             val actual = sut.chooserForCameraApp.testCollect(executor)
-            sut.onCameraAppCandidatesQueried(listOf(cameraApp), mockk())
-            dispatchChosen(galleryApp)
+            val path = mockk<AppFilePath>()
+            coroutineTestRule.runBlockingTest {
+                sut.onCameraAppCandidatesQueried(listOf(cameraApp), path)
+                dispatchChosen(cameraApp)
+                sut.onMediaChooserFinished(MediaChooserResult.Add(listOf(path)))
 
-            // exercise
-            sut.onMediaChooserFinished(MediaChooserResult.Replace(listOf()))
+                // exercise
+                sut.onCancelClicked()
+            }
+
+            // verify
+            assertThat(actual).hasSize(4)
+            assertThat(actual[0]).isInstanceOf<CameraApp.State.Idling>()
+            assertThat(actual[1]).isInstanceOf<CameraApp.State.WaitingForChosen>()
+            assertThat(actual[2]).isInstanceOf<CameraApp.State.Selected>()
+            assertThat(actual[3]).isInstanceOf<CameraApp.State.Finished>()
+            assertThat(sut.media.value).isEmpty()
+        }
+
+        @Test
+        fun onMediaChooserFinishedAtIdlingState_then_stillIdling(): Unit = with(rule) {
+            // setup
+            val actual = sut.chooserForCameraApp.testCollect(executor)
+            coroutineTestRule.runBlockingTest {
+                sut.onCameraAppCandidatesQueried(listOf(cameraApp), mockk())
+                dispatchChosen(galleryApp)
+
+                // exercise
+                sut.onMediaChooserFinished(MediaChooserResult.Replace(listOf()))
+            }
 
             // verify
             assertThat(actual).hasSize(3)
@@ -279,8 +309,41 @@ class TweetInputViewModelTest {
             assertThat(sut.inputTask.value).isEqualTo(InputTaskState.IDLING)
             assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.WRITE_ENABLED)
             assertThat(sut.text.value).isEmpty()
+            assertThat(sut.media.value).isEmpty()
             assertThat(sut.isExpanded.value).isFalse()
         }
+
+        @Test
+        fun onSendClicked_whenSendIsSucceededWithMedia_then_menuItemIsWriteEnabled(): Unit =
+            with(rule) {
+                // setup
+                setupPost("a")
+                coroutineTestRule.runBlockingTest {
+                    sut.onWriteClicked()
+                    val path = mockk<AppFilePath>()
+                    sut.onCameraAppCandidatesQueried(listOf(cameraApp), path)
+                    dispatchChosen(cameraApp)
+                    sut.onMediaChooserFinished(MediaChooserResult.Add(listOf(path)))
+                    sut.onTweetTextChanged(editable("a"))
+
+                    // exercise
+                    sut.onSendClicked()
+                }
+
+                // verify
+                inputTaskObserver.verifyOrderOfOnChanged(
+                    InputTaskState.IDLING,
+                    InputTaskState.OPENED,
+                    InputTaskState.SENDING,
+                    InputTaskState.SUCCEEDED,
+                    InputTaskState.IDLING
+                )
+                assertThat(sut.inputTask.value).isEqualTo(InputTaskState.IDLING)
+                assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.WRITE_ENABLED)
+                assertThat(sut.text.value).isEmpty()
+                assertThat(sut.media.value).isEmpty()
+                assertThat(sut.isExpanded.value).isFalse()
+            }
 
         @Test
         fun onSendClicked_whenSendIsFailed_then_menuItemIsRetryEnabled(): Unit = with(rule) {
@@ -304,6 +367,7 @@ class TweetInputViewModelTest {
             assertThat(sut.inputTask.value).isEqualTo(InputTaskState.FAILED)
             assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.RETRY_ENABLED)
             assertThat(sut.text.value).isEqualTo("a")
+            assertThat(sut.media.value).isEmpty()
             assertThat(sut.isExpanded.value).isFalse()
         }
     }
