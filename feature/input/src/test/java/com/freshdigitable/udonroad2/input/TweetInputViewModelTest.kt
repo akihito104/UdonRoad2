@@ -22,6 +22,7 @@ import androidx.lifecycle.Observer
 import com.freshdigitable.udonroad2.data.impl.TweetInputRepository
 import com.freshdigitable.udonroad2.data.impl.UserRepository
 import com.freshdigitable.udonroad2.input.MediaChooserResultContract.MediaChooserResult
+import com.freshdigitable.udonroad2.model.MediaId
 import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.AppFilePath
 import com.freshdigitable.udonroad2.model.app.AppTwitterException
@@ -317,10 +318,12 @@ class TweetInputViewModelTest {
         fun onSendClicked_whenSendIsSucceededWithMedia_then_menuItemIsWriteEnabled(): Unit =
             with(rule) {
                 // setup
-                setupPost("a")
+                val path = mockk<AppFilePath>()
+                val mediaId = MediaId(1000)
+                setupPost("a", listOf(mediaId))
+                setupUploadMedia(path, mediaId)
                 coroutineTestRule.runBlockingTest {
                     sut.onWriteClicked()
-                    val path = mockk<AppFilePath>()
                     sut.onCameraAppCandidatesQueried(listOf(cameraApp), path)
                     dispatchChosen(cameraApp)
                     sut.onMediaChooserFinished(MediaChooserResult.Add(listOf(path)))
@@ -439,12 +442,23 @@ class TweetInputViewModelRule(
         }
     }
 
-    fun setupPost(text: String, withError: Throwable? = null) {
-        if (withError == null) {
-            repository.coSetupResponseWithVerify({ repository.mock.post(text) }, Unit)
-        } else {
-            repository.coSetupThrowWithVerify({ repository.mock.post(text) }, withError)
+    fun setupPost(
+        text: String,
+        mediaIds: List<MediaId> = emptyList(),
+        withError: Throwable? = null
+    ) {
+        when (withError) {
+            null -> repository.coSetupResponseWithVerify(
+                { repository.mock.post(text, mediaIds) }, Unit
+            )
+            else -> repository.coSetupThrowWithVerify(
+                { repository.mock.post(text, mediaIds) }, withError
+            )
         }
+    }
+
+    fun setupUploadMedia(path: AppFilePath, res: MediaId) {
+        repository.coSetupResponseWithVerify({ repository.mock.uploadMedia(path) }, res)
     }
 
     fun Observer<InputTaskState>.verifyOrderOfOnChanged(vararg state: InputTaskState) {

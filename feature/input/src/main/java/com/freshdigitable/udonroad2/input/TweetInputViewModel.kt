@@ -16,8 +16,6 @@
 
 package com.freshdigitable.udonroad2.input
 
-import android.app.Application
-import android.provider.MediaStore
 import android.text.Editable
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
@@ -50,8 +48,6 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.rx2.asFlow
-import java.io.FileInputStream
-import java.io.InputStream
 import javax.inject.Inject
 
 class TweetInputViewModel @Inject constructor(
@@ -132,10 +128,9 @@ class TweetInputSharedState @Inject constructor(executor: AppExecutor) {
 @ExperimentalCoroutinesApi
 class TweetInputViewState @Inject constructor(
     collapsible: Boolean,
-    application: Application,
     actions: TweetInputActions,
     sharedState: TweetInputSharedState,
-    private val repository: TweetInputRepository,
+    repository: TweetInputRepository,
     oauthRepository: OAuthTokenRepository,
     userRepository: UserRepository,
     executor: AppExecutor,
@@ -165,7 +160,7 @@ class TweetInputViewState @Inject constructor(
                 InputTaskState.CANCELED -> InputMenuItem.SEND_DISABLED
             }
             emit(menu)
-        }.asLiveData(executor.dispatcher.mainContext)
+        }.asLiveDataWithMain(executor)
 
     internal val user: AppViewState<User?> = oauthRepository.getCurrentUserIdFlow()
         .flatMapLatest { id ->
@@ -173,7 +168,7 @@ class TweetInputViewState @Inject constructor(
                 .mapLatest { it ?: userRepository.getUser(id) }
         }
         .flowOn(executor.dispatcher.ioContext)
-        .asLiveData(executor.dispatcher.mainContext)
+        .asLiveDataWithMain(executor)
 
     internal val chooserForCameraApp: AppAction<CameraApp.State> = actions.cameraApp
         .scan<CameraApp.State>(CameraApp.State.Idling) { state, event -> state.transition(event) }
@@ -202,10 +197,7 @@ class TweetInputViewState @Inject constructor(
         },
         actions.sendTweet.suspendMap(executor.dispatcher.mainContext) { event ->
             sharedState.taskStateSource.value = InputTaskState.SENDING
-            val mediaIds = event.media.map {
-                val (filename, inputStream) = application.getStreams(it)
-                repository.uploadMedia(filename, inputStream)
-            }
+            val mediaIds = event.media.map { repository.uploadMedia(it) }
             repository.post(event.text, mediaIds)
         }.subscribeToUpdate(sharedState) {
             when {
@@ -246,29 +238,3 @@ private inline fun <T> AppAction<T>.subscribeToUpdate(
     sharedState: TweetInputSharedState,
     crossinline block: TweetInputSharedState.(T) -> Unit
 ): Disposable = subscribe { sharedState.block(it) }
-
-private fun Application.getStreams(path: AppFilePath): Pair<String, InputStream> {
-    val file = path.file
-    return if (file != null) {
-        file.name to FileInputStream(file)
-    } else {
-        val filename = contentResolver.query(
-            path.uri,
-            arrayOf(MediaStore.MediaColumns.DISPLAY_NAME),
-            null,
-            null,
-            null
-        ).use {
-            when {
-                it?.moveToFirst() == true -> it.getString(0)
-                else -> throw IllegalStateException()
-            }
-        }
-
-        val fileDescriptor = contentResolver.openFileDescriptor(path.uri, "r")
-            ?: throw IllegalStateException()
-        val inputStream = FileInputStream(fileDescriptor.fileDescriptor)
-
-        filename to inputStream
-    }
-}
