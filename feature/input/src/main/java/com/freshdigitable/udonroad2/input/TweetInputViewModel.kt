@@ -29,6 +29,8 @@ import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.AppFilePath
 import com.freshdigitable.udonroad2.model.app.AppTwitterException
 import com.freshdigitable.udonroad2.model.app.di.ActivityScope
+import com.freshdigitable.udonroad2.model.app.ioContext
+import com.freshdigitable.udonroad2.model.app.mainContext
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.AppViewState
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
@@ -120,7 +122,7 @@ class TweetInputSharedState @Inject constructor(executor: AppExecutor) {
     internal val taskStateSource = MutableStateFlow<InputTaskState?>(null)
     val isExpanded: LiveData<Boolean> = taskStateSource.map { it?.isExpanded == true }
         .distinctUntilChanged()
-        .asLiveData(executor.dispatcher.mainContext)
+        .asLiveDataWithMain(executor)
     internal val textSource = MutableStateFlow("")
     internal val mediaSource = MutableStateFlow<List<AppFilePath>>(emptyList())
 }
@@ -167,7 +169,7 @@ class TweetInputViewState @Inject constructor(
             userRepository.getUserFlow(id)
                 .mapLatest { it ?: userRepository.getUser(id) }
         }
-        .flowOn(executor.dispatcher.ioContext)
+        .flowOn(executor.ioContext)
         .asLiveDataWithMain(executor)
 
     internal val chooserForCameraApp: AppAction<CameraApp.State> = actions.cameraApp
@@ -185,7 +187,7 @@ class TweetInputViewState @Inject constructor(
             when (val result = it.result) {
                 is MediaChooserResult.Replace -> mediaSource.value = result.paths
                 is MediaChooserResult.Add -> {
-                    mediaSource.value = mediaSource.value.plus(result.paths)
+                    mediaSource.value = mediaSource.value + result.paths
                 }
                 is MediaChooserResult.Canceled -> Unit
             }
@@ -195,7 +197,7 @@ class TweetInputViewState @Inject constructor(
             clearContents()
             taskStateSource.value = idlingState
         },
-        actions.sendTweet.suspendMap(executor.dispatcher.mainContext) { event ->
+        actions.sendTweet.suspendMap(executor.mainContext) { event ->
             sharedState.taskStateSource.value = InputTaskState.SENDING
             val mediaIds = event.media.map { repository.uploadMedia(it) }
             repository.post(event.text, mediaIds)
@@ -231,10 +233,5 @@ class TweetInputViewState @Inject constructor(
 }
 
 private fun <T> Flow<T>.asLiveDataWithMain(executor: AppExecutor): AppViewState<T> {
-    return asLiveData(executor.dispatcher.mainContext)
+    return asLiveData(executor.mainContext)
 }
-
-private inline fun <T> AppAction<T>.subscribeToUpdate(
-    sharedState: TweetInputSharedState,
-    crossinline block: TweetInputSharedState.(T) -> Unit
-): Disposable = subscribe { sharedState.block(it) }

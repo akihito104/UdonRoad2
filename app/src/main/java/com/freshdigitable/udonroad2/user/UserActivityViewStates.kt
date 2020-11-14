@@ -28,6 +28,7 @@ import com.freshdigitable.udonroad2.data.impl.UserRepository
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.app.AppExecutor
+import com.freshdigitable.udonroad2.model.app.mainContext
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.AppViewState
 import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
@@ -60,7 +61,7 @@ class UserActivityViewStates @Inject constructor(
         }
     )
     val relationship: AppViewState<Relationship?> = user.switchMap {
-        liveData(executor.dispatcher.mainContext) {
+        liveData(executor.mainContext) {
             if (it == null) {
                 return@liveData
             }
@@ -106,7 +107,7 @@ class UserActivityViewStates @Inject constructor(
     @ExperimentalCoroutinesApi
     private val feedbackMessage: AppAction<FeedbackMessage> = AppAction.merge(
         listOf(
-            actions.changeFollowingStatus.suspendMap(executor.dispatcher.mainContext) {
+            actions.changeFollowingStatus.suspendMap(executor.mainContext) {
                 relationshipRepository.updateFollowingStatus(it.targetUserId, it.wantsFollow)
             }.map {
                 if (it.event.wantsFollow) {
@@ -121,7 +122,7 @@ class UserActivityViewStates @Inject constructor(
                     }
                 }
             },
-            actions.changeBlockingStatus.suspendMap(executor.dispatcher.mainContext) {
+            actions.changeBlockingStatus.suspendMap(executor.mainContext) {
                 relationshipRepository.updateBlockingStatus(it.targetUserId, it.wantsBlock)
             }.map {
                 if (it.event.wantsBlock) {
@@ -136,7 +137,7 @@ class UserActivityViewStates @Inject constructor(
                     }
                 }
             },
-            actions.changeMutingStatus.suspendMap(executor.dispatcher.mainContext) {
+            actions.changeMutingStatus.suspendMap(executor.mainContext) {
                 relationshipRepository.updateMutingStatus(it.targetUserId, it.wantsMute)
             }.map {
                 if (it.event.wantsMute) {
@@ -151,7 +152,7 @@ class UserActivityViewStates @Inject constructor(
                     }
                 }
             },
-            actions.changeRetweetBlockingStatus.suspendMap(executor.dispatcher.mainContext) {
+            actions.changeRetweetBlockingStatus.suspendMap(executor.mainContext) {
                 relationshipRepository.updateWantRetweetStatus(it.targetUserId, it.wantsRetweet)
             }.map {
                 if (it.event.wantsRetweet) {
@@ -166,7 +167,7 @@ class UserActivityViewStates @Inject constructor(
                     }
                 }
             },
-            actions.reportSpam.suspendMap(executor.dispatcher.mainContext) {
+            actions.reportSpam.suspendMap(executor.mainContext) {
                 relationshipRepository.reportSpam(it.targetUserId)
             }.map {
                 when {

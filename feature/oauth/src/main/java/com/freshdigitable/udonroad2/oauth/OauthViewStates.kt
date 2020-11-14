@@ -25,6 +25,7 @@ import com.freshdigitable.udonroad2.model.RequestTokenItem
 import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.DispatcherProvider
 import com.freshdigitable.udonroad2.model.app.ext.combineLatest
+import com.freshdigitable.udonroad2.model.app.mainContext
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.AppViewState
 import com.freshdigitable.udonroad2.model.app.navigation.EventResult
@@ -41,7 +42,7 @@ class OauthViewStates(
     appExecutor: AppExecutor,
 ) {
     private val _requestToken: AppAction<EventResult<OauthEvent.LoginClicked, RequestTokenItem>> =
-        actions.authApp.suspendMap(appExecutor.dispatcher.mainContext) {
+        actions.authApp.suspendMap(appExecutor.mainContext) {
             val token = repository.getRequestTokenItem()
             savedState.setToken(token)
             token
@@ -58,7 +59,7 @@ class OauthViewStates(
         }
 
     private val completeAuthProcess: AppAction<EventResult<OauthEvent.SendPinClicked, AccessTokenEntity>> =
-        actions.sendPin.suspendMap(appExecutor.dispatcher.mainContext) {
+        actions.sendPin.suspendMap(appExecutor.mainContext) {
             val token = requireNotNull(requestToken.value)
             val verifier = pinText.value.toString()
             val t = repository.getAccessToken(token, verifier)
