@@ -23,6 +23,7 @@ import androidx.lifecycle.toLiveData
 import com.freshdigitable.udonroad2.model.app.AppExecutor
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Observable
+import io.reactivex.disposables.Disposable
 import io.reactivex.subjects.BehaviorSubject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.ProducerScope
@@ -91,3 +92,8 @@ inline fun <E> AppViewState<out E?>.onNull(
     }
     return source
 }
+
+inline fun <S, T> AppAction<T>.subscribeToUpdate(
+    state: S,
+    crossinline block: S.(T) -> Unit
+): Disposable = subscribe { state.block(it) }

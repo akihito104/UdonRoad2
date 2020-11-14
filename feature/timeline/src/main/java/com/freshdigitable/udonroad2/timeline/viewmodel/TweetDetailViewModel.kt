@@ -8,6 +8,7 @@ import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.onNull
+import com.freshdigitable.udonroad2.model.app.navigation.subscribeToUpdate
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
 import com.freshdigitable.udonroad2.model.tweet.Tweet
 import com.freshdigitable.udonroad2.model.tweet.TweetId
@@ -75,14 +76,14 @@ class TweetDetailViewStates @Inject constructor(
     )
 
     private val compositeDisposable = CompositeDisposable(
-        actions.launchUserInfo.subscribe {
-            activityEventDelegate.dispatchNavHostNavigate(TimelineEvent.Navigate.UserInfo(it.user))
+        actions.launchUserInfo.subscribeToUpdate(activityEventDelegate) {
+            dispatchNavHostNavigate(TimelineEvent.Navigate.UserInfo(it.user))
         },
-        actions.launchOriginalTweetUserInfo.subscribe {
-            activityEventDelegate.dispatchNavHostNavigate(TimelineEvent.Navigate.UserInfo(it.user))
+        actions.launchOriginalTweetUserInfo.subscribeToUpdate(activityEventDelegate) {
+            dispatchNavHostNavigate(TimelineEvent.Navigate.UserInfo(it.user))
         },
-        actions.launchMediaViewer.subscribe {
-            activityEventDelegate.dispatchNavHostNavigate(TimelineEvent.Navigate.MediaViewer(it))
+        actions.launchMediaViewer.subscribeToUpdate(activityEventDelegate) {
+            dispatchNavHostNavigate(TimelineEvent.Navigate.MediaViewer(it))
         },
     )
 

@@ -30,6 +30,7 @@ import com.freshdigitable.udonroad2.model.app.navigation.AppViewState
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.StateHolder
+import com.freshdigitable.udonroad2.model.app.navigation.subscribeToUpdate
 import com.freshdigitable.udonroad2.model.app.navigation.toViewState
 import com.freshdigitable.udonroad2.shortcut.ShortcutViewStates
 import io.reactivex.disposables.CompositeDisposable
@@ -89,8 +90,8 @@ class TimelineViewState(
     )
 
     private val disposables = CompositeDisposable(
-        updateNavHost.subscribe { navDelegate.dispatchNavHostNavigate(it) },
-        updateTweet.subscribe { navDelegate.dispatchFeedbackMessage(it) },
+        updateNavHost.subscribeToUpdate(navDelegate) { dispatchNavHostNavigate(it) },
+        updateTweet.subscribeToUpdate(navDelegate) { dispatchFeedbackMessage(it) },
     )
 
     fun clear() {

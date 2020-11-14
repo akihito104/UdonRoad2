@@ -29,6 +29,7 @@ import com.freshdigitable.udonroad2.model.app.mainContext
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.AppViewState
 import com.freshdigitable.udonroad2.model.app.navigation.EventResult
+import com.freshdigitable.udonroad2.model.app.navigation.subscribeToUpdate
 import com.freshdigitable.udonroad2.model.app.navigation.suspendMap
 import com.freshdigitable.udonroad2.model.app.navigation.toViewState
 import io.reactivex.disposables.CompositeDisposable
@@ -69,16 +70,14 @@ class OauthViewStates(
         }
 
     private val disposables = CompositeDisposable(
-        _requestToken.subscribe {
+        _requestToken.subscribeToUpdate(navDelegate) {
             when {
                 it.isSuccess ->
-                    navDelegate.launchTwitterOauth(requireNotNull(it.value).authorizationUrl)
+                    launchTwitterOauth(requireNotNull(it.value).authorizationUrl)
                 else -> it.rethrow() // FIXME: send feedback
             }
         },
-        completeAuthProcess.subscribe {
-            navDelegate.toTimeline()
-        },
+        completeAuthProcess.subscribeToUpdate(navDelegate) { toTimeline() },
     )
 
     fun clear() {

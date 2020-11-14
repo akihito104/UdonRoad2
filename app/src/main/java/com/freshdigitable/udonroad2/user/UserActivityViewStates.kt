@@ -33,6 +33,7 @@ import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.AppViewState
 import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
 import com.freshdigitable.udonroad2.model.app.navigation.onNull
+import com.freshdigitable.udonroad2.model.app.navigation.subscribeToUpdate
 import com.freshdigitable.udonroad2.model.app.navigation.suspendMap
 import com.freshdigitable.udonroad2.model.app.navigation.toViewState
 import com.freshdigitable.udonroad2.model.user.Relationship
@@ -179,8 +180,8 @@ class UserActivityViewStates @Inject constructor(
     )
 
     private val disposables = CompositeDisposable(
-        feedbackMessage.subscribe { navigationDelegate.dispatchFeedbackMessage(it) },
-        actions.rollbackViewState.subscribe { navigationDelegate.dispatchBack() },
+        feedbackMessage.subscribeToUpdate(navigationDelegate) { dispatchFeedbackMessage(it) },
+        actions.rollbackViewState.subscribeToUpdate(navigationDelegate) { dispatchBack() },
     )
 
     fun clear() {
