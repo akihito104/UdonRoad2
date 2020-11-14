@@ -23,12 +23,17 @@ class TweetApiClient @Inject constructor(
         retweetStatus(id.value).toEntity()
     }
 
-    suspend fun postTweet(text: String, mediaIds: List<MediaId>): TweetEntity = twitter.fetch {
+    suspend fun postTweet(
+        text: String,
+        mediaIds: List<MediaId> = emptyList(),
+        replyTo: TweetId? = null,
+    ): TweetEntity = twitter.fetch {
         if (mediaIds.isEmpty()) {
             updateStatus(text).toEntity()
         } else {
             val status = StatusUpdate(text).apply {
                 setMediaIds(*mediaIds.map { it.value }.toLongArray())
+                replyTo?.let { inReplyToStatusId = it.value }
             }
             updateStatus(status).toEntity()
         }
