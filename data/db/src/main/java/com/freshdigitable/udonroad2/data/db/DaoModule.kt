@@ -18,9 +18,11 @@ package com.freshdigitable.udonroad2.data.db
 
 import android.app.Application
 import androidx.room.Room
+import com.freshdigitable.udonroad2.data.ReplyRepository
 import com.freshdigitable.udonroad2.data.db.dao.MemberListDao
 import com.freshdigitable.udonroad2.data.db.dao.MemberListListDao
 import com.freshdigitable.udonroad2.data.db.dao.RelationshipDao
+import com.freshdigitable.udonroad2.data.db.dao.ReplyLocalDataSource
 import com.freshdigitable.udonroad2.data.db.dao.TweetDao
 import com.freshdigitable.udonroad2.data.db.dao.TweetListDao
 import com.freshdigitable.udonroad2.data.db.dao.UserDao
@@ -61,4 +63,15 @@ object DaoModule {
 
     @Provides
     fun provideRelationshipDao(db: AppDatabase): RelationshipDao = db.relationshipDao()
+}
+
+@Module
+interface LocalSourceModule {
+    companion object {
+        @Singleton
+        @Provides
+        fun bindReplyRepositoryLocalSource(
+            db: AppDatabase
+        ): ReplyRepository.LocalSource = ReplyLocalDataSource(db.userReplyDao())
+    }
 }

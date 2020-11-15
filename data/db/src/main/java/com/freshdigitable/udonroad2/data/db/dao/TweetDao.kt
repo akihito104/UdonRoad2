@@ -33,6 +33,7 @@ import com.freshdigitable.udonroad2.data.db.AppDatabase
 import com.freshdigitable.udonroad2.data.db.dbview.TweetListItem
 import com.freshdigitable.udonroad2.data.db.entity.TweetEntityDb
 import com.freshdigitable.udonroad2.data.db.entity.TweetMediaRelation
+import com.freshdigitable.udonroad2.data.db.entity.UserReplyEntityDb
 import com.freshdigitable.udonroad2.data.db.entity.VideoValiantEntity
 import com.freshdigitable.udonroad2.data.db.ext.toDbEntity
 import com.freshdigitable.udonroad2.data.db.ext.toEntity
@@ -143,6 +144,12 @@ abstract class TweetDao(
                 )
             }
         db.videoValiantDao().addVideoValiantEntities(videoVariantEntities)
+
+        val replies = tweetEntities.map { it.id to it.replyEntities }
+            .map { (id, replies) ->
+                replies.map { UserReplyEntityDb(id, it.userId, it.screenName, it.start, it.end) }
+            }.flatten()
+        db.userReplyDao().addEntities(replies)
     }
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

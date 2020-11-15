@@ -36,6 +36,7 @@ import com.freshdigitable.udonroad2.data.db.dao.TweetListEntity
 import com.freshdigitable.udonroad2.data.db.dao.UrlDao
 import com.freshdigitable.udonroad2.data.db.dao.UserDao
 import com.freshdigitable.udonroad2.data.db.dao.UserListEntity
+import com.freshdigitable.udonroad2.data.db.dao.UserReplyEntityDao
 import com.freshdigitable.udonroad2.data.db.dao.VideoValiantDao
 import com.freshdigitable.udonroad2.data.db.dbview.MediaDbView
 import com.freshdigitable.udonroad2.data.db.dbview.MemberListDbView
@@ -102,6 +103,8 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun videoValiantDao(): VideoValiantDao
 
     abstract fun urlDao(): UrlDao
+
+    abstract fun userReplyDao(): UserReplyEntityDao
 }
 
 interface AppTypeConverter<E, I> {
