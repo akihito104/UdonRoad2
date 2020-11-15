@@ -50,6 +50,7 @@ import com.freshdigitable.udonroad2.data.db.entity.TweetEntityDb
 import com.freshdigitable.udonroad2.data.db.entity.TweetMediaRelation
 import com.freshdigitable.udonroad2.data.db.entity.UrlEntity
 import com.freshdigitable.udonroad2.data.db.entity.UserEntity
+import com.freshdigitable.udonroad2.data.db.entity.UserReplyEntityDb
 import com.freshdigitable.udonroad2.data.db.entity.VideoValiantEntity
 
 @Database(
@@ -65,7 +66,8 @@ import com.freshdigitable.udonroad2.data.db.entity.VideoValiantEntity
         UrlEntity::class,
         MediaEntity::class,
         VideoValiantEntity::class,
-        TweetMediaRelation::class
+        TweetMediaRelation::class,
+        UserReplyEntityDb::class,
     ],
     views = [
         TweetDbView::class,

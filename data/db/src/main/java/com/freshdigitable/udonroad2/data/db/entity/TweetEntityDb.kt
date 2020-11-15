@@ -22,6 +22,7 @@ import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.freshdigitable.udonroad2.model.tweet.TweetId
+import com.freshdigitable.udonroad2.model.tweet.UserReplyEntity
 import com.freshdigitable.udonroad2.model.user.UserId
 import org.threeten.bp.Instant
 
@@ -87,3 +88,36 @@ internal class TweetEntityDb(
     @ColumnInfo(name = "created_at")
     val createdAt: Instant
 )
+
+@Entity(
+    tableName = "user_reply",
+    primaryKeys = ["tweet_id", "user_id"],
+    foreignKeys = [
+        ForeignKey(
+            entity = TweetEntityDb::class,
+            parentColumns = ["id"],
+            childColumns = ["tweet_id"],
+            deferred = true
+        ),
+    ],
+    indices = [
+        Index("tweet_id"),
+        Index("user_id")
+    ]
+)
+internal class UserReplyEntityDb(
+    @ColumnInfo(name = "tweet_id")
+    val tweetId: TweetId,
+
+    @ColumnInfo(name = "user_id")
+    override val userId: UserId,
+
+    @ColumnInfo(name = "screen_name")
+    override val screenName: String,
+
+    @ColumnInfo(name = "start")
+    override val start: Int,
+
+    @ColumnInfo(name = "end")
+    override val end: Int
+) : UserReplyEntity
