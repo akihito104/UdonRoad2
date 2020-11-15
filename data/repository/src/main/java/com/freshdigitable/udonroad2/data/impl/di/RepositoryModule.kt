@@ -26,6 +26,7 @@ import com.freshdigitable.udonroad2.data.impl.ListRepositoryImpl
 import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepositoryModule
 import com.freshdigitable.udonroad2.data.impl.PagedListProviderImpl
 import com.freshdigitable.udonroad2.data.impl.RelationshipRepositoryModule
+import com.freshdigitable.udonroad2.data.impl.ReplyRepositoryModule
 import com.freshdigitable.udonroad2.data.impl.TweetRepositoryModule
 import com.freshdigitable.udonroad2.data.impl.UserRepositoryModule
 import com.freshdigitable.udonroad2.data.restclient.MemberListDataSourceModule
@@ -43,7 +44,8 @@ import dagger.Subcomponent
         TweetRepositoryModule::class,
         UserRepositoryModule::class,
         RelationshipRepositoryModule::class,
-        OAuthTokenRepositoryModule::class
+        OAuthTokenRepositoryModule::class,
+        ReplyRepositoryModule::class,
     ]
 )
 interface RepositoryModule
