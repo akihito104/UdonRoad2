@@ -17,6 +17,7 @@
 package com.freshdigitable.udonroad2.model.tweet
 
 import com.freshdigitable.udonroad2.model.user.User
+import com.freshdigitable.udonroad2.model.user.UserId
 
 interface TweetEntity : Tweet {
 
@@ -29,4 +30,15 @@ interface TweetEntity : Tweet {
     val inReplyToTweetId: TweetId?
 
     val possiblySensitive: Boolean
+
+    val replyEntities: List<UserReplyEntity>
+}
+
+interface UserReplyEntity {
+    val userId: UserId
+    val screenName: String
+    val start: Int
+    val end: Int
+
+    companion object
 }
