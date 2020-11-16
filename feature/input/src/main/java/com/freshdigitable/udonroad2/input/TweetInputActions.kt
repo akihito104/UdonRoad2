@@ -30,6 +30,7 @@ class TweetInputActions @Inject constructor(
 ) {
     internal val openInput: AppAction<TweetInputEvent.Open> = eventDispatcher.toAction()
     internal val reply: AppAction<SelectedItemShortcut.Reply> = eventDispatcher.toAction()
+    internal val quote: AppAction<SelectedItemShortcut.Quote> = eventDispatcher.toAction()
     internal val sendTweet: AppAction<TweetInputEvent.Send> = eventDispatcher.toAction()
     internal val cancelInput: AppAction<TweetInputEvent.Cancel> = eventDispatcher.toAction()
     internal val updateText: AppAction<TweetInputEvent.TextUpdated> = eventDispatcher.toAction()

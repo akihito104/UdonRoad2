@@ -22,6 +22,8 @@
 
     <data>
 
+        <import type="android.view.View" />
+
         <variable
             name="viewModel"
             type="com.freshdigitable.udonroad2.input.TweetInputViewModel"
@@ -91,7 +93,7 @@
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintHorizontal_chainStyle="packed"
             android:text="\@"
-            android:visibility="gone"
+            android:visibility="@{viewModel.reply ? View.VISIBLE : View.GONE}"
             tools:visibility="visible"
             />
 

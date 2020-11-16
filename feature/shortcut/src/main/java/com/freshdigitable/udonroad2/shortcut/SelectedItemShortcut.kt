@@ -28,6 +28,7 @@ sealed class SelectedItemShortcut : AppEvent {
     data class Like(override val tweetId: TweetId) : SelectedItemShortcut()
     data class Retweet(override val tweetId: TweetId) : SelectedItemShortcut()
     data class Reply(override val tweetId: TweetId) : SelectedItemShortcut()
+    data class Quote(override val tweetId: TweetId) : SelectedItemShortcut()
 
     abstract val tweetId: TweetId
 
@@ -55,6 +56,7 @@ fun EventDispatcher.postSelectedItemShortcutEvent(
             SelectedItemShortcut.Retweet(tweetId)
         )
         R.id.iffabMenu_main_reply -> postEvent(SelectedItemShortcut.Reply(tweetId))
+        R.id.iffabMenu_main_quote -> postEvent(SelectedItemShortcut.Quote(tweetId))
         else -> TODO()
     }
 }

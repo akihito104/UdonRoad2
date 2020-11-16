@@ -48,6 +48,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.experimental.runners.Enclosed
@@ -412,6 +413,60 @@ class TweetInputViewModelTest {
         }
     }
 
+    class WhenReply {
+        @get:Rule
+        val rule = TweetInputViewModelRule(true)
+
+        private val targetTweetId = TweetId(1000)
+
+        @Before
+        fun setup(): Unit = with(rule) {
+            setupReplyTargetTweet(targetTweetId, "@user200 ")
+            dispatchReply(targetTweetId)
+
+            assertThat(sut.isExpanded.value).isTrue()
+            assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.SEND_ENABLED)
+            assertThat(sut.text.value).isEqualTo("@user200 ")
+            assertThat(sut.reply.value).isTrue()
+        }
+
+        @Test
+        fun onSendClicked_whenTaskIsSucceeded_then_stateIsCleared(): Unit = with(rule) {
+            // setup
+            setupPost("@user200 ", replyTo = targetTweetId)
+
+            // exercise
+            coroutineTestRule.runBlockingTest {
+                sut.onSendClicked()
+            }
+
+            // verify
+            inputTaskObserver.verifyOrderOfOnChanged(
+                InputTaskState.IDLING,
+                InputTaskState.OPENED,
+                InputTaskState.SENDING,
+                InputTaskState.SUCCEEDED,
+                InputTaskState.IDLING
+            )
+            assertThat(sut.isExpanded.value).isFalse()
+            assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.WRITE_ENABLED)
+            assertThat(sut.text.value).isEmpty()
+            assertThat(sut.reply.value).isFalse()
+        }
+
+        @Test
+        fun onCancelClicked_then_stateIsCleared(): Unit = with(rule) {
+            coroutineTestRule.runBlockingTest {
+                sut.onCancelClicked()
+            }
+
+            assertThat(sut.isExpanded.value).isFalse()
+            assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.WRITE_ENABLED)
+            assertThat(sut.text.value).isEmpty()
+            assertThat(sut.reply.value).isFalse()
+        }
+    }
+
     class WhenCollapsibleIsFalse {
         @get:Rule
         val rule = TweetInputViewModelRule(collapsible = false)
@@ -478,21 +533,22 @@ class TweetInputViewModelRule(
         )
         with(sut) {
             inputTask.observeForever(inputTaskObserver)
-            listOf(isExpanded, menuItem, text, media, user).forEach { it.observeForever { } }
+            listOf(isExpanded, menuItem, text, reply, media, user).forEach { it.observeForever { } }
         }
     }
 
     fun setupPost(
         text: String,
         mediaIds: List<MediaId> = emptyList(),
+        replyTo: TweetId? = null,
         withError: Throwable? = null
     ) {
         when (withError) {
             null -> repository.coSetupResponseWithVerify(
-                { repository.mock.post(text, mediaIds) }, Unit
+                { repository.mock.post(text, mediaIds, replyTo) }, Unit
             )
             else -> repository.coSetupThrowWithVerify(
-                { repository.mock.post(text, mediaIds) }, withError
+                { repository.mock.post(text, mediaIds, replyTo) }, withError
             )
         }
     }
