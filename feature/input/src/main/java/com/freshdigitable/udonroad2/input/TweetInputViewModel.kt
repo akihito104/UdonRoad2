@@ -20,10 +20,8 @@ import android.text.Editable
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
-import com.freshdigitable.udonroad2.data.ReplyRepository
 import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
 import com.freshdigitable.udonroad2.data.impl.TweetInputRepository
-import com.freshdigitable.udonroad2.data.impl.TweetRepository
 import com.freshdigitable.udonroad2.data.impl.UserRepository
 import com.freshdigitable.udonroad2.input.CameraApp.Companion.transition
 import com.freshdigitable.udonroad2.input.MediaChooserResultContract.MediaChooserResult
@@ -134,13 +132,12 @@ class TweetInputSharedState @Inject constructor(executor: AppExecutor) {
 class TweetInputViewState @Inject constructor(
     collapsible: Boolean,
     actions: TweetInputActions,
+    createReplyText: CreateReplyTextUseCase,
     sharedState: TweetInputSharedState,
     repository: TweetInputRepository,
     oauthRepository: OAuthTokenRepository,
-    private val tweetRepository: TweetRepository,
-    private val replyRepository: ReplyRepository,
     userRepository: UserRepository,
-    private val executor: AppExecutor,
+    executor: AppExecutor,
 ) {
     private val idlingState = if (collapsible) InputTaskState.IDLING else InputTaskState.OPENED
 
@@ -191,6 +188,8 @@ class TweetInputViewState @Inject constructor(
             if (it.isSuccess) {
                 textSource.value = checkNotNull(it.value)
                 taskStateSource.value = InputTaskState.OPENED
+            } else {
+                it.rethrow()
             }
         },
         actions.updateText.subscribeToUpdate(sharedState) {
@@ -227,21 +226,6 @@ class TweetInputViewState @Inject constructor(
             }
         }
     )
-
-    private suspend fun createReplyText(tweetId: TweetId): String {
-        val item = checkNotNull(tweetRepository.findTweetListItem(tweetId))
-        val targetUsers = listOfNotNull(
-            if (item.isRetweet) item.originalUser.id to item.originalUser.screenName else null,
-            item.body.user.id to item.body.user.screenName,
-        )
-        val replyEntity = replyRepository.findEntitiesByTweetId(tweetId)
-            .map { it.userId to it.screenName }
-        val currentUser = checkNotNull(user.value).id
-        return (replyEntity + targetUsers)
-            .filter { (id, _) -> id != currentUser }
-            .toSet()
-            .joinToString(prefix = "@", separator = " @", postfix = " ") { (_, name) -> name }
-    }
 
     internal val taskState: AppViewState<InputTaskState> = sharedState.taskStateSource
         .filterNotNull().asLiveDataWithMain(executor)
