@@ -52,8 +52,8 @@ class CreateReplyTextUseCaseTest(private val param: Param) {
         const val authenticatedUserScreenName = "User1"
 
         val selectedTweetId: TweetId = TweetId(1000)
-        val originalTweetUser = createTweetingUser(UserId(200), "user200")
-        val bodyTweetUser = createTweetingUser(UserId(300), "user300")
+        val user200 = tweetingUser(UserId(200), "user200")
+        val user300 = tweetingUser(UserId(300), "user300")
 
         @JvmStatic
         @Parameterized.Parameters(name = "{0}")
@@ -69,31 +69,36 @@ class CreateReplyTextUseCaseTest(private val param: Param) {
         val expectedText: String,
     ) {
         SimpleTweet(
-            tweetingUser = originalTweetUser,
+            tweetingUser = user200,
             expectedText = "@user200 "
         ),
         TweetOfMine(
-            tweetingUser = createTweetingUser(authenticatedUserId, authenticatedUserScreenName),
+            tweetingUser = tweetingUser(authenticatedUserId, authenticatedUserScreenName),
             expectedText = ""
         ),
         SimpleTweetWithReplyEntity(
-            tweetingUser = originalTweetUser,
-            replyEntities = listOf(createReplyEntity(UserId(400), "user400")),
+            tweetingUser = user200,
+            replyEntities = listOf(replyEntity(UserId(400), "user400")),
             expectedText = "@user400 @user200 "
         ),
+        RepliedToMe(
+            tweetingUser = user200,
+            replyEntities = listOf(replyEntity(authenticatedUserId, authenticatedUserScreenName)),
+            expectedText = "@user200 "
+        ),
         SimpleRetweet(
-            tweetingUser = originalTweetUser,
+            tweetingUser = user200,
             isTargetRetweet = true,
             targetBodyTweetId = TweetId(3000),
-            targetBodyTweetingUser = bodyTweetUser,
+            targetBodyTweetingUser = user300,
             expectedText = "@user200 @user300 "
         ),
         RetweetWithReplyEntity(
-            tweetingUser = originalTweetUser,
+            tweetingUser = user200,
             isTargetRetweet = true,
             targetBodyTweetId = TweetId(3000),
-            targetBodyTweetingUser = bodyTweetUser,
-            replyEntities = listOf(createReplyEntity(UserId(400), "user400")),
+            targetBodyTweetingUser = user300,
+            replyEntities = listOf(replyEntity(UserId(400), "user400")),
             expectedText = "@user400 @user200 @user300 "
         ),
         ;
@@ -107,7 +112,7 @@ class CreateReplyTextUseCaseTest(private val param: Param) {
             every { originalId } returns selectedTweetId
             every { originalUser } returns tweetingUser
             every { isRetweet } returns isTargetRetweet
-            every { body } returns createTweet(targetBodyTweetId, targetBodyTweetingUser)
+            every { body } returns tweet(targetBodyTweetId, targetBodyTweetingUser)
         }
         oAuthTokenRepositoryRule.setupCurrentUserId(authenticatedUserId.value)
         tweetRepositoryRule.coSetupResponseWithVerify(
@@ -137,21 +142,21 @@ class CreateReplyTextUseCaseTest(private val param: Param) {
     }
 }
 
-fun createTweetingUser(targetUserId: UserId, targetUserScreenName: String): TweetingUser {
+fun tweetingUser(targetUserId: UserId, targetUserScreenName: String): TweetingUser {
     return mockk<TweetingUser>().apply {
         every { id } returns targetUserId
         every { screenName } returns targetUserScreenName
     }
 }
 
-private fun createTweet(targetTweetId: TweetId, tweetingUser: TweetingUser): Tweet {
+private fun tweet(targetTweetId: TweetId, tweetingUser: TweetingUser): Tweet {
     return mockk<Tweet>().apply {
         every { id } returns targetTweetId
         every { user } returns tweetingUser
     }
 }
 
-private fun createReplyEntity(userId: UserId, screenName: String): UserReplyEntity {
+private fun replyEntity(userId: UserId, screenName: String): UserReplyEntity {
     return mockk<UserReplyEntity>().apply {
         every { this@apply.userId } returns userId
         every { this@apply.screenName } returns screenName
