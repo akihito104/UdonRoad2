@@ -19,7 +19,9 @@ package com.freshdigitable.udonroad2.input
 import android.text.Editable
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.Observer
+import com.freshdigitable.udonroad2.data.ReplyRepository
 import com.freshdigitable.udonroad2.data.impl.TweetInputRepository
+import com.freshdigitable.udonroad2.data.impl.TweetRepository
 import com.freshdigitable.udonroad2.data.impl.UserRepository
 import com.freshdigitable.udonroad2.input.MediaChooserResultContract.MediaChooserResult
 import com.freshdigitable.udonroad2.model.MediaId
@@ -28,8 +30,14 @@ import com.freshdigitable.udonroad2.model.app.AppFilePath
 import com.freshdigitable.udonroad2.model.app.AppTwitterException
 import com.freshdigitable.udonroad2.model.app.mainContext
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
+import com.freshdigitable.udonroad2.model.tweet.Tweet
+import com.freshdigitable.udonroad2.model.tweet.TweetId
+import com.freshdigitable.udonroad2.model.tweet.TweetListItem
+import com.freshdigitable.udonroad2.model.tweet.UserReplyEntity
+import com.freshdigitable.udonroad2.model.user.TweetingUser
 import com.freshdigitable.udonroad2.model.user.User
 import com.freshdigitable.udonroad2.model.user.UserId
+import com.freshdigitable.udonroad2.shortcut.SelectedItemShortcut
 import com.freshdigitable.udonroad2.test_common.MockVerified
 import com.freshdigitable.udonroad2.test_common.jvm.CoroutineTestRule
 import com.freshdigitable.udonroad2.test_common.jvm.OAuthTokenRepositoryRule
@@ -374,6 +382,36 @@ class TweetInputViewModelTest {
             assertThat(sut.media.value).isEmpty()
             assertThat(sut.isExpanded.value).isFalse()
         }
+
+        @Test
+        fun dispatchReply(): Unit = with(rule) {
+            // setup
+            val selectedTweetId = TweetId(2000)
+            val tweetingUser: TweetingUser = mockk<TweetingUser>().apply {
+                every { id } returns UserId(200)
+                every { screenName } returns "user200"
+            }
+            val tweet: TweetListItem = mockk<TweetListItem>().apply {
+                every { originalId } returns selectedTweetId
+                every { originalUser } returns tweetingUser
+                every { isRetweet } returns false
+                every { body } returns mockk<Tweet>().apply {
+                    every { id } returns selectedTweetId
+                    every { user } returns tweetingUser
+                }
+            }
+            setupFindTweet(selectedTweetId, tweet)
+
+            // exercise
+            coroutineTestRule.runBlockingTest {
+                dispatchReply(selectedTweetId)
+            }
+
+            // verify
+            assertThat(sut.isExpanded.value).isTrue()
+            assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.SEND_ENABLED)
+            assertThat(sut.text.value).isEqualTo("@user200 ")
+        }
     }
 
     class WhenCollapsibleIsFalse {
@@ -403,6 +441,8 @@ class TweetInputViewModelRule(
     }
     private val oAuthTokenRepositoryRule = OAuthTokenRepositoryRule()
     private val userRepositoryRule: MockVerified<UserRepository> = MockVerified.create()
+    private val tweetRepositoryRule: MockVerified<TweetRepository> = MockVerified.create()
+    private val replyRepositoryRule: MockVerified<ReplyRepository> = MockVerified.create()
     val executor = AppExecutor(dispatcher = coroutineTestRule.coroutineContextProvider)
     private val eventDispatcher = EventDispatcher()
 
@@ -415,6 +455,8 @@ class TweetInputViewModelRule(
                 TweetInputSharedState(executor),
                 repository.mock,
                 oAuthTokenRepositoryRule.mock,
+                tweetRepositoryRule.mock,
+                replyRepositoryRule.mock,
                 userRepositoryRule.mock,
                 executor,
             ),
@@ -462,6 +504,21 @@ class TweetInputViewModelRule(
         repository.coSetupResponseWithVerify({ repository.mock.uploadMedia(path) }, res)
     }
 
+    fun setupFindTweet(
+        id: TweetId,
+        item: TweetListItem?,
+        replyEntities: List<UserReplyEntity> = listOf()
+    ) {
+        tweetRepositoryRule.coSetupResponseWithVerify(
+            target = { tweetRepositoryRule.mock.findTweetListItem(id) },
+            res = item
+        )
+        replyRepositoryRule.coSetupResponseWithVerify(
+            target = { replyRepositoryRule.mock.findEntitiesByTweetId(id) },
+            res = replyEntities
+        )
+    }
+
     fun Observer<InputTaskState>.verifyOrderOfOnChanged(vararg state: InputTaskState) {
         verifyOrder {
             state.forEach { onChanged(it) }
@@ -479,11 +536,17 @@ class TweetInputViewModelRule(
             .around(repository)
             .around(oAuthTokenRepositoryRule)
             .around(userRepositoryRule)
+            .around(tweetRepositoryRule)
+            .around(replyRepositoryRule)
             .apply(super.apply(base, description), description)
     }
 
     fun dispatchChosen(app: Components) {
         eventDispatcher.postEvent(CameraApp.Event.Chosen(app))
+    }
+
+    fun dispatchReply(tweetId: TweetId) {
+        eventDispatcher.postEvent(SelectedItemShortcut.Reply(tweetId))
     }
 }
 

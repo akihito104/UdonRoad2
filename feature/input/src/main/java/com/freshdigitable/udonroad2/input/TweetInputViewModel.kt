@@ -20,8 +20,10 @@ import android.text.Editable
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
+import com.freshdigitable.udonroad2.data.ReplyRepository
 import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
 import com.freshdigitable.udonroad2.data.impl.TweetInputRepository
+import com.freshdigitable.udonroad2.data.impl.TweetRepository
 import com.freshdigitable.udonroad2.data.impl.UserRepository
 import com.freshdigitable.udonroad2.input.CameraApp.Companion.transition
 import com.freshdigitable.udonroad2.input.MediaChooserResultContract.MediaChooserResult
@@ -37,6 +39,7 @@ import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.subscribeToUpdate
 import com.freshdigitable.udonroad2.model.app.navigation.suspendMap
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
+import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.user.User
 import io.reactivex.disposables.CompositeDisposable
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -134,8 +137,10 @@ class TweetInputViewState @Inject constructor(
     sharedState: TweetInputSharedState,
     repository: TweetInputRepository,
     oauthRepository: OAuthTokenRepository,
+    private val tweetRepository: TweetRepository,
+    private val replyRepository: ReplyRepository,
     userRepository: UserRepository,
-    executor: AppExecutor,
+    private val executor: AppExecutor,
 ) {
     private val idlingState = if (collapsible) InputTaskState.IDLING else InputTaskState.OPENED
 
@@ -180,6 +185,14 @@ class TweetInputViewState @Inject constructor(
         actions.openInput.subscribeToUpdate(sharedState) {
             taskStateSource.value = InputTaskState.OPENED
         },
+        actions.reply.suspendMap(executor.mainContext) {
+            createReplyText(it.tweetId)
+        }.subscribeToUpdate(sharedState) {
+            if (it.isSuccess) {
+                textSource.value = checkNotNull(it.value)
+                taskStateSource.value = InputTaskState.OPENED
+            }
+        },
         actions.updateText.subscribeToUpdate(sharedState) {
             textSource.value = it.text
         },
@@ -214,6 +227,21 @@ class TweetInputViewState @Inject constructor(
             }
         }
     )
+
+    private suspend fun createReplyText(tweetId: TweetId): String {
+        val item = checkNotNull(tweetRepository.findTweetListItem(tweetId))
+        val targetUsers = listOfNotNull(
+            if (item.isRetweet) item.originalUser.id to item.originalUser.screenName else null,
+            item.body.user.id to item.body.user.screenName,
+        )
+        val replyEntity = replyRepository.findEntitiesByTweetId(tweetId)
+            .map { it.userId to it.screenName }
+        val currentUser = checkNotNull(user.value).id
+        return (replyEntity + targetUsers)
+            .filter { (id, _) -> id != currentUser }
+            .toSet()
+            .joinToString(prefix = "@", separator = " @", postfix = " ") { (_, name) -> name }
+    }
 
     internal val taskState: AppViewState<InputTaskState> = sharedState.taskStateSource
         .filterNotNull().asLiveDataWithMain(executor)

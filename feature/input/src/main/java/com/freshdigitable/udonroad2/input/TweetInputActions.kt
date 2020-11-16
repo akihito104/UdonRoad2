@@ -22,12 +22,14 @@ import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
+import com.freshdigitable.udonroad2.shortcut.SelectedItemShortcut
 import javax.inject.Inject
 
 class TweetInputActions @Inject constructor(
     eventDispatcher: EventDispatcher
 ) {
     internal val openInput: AppAction<TweetInputEvent.Open> = eventDispatcher.toAction()
+    internal val reply: AppAction<SelectedItemShortcut.Reply> = eventDispatcher.toAction()
     internal val sendTweet: AppAction<TweetInputEvent.Send> = eventDispatcher.toAction()
     internal val cancelInput: AppAction<TweetInputEvent.Cancel> = eventDispatcher.toAction()
     internal val updateText: AppAction<TweetInputEvent.TextUpdated> = eventDispatcher.toAction()
