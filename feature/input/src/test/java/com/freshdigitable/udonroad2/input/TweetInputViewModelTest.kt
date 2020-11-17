@@ -26,6 +26,7 @@ import com.freshdigitable.udonroad2.model.MediaId
 import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.AppFilePath
 import com.freshdigitable.udonroad2.model.app.AppTwitterException
+import com.freshdigitable.udonroad2.model.app.mainContext
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.user.User
 import com.freshdigitable.udonroad2.model.user.UserId
@@ -488,7 +489,7 @@ class TweetInputViewModelRule(
 
 fun <T> Flow<T>.testCollect(executor: AppExecutor): List<T> {
     val actual = mutableListOf<T>()
-    executor.launch(executor.dispatcher.mainContext) {
+    executor.launch(executor.mainContext) {
         collect { actual.add(it) }
     }
     return actual

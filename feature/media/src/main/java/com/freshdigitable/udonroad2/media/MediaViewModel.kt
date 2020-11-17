@@ -34,6 +34,7 @@ import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessageDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.SnackbarFeedbackMessageDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.onNull
+import com.freshdigitable.udonroad2.model.app.navigation.subscribeToUpdate
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
 import com.freshdigitable.udonroad2.model.app.navigation.toViewState
 import com.freshdigitable.udonroad2.model.app.weakRef
@@ -148,7 +149,7 @@ class MediaViewModelViewStates @Inject constructor(
     }
 
     private val compositeDisposable = CompositeDisposable(
-        updateTweet.subscribe { eventDelegate.dispatchFeedbackMessage(it) }
+        updateTweet.subscribeToUpdate(eventDelegate) { dispatchFeedbackMessage(it) }
     )
 
     fun clear() {

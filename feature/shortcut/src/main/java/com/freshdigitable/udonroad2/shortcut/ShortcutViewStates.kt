@@ -19,6 +19,7 @@ package com.freshdigitable.udonroad2.shortcut
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
 import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.AppTwitterException
+import com.freshdigitable.udonroad2.model.app.mainContext
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.EventResult
 import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
@@ -42,7 +43,7 @@ private class ShortcutViewStateImpl(
     executor: AppExecutor,
 ) : ShortcutViewStates {
     override val updateTweet: AppAction<FeedbackMessage> = AppAction.merge(
-        actions.favTweet.suspendMap(executor.dispatcher.mainContext) { event ->
+        actions.favTweet.suspendMap(executor.mainContext) { event ->
             tweetRepository.postLike(event.tweetId)
         }.map {
             when {
@@ -53,7 +54,7 @@ private class ShortcutViewStateImpl(
                 else -> TweetFeedbackMessage.FAV_CREATE_FAILURE
             }
         },
-        actions.retweet.suspendMap(executor.dispatcher.mainContext) { event ->
+        actions.retweet.suspendMap(executor.mainContext) { event ->
             tweetRepository.postRetweet(event.tweetId)
         }.map {
             when {

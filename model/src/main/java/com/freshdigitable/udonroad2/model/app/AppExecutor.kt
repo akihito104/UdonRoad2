@@ -40,6 +40,9 @@ class AppExecutor(
     }
 }
 
+val AppExecutor.mainContext: CoroutineContext get() = dispatcher.mainContext
+val AppExecutor.ioContext: CoroutineContext get() = dispatcher.ioContext
+
 class DispatcherProvider(
     val mainDispatcher: CoroutineDispatcher = Dispatchers.Main,
     val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
