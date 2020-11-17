@@ -32,11 +32,13 @@ import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.user.User
 import com.freshdigitable.udonroad2.model.user.UserId
 import com.freshdigitable.udonroad2.shortcut.SelectedItemShortcut
+import com.freshdigitable.udonroad2.test_common.MatcherScopedBlock
 import com.freshdigitable.udonroad2.test_common.MockVerified
 import com.freshdigitable.udonroad2.test_common.jvm.CoroutineTestRule
 import com.freshdigitable.udonroad2.test_common.jvm.OAuthTokenRepositoryRule
 import com.google.common.truth.Subject
 import com.google.common.truth.Truth.assertThat
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -411,6 +413,23 @@ class TweetInputViewModelTest {
             assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.SEND_DISABLED)
             assertThat(sut.text.value).isEmpty()
         }
+
+        @Test
+        fun dispatchQuote_then_expanded(): Unit = with(rule) {
+            // setup
+            val selectedTweetId = TweetId(2000)
+
+            // exercise
+            coroutineTestRule.runBlockingTest {
+                dispatchQuote(selectedTweetId)
+            }
+
+            // verify
+            assertThat(sut.isExpanded.value).isTrue()
+            assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.SEND_DISABLED)
+            assertThat(sut.text.value).isEmpty()
+            assertThat(sut.quote.value).isTrue()
+        }
     }
 
     class WhenReply {
@@ -467,6 +486,62 @@ class TweetInputViewModelTest {
         }
     }
 
+    class WhenQuote {
+        @get:Rule
+        val rule = TweetInputViewModelRule(collapsible = true)
+        private val selectedTweetId = TweetId(2000)
+
+        @Before
+        fun setup(): Unit = with(rule) {
+            dispatchQuote(selectedTweetId)
+
+            assertThat(sut.isExpanded.value).isTrue()
+            assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.SEND_DISABLED)
+            assertThat(sut.text.value).isEmpty()
+            assertThat(sut.reply.value).isFalse()
+            assertThat(sut.quote.value).isTrue()
+        }
+
+        @Test
+        fun onCancelClicked(): Unit = with(rule) {
+            // exercise
+            coroutineTestRule.runBlockingTest {
+                sut.onCancelClicked()
+            }
+
+            // verify
+            assertThat(sut.isExpanded.value).isFalse()
+            assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.WRITE_ENABLED)
+            assertThat(sut.quote.value).isFalse()
+        }
+
+        @Test
+        fun onSendClicked(): Unit = with(rule) {
+            // setup
+            setupTweet(selectedTweetId, "https://twitter.com/user200/status/2000")
+            setupPost(text = { any() })
+
+            // exercise
+            coroutineTestRule.runBlockingTest {
+                sut.onTweetTextChanged(editable("aaa"))
+                sut.onSendClicked()
+            }
+
+            // verify
+            inputTaskObserver.verifyOrderOfOnChanged(
+                InputTaskState.IDLING,
+                InputTaskState.OPENED,
+                InputTaskState.SENDING,
+                InputTaskState.SUCCEEDED,
+                InputTaskState.IDLING
+            )
+            verifyPost("aaa https://twitter.com/user200/status/2000")
+            assertThat(sut.isExpanded.value).isFalse()
+            assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.WRITE_ENABLED)
+            assertThat(sut.quote.value).isFalse()
+        }
+    }
+
     class WhenCollapsibleIsFalse {
         @get:Rule
         val rule = TweetInputViewModelRule(collapsible = false)
@@ -493,9 +568,9 @@ class TweetInputViewModelRule(
         every { onChanged(any()) } just runs
     }
     private val oAuthTokenRepositoryRule = OAuthTokenRepositoryRule()
-    private val userRepositoryRule: MockVerified<UserRepository> = MockVerified.create()
-    private val createReplyTextUseCaseRule: MockVerified<CreateReplyTextUseCase> =
-        MockVerified.create()
+    private val userRepositoryRule = MockVerified.create<UserRepository>()
+    private val createReplyTextUseCaseRule = MockVerified.create<CreateReplyTextUseCase>()
+    private val createQuoteTextUseCaseRule = MockVerified.create<CreateQuoteTextUseCase>()
     val executor = AppExecutor(dispatcher = coroutineTestRule.coroutineContextProvider)
     private val eventDispatcher = EventDispatcher()
 
@@ -506,6 +581,7 @@ class TweetInputViewModelRule(
                 collapsible,
                 TweetInputActions(eventDispatcher),
                 createReplyTextUseCaseRule.mock,
+                createQuoteTextUseCaseRule.mock,
                 TweetInputSharedState(executor),
                 repository.mock,
                 oAuthTokenRepositoryRule.mock,
@@ -533,7 +609,9 @@ class TweetInputViewModelRule(
         )
         with(sut) {
             inputTask.observeForever(inputTaskObserver)
-            listOf(isExpanded, menuItem, text, reply, media, user).forEach { it.observeForever { } }
+            listOf(
+                isExpanded, menuItem, text, reply, quote, media, user
+            ).forEach { it.observeForever { } }
         }
     }
 
@@ -551,6 +629,16 @@ class TweetInputViewModelRule(
                 { repository.mock.post(text, mediaIds, replyTo) }, withError
             )
         }
+    }
+
+    fun setupPost(text: MatcherScopedBlock<String>) {
+        repository.coSetupResponseWithVerify(
+            { repository.mock.post(text(), any(), any()) }, Unit
+        )
+    }
+
+    fun verifyPost(text: String) {
+        coVerify { repository.mock.post(text, any(), any()) }
     }
 
     fun setupUploadMedia(path: AppFilePath, res: MediaId) {
@@ -591,6 +679,17 @@ class TweetInputViewModelRule(
 
     fun dispatchReply(tweetId: TweetId) {
         eventDispatcher.postEvent(SelectedItemShortcut.Reply(tweetId))
+    }
+
+    fun dispatchQuote(tweetId: TweetId) {
+        eventDispatcher.postEvent(SelectedItemShortcut.Quote(tweetId))
+    }
+
+    fun setupTweet(id: TweetId, s: String) {
+        createQuoteTextUseCaseRule.coSetupResponseWithVerify(
+            target = { createQuoteTextUseCaseRule.mock(id) },
+            res = s
+        )
     }
 }
 

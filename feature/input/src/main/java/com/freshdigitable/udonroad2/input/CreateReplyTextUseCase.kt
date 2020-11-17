@@ -48,3 +48,13 @@ class CreateReplyTextUseCase @Inject constructor(
             replied.joinToString(separator = " ", postfix = " ") { (_, name) -> "@${name}" }
     }
 }
+
+class CreateQuoteTextUseCase @Inject constructor(
+    private val tweetRepository: TweetRepository,
+) {
+    suspend operator fun invoke(tweetId: TweetId): String {
+        val item = checkNotNull(tweetRepository.findTweetListItem(tweetId)).body
+        val screenName = item.user.screenName
+        return "https://twitter.com/$screenName/status/${item.id.value}"
+    }
+}
