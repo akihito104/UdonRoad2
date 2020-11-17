@@ -108,12 +108,12 @@ class CreateReplyTextUseCaseTest(private val param: Param) {
 
     @Before
     fun setup() = with(param) {
-        val tweet: TweetListItem = mockk<TweetListItem>().apply {
-            every { originalId } returns selectedTweetId
-            every { originalUser } returns tweetingUser
-            every { isRetweet } returns isTargetRetweet
-            every { body } returns tweet(targetBodyTweetId, targetBodyTweetingUser)
-        }
+        val tweet = tweetItem(
+            selectedTweetId,
+            tweetingUser,
+            isTargetRetweet,
+            tweet(targetBodyTweetId, targetBodyTweetingUser)
+        )
         oAuthTokenRepositoryRule.setupCurrentUserId(authenticatedUserId.value)
         tweetRepositoryRule.coSetupResponseWithVerify(
             target = { tweetRepositoryRule.mock.findTweetListItem(selectedTweetId) },
@@ -142,6 +142,70 @@ class CreateReplyTextUseCaseTest(private val param: Param) {
     }
 }
 
+@RunWith(Parameterized::class)
+class CreateQuoteTextUseCaseTest(private val param: Param) {
+    @get:Rule
+    val tweetRepositoryRule: MockVerified<TweetRepository> = MockVerified.create()
+
+    companion object {
+        val selectedTweetId: TweetId = TweetId(1000)
+        val user200 = tweetingUser(UserId(200), "user200")
+        val user300 = tweetingUser(UserId(300), "user300")
+
+        @JvmStatic
+        @Parameterized.Parameters(name = "{0}")
+        fun create() = Param.values()
+    }
+
+    enum class Param(
+        val tweetingUser: TweetingUser,
+        val isTargetRetweet: Boolean = false,
+        val targetBodyTweetId: TweetId = selectedTweetId,
+        val targetBodyTweetingUser: TweetingUser = tweetingUser,
+        val expectedText: String,
+    ) {
+        SimpleTweet(
+            tweetingUser = user200,
+            expectedText = "https://twitter.com/user200/status/1000"
+        ),
+        SimpleRetweet(
+            tweetingUser = user200,
+            isTargetRetweet = true,
+            targetBodyTweetId = TweetId(3000),
+            targetBodyTweetingUser = user300,
+            expectedText = "https://twitter.com/user300/status/3000"
+        ),
+        ;
+
+        override fun toString(): String = "$name: $expectedText"
+    }
+
+    @Before
+    fun setup() = with(param) {
+        val tweet = tweetItem(
+            selectedTweetId,
+            tweetingUser,
+            isTargetRetweet,
+            tweet(targetBodyTweetId, targetBodyTweetingUser)
+        )
+        tweetRepositoryRule.coSetupResponseWithVerify(
+            target = { tweetRepositoryRule.mock.findTweetListItem(selectedTweetId) },
+            res = tweet
+        )
+    }
+
+    @Test
+    fun testInvoke() = runBlocking {
+        val sut = CreateQuoteTextUseCase(tweetRepositoryRule.mock)
+
+        // exercise
+        val actual = sut(selectedTweetId)
+
+        // verify
+        assertThat(actual).isEqualTo(param.expectedText)
+    }
+}
+
 fun tweetingUser(targetUserId: UserId, targetUserScreenName: String): TweetingUser {
     return mockk<TweetingUser>().apply {
         every { id } returns targetUserId
@@ -153,6 +217,20 @@ private fun tweet(targetTweetId: TweetId, tweetingUser: TweetingUser): Tweet {
     return mockk<Tweet>().apply {
         every { id } returns targetTweetId
         every { user } returns tweetingUser
+    }
+}
+
+private fun tweetItem(
+    resOriginalId: TweetId,
+    resOriginalUser: TweetingUser,
+    resIsRetweet: Boolean,
+    resBody: Tweet
+): TweetListItem {
+    return mockk<TweetListItem>().apply {
+        every { originalId } returns resOriginalId
+        every { originalUser } returns resOriginalUser
+        every { isRetweet } returns resIsRetweet
+        every { body } returns resBody
     }
 }
 
