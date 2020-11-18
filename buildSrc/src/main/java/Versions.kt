@@ -64,8 +64,8 @@ object Versions {
     const val ANDROIDX_TEST_ORCHESTRATOR = "1.3.0"
 
     // ktlint
-    const val KTLINT_PLUGIN = "9.2.1"
-    const val KTLINT = "0.37.1"
+    const val KTLINT_PLUGIN = "9.4.1"
+    const val KTLINT = "0.39.0"
 
     // build libs
     const val ANDROID_GRADLE_TOOL = "4.1.1"
