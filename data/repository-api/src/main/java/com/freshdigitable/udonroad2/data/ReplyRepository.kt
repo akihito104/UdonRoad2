@@ -14,31 +14,13 @@
  * limitations under the License.
  */
 
-package com.freshdigitable.udonroad2.model.tweet
+package com.freshdigitable.udonroad2.data
 
-import com.freshdigitable.udonroad2.model.user.User
-import com.freshdigitable.udonroad2.model.user.UserId
+import com.freshdigitable.udonroad2.model.tweet.TweetId
+import com.freshdigitable.udonroad2.model.tweet.UserReplyEntity
 
-interface TweetEntity : Tweet {
+interface ReplyRepository {
+    suspend fun findEntitiesByTweetId(id: TweetId): List<UserReplyEntity>
 
-    override val user: User
-
-    val retweetedTweet: TweetEntity?
-
-    val quotedTweet: TweetEntity?
-
-    val inReplyToTweetId: TweetId?
-
-    val possiblySensitive: Boolean
-
-    val replyEntities: List<UserReplyEntity>
-}
-
-interface UserReplyEntity {
-    val userId: UserId
-    val screenName: String
-    val start: Int
-    val end: Int
-
-    companion object
+    interface LocalSource : ReplyRepository
 }

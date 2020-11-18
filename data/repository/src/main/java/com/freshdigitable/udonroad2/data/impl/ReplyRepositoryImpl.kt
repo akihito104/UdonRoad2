@@ -14,31 +14,22 @@
  * limitations under the License.
  */
 
-package com.freshdigitable.udonroad2.model.tweet
+package com.freshdigitable.udonroad2.data.impl
 
-import com.freshdigitable.udonroad2.model.user.User
-import com.freshdigitable.udonroad2.model.user.UserId
+import com.freshdigitable.udonroad2.data.ReplyRepository
+import com.freshdigitable.udonroad2.data.db.LocalSourceModule
+import dagger.Binds
+import dagger.Module
+import javax.inject.Inject
+import javax.inject.Singleton
 
-interface TweetEntity : Tweet {
+@Singleton
+class ReplyRepositoryImpl @Inject constructor(
+    private val localSource: ReplyRepository.LocalSource
+) : ReplyRepository by localSource
 
-    override val user: User
-
-    val retweetedTweet: TweetEntity?
-
-    val quotedTweet: TweetEntity?
-
-    val inReplyToTweetId: TweetId?
-
-    val possiblySensitive: Boolean
-
-    val replyEntities: List<UserReplyEntity>
-}
-
-interface UserReplyEntity {
-    val userId: UserId
-    val screenName: String
-    val start: Int
-    val end: Int
-
-    companion object
+@Module(includes = [LocalSourceModule::class])
+interface ReplyRepositoryModule {
+    @Binds
+    fun bindReplyRepository(repository: ReplyRepositoryImpl): ReplyRepository
 }

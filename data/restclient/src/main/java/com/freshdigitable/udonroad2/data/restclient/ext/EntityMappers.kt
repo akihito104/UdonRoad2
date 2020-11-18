@@ -24,6 +24,7 @@ import com.freshdigitable.udonroad2.data.restclient.data.SizeRest
 import com.freshdigitable.udonroad2.data.restclient.data.TweetEntityRest
 import com.freshdigitable.udonroad2.data.restclient.data.UrlEntityRest
 import com.freshdigitable.udonroad2.data.restclient.data.UserEntityRest
+import com.freshdigitable.udonroad2.data.restclient.data.UserReplyEntityRest
 import com.freshdigitable.udonroad2.data.restclient.data.VideoValiantRest
 import com.freshdigitable.udonroad2.model.MediaId
 import com.freshdigitable.udonroad2.model.MediaItem
@@ -32,6 +33,7 @@ import com.freshdigitable.udonroad2.model.MemberList
 import com.freshdigitable.udonroad2.model.MemberListId
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
 import com.freshdigitable.udonroad2.model.tweet.TweetId
+import com.freshdigitable.udonroad2.model.tweet.UserReplyEntity
 import com.freshdigitable.udonroad2.model.user.UserId
 import org.threeten.bp.Instant
 import twitter4j.MediaEntity
@@ -39,6 +41,7 @@ import twitter4j.PagableResponseList
 import twitter4j.Status
 import twitter4j.TwitterResponse
 import twitter4j.UserList
+import twitter4j.UserMentionEntity
 
 internal fun Status.toEntity(): TweetEntity {
     return TweetEntityRest(
@@ -55,9 +58,15 @@ internal fun Status.toEntity(): TweetEntity {
         possiblySensitive = isPossiblySensitive,
         source = source,
         createdAt = Instant.ofEpochMilli(createdAt.time),
-        mediaItems = mediaEntities.map { it.toItem() }
+        mediaItems = mediaEntities.map { it.toItem() },
+        replyEntities = userMentionEntities.map { UserReplyEntity.create(it) }
     )
 }
+
+fun UserReplyEntity.Companion.create(
+    entity: UserMentionEntity
+): UserReplyEntity =
+    UserReplyEntityRest(UserId(entity.id), entity.screenName, entity.start, entity.end)
 
 internal fun twitter4j.User.toEntity(): UserEntityRest {
     return UserEntityRest(
