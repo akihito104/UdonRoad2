@@ -45,7 +45,7 @@ internal class FlingFabPresenter(
             (0 until menu.size()).map {
                 menu.getItem(it) as FfabMenuItem
             }.forEach {
-                indicator.setDrawable(it.direction!!, it.icon)
+                indicator.setDrawable(checkNotNull(it.direction), it.icon)
             }
         }
         marginFromFab = a.getDimensionPixelSize(R.styleable.FlingFAB_marginFabToIndicator, 0)

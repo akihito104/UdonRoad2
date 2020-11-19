@@ -15,10 +15,10 @@
   -->
 
 <resources>
-    <attr name="indicatorTint" format="reference|color"/>
-    <attr name="indicatorIconTint" format="reference|color"/>
-    <attr name="marginFabToIndicator" format="dimension"/>
-    <attr name="menu" format="reference"/>
+    <attr name="indicatorTint" format="reference|color" />
+    <attr name="indicatorIconTint" format="reference|color" />
+    <attr name="marginFabToIndicator" format="dimension" />
+    <attr name="menu" format="reference" />
     <attr name="direction" format="enum">
         <enum name="up" value="6" />
         <enum name="up_right" value="7" />
@@ -43,7 +43,7 @@
     </declare-styleable>
 
     <declare-styleable name="FlingFABTheme">
-        <attr name="iffabStyle" format="reference"/>
+        <attr name="iffabStyle" format="reference" />
     </declare-styleable>
 
     <style name="Widget.FlingFAB" parent="@style/Widget.Design.FloatingActionButton">
