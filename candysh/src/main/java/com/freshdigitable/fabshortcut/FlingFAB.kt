@@ -20,12 +20,13 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.MenuItem
 import android.view.MotionEvent
+import com.google.android.material.R
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class FlingFAB @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
-    defStyleAttr: Int = 0
+    defStyleAttr: Int = R.attr.floatingActionButtonStyle
 ) : FloatingActionButton(context, attrs, defStyleAttr) {
 
     private val presenter = FlingFabPresenter(this, attrs, defStyleAttr)

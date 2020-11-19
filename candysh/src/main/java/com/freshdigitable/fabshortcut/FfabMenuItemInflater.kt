@@ -18,11 +18,13 @@ package com.freshdigitable.fabshortcut
 
 import android.content.Context
 import android.content.res.XmlResourceParser
-import android.text.TextUtils
 import android.util.AttributeSet
 import android.util.Xml
 import android.view.MenuInflater
 import androidx.annotation.MenuRes
+import androidx.core.content.res.getIntOrThrow
+import androidx.core.content.res.getResourceIdOrThrow
+import androidx.core.content.withStyledAttributes
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserException
 import java.io.IOException
@@ -42,15 +44,9 @@ internal class FfabMenuItemInflater private constructor(
     private fun inflate(menu: FfabMenu, menuRes: Int) {
         menuInflater.inflate(menuRes, menu)
         val parser: XmlResourceParser = context.resources.getLayout(menuRes)
-        try {
-            val attributeSet = Xml.asAttributeSet(parser)
-            parseMenu(parser, attributeSet, menu)
-        } catch (e: XmlPullParserException) {
-            e.printStackTrace()
-        } catch (e: IOException) {
-            e.printStackTrace()
-        } finally {
-            parser.close()
+        parser.use {
+            val attributeSet = Xml.asAttributeSet(it)
+            parseMenu(it, attributeSet, menu)
         }
     }
 
@@ -75,32 +71,19 @@ internal class FfabMenuItemInflater private constructor(
                 eventType = parser.next()
                 continue
             }
-            findId(parser)?.let { id ->
-                val ta = context.obtainStyledAttributes(attributeSet, R.styleable.FlingFABMenu)
+            context.withStyledAttributes(attributeSet, R.styleable.FlingFABMenu) {
+                val id = getResourceIdOrThrow(R.styleable.FlingFABMenu_android_id)
                 val direction = Direction.findByIndex(
-                    ta.getInt(R.styleable.FlingFABMenu_direction, Direction.UNDEFINED.index)
+                    getIntOrThrow(R.styleable.FlingFABMenu_direction)
                 )
                 if (direction == Direction.UNDEFINED) {
                     throw IllegalArgumentException("undefined direction value")
                 }
                 val item = menu.findItem(id)
-                if (item is FfabMenuItem) {
-                    item.direction = direction
-                }
-                ta.recycle()
+                check(item is FfabMenuItem)
+                item.direction = direction
             }
             eventType = parser.next()
         }
-    }
-
-    private fun findId(parser: XmlPullParser): Int? {
-        return (0 until parser.attributeCount)
-            .find { parser.getAttributeName(it) == "id" }
-            ?.let { index ->
-                val attributeValue = parser.getAttributeValue(index)
-                attributeValue.substring(1)
-            }
-            ?.takeIf { TextUtils.isDigitsOnly(it) }
-            ?.let { Integer.parseInt(it) }
     }
 }
