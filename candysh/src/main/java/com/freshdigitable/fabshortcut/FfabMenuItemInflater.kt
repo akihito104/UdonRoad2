@@ -43,32 +43,31 @@ internal class FfabMenuItemInflater private constructor(
 
     private fun inflate(menu: FfabMenu, menuRes: Int) {
         menuInflater.inflate(menuRes, menu)
-        val parser: XmlResourceParser = context.resources.getLayout(menuRes)
-        parser.use {
-            val attributeSet = Xml.asAttributeSet(it)
-            parseMenu(it, attributeSet, menu)
+        context.resources.getLayout(menuRes).use { parser ->
+            val attributeSet = Xml.asAttributeSet(parser)
+            parser.parseMenu(attributeSet, menu)
         }
     }
 
     @Throws(XmlPullParserException::class, IOException::class)
-    private fun parseMenu(parser: XmlResourceParser, attributeSet: AttributeSet, menu: FfabMenu) {
-        var eventType = parser.eventType
+    private fun XmlResourceParser.parseMenu(attributeSet: AttributeSet, menu: FfabMenu) {
+        var eventType = eventType
         var tag: String
         while (eventType != XmlPullParser.END_DOCUMENT) {
             if (eventType == XmlPullParser.START_TAG) {
-                tag = parser.name
+                tag = name
                 if (tag == "menu") {
-                    eventType = parser.next()
+                    eventType = next()
                     break
                 }
             }
-            eventType = parser.next()
+            eventType = next()
         }
 
         while (eventType != XmlPullParser.END_DOCUMENT) {
-            tag = parser.name
+            tag = name
             if (eventType != XmlPullParser.START_TAG || tag != "item") {
-                eventType = parser.next()
+                eventType = next()
                 continue
             }
             context.withStyledAttributes(attributeSet, R.styleable.FlingFABMenu) {
@@ -79,11 +78,10 @@ internal class FfabMenuItemInflater private constructor(
                 if (direction == Direction.UNDEFINED) {
                     throw IllegalArgumentException("undefined direction value")
                 }
-                val item = menu.findItem(id)
-                check(item is FfabMenuItem)
+                val item = menu.findItem(id) as FfabMenuItem
                 item.direction = direction
             }
-            eventType = parser.next()
+            eventType = next()
         }
     }
 }
