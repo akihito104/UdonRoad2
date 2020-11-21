@@ -28,13 +28,17 @@ import com.freshdigitable.udonroad2.model.app.AppFilePath
 import com.freshdigitable.udonroad2.model.app.AppTwitterException
 import com.freshdigitable.udonroad2.model.app.mainContext
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
+import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.user.User
 import com.freshdigitable.udonroad2.model.user.UserId
+import com.freshdigitable.udonroad2.shortcut.SelectedItemShortcut
+import com.freshdigitable.udonroad2.test_common.MatcherScopedBlock
 import com.freshdigitable.udonroad2.test_common.MockVerified
 import com.freshdigitable.udonroad2.test_common.jvm.CoroutineTestRule
 import com.freshdigitable.udonroad2.test_common.jvm.OAuthTokenRepositoryRule
 import com.google.common.truth.Subject
 import com.google.common.truth.Truth.assertThat
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -46,6 +50,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.experimental.runners.Enclosed
@@ -374,6 +379,167 @@ class TweetInputViewModelTest {
             assertThat(sut.media.value).isEmpty()
             assertThat(sut.isExpanded.value).isFalse()
         }
+
+        @Test
+        fun dispatchReply_replyTextIsCreated_then_menuIsSendEnabled(): Unit = with(rule) {
+            // setup
+            val selectedTweetId = TweetId(2000)
+            setupReplyTargetTweet(selectedTweetId, "@user200 ")
+
+            // exercise
+            coroutineTestRule.runBlockingTest {
+                dispatchReply(selectedTweetId)
+            }
+
+            // verify
+            assertThat(sut.isExpanded.value).isTrue()
+            assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.SEND_ENABLED)
+            assertThat(sut.text.value).isEqualTo("@user200 ")
+        }
+
+        @Test
+        fun dispatchReply_replyTextIsEmpty_then_menuIsSendDisabled(): Unit = with(rule) {
+            // setup
+            val selectedTweetId = TweetId(2000)
+            setupReplyTargetTweet(selectedTweetId, "")
+
+            // exercise
+            coroutineTestRule.runBlockingTest {
+                dispatchReply(selectedTweetId)
+            }
+
+            // verify
+            assertThat(sut.isExpanded.value).isTrue()
+            assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.SEND_DISABLED)
+            assertThat(sut.text.value).isEmpty()
+        }
+
+        @Test
+        fun dispatchQuote_then_expanded(): Unit = with(rule) {
+            // setup
+            val selectedTweetId = TweetId(2000)
+
+            // exercise
+            coroutineTestRule.runBlockingTest {
+                dispatchQuote(selectedTweetId)
+            }
+
+            // verify
+            assertThat(sut.isExpanded.value).isTrue()
+            assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.SEND_DISABLED)
+            assertThat(sut.text.value).isEmpty()
+            assertThat(sut.quote.value).isTrue()
+        }
+    }
+
+    class WhenReply {
+        @get:Rule
+        val rule = TweetInputViewModelRule(true)
+
+        private val targetTweetId = TweetId(1000)
+
+        @Before
+        fun setup(): Unit = with(rule) {
+            setupReplyTargetTweet(targetTweetId, "@user200 ")
+            dispatchReply(targetTweetId)
+
+            assertThat(sut.isExpanded.value).isTrue()
+            assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.SEND_ENABLED)
+            assertThat(sut.text.value).isEqualTo("@user200 ")
+            assertThat(sut.reply.value).isTrue()
+        }
+
+        @Test
+        fun onSendClicked_whenTaskIsSucceeded_then_stateIsCleared(): Unit = with(rule) {
+            // setup
+            setupPost("@user200 ", replyTo = targetTweetId)
+
+            // exercise
+            coroutineTestRule.runBlockingTest {
+                sut.onSendClicked()
+            }
+
+            // verify
+            inputTaskObserver.verifyOrderOfOnChanged(
+                InputTaskState.IDLING,
+                InputTaskState.OPENED,
+                InputTaskState.SENDING,
+                InputTaskState.SUCCEEDED,
+                InputTaskState.IDLING
+            )
+            assertThat(sut.isExpanded.value).isFalse()
+            assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.WRITE_ENABLED)
+            assertThat(sut.text.value).isEmpty()
+            assertThat(sut.reply.value).isFalse()
+        }
+
+        @Test
+        fun onCancelClicked_then_stateIsCleared(): Unit = with(rule) {
+            coroutineTestRule.runBlockingTest {
+                sut.onCancelClicked()
+            }
+
+            assertThat(sut.isExpanded.value).isFalse()
+            assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.WRITE_ENABLED)
+            assertThat(sut.text.value).isEmpty()
+            assertThat(sut.reply.value).isFalse()
+        }
+    }
+
+    class WhenQuote {
+        @get:Rule
+        val rule = TweetInputViewModelRule(collapsible = true)
+        private val selectedTweetId = TweetId(2000)
+
+        @Before
+        fun setup(): Unit = with(rule) {
+            dispatchQuote(selectedTweetId)
+
+            assertThat(sut.isExpanded.value).isTrue()
+            assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.SEND_DISABLED)
+            assertThat(sut.text.value).isEmpty()
+            assertThat(sut.reply.value).isFalse()
+            assertThat(sut.quote.value).isTrue()
+        }
+
+        @Test
+        fun onCancelClicked(): Unit = with(rule) {
+            // exercise
+            coroutineTestRule.runBlockingTest {
+                sut.onCancelClicked()
+            }
+
+            // verify
+            assertThat(sut.isExpanded.value).isFalse()
+            assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.WRITE_ENABLED)
+            assertThat(sut.quote.value).isFalse()
+        }
+
+        @Test
+        fun onSendClicked(): Unit = with(rule) {
+            // setup
+            setupTweet(selectedTweetId, "https://twitter.com/user200/status/2000")
+            setupPost(text = { any() })
+
+            // exercise
+            coroutineTestRule.runBlockingTest {
+                sut.onTweetTextChanged(editable("aaa"))
+                sut.onSendClicked()
+            }
+
+            // verify
+            inputTaskObserver.verifyOrderOfOnChanged(
+                InputTaskState.IDLING,
+                InputTaskState.OPENED,
+                InputTaskState.SENDING,
+                InputTaskState.SUCCEEDED,
+                InputTaskState.IDLING
+            )
+            verifyPost("aaa https://twitter.com/user200/status/2000")
+            assertThat(sut.isExpanded.value).isFalse()
+            assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.WRITE_ENABLED)
+            assertThat(sut.quote.value).isFalse()
+        }
     }
 
     class WhenCollapsibleIsFalse {
@@ -402,7 +568,9 @@ class TweetInputViewModelRule(
         every { onChanged(any()) } just runs
     }
     private val oAuthTokenRepositoryRule = OAuthTokenRepositoryRule()
-    private val userRepositoryRule: MockVerified<UserRepository> = MockVerified.create()
+    private val userRepositoryRule = MockVerified.create<UserRepository>()
+    private val createReplyTextUseCaseRule = MockVerified.create<CreateReplyTextUseCase>()
+    private val createQuoteTextUseCaseRule = MockVerified.create<CreateQuoteTextUseCase>()
     val executor = AppExecutor(dispatcher = coroutineTestRule.coroutineContextProvider)
     private val eventDispatcher = EventDispatcher()
 
@@ -412,6 +580,8 @@ class TweetInputViewModelRule(
             TweetInputViewState(
                 collapsible,
                 TweetInputActions(eventDispatcher),
+                createReplyTextUseCaseRule.mock,
+                createQuoteTextUseCaseRule.mock,
                 TweetInputSharedState(executor),
                 repository.mock,
                 oAuthTokenRepositoryRule.mock,
@@ -439,27 +609,47 @@ class TweetInputViewModelRule(
         )
         with(sut) {
             inputTask.observeForever(inputTaskObserver)
-            listOf(isExpanded, menuItem, text, media, user).forEach { it.observeForever { } }
+            listOf(
+                isExpanded, menuItem, text, reply, quote, media, user
+            ).forEach { it.observeForever { } }
         }
     }
 
     fun setupPost(
         text: String,
         mediaIds: List<MediaId> = emptyList(),
+        replyTo: TweetId? = null,
         withError: Throwable? = null
     ) {
         when (withError) {
             null -> repository.coSetupResponseWithVerify(
-                { repository.mock.post(text, mediaIds) }, Unit
+                { repository.mock.post(text, mediaIds, replyTo) }, Unit
             )
             else -> repository.coSetupThrowWithVerify(
-                { repository.mock.post(text, mediaIds) }, withError
+                { repository.mock.post(text, mediaIds, replyTo) }, withError
             )
         }
     }
 
+    fun setupPost(text: MatcherScopedBlock<String>) {
+        repository.coSetupResponseWithVerify(
+            { repository.mock.post(text(), any(), any()) }, Unit
+        )
+    }
+
+    fun verifyPost(text: String) {
+        coVerify { repository.mock.post(text, any(), any()) }
+    }
+
     fun setupUploadMedia(path: AppFilePath, res: MediaId) {
         repository.coSetupResponseWithVerify({ repository.mock.uploadMedia(path) }, res)
+    }
+
+    fun setupReplyTargetTweet(targetTweetId: TweetId, response: String) {
+        createReplyTextUseCaseRule.coSetupResponseWithVerify(
+            target = { createReplyTextUseCaseRule.mock(targetTweetId) },
+            res = response
+        )
     }
 
     fun Observer<InputTaskState>.verifyOrderOfOnChanged(vararg state: InputTaskState) {
@@ -479,11 +669,27 @@ class TweetInputViewModelRule(
             .around(repository)
             .around(oAuthTokenRepositoryRule)
             .around(userRepositoryRule)
+            .around(createReplyTextUseCaseRule)
             .apply(super.apply(base, description), description)
     }
 
     fun dispatchChosen(app: Components) {
         eventDispatcher.postEvent(CameraApp.Event.Chosen(app))
+    }
+
+    fun dispatchReply(tweetId: TweetId) {
+        eventDispatcher.postEvent(SelectedItemShortcut.Reply(tweetId))
+    }
+
+    fun dispatchQuote(tweetId: TweetId) {
+        eventDispatcher.postEvent(SelectedItemShortcut.Quote(tweetId))
+    }
+
+    fun setupTweet(id: TweetId, s: String) {
+        createQuoteTextUseCaseRule.coSetupResponseWithVerify(
+            target = { createQuoteTextUseCaseRule.mock(id) },
+            res = s
+        )
     }
 }
 

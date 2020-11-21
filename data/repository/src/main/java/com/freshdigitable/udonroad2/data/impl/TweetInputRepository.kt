@@ -37,9 +37,11 @@ class TweetInputRepository @Inject constructor(
     private val remoteSource: TweetApiClient,
     private val application: Application,
 ) {
-    suspend fun post(text: String, mediaIds: List<MediaId>): TweetEntity {
-        return remoteSource.postTweet(text, mediaIds)
-    }
+    suspend fun post(
+        text: String,
+        mediaIds: List<MediaId> = emptyList(),
+        replyTo: TweetId? = null
+    ): TweetEntity = remoteSource.postTweet(text, mediaIds, replyTo)
 
     suspend fun uploadMedia(path: AppFilePath): MediaId {
         val file = path.file
@@ -53,7 +55,7 @@ class TweetInputRepository @Inject constructor(
     private suspend fun getStreams(
         file: File
     ): Pair<String, InputStream> = withContext(Dispatchers.IO) {
-        file.name to FileInputStream(file)
+        file.name to file.inputStream()
     }
 
     private suspend fun getStreams(

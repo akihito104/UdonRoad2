@@ -37,6 +37,7 @@ import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.subscribeToUpdate
 import com.freshdigitable.udonroad2.model.app.navigation.suspendMap
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
+import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.user.User
 import io.reactivex.disposables.CompositeDisposable
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -50,6 +51,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.rx2.asFlow
+import java.io.IOException
 import javax.inject.Inject
 
 class TweetInputViewModel @Inject constructor(
@@ -59,6 +61,8 @@ class TweetInputViewModel @Inject constructor(
 
     val isExpanded: LiveData<Boolean> = viewState.isExpanded
     val text: LiveData<String> = viewState.text
+    val reply: LiveData<Boolean> = viewState.reply
+    val quote: LiveData<Boolean> = viewState.quote
     val media: LiveData<List<AppFilePath>> = viewState.media
     val menuItem: LiveData<InputMenuItem> = viewState.menuItem
     val inputTask: LiveData<InputTaskState> = viewState.taskState
@@ -124,6 +128,8 @@ class TweetInputSharedState @Inject constructor(executor: AppExecutor) {
         .distinctUntilChanged()
         .asLiveDataWithMain(executor)
     internal val textSource = MutableStateFlow("")
+    internal val replySource = MutableStateFlow<TweetId?>(null)
+    internal val quoteSource = MutableStateFlow<TweetId?>(null)
     internal val mediaSource = MutableStateFlow<List<AppFilePath>>(emptyList())
 }
 
@@ -131,6 +137,8 @@ class TweetInputSharedState @Inject constructor(executor: AppExecutor) {
 class TweetInputViewState @Inject constructor(
     collapsible: Boolean,
     actions: TweetInputActions,
+    createReplyText: CreateReplyTextUseCase,
+    createQuoteText: CreateQuoteTextUseCase,
     sharedState: TweetInputSharedState,
     repository: TweetInputRepository,
     oauthRepository: OAuthTokenRepository,
@@ -180,6 +188,21 @@ class TweetInputViewState @Inject constructor(
         actions.openInput.subscribeToUpdate(sharedState) {
             taskStateSource.value = InputTaskState.OPENED
         },
+        actions.reply.suspendMap(executor.mainContext) {
+            createReplyText(it.tweetId)
+        }.subscribeToUpdate(sharedState) {
+            if (it.isSuccess) {
+                textSource.value = checkNotNull(it.value)
+                replySource.value = it.event.tweetId
+                taskStateSource.value = InputTaskState.OPENED
+            } else {
+                it.rethrow()
+            }
+        },
+        actions.quote.subscribeToUpdate(sharedState) {
+            quoteSource.value = it.tweetId
+            taskStateSource.value = InputTaskState.OPENED
+        },
         actions.updateText.subscribeToUpdate(sharedState) {
             textSource.value = it.text
         },
@@ -200,7 +223,9 @@ class TweetInputViewState @Inject constructor(
         actions.sendTweet.suspendMap(executor.mainContext) { event ->
             sharedState.taskStateSource.value = InputTaskState.SENDING
             val mediaIds = event.media.map { repository.uploadMedia(it) }
-            repository.post(event.text, mediaIds)
+            val quoteText = sharedState.quoteSource.value?.let { createQuoteText(it) }
+            val text = if (quoteText == null) event.text else "${event.text} $quoteText"
+            repository.post(text, mediaIds, sharedState.replySource.value)
         }.subscribeToUpdate(sharedState) {
             when {
                 it.isSuccess -> {
@@ -208,9 +233,10 @@ class TweetInputViewState @Inject constructor(
                     clearContents()
                     taskStateSource.value = idlingState
                 }
-                it.exception is AppTwitterException -> {
+                it.exception is AppTwitterException || it.exception is IOException -> {
                     taskStateSource.value = InputTaskState.FAILED
                 }
+                else -> it.rethrow()
             }
         }
     )
@@ -219,11 +245,17 @@ class TweetInputViewState @Inject constructor(
         .filterNotNull().asLiveDataWithMain(executor)
     internal val isExpanded: AppViewState<Boolean> = sharedState.isExpanded
     internal val text: AppViewState<String> = sharedState.textSource.asLiveDataWithMain(executor)
+    internal val reply: LiveData<Boolean> = sharedState.replySource.map { it != null }
+        .asLiveDataWithMain(executor)
+    internal val quote: AppViewState<Boolean> = sharedState.quoteSource.map { it != null }
+        .asLiveDataWithMain(executor)
     internal val media: AppViewState<List<AppFilePath>> = sharedState.mediaSource
         .asLiveDataWithMain(executor)
 
     private fun TweetInputSharedState.clearContents() {
         textSource.value = ""
+        replySource.value = null
+        quoteSource.value = null
         mediaSource.value = emptyList()
     }
 
