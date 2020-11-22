@@ -53,6 +53,12 @@ dependencies {
     implementation(Libs.MATERIAL_DESIGN)
 
     testImplementation(Libs.JUNIT)
+    testImplementation("androidx.fragment:fragment-testing:${Versions.ANDROIDX_FRAGMENT}")
+    testImplementation(Libs.ANDROIDX_TEST_CORE)
+    testImplementation(Libs.ANDROIDX_TEST_ESPRESSO)
+    testImplementation(Libs.ANDROIDX_TEST_EXT_JUNIT)
+    testImplementation(Libs.ANDROIDX_TEST_EXT_TRUTH)
+    testImplementation(Libs.ROBOLECTRIC)
 
     androidTestImplementation(Libs.ANDROIDX_TEST_EXT_JUNIT)
     androidTestImplementation(Libs.ANDROIDX_TEST_ESPRESSO)

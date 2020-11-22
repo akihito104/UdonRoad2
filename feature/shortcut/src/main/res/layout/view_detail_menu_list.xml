@@ -21,12 +21,14 @@
     tools:orientation="vertical"
     >
 
+    <!-- FIXME: targetApi -->
     <LinearLayout
         android:id="@+id/detail_menu_main"
         android:layout_width="match_parent"
         android:layout_height="?android:attr/actionBarSize"
-        android:background="?attr/colorAccent"
+        android:background="?android:attr/colorAccent"
         android:orientation="horizontal"
+        tools:targetApi="lollipop"
         />
 
     <androidx.recyclerview.widget.RecyclerView
