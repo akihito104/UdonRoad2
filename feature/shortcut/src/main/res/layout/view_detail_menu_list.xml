@@ -28,6 +28,7 @@
         android:layout_height="?android:attr/actionBarSize"
         android:background="?android:attr/colorAccent"
         android:orientation="horizontal"
+        android:paddingHorizontal="@dimen/menu_main_container_horizontal_padding"
         tools:targetApi="lollipop"
         />
 
