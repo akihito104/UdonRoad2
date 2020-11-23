@@ -6,8 +6,8 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:viewportHeight="72.0"
     android:viewportWidth="65.0"
-    android:height="72dp"
-    android:width="65dp"
+    android:height="36dp"
+    android:width="32.5dp"
     >
     <path
         android:fillColor="#aab8c2"
