@@ -131,11 +131,12 @@ class TweetDetailContextMenuView @JvmOverloads constructor(
 
 internal class DetailMenu : Menu {
     private val items: MutableList<Item> = mutableListOf()
+    override fun size(): Int = items.size
 
     override fun add(title: CharSequence?): MenuItem {
-        val element = Item(title = title)
-        items.add(element)
-        return element
+        val item = Item(title = title)
+        items.add(item)
+        return item
     }
 
     override fun add(titleRes: Int): MenuItem {
@@ -167,16 +168,22 @@ internal class DetailMenu : Menu {
         TODO("Not yet implemented")
     }
 
-    override fun addIntentOptions(
-        groupId: Int,
-        itemId: Int,
-        order: Int,
-        caller: ComponentName?,
-        specifics: Array<out Intent>?,
-        intent: Intent?,
-        flags: Int,
-        outSpecificItems: Array<out MenuItem>?
-    ): Int = TODO("Not yet implemented")
+    override fun hasVisibleItems(): Boolean = items.find { it.isVisible } != null
+    override fun findItem(id: Int): MenuItem = items.first { it.itemId == id }
+    override fun getItem(index: Int): MenuItem = items[index]
+    private fun itemsByGroupId(groupId: Int): List<Item> = items.filter { it.groupId == groupId }
+
+    override fun setGroupCheckable(group: Int, checkable: Boolean, exclusive: Boolean) {
+        itemsByGroupId(group).forEach { it.isCheckable = checkable }
+    }
+
+    override fun setGroupVisible(group: Int, visible: Boolean) {
+        itemsByGroupId(group).forEach { it.isVisible = visible }
+    }
+
+    override fun setGroupEnabled(group: Int, enabled: Boolean) {
+        itemsByGroupId(group).forEach { it.isEnabled = enabled }
+    }
 
     override fun removeItem(id: Int) {
         items.removeAll { it.itemId == id }
@@ -190,31 +197,16 @@ internal class DetailMenu : Menu {
         items.clear()
     }
 
-    override fun setGroupCheckable(group: Int, checkable: Boolean, exclusive: Boolean) {
-        items.filter { it.groupId == group }.forEach {
-            it.isCheckable = checkable
-        }
-    }
-
-    override fun setGroupVisible(group: Int, visible: Boolean) {
-        items.filter { it.groupId == group }.forEach { it.isVisible = visible }
-    }
-
-    override fun setGroupEnabled(group: Int, enabled: Boolean) {
-        items.filter { it.groupId == group }.forEach { it.isEnabled = enabled }
-    }
-
-    override fun hasVisibleItems(): Boolean = items.find { it.isVisible } != null
-
-    override fun findItem(id: Int): MenuItem = items.first { it.itemId == id }
-
-    override fun size(): Int = items.size
-
-    override fun getItem(index: Int): MenuItem = items[index]
-
-    override fun close() {
-        TODO("Not yet implemented")
-    }
+    override fun addIntentOptions(
+        groupId: Int,
+        itemId: Int,
+        order: Int,
+        caller: ComponentName?,
+        specifics: Array<out Intent>?,
+        intent: Intent?,
+        flags: Int,
+        outSpecificItems: Array<out MenuItem>?
+    ): Int = TODO("Not yet implemented")
 
     override fun performShortcut(keyCode: Int, event: KeyEvent?, flags: Int): Boolean {
         TODO("Not yet implemented")
@@ -232,6 +224,10 @@ internal class DetailMenu : Menu {
         TODO("Not yet implemented")
     }
 
+    override fun close() {
+        TODO("Not yet implemented")
+    }
+
     class Item(
         private val groupId: Int = 0,
         private val itemId: Int = 0,
@@ -240,9 +236,7 @@ internal class DetailMenu : Menu {
         private var title: CharSequence? = null
     ) : MenuItem {
         override fun getItemId(): Int = itemId
-
         override fun getGroupId(): Int = groupId
-
         override fun getOrder(): Int = order
 
         override fun setTitle(title: CharSequence?): MenuItem {
@@ -264,8 +258,6 @@ internal class DetailMenu : Menu {
             return this
         }
 
-        @DrawableRes
-        internal var iconRes: Int = 0
         private var icon: Drawable? = null
         override fun getIcon(): Drawable = checkNotNull(icon) { "DetailMenu.Item.icon is null." }
         override fun setIcon(icon: Drawable?): MenuItem {
@@ -273,14 +265,10 @@ internal class DetailMenu : Menu {
             return this
         }
 
+        @DrawableRes
+        internal var iconRes: Int = 0
         override fun setIcon(iconRes: Int): MenuItem {
             this.iconRes = iconRes
-            return this
-        }
-
-        override fun setShortcut(numericChar: Char, alphaChar: Char): MenuItem {
-            this.numericShortcut = numericChar
-            this.alphabeticShortcut = alphaChar
             return this
         }
 
@@ -294,6 +282,12 @@ internal class DetailMenu : Menu {
         private var alphabeticShortcut: Char = Char.MIN_VALUE
         override fun getAlphabeticShortcut(): Char = alphabeticShortcut
         override fun setAlphabeticShortcut(alphaChar: Char): MenuItem {
+            this.alphabeticShortcut = alphaChar
+            return this
+        }
+
+        override fun setShortcut(numericChar: Char, alphaChar: Char): MenuItem {
+            this.numericShortcut = numericChar
             this.alphabeticShortcut = alphaChar
             return this
         }
@@ -326,72 +320,30 @@ internal class DetailMenu : Menu {
             return this
         }
 
-        override fun hasSubMenu(): Boolean {
-            TODO("Not yet implemented")
-        }
+        override fun hasSubMenu(): Boolean = TODO("Not yet implemented")
+        override fun getSubMenu(): SubMenu = TODO("Not yet implemented")
+        override fun setOnMenuItemClickListener(
+            menuItemClickListener: MenuItem.OnMenuItemClickListener?
+        ): MenuItem = TODO("Not yet implemented")
 
-        override fun getSubMenu(): SubMenu {
-            TODO("Not yet implemented")
-        }
+        override fun getMenuInfo(): ContextMenu.ContextMenuInfo = TODO("Not yet implemented")
+        override fun setIntent(intent: Intent?): MenuItem = TODO("Not yet implemented")
+        override fun getIntent(): Intent = TODO("Not yet implemented")
+        override fun setShowAsAction(actionEnum: Int): Unit = TODO("Not yet implemented")
+        override fun setShowAsActionFlags(actionEnum: Int): MenuItem = TODO("Not yet implemented")
+        override fun setActionView(view: View?): MenuItem = TODO("Not yet implemented")
+        override fun setActionView(resId: Int): MenuItem = TODO("Not yet implemented")
+        override fun getActionView(): View = TODO("Not yet implemented")
+        override fun setActionProvider(
+            actionProvider: ActionProvider?
+        ): MenuItem = TODO("Not yet implemented")
 
-        override fun setOnMenuItemClickListener(menuItemClickListener: MenuItem.OnMenuItemClickListener?): MenuItem {
-            TODO("Not yet implemented")
-        }
-
-        override fun getMenuInfo(): ContextMenu.ContextMenuInfo {
-            TODO("Not yet implemented")
-        }
-
-        override fun setIntent(intent: Intent?): MenuItem {
-            TODO("Not yet implemented")
-        }
-
-        override fun getIntent(): Intent {
-            TODO("Not yet implemented")
-        }
-
-        override fun setShowAsAction(actionEnum: Int) {
-            TODO("Not yet implemented")
-        }
-
-        override fun setShowAsActionFlags(actionEnum: Int): MenuItem {
-            TODO("Not yet implemented")
-        }
-
-        override fun setActionView(view: View?): MenuItem {
-            TODO("Not yet implemented")
-        }
-
-        override fun setActionView(resId: Int): MenuItem {
-            TODO("Not yet implemented")
-        }
-
-        override fun getActionView(): View {
-            TODO("Not yet implemented")
-        }
-
-        override fun setActionProvider(actionProvider: ActionProvider?): MenuItem {
-            TODO("Not yet implemented")
-        }
-
-        override fun getActionProvider(): ActionProvider {
-            TODO("Not yet implemented")
-        }
-
-        override fun expandActionView(): Boolean {
-            TODO("Not yet implemented")
-        }
-
-        override fun collapseActionView(): Boolean {
-            TODO("Not yet implemented")
-        }
-
-        override fun isActionViewExpanded(): Boolean {
-            TODO("Not yet implemented")
-        }
-
-        override fun setOnActionExpandListener(listener: MenuItem.OnActionExpandListener?): MenuItem {
-            TODO("Not yet implemented")
-        }
+        override fun getActionProvider(): ActionProvider = TODO("Not yet implemented")
+        override fun expandActionView(): Boolean = TODO("Not yet implemented")
+        override fun collapseActionView(): Boolean = TODO("Not yet implemented")
+        override fun isActionViewExpanded(): Boolean = TODO("Not yet implemented")
+        override fun setOnActionExpandListener(
+            listener: MenuItem.OnActionExpandListener?
+        ): MenuItem = TODO("Not yet implemented")
     }
 }
