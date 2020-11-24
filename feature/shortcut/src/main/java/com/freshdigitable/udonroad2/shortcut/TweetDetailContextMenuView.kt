@@ -33,6 +33,7 @@ import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
 import androidx.annotation.DrawableRes
+import androidx.annotation.MenuRes
 import androidx.annotation.StringRes
 import androidx.appcompat.widget.AppCompatImageButton
 import androidx.appcompat.widget.LinearLayoutCompat
@@ -68,27 +69,7 @@ class TweetDetailContextMenuView @JvmOverloads constructor(
         )
         val mainMenuId = a.getResourceId(R.styleable.TweetDetailContextMenuView_menu_main, 0)
         if (mainMenuId != 0) {
-            MenuInflater(context).inflate(mainMenuId, detailMenu)
-            val iconSize = resources.getDimensionPixelSize(R.dimen.menu_main_item_size)
-            val iconMargin =
-                resources.getDimensionPixelSize(R.dimen.menu_main_item_horizontal_margin)
-            for (i in 0 until detailMenu.size()) {
-                val item = detailMenu.getItem(i) as DetailMenu.Item
-                val button = AppCompatImageButton(context).apply {
-                    if (item.iconRes != 0) {
-                        setImageResource(item.iconRes)
-                    } else {
-                        setImageDrawable(item.icon)
-                    }
-                    scaleType = ImageView.ScaleType.FIT_CENTER
-                    setBackgroundColor(ContextCompat.getColor(context, android.R.color.transparent))
-                }
-                val lp = LinearLayout.LayoutParams(iconSize, iconSize).apply {
-                    updateMargins(left = iconMargin, right = iconMargin)
-                    gravity = Gravity.CENTER_VERTICAL
-                }
-                mainContextMenuList.addView(button, lp)
-            }
+            mainContextMenuList.setupMainMenu(mainMenuId)
         }
         a.recycle()
 
@@ -104,6 +85,42 @@ class TweetDetailContextMenuView @JvmOverloads constructor(
         })
         bottomSheetBehavior.peekHeight = mainContextMenuList.layoutParams.height
         bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+    }
+
+    private fun LinearLayout.setupMainMenu(@MenuRes mainMenuId: Int) {
+        MenuInflater(context).inflate(mainMenuId, detailMenu)
+        val iconSize = resources.getDimensionPixelSize(R.dimen.menu_main_item_size)
+        val iconMargin = resources.getDimensionPixelSize(R.dimen.menu_main_item_horizontal_margin)
+        val iconBackground = ContextCompat.getColor(context, android.R.color.transparent)
+
+        for (i in 0 until detailMenu.size()) {
+            val item = detailMenu.getItem(i) as DetailMenu.Item
+            val button = AppCompatImageButton(context).apply {
+                setIcon(item)
+                scaleType = ImageView.ScaleType.FIT_CENTER
+                setContentDescription(item)
+                setBackgroundColor(iconBackground)
+            }
+            val lp = LinearLayout.LayoutParams(iconSize, iconSize).apply {
+                updateMargins(left = iconMargin, right = iconMargin)
+                gravity = Gravity.CENTER_VERTICAL
+            }
+            addView(button, lp)
+        }
+    }
+
+    private fun AppCompatImageButton.setIcon(item: DetailMenu.Item) {
+        when {
+            item.iconRes != 0 -> setImageResource(item.iconRes)
+            else -> setImageDrawable(item.icon)
+        }
+    }
+
+    private fun AppCompatImageButton.setContentDescription(item: DetailMenu.Item) {
+        contentDescription = when {
+            item.titleRes != 0 -> resources.getString(item.titleRes)
+            else -> item.title
+        }
     }
 
     override fun setOrientation(orientation: Int) {
@@ -219,7 +236,7 @@ internal class DetailMenu : Menu {
         private val groupId: Int = 0,
         private val itemId: Int = 0,
         private val order: Int = 0,
-        @StringRes private var titleRes: Int = 0,
+        @StringRes internal var titleRes: Int = 0,
         private var title: CharSequence? = null
     ) : MenuItem {
         override fun getItemId(): Int = itemId
