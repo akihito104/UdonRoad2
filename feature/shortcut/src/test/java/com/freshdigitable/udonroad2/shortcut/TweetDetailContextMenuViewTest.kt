@@ -66,6 +66,24 @@ class TweetDetailContextMenuViewTest {
         assertThat(sut.y).isEqualTo((sut.parent as View).height - sut.height)
         assertThat(sut.findViewById<ViewGroup>(R.id.detail_menu_main).childCount).isEqualTo(5)
     }
+
+    @Test
+    fun initWithMenuAndSubMain() {
+        // setup
+        val sut = launchContainerFragment {
+            addAttribute(R.attr.menu_main, "@menu/detail_main")
+            addAttribute(R.attr.menu_more, "@menu/detail_more")
+        }
+            .moveToState(Lifecycle.State.RESUMED)
+            .withFragment { sut }
+
+        // verify
+        assertThat(sut).isNotNull()
+        assertThat(sut.parent).isNotNull()
+        assertThat(sut.y).isEqualTo((sut.parent as View).height - sut.height)
+        assertThat(sut.findViewById<ViewGroup>(R.id.detail_menu_main).childCount).isEqualTo(5)
+        assertThat(sut.findViewById<ViewGroup>(R.id.detail_menu_more).childCount).isEqualTo(1)
+    }
 }
 
 internal fun launchContainerFragment(

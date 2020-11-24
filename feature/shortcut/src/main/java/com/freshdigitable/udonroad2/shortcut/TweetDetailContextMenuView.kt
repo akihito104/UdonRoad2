@@ -30,17 +30,25 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.SubMenu
 import android.view.View
+import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.TextView
 import androidx.annotation.DrawableRes
 import androidx.annotation.MenuRes
 import androidx.annotation.StringRes
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.widget.AppCompatImageButton
 import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.updateBounds
+import androidx.core.view.get
 import androidx.core.view.updateMargins
+import androidx.core.view.updatePadding
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.textview.MaterialTextView
 
 class TweetDetailContextMenuView @JvmOverloads constructor(
     context: Context,
@@ -71,6 +79,53 @@ class TweetDetailContextMenuView @JvmOverloads constructor(
         if (mainMenuId != 0) {
             mainContextMenuList.setupMainMenu(mainMenuId)
         }
+        val moreMenuId = a.getResourceId(R.styleable.TweetDetailContextMenuView_menu_more, 0)
+        if (moreMenuId != 0) {
+            val moreMenu = DetailMenu()
+            MenuInflater(context).inflate(moreMenuId, moreMenu)
+            moreContextMenuList.layoutManager =
+                LinearLayoutManager(context, RecyclerView.VERTICAL, false)
+            moreContextMenuList.adapter = object : RecyclerView.Adapter<MoreItemViewHolder>() {
+                override fun onCreateViewHolder(
+                    parent: ViewGroup,
+                    viewType: Int
+                ): MoreItemViewHolder {
+                    val view = MaterialTextView(parent.context).apply {
+                        layoutParams = LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            parent.resources.getDimensionPixelSize(R.dimen.menu_more_list_height)
+                        )
+                        updatePadding(
+                            left = parent.resources.getDimensionPixelSize(R.dimen.menu_more_compound_padding_left)
+                        )
+                        compoundDrawablePadding =
+                            parent.resources.getDimensionPixelSize(R.dimen.menu_more_compound_padding)
+                        gravity = Gravity.CENTER_VERTICAL
+                    }
+                    return MoreItemViewHolder(view)
+                }
+
+                override fun onBindViewHolder(holder: MoreItemViewHolder, position: Int) {
+                    val item = moreMenu[position] as DetailMenu.Item
+                    holder.text.text = item.title
+                    val drawable = when {
+                        item.icon != null -> item.icon
+                        item.iconRes != 0 -> AppCompatResources.getDrawable(
+                            holder.text.context,
+                            item.iconRes
+                        )
+                        else -> null
+                    }
+                    drawable?.updateBounds(
+                        right = holder.text.resources.getDimensionPixelSize(R.dimen.menu_main_item_size),
+                        bottom = holder.text.resources.getDimensionPixelSize(R.dimen.menu_main_item_size)
+                    )
+                    holder.text.setCompoundDrawables(drawable, null, null, null)
+                }
+
+                override fun getItemCount(): Int = moreMenu.size()
+            }
+        }
         a.recycle()
 
         bottomSheetBehavior.addBottomSheetCallback(object :
@@ -94,12 +149,13 @@ class TweetDetailContextMenuView @JvmOverloads constructor(
         val iconBackground = ContextCompat.getColor(context, android.R.color.transparent)
 
         for (i in 0 until detailMenu.size()) {
-            val item = detailMenu.getItem(i) as DetailMenu.Item
+            val item = detailMenu[i] as DetailMenu.Item
             val button = AppCompatImageButton(context).apply {
                 setIcon(item)
                 scaleType = ImageView.ScaleType.FIT_CENTER
                 setContentDescription(item)
                 setBackgroundColor(iconBackground)
+                updatePadding(0, 0, 0, 0)
             }
             val lp = LinearLayout.LayoutParams(iconSize, iconSize).apply {
                 updateMargins(left = iconMargin, right = iconMargin)
@@ -259,7 +315,7 @@ internal class DetailMenu : Menu {
         }
 
         private var icon: Drawable? = null
-        override fun getIcon(): Drawable = checkNotNull(icon) { "DetailMenu.Item.icon is null." }
+        override fun getIcon(): Drawable? = icon
         override fun setIcon(icon: Drawable?): MenuItem {
             this.icon = icon
             return this
@@ -346,4 +402,8 @@ internal class DetailMenu : Menu {
             listener: MenuItem.OnActionExpandListener?
         ): MenuItem = TODO("Not yet implemented")
     }
+}
+
+internal class MoreItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    val text: TextView = itemView as TextView
 }
