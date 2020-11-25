@@ -51,6 +51,7 @@ dependencies {
     implementation(Libs.ANDROIDX_CORE_KTX)
     implementation(Libs.ANDROIDX_APPCOMPAT)
     implementation(Libs.MATERIAL_DESIGN)
+    implementation(Libs.ANDROIDX_CONSTRAINT_LAYOUT)
 
     testImplementation(Libs.JUNIT)
     testImplementation("androidx.fragment:fragment-testing:${Versions.ANDROIDX_FRAGMENT}")

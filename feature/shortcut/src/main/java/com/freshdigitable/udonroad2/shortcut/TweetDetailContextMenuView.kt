@@ -39,7 +39,8 @@ import androidx.annotation.MenuRes
 import androidx.annotation.StringRes
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.widget.AppCompatImageButton
-import androidx.appcompat.widget.LinearLayoutCompat
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.updateBounds
 import androidx.core.view.get
@@ -54,16 +55,15 @@ class TweetDetailContextMenuView @JvmOverloads constructor(
     context: Context,
     attributeSet: AttributeSet? = null,
     defStyleAttr: Int = 0
-) : LinearLayoutCompat(context, attributeSet, defStyleAttr) {
+) : ConstraintLayout(context, attributeSet, defStyleAttr) {
 
     private val mainContextMenuList: LinearLayout
     private val moreContextMenuList: RecyclerView
     private val bottomSheetBehavior = BottomSheetBehavior<View>()
     private val detailMenu = DetailMenu()
+    private val moreMenu = DetailMenu()
 
     init {
-        orientation = VERTICAL
-
         View.inflate(context, R.layout.view_detail_menu_list, this).also {
             mainContextMenuList = it.findViewById(R.id.detail_menu_main)
             moreContextMenuList = it.findViewById(R.id.detail_menu_more)
@@ -81,7 +81,6 @@ class TweetDetailContextMenuView @JvmOverloads constructor(
         }
         val moreMenuId = a.getResourceId(R.styleable.TweetDetailContextMenuView_menu_more, 0)
         if (moreMenuId != 0) {
-            val moreMenu = DetailMenu()
             MenuInflater(context).inflate(moreMenuId, moreMenu)
             moreContextMenuList.layoutManager =
                 LinearLayoutManager(context, RecyclerView.VERTICAL, false)
@@ -131,11 +130,11 @@ class TweetDetailContextMenuView @JvmOverloads constructor(
         bottomSheetBehavior.addBottomSheetCallback(object :
             BottomSheetBehavior.BottomSheetCallback() {
             override fun onStateChanged(bottomSheet: View, newState: Int) {
-                TODO("Not yet implemented")
+//                TODO("Not yet implemented")
             }
 
             override fun onSlide(bottomSheet: View, slideOffset: Float) {
-                TODO("Not yet implemented")
+//                TODO("Not yet implemented")
             }
         })
         bottomSheetBehavior.peekHeight = mainContextMenuList.layoutParams.height
@@ -165,23 +164,25 @@ class TweetDetailContextMenuView @JvmOverloads constructor(
         }
     }
 
-    private fun AppCompatImageButton.setIcon(item: DetailMenu.Item) {
-        when {
-            item.iconRes != 0 -> setImageResource(item.iconRes)
-            else -> setImageDrawable(item.icon)
-        }
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        (layoutParams as? CoordinatorLayout.LayoutParams)?.behavior = bottomSheetBehavior
     }
 
-    private fun AppCompatImageButton.setContentDescription(item: DetailMenu.Item) {
-        contentDescription = when {
-            item.titleRes != 0 -> resources.getString(item.titleRes)
-            else -> item.title
+    companion object {
+        private fun AppCompatImageButton.setIcon(item: DetailMenu.Item) {
+            when {
+                item.iconRes != 0 -> setImageResource(item.iconRes)
+                else -> setImageDrawable(item.icon)
+            }
         }
-    }
 
-    override fun setOrientation(orientation: Int) {
-        check(orientation == VERTICAL) { "VERTICAL is only acceptable." }
-        super.setOrientation(orientation)
+        private fun AppCompatImageButton.setContentDescription(item: DetailMenu.Item) {
+            contentDescription = when {
+                item.titleRes != 0 -> resources.getString(item.titleRes)
+                else -> item.title
+            }
+        }
     }
 }
 

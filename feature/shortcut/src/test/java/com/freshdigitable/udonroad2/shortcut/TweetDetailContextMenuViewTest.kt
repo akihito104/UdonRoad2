@@ -18,11 +18,11 @@ package com.freshdigitable.udonroad2.shortcut
 
 import android.os.Bundle
 import android.util.AttributeSet
-import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentFactory
 import androidx.fragment.app.testing.FragmentScenario
@@ -48,7 +48,9 @@ class TweetDetailContextMenuViewTest {
         // verify
         assertThat(sut).isNotNull()
         assertThat(sut.parent).isNotNull()
-        assertThat(sut.y).isEqualTo((sut.parent as View).height - sut.height)
+        assertThat(sut.findViewById<ViewGroup>(R.id.detail_menu_main).childCount).isEqualTo(0)
+        assertThat(sut.findViewById<ViewGroup>(R.id.detail_menu_more).childCount).isEqualTo(0)
+        assertThat(sut.y).isEqualTo((sut.parent as View).height - sut.findViewById<ViewGroup>(R.id.detail_menu_main).height)
     }
 
     @Test
@@ -63,12 +65,13 @@ class TweetDetailContextMenuViewTest {
         // verify
         assertThat(sut).isNotNull()
         assertThat(sut.parent).isNotNull()
-        assertThat(sut.y).isEqualTo((sut.parent as View).height - sut.height)
         assertThat(sut.findViewById<ViewGroup>(R.id.detail_menu_main).childCount).isEqualTo(5)
+        assertThat(sut.findViewById<ViewGroup>(R.id.detail_menu_more).childCount).isEqualTo(0)
+        assertThat(sut.y).isEqualTo((sut.parent as View).height - sut.findViewById<ViewGroup>(R.id.detail_menu_main).height)
     }
 
     @Test
-    fun initWithMenuAndSubMain() {
+    fun initWithMenuMainAndMore() {
         // setup
         val sut = launchContainerFragment {
             addAttribute(R.attr.menu_main, "@menu/detail_main")
@@ -80,9 +83,9 @@ class TweetDetailContextMenuViewTest {
         // verify
         assertThat(sut).isNotNull()
         assertThat(sut.parent).isNotNull()
-        assertThat(sut.y).isEqualTo((sut.parent as View).height - sut.height)
         assertThat(sut.findViewById<ViewGroup>(R.id.detail_menu_main).childCount).isEqualTo(5)
         assertThat(sut.findViewById<ViewGroup>(R.id.detail_menu_more).childCount).isEqualTo(1)
+        assertThat(sut.y).isEqualTo((sut.parent as View).height - sut.findViewById<ViewGroup>(R.id.detail_menu_main).height)
     }
 }
 
@@ -115,19 +118,21 @@ internal class ContainerFragment(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? = FrameLayout(requireContext()).apply {
+    ): View? = CoordinatorLayout(requireContext()).apply {
+        addView(
+            FrameLayout(requireContext()),
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT
+        )
         addView(
             TweetDetailContextMenuView(requireContext(), attrs),
-            FrameLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                Gravity.BOTTOM
-            )
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT,
         )
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        sut = (view as FrameLayout).getChildAt(0) as TweetDetailContextMenuView
+        sut = (view as ViewGroup).getChildAt(1) as TweetDetailContextMenuView
     }
 }
