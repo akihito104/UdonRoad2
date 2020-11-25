@@ -44,7 +44,7 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.updateBounds
 import androidx.core.view.get
-import androidx.core.view.updateMargins
+import androidx.core.view.setPadding
 import androidx.core.view.updatePadding
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -108,8 +108,7 @@ class TweetDetailContextMenuView @JvmOverloads constructor(
         private fun LinearLayout.setupMainMenu(@MenuRes mainMenuId: Int, mainMenu: DetailMenu) {
             MenuInflater(context).inflate(mainMenuId, mainMenu)
             val iconSize = resources.getDimensionPixelSize(R.dimen.menu_main_item_size)
-            val iconMargin =
-                resources.getDimensionPixelSize(R.dimen.menu_main_item_horizontal_margin)
+            val iconPadding = resources.getDimensionPixelSize(R.dimen.menu_main_item_padding)
             val iconBackground = ContextCompat.getColor(context, android.R.color.transparent)
 
             for (i in 0 until mainMenu.size()) {
@@ -119,10 +118,9 @@ class TweetDetailContextMenuView @JvmOverloads constructor(
                     scaleType = ImageView.ScaleType.FIT_CENTER
                     setContentDescription(item)
                     setBackgroundColor(iconBackground)
-                    updatePadding(0, 0, 0, 0)
+                    setPadding(iconPadding)
                 }
                 val lp = LinearLayout.LayoutParams(iconSize, iconSize).apply {
-                    updateMargins(left = iconMargin, right = iconMargin)
                     gravity = Gravity.CENTER_VERTICAL
                 }
                 addView(button, lp)
@@ -395,17 +393,19 @@ internal class MoreItemAdapter(
 
     override fun onBindViewHolder(holder: MoreItemViewHolder, position: Int) {
         val context = holder.itemView.context
+        val iconSize = context.resources.getDimensionPixelSize(R.dimen.menu_more_icon_size)
         val item = moreMenu[position] as DetailMenu.Item
         holder.text.text = item.title
         val drawable = when {
             item.icon != null -> item.icon
-            item.iconRes != 0 -> AppCompatResources.getDrawable(context, item.iconRes)
+            item.iconRes != 0 -> {
+                AppCompatResources.getDrawable(context, item.iconRes).also {
+                    item.icon = it
+                }
+            }
             else -> null
         }
-        drawable?.updateBounds(
-            right = context.resources.getDimensionPixelSize(R.dimen.menu_main_item_size),
-            bottom = context.resources.getDimensionPixelSize(R.dimen.menu_main_item_size)
-        )
+        drawable?.updateBounds(right = iconSize, bottom = iconSize)
         holder.text.setCompoundDrawables(drawable, null, null, null)
     }
 

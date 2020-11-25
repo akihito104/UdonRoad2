@@ -22,10 +22,11 @@
         <attr name="menu_more" />
     </declare-styleable>
 
-    <dimen name="menu_main_item_size">24dp</dimen>
-    <dimen name="menu_main_item_horizontal_margin">12dp</dimen>
+    <dimen name="menu_main_item_size">48dp</dimen>
+    <dimen name="menu_main_item_padding">12dp</dimen>
     <dimen name="menu_main_container_horizontal_padding">4dp</dimen>
     <dimen name="menu_more_list_height">56dp</dimen>
+    <dimen name="menu_more_icon_size">24dp</dimen>
     <dimen name="menu_more_compound_padding">32dp</dimen>
     <dimen name="menu_more_compound_padding_left">32dp</dimen>
 </resources>
