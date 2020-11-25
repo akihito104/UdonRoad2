@@ -60,7 +60,7 @@ class TweetDetailContextMenuView @JvmOverloads constructor(
     private val mainContextMenuList: LinearLayout
     private val moreContextMenuList: RecyclerView
     private val bottomSheetBehavior = BottomSheetBehavior<View>()
-    private val detailMenu = DetailMenu()
+    private val mainMenu = DetailMenu()
     private val moreMenu = DetailMenu()
 
     init {
@@ -77,53 +77,11 @@ class TweetDetailContextMenuView @JvmOverloads constructor(
         )
         val mainMenuId = a.getResourceId(R.styleable.TweetDetailContextMenuView_menu_main, 0)
         if (mainMenuId != 0) {
-            mainContextMenuList.setupMainMenu(mainMenuId)
+            mainContextMenuList.setupMainMenu(mainMenuId, mainMenu)
         }
         val moreMenuId = a.getResourceId(R.styleable.TweetDetailContextMenuView_menu_more, 0)
         if (moreMenuId != 0) {
-            MenuInflater(context).inflate(moreMenuId, moreMenu)
-            moreContextMenuList.layoutManager =
-                LinearLayoutManager(context, RecyclerView.VERTICAL, false)
-            moreContextMenuList.adapter = object : RecyclerView.Adapter<MoreItemViewHolder>() {
-                override fun onCreateViewHolder(
-                    parent: ViewGroup,
-                    viewType: Int
-                ): MoreItemViewHolder {
-                    val view = MaterialTextView(parent.context).apply {
-                        layoutParams = LayoutParams(
-                            ViewGroup.LayoutParams.MATCH_PARENT,
-                            parent.resources.getDimensionPixelSize(R.dimen.menu_more_list_height)
-                        )
-                        updatePadding(
-                            left = parent.resources.getDimensionPixelSize(R.dimen.menu_more_compound_padding_left)
-                        )
-                        compoundDrawablePadding =
-                            parent.resources.getDimensionPixelSize(R.dimen.menu_more_compound_padding)
-                        gravity = Gravity.CENTER_VERTICAL
-                    }
-                    return MoreItemViewHolder(view)
-                }
-
-                override fun onBindViewHolder(holder: MoreItemViewHolder, position: Int) {
-                    val item = moreMenu[position] as DetailMenu.Item
-                    holder.text.text = item.title
-                    val drawable = when {
-                        item.icon != null -> item.icon
-                        item.iconRes != 0 -> AppCompatResources.getDrawable(
-                            holder.text.context,
-                            item.iconRes
-                        )
-                        else -> null
-                    }
-                    drawable?.updateBounds(
-                        right = holder.text.resources.getDimensionPixelSize(R.dimen.menu_main_item_size),
-                        bottom = holder.text.resources.getDimensionPixelSize(R.dimen.menu_main_item_size)
-                    )
-                    holder.text.setCompoundDrawables(drawable, null, null, null)
-                }
-
-                override fun getItemCount(): Int = moreMenu.size()
-            }
+            moreContextMenuList.setupMoreMenu(moreMenuId, moreMenu)
         }
         a.recycle()
 
@@ -141,35 +99,42 @@ class TweetDetailContextMenuView @JvmOverloads constructor(
         bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
     }
 
-    private fun LinearLayout.setupMainMenu(@MenuRes mainMenuId: Int) {
-        MenuInflater(context).inflate(mainMenuId, detailMenu)
-        val iconSize = resources.getDimensionPixelSize(R.dimen.menu_main_item_size)
-        val iconMargin = resources.getDimensionPixelSize(R.dimen.menu_main_item_horizontal_margin)
-        val iconBackground = ContextCompat.getColor(context, android.R.color.transparent)
-
-        for (i in 0 until detailMenu.size()) {
-            val item = detailMenu[i] as DetailMenu.Item
-            val button = AppCompatImageButton(context).apply {
-                setIcon(item)
-                scaleType = ImageView.ScaleType.FIT_CENTER
-                setContentDescription(item)
-                setBackgroundColor(iconBackground)
-                updatePadding(0, 0, 0, 0)
-            }
-            val lp = LinearLayout.LayoutParams(iconSize, iconSize).apply {
-                updateMargins(left = iconMargin, right = iconMargin)
-                gravity = Gravity.CENTER_VERTICAL
-            }
-            addView(button, lp)
-        }
-    }
-
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
         (layoutParams as? CoordinatorLayout.LayoutParams)?.behavior = bottomSheetBehavior
     }
 
     companion object {
+        private fun LinearLayout.setupMainMenu(@MenuRes mainMenuId: Int, mainMenu: DetailMenu) {
+            MenuInflater(context).inflate(mainMenuId, mainMenu)
+            val iconSize = resources.getDimensionPixelSize(R.dimen.menu_main_item_size)
+            val iconMargin =
+                resources.getDimensionPixelSize(R.dimen.menu_main_item_horizontal_margin)
+            val iconBackground = ContextCompat.getColor(context, android.R.color.transparent)
+
+            for (i in 0 until mainMenu.size()) {
+                val item = mainMenu[i] as DetailMenu.Item
+                val button = AppCompatImageButton(context).apply {
+                    setIcon(item)
+                    scaleType = ImageView.ScaleType.FIT_CENTER
+                    setContentDescription(item)
+                    setBackgroundColor(iconBackground)
+                    updatePadding(0, 0, 0, 0)
+                }
+                val lp = LinearLayout.LayoutParams(iconSize, iconSize).apply {
+                    updateMargins(left = iconMargin, right = iconMargin)
+                    gravity = Gravity.CENTER_VERTICAL
+                }
+                addView(button, lp)
+            }
+        }
+
+        private fun RecyclerView.setupMoreMenu(moreMenuId: Int, moreMenu: DetailMenu) {
+            MenuInflater(context).inflate(moreMenuId, moreMenu)
+            layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
+            adapter = MoreItemAdapter(moreMenu)
+        }
+
         private fun AppCompatImageButton.setIcon(item: DetailMenu.Item) {
             when {
                 item.iconRes != 0 -> setImageResource(item.iconRes)
@@ -407,4 +372,42 @@ internal class DetailMenu : Menu {
 
 internal class MoreItemViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     val text: TextView = itemView as TextView
+}
+
+internal class MoreItemAdapter(
+    private val moreMenu: DetailMenu
+) : RecyclerView.Adapter<MoreItemViewHolder>() {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MoreItemViewHolder {
+        val view = MaterialTextView(parent.context).apply {
+            layoutParams = ConstraintLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                resources.getDimensionPixelSize(R.dimen.menu_more_list_height)
+            )
+            updatePadding(
+                left = resources.getDimensionPixelSize(R.dimen.menu_more_compound_padding_left)
+            )
+            compoundDrawablePadding =
+                resources.getDimensionPixelSize(R.dimen.menu_more_compound_padding)
+            gravity = Gravity.CENTER_VERTICAL
+        }
+        return MoreItemViewHolder(view)
+    }
+
+    override fun onBindViewHolder(holder: MoreItemViewHolder, position: Int) {
+        val context = holder.itemView.context
+        val item = moreMenu[position] as DetailMenu.Item
+        holder.text.text = item.title
+        val drawable = when {
+            item.icon != null -> item.icon
+            item.iconRes != 0 -> AppCompatResources.getDrawable(context, item.iconRes)
+            else -> null
+        }
+        drawable?.updateBounds(
+            right = context.resources.getDimensionPixelSize(R.dimen.menu_main_item_size),
+            bottom = context.resources.getDimensionPixelSize(R.dimen.menu_main_item_size)
+        )
+        holder.text.setCompoundDrawables(drawable, null, null, null)
+    }
+
+    override fun getItemCount(): Int = moreMenu.size()
 }

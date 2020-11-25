@@ -46,11 +46,10 @@ class TweetDetailContextMenuViewTest {
             .withFragment { sut }
 
         // verify
-        assertThat(sut).isNotNull()
         assertThat(sut.parent).isNotNull()
-        assertThat(sut.findViewById<ViewGroup>(R.id.detail_menu_main).childCount).isEqualTo(0)
-        assertThat(sut.findViewById<ViewGroup>(R.id.detail_menu_more).childCount).isEqualTo(0)
-        assertThat(sut.y).isEqualTo((sut.parent as View).height - sut.findViewById<ViewGroup>(R.id.detail_menu_main).height)
+        assertThat(sut.mainList.childCount).isEqualTo(0)
+        assertThat(sut.moreList.childCount).isEqualTo(0)
+        checkPeekHeight(sut)
     }
 
     @Test
@@ -63,11 +62,10 @@ class TweetDetailContextMenuViewTest {
             .withFragment { sut }
 
         // verify
-        assertThat(sut).isNotNull()
         assertThat(sut.parent).isNotNull()
-        assertThat(sut.findViewById<ViewGroup>(R.id.detail_menu_main).childCount).isEqualTo(5)
-        assertThat(sut.findViewById<ViewGroup>(R.id.detail_menu_more).childCount).isEqualTo(0)
-        assertThat(sut.y).isEqualTo((sut.parent as View).height - sut.findViewById<ViewGroup>(R.id.detail_menu_main).height)
+        assertThat(sut.mainList.childCount).isEqualTo(5)
+        assertThat(sut.moreList.childCount).isEqualTo(0)
+        checkPeekHeight(sut)
     }
 
     @Test
@@ -81,11 +79,14 @@ class TweetDetailContextMenuViewTest {
             .withFragment { sut }
 
         // verify
-        assertThat(sut).isNotNull()
         assertThat(sut.parent).isNotNull()
-        assertThat(sut.findViewById<ViewGroup>(R.id.detail_menu_main).childCount).isEqualTo(5)
-        assertThat(sut.findViewById<ViewGroup>(R.id.detail_menu_more).childCount).isEqualTo(1)
-        assertThat(sut.y).isEqualTo((sut.parent as View).height - sut.findViewById<ViewGroup>(R.id.detail_menu_main).height)
+        assertThat(sut.mainList.childCount).isEqualTo(5)
+        assertThat(sut.moreList.childCount).isEqualTo(1)
+        checkPeekHeight(sut)
+    }
+
+    private fun checkPeekHeight(sut: TweetDetailContextMenuView) {
+        assertThat(sut.y).isEqualTo((sut.parent as View).height - sut.mainList.height)
     }
 }
 
@@ -108,6 +109,11 @@ internal fun launchContainerFragment(
         }
     )
 }
+
+private val TweetDetailContextMenuView.mainList: ViewGroup
+    get() = findViewById(R.id.detail_menu_main)
+private val TweetDetailContextMenuView.moreList: ViewGroup
+    get() = findViewById(R.id.detail_menu_more)
 
 internal class ContainerFragment(
     private val attrs: AttributeSet? = null
