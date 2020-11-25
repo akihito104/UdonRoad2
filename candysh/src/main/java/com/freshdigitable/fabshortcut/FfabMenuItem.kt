@@ -62,6 +62,7 @@ internal class FfabMenuItem(
     }
 
     private var icon: Drawable? = null
+
     @DrawableRes
     private var iconRes: Int = 0
 
@@ -132,6 +133,7 @@ internal class FfabMenuItem(
     override fun setOnActionExpandListener(
         listener: MenuItem.OnActionExpandListener?
     ): MenuItem = unsupported()
+
     override fun setShowAsAction(actionEnum: Int): Unit = unsupported()
     override fun getNumericShortcut(): Char = unsupported()
     override fun isActionViewExpanded(): Boolean = unsupported()
