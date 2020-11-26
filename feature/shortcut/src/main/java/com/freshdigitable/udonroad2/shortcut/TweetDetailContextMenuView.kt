@@ -226,7 +226,7 @@ internal class DetailMenu : Menu {
         intent: Intent?,
         flags: Int,
         outSpecificItems: Array<out MenuItem>?
-    ): Int = TODO("Not yet implemented")
+    ): Int = unsupported()
 
     override fun performShortcut(keyCode: Int, event: KeyEvent?, flags: Int): Boolean {
         TODO("Not yet implemented")
@@ -347,24 +347,26 @@ internal class DetailMenu : Menu {
         ): MenuItem = TODO("Not yet implemented")
 
         override fun getMenuInfo(): ContextMenu.ContextMenuInfo = TODO("Not yet implemented")
-        override fun setIntent(intent: Intent?): MenuItem = TODO("Not yet implemented")
-        override fun getIntent(): Intent = TODO("Not yet implemented")
-        override fun setShowAsAction(actionEnum: Int): Unit = TODO("Not yet implemented")
-        override fun setShowAsActionFlags(actionEnum: Int): MenuItem = TODO("Not yet implemented")
-        override fun setActionView(view: View?): MenuItem = TODO("Not yet implemented")
-        override fun setActionView(resId: Int): MenuItem = TODO("Not yet implemented")
-        override fun getActionView(): View = TODO("Not yet implemented")
-        override fun setActionProvider(
-            actionProvider: ActionProvider?
-        ): MenuItem = TODO("Not yet implemented")
 
-        override fun getActionProvider(): ActionProvider = TODO("Not yet implemented")
-        override fun expandActionView(): Boolean = TODO("Not yet implemented")
-        override fun collapseActionView(): Boolean = TODO("Not yet implemented")
-        override fun isActionViewExpanded(): Boolean = TODO("Not yet implemented")
+        override fun setIntent(intent: Intent?): MenuItem = unsupported()
+        override fun getIntent(): Intent = unsupported()
+        override fun setShowAsAction(actionEnum: Int): Unit = unsupported()
+        override fun setShowAsActionFlags(actionEnum: Int): MenuItem = unsupported()
+        override fun setActionView(view: View?): MenuItem = unsupported()
+        override fun setActionView(resId: Int): MenuItem = unsupported()
+        override fun getActionView(): View = unsupported()
+        override fun setActionProvider(actionProvider: ActionProvider?): MenuItem = unsupported()
+        override fun getActionProvider(): ActionProvider = unsupported()
+        override fun expandActionView(): Boolean = unsupported()
+        override fun collapseActionView(): Boolean = unsupported()
+        override fun isActionViewExpanded(): Boolean = unsupported()
         override fun setOnActionExpandListener(
             listener: MenuItem.OnActionExpandListener?
-        ): MenuItem = TODO("Not yet implemented")
+        ): MenuItem = unsupported()
+    }
+
+    companion object {
+        private fun unsupported(): Nothing = throw UnsupportedOperationException()
     }
 }
 
