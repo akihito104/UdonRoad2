@@ -22,7 +22,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import android.widget.ImageButton
 import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.core.view.children
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentFactory
 import androidx.fragment.app.testing.FragmentScenario
@@ -63,6 +65,7 @@ class TweetDetailContextMenuViewTest {
 
         // verify
         assertThat(sut.parent).isNotNull()
+        assertThat(sut.toggle).isNull()
         assertThat(sut.mainList.childCount).isEqualTo(5)
         assertThat(sut.moreList.childCount).isEqualTo(0)
         checkPeekHeight(sut)
@@ -80,7 +83,9 @@ class TweetDetailContextMenuViewTest {
 
         // verify
         assertThat(sut.parent).isNotNull()
-        assertThat(sut.mainList.childCount).isEqualTo(5)
+        assertThat(sut.toggle).isNotNull()
+        assertThat(sut.toggle).isEqualTo(sut.mainList.children.maxByOrNull { it.x })
+        assertThat(sut.mainList.children.count { it is ImageButton }).isEqualTo(6)
         assertThat(sut.moreList.childCount).isEqualTo(1)
         checkPeekHeight(sut)
     }
@@ -114,6 +119,8 @@ private val TweetDetailContextMenuView.mainList: ViewGroup
     get() = findViewById(R.id.detail_menu_main)
 private val TweetDetailContextMenuView.moreList: ViewGroup
     get() = findViewById(R.id.detail_menu_more)
+private val TweetDetailContextMenuView.toggle: ImageButton?
+    get() = findViewById(R.id.detail_menu_main_toggle)
 
 internal class ContainerFragment(
     private val attrs: AttributeSet? = null
@@ -124,7 +131,7 @@ internal class ContainerFragment(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? = CoordinatorLayout(requireContext()).apply {
+    ): View = CoordinatorLayout(requireContext()).apply {
         addView(
             FrameLayout(requireContext()),
             ViewGroup.LayoutParams.MATCH_PARENT,

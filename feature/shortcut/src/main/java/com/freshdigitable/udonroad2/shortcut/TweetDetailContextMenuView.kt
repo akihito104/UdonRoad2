@@ -33,15 +33,16 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.Space
 import android.widget.TextView
 import androidx.annotation.DrawableRes
-import androidx.annotation.MenuRes
 import androidx.annotation.StringRes
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.widget.AppCompatImageButton
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.ContextCompat
+import androidx.core.content.withStyledAttributes
 import androidx.core.graphics.drawable.updateBounds
 import androidx.core.view.get
 import androidx.core.view.setPadding
@@ -69,34 +70,55 @@ class TweetDetailContextMenuView @JvmOverloads constructor(
             moreContextMenuList = it.findViewById(R.id.detail_menu_more)
         }
 
-        val a = context.obtainStyledAttributes(
-            attributeSet,
-            R.styleable.TweetDetailContextMenuView,
-            defStyleAttr,
-            0
-        )
-        val mainMenuId = a.getResourceId(R.styleable.TweetDetailContextMenuView_menu_main, 0)
-        if (mainMenuId != 0) {
-            mainContextMenuList.setupMainMenu(mainMenuId, mainMenu)
-        }
-        val moreMenuId = a.getResourceId(R.styleable.TweetDetailContextMenuView_menu_more, 0)
-        if (moreMenuId != 0) {
-            moreContextMenuList.setupMoreMenu(moreMenuId, moreMenu)
-        }
-        a.recycle()
-
-        bottomSheetBehavior.addBottomSheetCallback(object :
-            BottomSheetBehavior.BottomSheetCallback() {
-            override fun onStateChanged(bottomSheet: View, newState: Int) {
-//                TODO("Not yet implemented")
+        context.withStyledAttributes(
+            attributeSet, R.styleable.TweetDetailContextMenuView, defStyleAttr, 0
+        ) {
+            val mainMenuId = getResourceId(R.styleable.TweetDetailContextMenuView_menu_main, 0)
+            if (mainMenuId != 0) {
+                MenuInflater(context).inflate(mainMenuId, mainMenu)
             }
-
-            override fun onSlide(bottomSheet: View, slideOffset: Float) {
-//                TODO("Not yet implemented")
+            val moreMenuId = getResourceId(R.styleable.TweetDetailContextMenuView_menu_more, 0)
+            if (moreMenuId != 0) {
+                MenuInflater(context).inflate(moreMenuId, moreMenu)
             }
-        })
+        }
+
+        setupMenuItems()
         bottomSheetBehavior.peekHeight = mainContextMenuList.layoutParams.height
         bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+    }
+
+    private fun setupMenuItems() {
+        mainContextMenuList.setupMainMenu(mainMenu)
+        if (moreMenu.size() > 0) {
+            mainContextMenuList.addView(
+                Space(context),
+                LinearLayout.LayoutParams(0, 0, 1f)
+            )
+            val toggle = mainContextMenuList.addMainMenuItemView {
+                id = R.id.detail_menu_main_toggle
+                setImageResource(R.drawable.ic_toggle)
+                setOnClickListener {
+                    bottomSheetBehavior.state = when (bottomSheetBehavior.state) {
+                        BottomSheetBehavior.STATE_COLLAPSED -> BottomSheetBehavior.STATE_EXPANDED
+                        BottomSheetBehavior.STATE_EXPANDED -> BottomSheetBehavior.STATE_COLLAPSED
+                        else -> bottomSheetBehavior.state
+                    }
+                }
+            }
+            bottomSheetBehavior.addBottomSheetCallback(object :
+                BottomSheetBehavior.BottomSheetCallback() {
+                override fun onStateChanged(bottomSheet: View, newState: Int) {}
+
+                override fun onSlide(bottomSheet: View, slideOffset: Float) {
+                    if (!slideOffset.isNaN()) {
+                        toggle.rotation = -180f * slideOffset
+                    }
+                }
+            })
+
+            moreContextMenuList.setupMoreMenu(moreMenu)
+        }
     }
 
     override fun onAttachedToWindow() {
@@ -105,30 +127,39 @@ class TweetDetailContextMenuView @JvmOverloads constructor(
     }
 
     companion object {
-        private fun LinearLayout.setupMainMenu(@MenuRes mainMenuId: Int, mainMenu: DetailMenu) {
-            MenuInflater(context).inflate(mainMenuId, mainMenu)
+        private fun LinearLayout.setupMainMenu(mainMenu: DetailMenu) {
+            for (i in 0 until mainMenu.size()) {
+                val item = mainMenu[i] as DetailMenu.Item
+                addMainMenuItemView {
+                    setIcon(item)
+                    setContentDescription(item)
+                }
+            }
+        }
+
+        private fun LinearLayout.addMainMenuItemView(
+            block: AppCompatImageButton.() -> Unit
+        ): AppCompatImageButton {
             val iconSize = resources.getDimensionPixelSize(R.dimen.menu_main_item_size)
             val iconPadding = resources.getDimensionPixelSize(R.dimen.menu_main_item_padding)
             val iconBackground = ContextCompat.getColor(context, android.R.color.transparent)
 
-            for (i in 0 until mainMenu.size()) {
-                val item = mainMenu[i] as DetailMenu.Item
-                val button = AppCompatImageButton(context).apply {
-                    setIcon(item)
-                    scaleType = ImageView.ScaleType.FIT_CENTER
-                    setContentDescription(item)
-                    setBackgroundColor(iconBackground)
-                    setPadding(iconPadding)
-                }
-                val lp = LinearLayout.LayoutParams(iconSize, iconSize).apply {
+            val button = AppCompatImageButton(context).apply {
+                setPadding(iconPadding)
+                scaleType = ImageView.ScaleType.FIT_CENTER
+                setBackgroundColor(iconBackground)
+                block()
+            }
+            addView(
+                button,
+                LinearLayout.LayoutParams(iconSize, iconSize).apply {
                     gravity = Gravity.CENTER_VERTICAL
                 }
-                addView(button, lp)
-            }
+            )
+            return button
         }
 
-        private fun RecyclerView.setupMoreMenu(moreMenuId: Int, moreMenu: DetailMenu) {
-            MenuInflater(context).inflate(moreMenuId, moreMenu)
+        private fun RecyclerView.setupMoreMenu(moreMenu: DetailMenu) {
             layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
             adapter = MoreItemAdapter(moreMenu)
         }
