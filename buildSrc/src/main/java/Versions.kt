@@ -28,7 +28,7 @@ object Versions {
     const val ANDROIDX_ROOM = "2.2.5"
     const val ANDROIDX_NAVIGATION = "2.3.0"
 
-    const val MATERIAL_DESIGN = "1.2.0-alpha06"
+    const val MATERIAL_DESIGN = "1.3.0-alpha04"
     const val ANDROIDX_RECYCLER_VIEW = "1.0.0"
     const val ANDROIDX_CONSTRAINT_LAYOUT = "2.0.0-beta6"
     const val ANDROIDX_VIEWPAGER2 = "1.0.0-beta03"
