@@ -89,7 +89,7 @@ class TweetInputFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         return FragmentTweetInputBinding.inflate(inflater, container, false).root
     }
 
@@ -116,10 +116,7 @@ class TweetInputFragment : Fragment() {
         }
         binding.twAppendImage.setOnClickListener {
             if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.JELLY_BEAN_MR2 &&
-                ActivityCompat.checkSelfPermission(
-                    it.context,
-                    WRITE_EXTERNAL_STORAGE
-                ) != PackageManager.PERMISSION_GRANTED
+                !it.context.isWriteExternalStoragePermissionGranted
             ) {
                 requestPermission.launch(WRITE_EXTERNAL_STORAGE)
             } else {
@@ -194,6 +191,11 @@ private val Context.inputMethodManager: InputMethodManager
     get() {
         return getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
     }
+
+private val Context.isWriteExternalStoragePermissionGranted: Boolean
+    get() = ActivityCompat.checkSelfPermission(
+        this, WRITE_EXTERNAL_STORAGE
+    ) == PackageManager.PERMISSION_GRANTED
 
 private fun View.showInputMethod() {
     context.inputMethodManager.showSoftInput(this, InputMethodManager.SHOW_FORCED)

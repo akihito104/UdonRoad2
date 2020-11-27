@@ -106,16 +106,17 @@ class TweetDetailContextMenuView @JvmOverloads constructor(
                     }
                 }
             }
-            bottomSheetBehavior.addBottomSheetCallback(object :
-                BottomSheetBehavior.BottomSheetCallback() {
-                override fun onStateChanged(bottomSheet: View, newState: Int) {}
+            bottomSheetBehavior.addBottomSheetCallback(
+                object : BottomSheetBehavior.BottomSheetCallback() {
+                    override fun onStateChanged(bottomSheet: View, newState: Int) {}
 
-                override fun onSlide(bottomSheet: View, slideOffset: Float) {
-                    if (!slideOffset.isNaN()) {
-                        toggle.rotation = -180f * slideOffset
+                    override fun onSlide(bottomSheet: View, slideOffset: Float) {
+                        if (!slideOffset.isNaN()) {
+                            toggle.rotation = -180f * slideOffset
+                        }
                     }
                 }
-            })
+            )
 
             moreContextMenuList.setupMoreMenu(moreMenu)
         }
