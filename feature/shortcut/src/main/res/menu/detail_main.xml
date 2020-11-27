@@ -23,6 +23,7 @@
         android:icon="@drawable/ic_retweet"
         android:title="retweet"
         android:checkable="true"
+        android:enabled="true"
         app:direction="right"
         />
     <item
@@ -30,24 +31,28 @@
         android:icon="@drawable/ic_like"
         android:title="fav"
         android:checkable="true"
+        android:enabled="true"
         app:direction="up"
         />
     <item
         android:id="@+id/detail_main_conv"
-        android:icon="@drawable/ic_forum"
+        android:icon="@drawable/ic_conversation"
         android:title="conversation"
+        android:enabled="true"
         app:direction="down_left"
         />
     <item
         android:id="@+id/detail_main_reply"
         android:icon="@drawable/ic_reply"
         android:title="reply"
+        android:enabled="true"
         app:direction="down"
         />
     <item
         android:id="@+id/detail_main_quote"
         android:icon="@drawable/ic_quote"
         android:title="quote"
+        android:enabled="true"
         app:direction="down_right"
         />
 </menu>
