@@ -20,8 +20,7 @@
     >
     <item
         android:id="@+id/detail_more_detail"
-        android:icon="@drawable/ic_retweet"
+        android:icon="@drawable/ic_delete"
         android:title="delete"
-        app:direction="right"
         />
 </menu>
