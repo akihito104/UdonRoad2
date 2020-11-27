@@ -69,6 +69,8 @@ class TweetDetailContextMenuViewTest {
         assertThat(sut.mainList.childCount).isEqualTo(5)
         assertThat(sut.moreList.childCount).isEqualTo(0)
         checkPeekHeight(sut)
+        assertThat(sut.mainListChildByMenuItem(R.id.detail_main_rt).drawableState).asList()
+            .contains(android.R.attr.state_checkable)
     }
 
     @Test
@@ -88,6 +90,28 @@ class TweetDetailContextMenuViewTest {
         assertThat(sut.mainList.children.count { it is ImageButton }).isEqualTo(6)
         assertThat(sut.moreList.childCount).isEqualTo(1)
         checkPeekHeight(sut)
+    }
+
+    @Test
+    fun updateMenuItem() {
+        // setup
+        val sut = launchContainerFragment {
+            addAttribute(R.attr.menu_main, "@menu/detail_main")
+        }.moveToState(Lifecycle.State.RESUMED)
+            .withFragment {
+                // exercise
+                sut.updateMenuItem {
+                    onMenuItem(R.id.detail_main_rt) {
+                        isChecked = true
+                    }
+                }
+                sut
+            }
+
+        // verify
+        assertThat(sut.parent).isNotNull()
+        assertThat(sut.mainListChildByMenuItem(R.id.detail_main_rt).drawableState).asList()
+            .containsAtLeast(android.R.attr.state_checked, android.R.attr.state_checkable)
     }
 
     private fun checkPeekHeight(sut: TweetDetailContextMenuView) {
@@ -121,6 +145,10 @@ private val TweetDetailContextMenuView.moreList: ViewGroup
     get() = findViewById(R.id.detail_menu_more)
 private val TweetDetailContextMenuView.toggle: ImageButton?
     get() = findViewById(R.id.detail_menu_main_toggle)
+
+private fun TweetDetailContextMenuView.mainListChildByMenuItem(itemId: Int): ImageButton {
+    return mainList.children.first { it.id == itemId } as ImageButton
+}
 
 internal class ContainerFragment(
     private val attrs: AttributeSet? = null

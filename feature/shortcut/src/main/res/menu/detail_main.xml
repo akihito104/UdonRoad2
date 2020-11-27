@@ -22,12 +22,14 @@
         android:id="@+id/detail_main_rt"
         android:icon="@drawable/ic_retweet"
         android:title="retweet"
+        android:checkable="true"
         app:direction="right"
         />
     <item
         android:id="@+id/detail_main_fav"
         android:icon="@drawable/ic_like"
         android:title="fav"
+        android:checkable="true"
         app:direction="up"
         />
     <item
