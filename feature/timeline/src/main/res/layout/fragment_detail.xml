@@ -200,6 +200,7 @@
             android:layout_height="wrap_content"
             app:menu_main="@menu/detail_main"
             app:menu_more="@menu/detail_more"
+            app:menuItemState="@{viewModel.tweetItem}"
             />
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </layout>

@@ -15,8 +15,8 @@
   -->
 
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:color="@android:color/white" android:state_checkable="true" />
-    <item android:color="@color/twitter_action_retweeted" android:state_checkable="true" android:state_checked="true" />
     <item android:color="@color/twitter_action_retweeted" android:state_activated="true" />
+    <item android:color="@color/twitter_action_retweeted" android:state_checked="true" />
+    <item android:color="@android:color/white" android:state_checkable="true" android:state_enabled="true" />
     <item android:color="@color/twitter_action_normal" />
 </selector>

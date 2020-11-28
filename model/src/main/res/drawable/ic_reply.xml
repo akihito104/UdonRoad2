@@ -8,6 +8,7 @@
     android:viewportWidth="65.0"
     android:height="36dp"
     android:width="32.5dp"
+    android:tint="@color/selector_conversation"
     >
     <path
         android:fillColor="@android:color/white"

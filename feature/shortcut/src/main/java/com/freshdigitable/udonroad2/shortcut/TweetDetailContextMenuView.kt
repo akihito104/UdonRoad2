@@ -38,7 +38,6 @@ import android.widget.Space
 import android.widget.TextView
 import androidx.annotation.DrawableRes
 import androidx.annotation.IdRes
-import androidx.annotation.MenuRes
 import androidx.annotation.StringRes
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.widget.AppCompatImageButton
@@ -124,7 +123,7 @@ class TweetDetailContextMenuView @JvmOverloads constructor(
         }
     }
 
-    private fun findMenuItemById(@MenuRes menuId: Int): MenuItem? {
+    private fun findMenuItemById(@IdRes menuId: Int): MenuItem? {
         return mainMenu.findItem(menuId) ?: moreMenu.findItem(menuId)
     }
 
@@ -135,7 +134,7 @@ class TweetDetailContextMenuView @JvmOverloads constructor(
     }
 
     class UpdateScope(private val view: TweetDetailContextMenuView) {
-        fun onMenuItem(@MenuRes menuId: Int, block: MenuItem.() -> Unit) {
+        fun onMenuItem(@IdRes menuId: Int, block: MenuItem.() -> Unit) {
             val item = view.findMenuItemById(menuId) as DetailMenu.Item?
             item?.let {
                 it.block()
