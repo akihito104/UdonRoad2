@@ -47,6 +47,8 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.withStyledAttributes
 import androidx.core.graphics.drawable.updateBounds
 import androidx.core.view.get
+import androidx.core.view.isInvisible
+import androidx.core.view.isVisible
 import androidx.core.view.setPadding
 import androidx.core.view.updatePadding
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -130,6 +132,10 @@ class TweetDetailContextMenuView @JvmOverloads constructor(
     fun updateMenuItem(block: UpdateScope.() -> Unit) {
         val updateScope = UpdateScope(this)
         updateScope.block()
+        moreContextMenuList.adapter?.let {
+            it.notifyDataSetChanged()
+            findViewById<View>(R.id.detail_menu_main_toggle)?.isInvisible = it.itemCount == 0
+        }
         invalidate()
     }
 
@@ -139,7 +145,10 @@ class TweetDetailContextMenuView @JvmOverloads constructor(
             item?.let {
                 it.block()
                 val button = view.mainContextMenuList.findViewById<ImageButton>(item.itemId)
-                button.setImageState(it.parseToState(), false)
+                button?.apply {
+                    setImageState(it.parseToState(), false)
+                    isVisible = it.isVisible
+                }
             }
         }
     }
@@ -442,6 +451,9 @@ internal class MoreItemViewHolder(itemView: View) : RecyclerView.ViewHolder(item
 internal class MoreItemAdapter(
     private val moreMenu: DetailMenu
 ) : RecyclerView.Adapter<MoreItemViewHolder>() {
+    private val visibleItems: List<MenuItem>
+        get() = (0 until moreMenu.size()).map { moreMenu[it] }.filter { it.isVisible }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MoreItemViewHolder {
         val view = MaterialTextView(parent.context).apply {
             layoutParams = ConstraintLayout.LayoutParams(
@@ -461,7 +473,8 @@ internal class MoreItemAdapter(
     override fun onBindViewHolder(holder: MoreItemViewHolder, position: Int) {
         val context = holder.itemView.context
         val iconSize = context.resources.getDimensionPixelSize(R.dimen.menu_more_icon_size)
-        val item = moreMenu[position] as DetailMenu.Item
+        val item = visibleItems[position] as DetailMenu.Item
+        holder.itemView.id = item.itemId
         holder.text.text = item.title
         val drawable = when {
             item.icon != null -> item.icon
@@ -476,5 +489,5 @@ internal class MoreItemAdapter(
         holder.text.setCompoundDrawables(drawable, null, null, null)
     }
 
-    override fun getItemCount(): Int = moreMenu.size()
+    override fun getItemCount(): Int = visibleItems.size
 }
