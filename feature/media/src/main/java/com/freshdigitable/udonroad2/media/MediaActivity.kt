@@ -24,7 +24,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.observe
 import androidx.viewpager2.widget.ViewPager2
 import com.freshdigitable.udonroad2.media.databinding.ActivityMediaBinding
 import com.freshdigitable.udonroad2.media.di.MediaViewModelComponent

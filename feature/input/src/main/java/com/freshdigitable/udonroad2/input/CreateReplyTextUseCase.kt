@@ -45,7 +45,7 @@ class CreateReplyTextUseCase @Inject constructor(
         return if (replied.isEmpty()) {
             ""
         } else
-            replied.joinToString(separator = " ", postfix = " ") { (_, name) -> "@${name}" }
+            replied.joinToString(separator = " ", postfix = " ") { (_, name) -> "@$name" }
     }
 }
 
