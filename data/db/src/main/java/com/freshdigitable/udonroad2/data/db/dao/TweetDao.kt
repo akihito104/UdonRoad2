@@ -16,8 +16,6 @@
 
 package com.freshdigitable.udonroad2.data.db.dao
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.map
 import androidx.paging.DataSource
 import androidx.room.ColumnInfo
 import androidx.room.Dao
@@ -41,6 +39,8 @@ import com.freshdigitable.udonroad2.data.db.ext.toListEntity
 import com.freshdigitable.udonroad2.data.db.ext.toStructuredTweet
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
 import com.freshdigitable.udonroad2.model.tweet.TweetId
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 @Dao
 abstract class TweetDao(
@@ -64,10 +64,10 @@ abstract class TweetDao(
 
     @Transaction
     @Query(QUERY_FIND_TWEET_LIST_ITEM_BY_ID)
-    internal abstract fun getTweetListItemSourceById(id: TweetId): LiveData<TweetListItem?>
+    internal abstract fun getTweetListItemSourceById(id: TweetId): Flow<TweetListItem?>
     open fun getTweetListItemSource(
         id: TweetId
-    ): LiveData<com.freshdigitable.udonroad2.model.tweet.TweetListItem?> =
+    ): Flow<com.freshdigitable.udonroad2.model.tweet.TweetListItem?> =
         getTweetListItemSourceById(id).map { it }
 
     @Transaction

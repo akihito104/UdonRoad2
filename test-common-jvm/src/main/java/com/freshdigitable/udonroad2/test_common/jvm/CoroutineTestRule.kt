@@ -25,11 +25,12 @@ import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runBlockingTest
 import kotlinx.coroutines.test.setMain
-import org.junit.rules.TestWatcher
+import org.junit.rules.TestRule
 import org.junit.runner.Description
+import org.junit.runners.model.Statement
 
 @ExperimentalCoroutinesApi
-class CoroutineTestRule : TestWatcher() {
+class CoroutineTestRule : TestRule {
     val testCoroutineDispatcher = TestCoroutineDispatcher()
     private val exceptionHandler = TestCoroutineExceptionHandler()
     val coroutineContextProvider = DispatcherProvider(
@@ -38,8 +39,17 @@ class CoroutineTestRule : TestWatcher() {
         exceptionHandler
     )
 
-    override fun starting(description: Description?) {
-        super.starting(description)
+    override fun apply(base: Statement, description: Description?): Statement {
+        return object : Statement() {
+            override fun evaluate() {
+                setupDispatcher()
+                base.evaluate()
+                tearDown()
+            }
+        }
+    }
+
+    private fun setupDispatcher() {
         Dispatchers.setMain(testCoroutineDispatcher)
     }
 
@@ -47,8 +57,7 @@ class CoroutineTestRule : TestWatcher() {
         runBlockingTest(coroutineContextProvider.mainContext, block)
     }
 
-    override fun finished(description: Description?) {
-        super.finished(description)
+    private fun tearDown() {
         exceptionHandler.cleanupTestCoroutines()
         testCoroutineDispatcher.cleanupTestCoroutines()
         Dispatchers.resetMain()

@@ -16,7 +16,6 @@
 
 package com.freshdigitable.udonroad2.test_common.jvm
 
-import androidx.lifecycle.LiveData
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
 import com.freshdigitable.udonroad2.model.app.AppTwitterException
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
@@ -24,6 +23,7 @@ import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import com.freshdigitable.udonroad2.test_common.MockVerified
 import io.mockk.mockk
+import kotlinx.coroutines.flow.Flow
 import org.junit.rules.TestRule
 
 class TweetRepositoryRule(
@@ -31,7 +31,7 @@ class TweetRepositoryRule(
 ) : TestRule by mockVerified {
     val mock: TweetRepository = mockVerified.mock
 
-    fun setupShowTweet(id: TweetId, response: LiveData<TweetListItem?>) {
+    fun setupShowTweet(id: TweetId, response: Flow<TweetListItem?>) {
         mockVerified.setupResponseWithVerify({ mock.getTweetItemSource(id) }, response)
     }
 

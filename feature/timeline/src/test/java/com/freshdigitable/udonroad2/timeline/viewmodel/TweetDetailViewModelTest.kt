@@ -17,7 +17,6 @@
 package com.freshdigitable.udonroad2.timeline.viewmodel
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import androidx.lifecycle.MutableLiveData
 import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
@@ -36,6 +35,8 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.verify
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.consumeAsFlow
 import org.hamcrest.CoreMatchers
 import org.junit.Before
 import org.junit.Rule
@@ -86,11 +87,11 @@ class TweetDetailViewModelTest {
             ),
         )
     }
-    private val tweetSource: MutableLiveData<TweetListItem?> = MutableLiveData()
+    private val tweetSource: Channel<TweetListItem?> = Channel()
 
     @Before
     fun setup() {
-        tweetRepositoryRule.setupShowTweet(tweet.originalId, tweetSource)
+        tweetRepositoryRule.setupShowTweet(tweet.originalId, tweetSource.consumeAsFlow())
         sut.tweetItem.observeForever { }
     }
 
@@ -104,7 +105,9 @@ class TweetDetailViewModelTest {
     @Test
     fun whenItemIsFound_then_tweetItemHasItem() {
         // exercise
-        tweetSource.value = tweet
+        coroutineRule.runBlockingTest {
+            tweetSource.send(tweet)
+        }
 
         // verify
         assertThat(sut.tweetItem.value).isEqualTo(tweet)
@@ -116,7 +119,9 @@ class TweetDetailViewModelTest {
         tweetRepositoryRule.setupFindTweetItem(tweet.originalId, tweet)
 
         // exercise
-        tweetSource.value = null
+        coroutineRule.runBlockingTest {
+            tweetSource.send(null)
+        }
 
         // verify
         assertThat(sut.tweetItem.value).isEqualTo(tweet)
@@ -128,7 +133,9 @@ class TweetDetailViewModelTest {
         tweetRepositoryRule.setupFindTweetItem(tweet.originalId, IOException("target"))
 
         // exercise
-        tweetSource.value = null
+        coroutineRule.runBlockingTest {
+            tweetSource.send(null)
+        }
 
         // verify
         assertThat(sut.tweetItem.value).isNull()
@@ -138,11 +145,14 @@ class TweetDetailViewModelTest {
     fun thrownRuntimeExceptionWhenFetchTweet_then_rethrown() {
         // setup
         val target = RuntimeException("target")
-        exceptions.expect(CoreMatchers.`is`(target))
+        exceptions.expect(CoreMatchers.isA(target::class.java))
+        exceptions.expectMessage(target.message)
         tweetRepositoryRule.setupFindTweetItem(tweet.originalId, target)
 
         // exercise
-        tweetSource.value = null
+        coroutineRule.runBlockingTest {
+            tweetSource.send(null)
+        }
 
         // verify
         assertThat(sut.tweetItem.value).isNull()
@@ -152,7 +162,9 @@ class TweetDetailViewModelTest {
     fun onOriginalUserClicked_navigationDelegateIsCalled() {
         // setup
         every { activityEventDelegate.mock.dispatchNavHostNavigate(any()) } just runs
-        tweetSource.value = tweet
+        coroutineRule.runBlockingTest {
+            tweetSource.send(tweet)
+        }
 
         // exercise
         sut.onOriginalUserClicked()
@@ -170,7 +182,9 @@ class TweetDetailViewModelTest {
     @Test
     fun onBodyUserClicked_navigationDelegateIsCalled() {
         // setup
-        tweetSource.value = tweet
+        coroutineRule.runBlockingTest {
+            tweetSource.send(tweet)
+        }
         every { activityEventDelegate.mock.dispatchNavHostNavigate(any()) } just runs
 
         // exercise
@@ -189,7 +203,9 @@ class TweetDetailViewModelTest {
     @Test
     fun onMediaItemClicked_navigationDelegateIsCalled() {
         // setup
-        tweetSource.value = tweet
+        coroutineRule.runBlockingTest {
+            tweetSource.send(tweet)
+        }
         every { activityEventDelegate.mock.dispatchNavHostNavigate(any()) } just runs
         val tweetId = tweet.body.id
 

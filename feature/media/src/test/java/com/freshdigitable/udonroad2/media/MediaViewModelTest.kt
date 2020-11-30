@@ -17,7 +17,6 @@
 package com.freshdigitable.udonroad2.media
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import androidx.lifecycle.MutableLiveData
 import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.tweet.Tweet
@@ -29,6 +28,8 @@ import com.google.common.truth.Truth.assertThat
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.consumeAsFlow
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -45,7 +46,7 @@ class MediaViewModelTest {
         .around(InstantTaskExecutorRule())
         .around(tweetRepositoryRule)
 
-    private val tweetItemSource = MutableLiveData<TweetListItem?>()
+    private val tweetItemSource: Channel<TweetListItem?> = Channel()
     private val tweetListItem: TweetListItem = mockk<TweetListItem>().apply {
         val tweetId = TweetId(1000)
         every { originalId } returns tweetId
@@ -69,7 +70,10 @@ class MediaViewModelTest {
 
     @Before
     fun setup() {
-        tweetRepositoryRule.setupShowTweet(tweetListItem.originalId, tweetItemSource)
+        tweetRepositoryRule.setupShowTweet(
+            tweetListItem.originalId,
+            tweetItemSource.consumeAsFlow()
+        )
         with(sut) {
             listOf(mediaItems, currentPosition, systemUiVisibility, isFabVisible).forEach {
                 it.observeForever {}
@@ -90,7 +94,9 @@ class MediaViewModelTest {
     @Test
     fun setTweetId_foundTweetItem_tweetHasItem() {
         // exercise
-        tweetItemSource.value = tweetListItem
+        coroutineRule.runBlockingTest {
+            tweetItemSource.send(tweetListItem)
+        }
 
         // verify
         assertThat(sut.mediaItems.value).hasSize(1)
