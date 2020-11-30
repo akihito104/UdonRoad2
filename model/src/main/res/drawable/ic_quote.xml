@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!--
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><!--
   ~ Copyright (c) 2016. Matsuda, Akihit (akihito104)
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,7 +13,16 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-<vector xmlns:android="http://schemas.android.com/apk/res/android" android:height="24dp" android:viewportHeight="24.0" android:viewportWidth="24.0" android:width="24dp">
-    <path android:fillColor="#FFFFFF"
-          android:pathData="M2,8v8a2,2 0 0,0 2,2h2v2h3v-2a2,2 0 0,0 2,-2v-8a2,2 0 0,0 -2,-2h-4v3h3v6h-3v-9h-1a2,2 0 0,0 -2,2z M13,6v3h3v10h3v-10h3v-3z"/>
+<vector
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:tint="@color/selector_conversation"
+    android:viewportWidth="24.0"
+    android:viewportHeight="24.0"
+    >
+    <path
+        android:fillColor="@android:color/white"
+        android:pathData="M2,8v8a2,2 0 0,0 2,2h2v2h3v-2a2,2 0 0,0 2,-2v-8a2,2 0 0,0 -2,-2h-4v3h3v6h-3v-9h-1a2,2 0 0,0 -2,2z M13,6v3h3v10h3v-10h3v-3z"
+        />
 </vector>

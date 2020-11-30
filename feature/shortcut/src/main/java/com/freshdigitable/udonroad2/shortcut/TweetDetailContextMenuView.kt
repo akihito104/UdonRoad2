@@ -31,11 +31,13 @@ import android.view.MenuItem
 import android.view.SubMenu
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Space
 import android.widget.TextView
 import androidx.annotation.DrawableRes
+import androidx.annotation.IdRes
 import androidx.annotation.StringRes
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.widget.AppCompatImageButton
@@ -95,8 +97,7 @@ class TweetDetailContextMenuView @JvmOverloads constructor(
                 Space(context),
                 LinearLayout.LayoutParams(0, 0, 1f)
             )
-            val toggle = mainContextMenuList.addMainMenuItemView {
-                id = R.id.detail_menu_main_toggle
+            val toggle = mainContextMenuList.addMainMenuItemView(R.id.detail_menu_main_toggle) {
                 setImageResource(R.drawable.ic_toggle)
                 setOnClickListener {
                     bottomSheetBehavior.state = when (bottomSheetBehavior.state) {
@@ -122,6 +123,27 @@ class TweetDetailContextMenuView @JvmOverloads constructor(
         }
     }
 
+    private fun findMenuItemById(@IdRes menuId: Int): MenuItem? {
+        return mainMenu.findItem(menuId) ?: moreMenu.findItem(menuId)
+    }
+
+    fun updateMenuItem(block: UpdateScope.() -> Unit) {
+        val updateScope = UpdateScope(this)
+        updateScope.block()
+        invalidate()
+    }
+
+    class UpdateScope(private val view: TweetDetailContextMenuView) {
+        fun onMenuItem(@IdRes menuId: Int, block: MenuItem.() -> Unit) {
+            val item = view.findMenuItemById(menuId) as DetailMenu.Item?
+            item?.let {
+                it.block()
+                val button = view.mainContextMenuList.findViewById<ImageButton>(item.itemId)
+                button.setImageState(it.parseToState(), false)
+            }
+        }
+    }
+
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
         (layoutParams as? CoordinatorLayout.LayoutParams)?.behavior = bottomSheetBehavior
@@ -131,14 +153,16 @@ class TweetDetailContextMenuView @JvmOverloads constructor(
         private fun LinearLayout.setupMainMenu(mainMenu: DetailMenu) {
             for (i in 0 until mainMenu.size()) {
                 val item = mainMenu[i] as DetailMenu.Item
-                addMainMenuItemView {
+                addMainMenuItemView(item.itemId) {
                     setIcon(item)
                     setContentDescription(item)
+                    setImageState(item.parseToState(), false)
                 }
             }
         }
 
         private fun LinearLayout.addMainMenuItemView(
+            @IdRes viewId: Int,
             block: AppCompatImageButton.() -> Unit
         ): AppCompatImageButton {
             val iconSize = resources.getDimensionPixelSize(R.dimen.menu_main_item_size)
@@ -146,6 +170,7 @@ class TweetDetailContextMenuView @JvmOverloads constructor(
             val iconBackground = ContextCompat.getColor(context, android.R.color.transparent)
 
             val button = AppCompatImageButton(context).apply {
+                id = viewId
                 setPadding(iconPadding)
                 scaleType = ImageView.ScaleType.FIT_CENTER
                 setBackgroundColor(iconBackground)
@@ -177,6 +202,14 @@ class TweetDetailContextMenuView @JvmOverloads constructor(
                 item.titleRes != 0 -> resources.getString(item.titleRes)
                 else -> item.title
             }
+        }
+
+        private fun DetailMenu.Item.parseToState(): IntArray {
+            return listOfNotNull(
+                if (isCheckable) android.R.attr.state_checkable else null,
+                if (isChecked) android.R.attr.state_checked else null,
+                if (isEnabled) android.R.attr.state_enabled else null,
+            ).toIntArray()
         }
     }
 }
@@ -221,7 +254,7 @@ internal class DetailMenu : Menu {
     }
 
     override fun hasVisibleItems(): Boolean = items.find { it.isVisible } != null
-    override fun findItem(id: Int): MenuItem = items.first { it.itemId == id }
+    override fun findItem(id: Int): MenuItem? = items.firstOrNull { it.itemId == id }
     override fun getItem(index: Int): MenuItem = items[index]
     private fun itemsByGroupId(groupId: Int): List<Item> = items.filter { it.groupId == groupId }
 

@@ -14,13 +14,7 @@
   ~ limitations under the License.
   -->
 
-<menu
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    >
-    <item
-        android:id="@+id/detail_more_detail"
-        android:icon="@drawable/ic_delete"
-        android:title="delete"
-        />
-</menu>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:color="@android:color/white" android:state_enabled="true" />
+    <item android:color="@color/twitter_action_normal" />
+</selector>
