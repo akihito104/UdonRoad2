@@ -12,12 +12,12 @@ import androidx.databinding.BindingAdapter
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.navArgs
-import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import com.freshdigitable.udonroad2.shortcut.TweetDetailContextMenuView
 import com.freshdigitable.udonroad2.timeline.R
 import com.freshdigitable.udonroad2.timeline.databinding.FragmentDetailBinding
 import com.freshdigitable.udonroad2.timeline.di.TweetDetailViewModelComponent
 import com.freshdigitable.udonroad2.timeline.viewmodel.TweetDetailViewModel
+import com.freshdigitable.udonroad2.timeline.viewmodel.TweetDetailViewStates
 import dagger.android.support.AndroidSupportInjection
 import javax.inject.Inject
 
@@ -79,24 +79,17 @@ class TweetDetailFragment : Fragment() {
 }
 
 @BindingAdapter("menuItemState")
-fun TweetDetailContextMenuView.updateMenuItemState(item: TweetListItem?) {
+fun TweetDetailContextMenuView.updateMenuItemState(item: TweetDetailViewStates.MenuItemState?) {
     updateMenuItem {
+        changeGroupEnabled(R.id.menuGroup_detailMain, item?.isMainGroupEnabled ?: false)
         onMenuItem(R.id.detail_main_rt) {
-            isEnabled = item != null
-            isChecked = item?.body?.isRetweeted ?: false
+            isChecked = item?.isRetweetChecked ?: false
         }
         onMenuItem(R.id.detail_main_fav) {
-            isEnabled = item != null
-            isChecked = item?.body?.isFavorited ?: false
+            isChecked = item?.isFavChecked ?: false
         }
-        onMenuItem(R.id.detail_main_conv) {
-            isEnabled = item != null
-        }
-        onMenuItem(R.id.detail_main_quote) {
-            isEnabled = item != null
-        }
-        onMenuItem(R.id.detail_main_reply) {
-            isEnabled = item != null
+        onMenuItem(R.id.detail_more_delete) {
+            isVisible = item?.isDeleteVisible ?: false
         }
     }
 }

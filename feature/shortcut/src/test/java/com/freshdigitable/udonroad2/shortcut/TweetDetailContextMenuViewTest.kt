@@ -141,6 +141,30 @@ class TweetDetailContextMenuViewTest {
         assertThat(sut.moreList.childCount).isEqualTo(0)
     }
 
+    @Test
+    fun updateMenuItem_changeGroupEnabled_then_applyForGroup() {
+        // setup
+        val sut = launchContainerFragment {
+            addAttribute(R.attr.menu_main, "@menu/detail_main")
+            addAttribute(R.attr.menu_more, "@menu/detail_more")
+        }.moveToState(Lifecycle.State.RESUMED)
+            .withFragment {
+                // exercise
+                sut.updateMenuItem {
+                    changeGroupEnabled(R.id.menuGroup_detailMain, true)
+                }
+                shadowOf(Looper.getMainLooper()).idle()
+                sut
+            }
+
+        // verify
+        assertThat(sut.parent).isNotNull()
+        assertThat(sut.mainListChildByMenuItem(R.id.detail_main_rt).drawableState).asList()
+            .contains(android.R.attr.state_enabled)
+        assertThat(sut.mainListChildByMenuItem(R.id.detail_main_fav).drawableState).asList()
+            .contains(android.R.attr.state_enabled)
+    }
+
     private fun checkPeekHeight(sut: TweetDetailContextMenuView) {
         assertThat(sut.y).isEqualTo((sut.parent as View).height - sut.mainList.height)
     }

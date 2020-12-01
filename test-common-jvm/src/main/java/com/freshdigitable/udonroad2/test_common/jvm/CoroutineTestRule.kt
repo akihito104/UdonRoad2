@@ -43,8 +43,11 @@ class CoroutineTestRule : TestRule {
         return object : Statement() {
             override fun evaluate() {
                 setupDispatcher()
-                base.evaluate()
-                tearDown()
+                try {
+                    base.evaluate()
+                } finally {
+                    tearDown()
+                }
             }
         }
     }

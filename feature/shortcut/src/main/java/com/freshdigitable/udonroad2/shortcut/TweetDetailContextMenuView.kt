@@ -151,6 +151,10 @@ class TweetDetailContextMenuView @JvmOverloads constructor(
                 }
             }
         }
+
+        fun changeGroupEnabled(@IdRes groupId: Int, isEnabled: Boolean) {
+            view.mainMenu.setGroupEnabled(groupId, isEnabled)
+        }
     }
 
     override fun onAttachedToWindow() {
