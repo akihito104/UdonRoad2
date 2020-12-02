@@ -201,6 +201,7 @@
             app:menu_main="@menu/detail_main"
             app:menu_more="@menu/detail_more"
             app:menuItemState="@{viewModel.menuItemStates}"
+            app:itemClickListener="@{item -> viewModel.onMenuItemClicked(item.itemId)}"
             />
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </layout>

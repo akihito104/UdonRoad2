@@ -1,5 +1,6 @@
 package com.freshdigitable.udonroad2.timeline.viewmodel
 
+import androidx.annotation.IdRes
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
@@ -27,6 +28,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.scan
 import kotlinx.coroutines.flow.transformLatest
+import timber.log.Timber
 import java.io.IOException
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
@@ -65,6 +67,10 @@ class TweetDetailViewModel(
         index: Int
     ) {
         eventDispatcher.postEvent(TimelineEvent.MediaItemClicked(item.id, index))
+    }
+
+    fun onMenuItemClicked(@IdRes itemId: Int) {
+        Timber.tag("TweetDetailViewModel").d("onMenuItemClicked: $itemId")
     }
 
     override fun onCleared() {
