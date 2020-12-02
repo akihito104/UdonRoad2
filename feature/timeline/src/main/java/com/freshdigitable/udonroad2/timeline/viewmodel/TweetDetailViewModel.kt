@@ -10,13 +10,16 @@ import com.freshdigitable.udonroad2.data.impl.TweetRepository
 import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
+import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.subscribeToUpdate
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
 import com.freshdigitable.udonroad2.model.tweet.Tweet
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
+import com.freshdigitable.udonroad2.shortcut.SelectedItemShortcut
 import com.freshdigitable.udonroad2.timeline.LaunchMediaViewerAction
+import com.freshdigitable.udonroad2.timeline.R
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.TweetListItemClickListener
 import com.freshdigitable.udonroad2.timeline.UserIconClickedAction
@@ -71,6 +74,28 @@ class TweetDetailViewModel(
 
     fun onMenuItemClicked(@IdRes itemId: Int) {
         Timber.tag("TweetDetailViewModel").d("onMenuItemClicked: $itemId")
+        val tweetItem = checkNotNull(tweetItem.value)
+        val tweetId = tweetItem.originalId
+        val event: AppEvent = when (itemId) {
+            R.id.detail_main_rt -> {
+                if (!tweetItem.body.isRetweeted) {
+                    SelectedItemShortcut.Retweet(tweetId)
+                } else {
+                    TODO()
+                }
+            }
+            R.id.detail_main_fav -> {
+                if (!tweetItem.body.isFavorited) {
+                    SelectedItemShortcut.Like(tweetId)
+                } else {
+                    TODO()
+                }
+            }
+            R.id.detail_main_reply -> SelectedItemShortcut.Reply(tweetId)
+            R.id.detail_main_quote -> SelectedItemShortcut.Quote(tweetId)
+            else -> return
+        }
+        eventDispatcher.postEvent(event)
     }
 
     override fun onCleared() {
