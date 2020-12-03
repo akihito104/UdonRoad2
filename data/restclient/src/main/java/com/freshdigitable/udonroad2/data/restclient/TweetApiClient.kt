@@ -19,8 +19,16 @@ class TweetApiClient @Inject constructor(
         createFavorite(id.value).toEntity()
     }
 
+    suspend fun postUnlike(id: TweetId): TweetEntity = twitter.fetch {
+        destroyFavorite(id.value).toEntity()
+    }
+
     suspend fun postRetweet(id: TweetId): TweetEntity = twitter.fetch {
         retweetStatus(id.value).toEntity()
+    }
+
+    suspend fun postUnretweet(id: TweetId): TweetEntity = twitter.fetch {
+        unRetweetStatus(id.value).toEntity()
     }
 
     suspend fun postTweet(
@@ -37,6 +45,10 @@ class TweetApiClient @Inject constructor(
             }
             updateStatus(status).toEntity()
         }
+    }
+
+    suspend fun deleteTweet(id: TweetId): TweetEntity = twitter.fetch {
+        destroyStatus(id.value).toEntity()
     }
 
     suspend fun uploadMedia(filename: String, inputStream: InputStream): MediaId = twitter.fetch {

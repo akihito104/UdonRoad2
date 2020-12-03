@@ -152,6 +152,9 @@ abstract class TweetDao(
         db.userReplyDao().addEntities(replies)
     }
 
+    @Query("DELETE FROM tweet_list WHERE original_id = :id")
+    abstract suspend fun deleteTweet(id: TweetId)
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     internal abstract suspend fun addTweetEntitiesInternal(tweet: List<TweetEntityDb>)
 

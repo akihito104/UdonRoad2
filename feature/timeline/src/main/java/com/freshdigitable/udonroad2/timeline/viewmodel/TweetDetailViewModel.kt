@@ -13,11 +13,13 @@ import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.subscribeToUpdate
+import com.freshdigitable.udonroad2.model.app.navigation.suspendMap
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
 import com.freshdigitable.udonroad2.model.tweet.Tweet
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import com.freshdigitable.udonroad2.shortcut.SelectedItemShortcut
+import com.freshdigitable.udonroad2.shortcut.TweetContextMenuEvent
 import com.freshdigitable.udonroad2.timeline.LaunchMediaViewerAction
 import com.freshdigitable.udonroad2.timeline.R
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
@@ -81,19 +83,21 @@ class TweetDetailViewModel(
                 if (!tweetItem.body.isRetweeted) {
                     SelectedItemShortcut.Retweet(tweetId)
                 } else {
-                    TODO()
+                    DetailMenuEvent.Unretweet(tweetId)
                 }
             }
             R.id.detail_main_fav -> {
                 if (!tweetItem.body.isFavorited) {
                     SelectedItemShortcut.Like(tweetId)
                 } else {
-                    TODO()
+                    DetailMenuEvent.Unlike(tweetId)
                 }
             }
             R.id.detail_main_reply -> SelectedItemShortcut.Reply(tweetId)
             R.id.detail_main_quote -> SelectedItemShortcut.Quote(tweetId)
-            else -> return
+            R.id.detail_more_delete -> DetailMenuEvent.DeleteTweet(tweetId)
+            R.id.detail_main_conv -> return // todo
+            else -> throw NotImplementedError("detail menu: $itemId is not implemented yet...")
         }
         eventDispatcher.postEvent(event)
     }
@@ -104,12 +108,21 @@ class TweetDetailViewModel(
     }
 }
 
+sealed class DetailMenuEvent : TweetContextMenuEvent {
+    data class Unlike(override val tweetId: TweetId) : DetailMenuEvent()
+    data class Unretweet(override val tweetId: TweetId) : DetailMenuEvent()
+    data class DeleteTweet(override val tweetId: TweetId) : DetailMenuEvent()
+}
+
 class TweetDetailActions @Inject constructor(
     eventDispatcher: EventDispatcher
 ) : UserIconClickedAction by UserIconClickedAction.create(eventDispatcher),
     LaunchMediaViewerAction by LaunchMediaViewerAction.create(eventDispatcher) {
     val launchOriginalTweetUserInfo: AppAction<TimelineEvent.RetweetUserClicked> =
         eventDispatcher.toAction()
+    val unlikeTweet: AppAction<DetailMenuEvent.Unlike> = eventDispatcher.toAction()
+    val unretweetTweet: AppAction<DetailMenuEvent.Unretweet> = eventDispatcher.toAction()
+    val deleteTweet: AppAction<DetailMenuEvent.DeleteTweet> = eventDispatcher.toAction()
 }
 
 class TweetDetailViewStates @Inject constructor(
@@ -167,6 +180,15 @@ class TweetDetailViewStates @Inject constructor(
         actions.launchMediaViewer.subscribeToUpdate(activityEventDelegate) {
             dispatchNavHostNavigate(TimelineEvent.Navigate.MediaViewer(it))
         },
+        actions.unlikeTweet.suspendMap {
+            repository.postUnlike(it.tweetId)
+        }.subscribe(),
+        actions.unretweetTweet.suspendMap {
+            repository.postUnretweet(it.tweetId)
+        }.subscribe(),
+        actions.deleteTweet.suspendMap {
+            repository.deleteTweet(it.tweetId)
+        }.subscribe()
     )
 
     fun clear() {
