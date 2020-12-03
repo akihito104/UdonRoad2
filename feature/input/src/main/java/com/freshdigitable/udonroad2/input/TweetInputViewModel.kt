@@ -121,7 +121,6 @@ enum class InputTaskState(val isExpanded: Boolean) {
 }
 
 @ActivityScope
-@ExperimentalCoroutinesApi
 class TweetInputSharedState @Inject constructor(executor: AppExecutor) {
     internal val taskStateSource = MutableStateFlow<InputTaskState?>(null)
     val isExpanded: LiveData<Boolean> = taskStateSource.map { it?.isExpanded == true }
@@ -133,7 +132,6 @@ class TweetInputSharedState @Inject constructor(executor: AppExecutor) {
     internal val mediaSource = MutableStateFlow<List<AppFilePath>>(emptyList())
 }
 
-@ExperimentalCoroutinesApi
 class TweetInputViewState @Inject constructor(
     collapsible: Boolean,
     actions: TweetInputActions,
@@ -172,6 +170,7 @@ class TweetInputViewState @Inject constructor(
             emit(menu)
         }.asLiveDataWithMain(executor)
 
+    @ExperimentalCoroutinesApi
     internal val user: AppViewState<User?> = oauthRepository.getCurrentUserIdFlow()
         .flatMapLatest { id ->
             userRepository.getUserFlow(id)
