@@ -17,6 +17,7 @@
 package com.freshdigitable.udonroad2.shortcut
 
 import android.os.Bundle
+import android.os.Looper
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
@@ -25,6 +26,7 @@ import android.widget.FrameLayout
 import android.widget.ImageButton
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.children
+import androidx.core.view.isInvisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentFactory
 import androidx.fragment.app.testing.FragmentScenario
@@ -36,6 +38,7 @@ import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Robolectric
+import org.robolectric.Shadows.shadowOf
 import org.robolectric.android.AttributeSetBuilder
 
 @RunWith(AndroidJUnit4::class)
@@ -93,7 +96,7 @@ class TweetDetailContextMenuViewTest {
     }
 
     @Test
-    fun updateMenuItem() {
+    fun updateMenuItem_whenCheckableItemIsChecked_then_viewStateIsUpdated() {
         // setup
         val sut = launchContainerFragment {
             addAttribute(R.attr.menu_main, "@menu/detail_main")
@@ -112,6 +115,54 @@ class TweetDetailContextMenuViewTest {
         assertThat(sut.parent).isNotNull()
         assertThat(sut.mainListChildByMenuItem(R.id.detail_main_rt).drawableState).asList()
             .containsAtLeast(android.R.attr.state_checked, android.R.attr.state_checkable)
+    }
+
+    @Test
+    fun updateMenuItem_changeMoreItemToZero_then_toggleIsInvisible() {
+        // setup
+        val sut = launchContainerFragment {
+            addAttribute(R.attr.menu_main, "@menu/detail_main")
+            addAttribute(R.attr.menu_more, "@menu/detail_more")
+        }.moveToState(Lifecycle.State.RESUMED)
+            .withFragment {
+                // exercise
+                sut.updateMenuItem {
+                    onMenuItem(R.id.detail_more_delete) {
+                        isVisible = false
+                    }
+                }
+                shadowOf(Looper.getMainLooper()).idle()
+                sut
+            }
+
+        // verify
+        assertThat(sut.parent).isNotNull()
+        assertThat(sut.toggle?.isInvisible).isTrue()
+        assertThat(sut.moreList.childCount).isEqualTo(0)
+    }
+
+    @Test
+    fun updateMenuItem_changeGroupEnabled_then_applyForGroup() {
+        // setup
+        val sut = launchContainerFragment {
+            addAttribute(R.attr.menu_main, "@menu/detail_main")
+            addAttribute(R.attr.menu_more, "@menu/detail_more")
+        }.moveToState(Lifecycle.State.RESUMED)
+            .withFragment {
+                // exercise
+                sut.updateMenuItem {
+                    changeGroupEnabled(R.id.menuGroup_detailMain, true)
+                }
+                shadowOf(Looper.getMainLooper()).idle()
+                sut
+            }
+
+        // verify
+        assertThat(sut.parent).isNotNull()
+        assertThat(sut.mainListChildByMenuItem(R.id.detail_main_rt).drawableState).asList()
+            .contains(android.R.attr.state_enabled)
+        assertThat(sut.mainListChildByMenuItem(R.id.detail_main_fav).drawableState).asList()
+            .contains(android.R.attr.state_enabled)
     }
 
     private fun checkPeekHeight(sut: TweetDetailContextMenuView) {

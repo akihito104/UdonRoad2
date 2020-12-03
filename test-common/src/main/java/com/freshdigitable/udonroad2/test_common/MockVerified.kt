@@ -26,14 +26,15 @@ import io.mockk.confirmVerified
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import org.junit.rules.TestWatcher
+import org.junit.rules.TestRule
 import org.junit.runner.Description
+import org.junit.runners.model.Statement
 
 typealias ExpectedVerify = () -> Unit
 
 class MockVerified<T>(
     val mock: T
-) : TestWatcher() {
+) : TestRule {
 
     companion object {
         inline fun <reified T> create(relaxed: Boolean = false): MockVerified<T> {
@@ -91,8 +92,16 @@ class MockVerified<T>(
         expectedBlocks.add { coVerify(exactly = 1) { target() } } // TODO make `exactly` argument
     }
 
-    override fun succeeded(description: Description?) {
-        super.succeeded(description)
+    override fun apply(base: Statement, description: Description?): Statement {
+        return object : Statement() {
+            override fun evaluate() {
+                base.evaluate()
+                verify()
+            }
+        }
+    }
+
+    private fun verify() {
         expectedBlocks.forEach { it() }
         confirmVerified(mock as Any)
     }

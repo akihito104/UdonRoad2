@@ -21,6 +21,7 @@ import android.view.MenuItem
 import android.view.View
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.map
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
 import com.freshdigitable.udonroad2.model.MediaItem
@@ -114,11 +115,13 @@ class MediaViewModelViewStates @Inject constructor(
     executor: AppExecutor,
 ) : ShortcutViewStates by ShortcutViewStates.create(actions, tweetRepository, executor) {
     internal val mediaItems: AppViewState<List<MediaItem>> =
-        tweetRepository.getTweetItemSource(tweetId).onNull(
-            executor = executor,
-            onNull = { tweetRepository.findTweetListItem(tweetId) },
-            onError = { }
-        )
+        tweetRepository.getTweetItemSource(tweetId)
+            .asLiveData(executor.dispatcher.mainContext)
+            .onNull(
+                executor = executor,
+                onNull = { tweetRepository.findTweetListItem(tweetId) },
+                onError = { }
+            )
             .map { it?.body?.mediaItems ?: listOf() }
 
     internal val systemUiVisibility: AppViewState<SystemUiVisibility> = AppAction.merge(

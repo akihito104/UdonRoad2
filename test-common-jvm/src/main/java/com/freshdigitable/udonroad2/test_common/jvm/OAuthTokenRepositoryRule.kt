@@ -30,10 +30,10 @@ class OAuthTokenRepositoryRule(
 ) : TestRule by mockVerified {
     val mock: OAuthTokenRepository = mockVerified.mock
 
-    fun setupCurrentUserId(userId: Long?) {
+    fun setupCurrentUserId(userId: Long?, needLogin: Boolean = true) {
         val id = UserId.create(userId)
         mockVerified.setupResponseWithVerify({ mock.getCurrentUserId() }, id)
-        if (id != null) {
+        if (id != null && needLogin) {
             setupLogin(id)
         }
     }

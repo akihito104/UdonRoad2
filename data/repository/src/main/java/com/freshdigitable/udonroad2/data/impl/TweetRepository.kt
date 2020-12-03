@@ -1,6 +1,5 @@
 package com.freshdigitable.udonroad2.data.impl
 
-import androidx.lifecycle.LiveData
 import com.freshdigitable.udonroad2.data.db.DaoModule
 import com.freshdigitable.udonroad2.data.db.dao.TweetDao
 import com.freshdigitable.udonroad2.data.restclient.TweetApiClient
@@ -10,12 +9,13 @@ import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import dagger.Module
 import dagger.Provides
+import kotlinx.coroutines.flow.Flow
 
 class TweetRepository(
     private val dao: TweetDao,
     private val restClient: TweetApiClient,
 ) {
-    fun getTweetItemSource(id: TweetId): LiveData<TweetListItem?> = dao.getTweetListItemSource(id)
+    fun getTweetItemSource(id: TweetId): Flow<TweetListItem?> = dao.getTweetListItemSource(id)
 
     suspend fun findTweetListItem(id: TweetId): TweetListItem? {
         val tweet = restClient.fetchTweet(id)

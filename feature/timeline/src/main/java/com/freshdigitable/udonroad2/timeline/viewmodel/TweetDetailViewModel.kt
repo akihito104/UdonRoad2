@@ -2,12 +2,14 @@ package com.freshdigitable.udonroad2.timeline.viewmodel
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asLiveData
+import androidx.lifecycle.viewModelScope
+import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
 import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
-import com.freshdigitable.udonroad2.model.app.navigation.onNull
 import com.freshdigitable.udonroad2.model.app.navigation.subscribeToUpdate
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
 import com.freshdigitable.udonroad2.model.tweet.Tweet
@@ -18,14 +20,31 @@ import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.TweetListItemClickListener
 import com.freshdigitable.udonroad2.timeline.UserIconClickedAction
 import io.reactivex.disposables.CompositeDisposable
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.broadcastIn
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.scan
+import kotlinx.coroutines.flow.transformLatest
+import java.io.IOException
 import javax.inject.Inject
+import kotlin.coroutines.CoroutineContext
 
 class TweetDetailViewModel(
     private val eventDispatcher: EventDispatcher,
     private val viewStates: TweetDetailViewStates,
+    coroutineContext: CoroutineContext? = null
 ) : TweetListItemClickListener, ViewModel() {
+    private val coroutineContext: CoroutineContext =
+        coroutineContext ?: viewModelScope.coroutineContext
 
     val tweetItem: LiveData<TweetListItem?> = viewStates.tweetItem
+        .openSubscription()
+        .receiveAsFlow()
+        .asLiveData(this.coroutineContext)
+    val menuItemStates: LiveData<TweetDetailViewStates.MenuItemState> = viewStates.menuItemState
+        .asLiveData(this.coroutineContext)
 
     fun onOriginalUserClicked() {
         val user = tweetItem.value?.originalUser ?: return
@@ -66,13 +85,45 @@ class TweetDetailViewStates @Inject constructor(
     tweetId: TweetId,
     actions: TweetDetailActions,
     repository: TweetRepository,
+    oAuthTokenRepository: OAuthTokenRepository,
     activityEventDelegate: ActivityEventDelegate,
-    executor: AppExecutor,
+    executor: AppExecutor
 ) {
-    val tweetItem: LiveData<TweetListItem?> = repository.getTweetItemSource(tweetId).onNull(
-        executor = executor,
-        onNull = { repository.findTweetListItem(tweetId) },
-        onError = { }
+    internal val tweetItem = repository.getTweetItemSource(tweetId)
+        .transformLatest {
+            when {
+                it != null -> emit(it)
+                else -> {
+                    val item = repository.findTweetListItem(tweetId)
+                    item?.let { i -> emit(i) }
+                }
+            }
+        }
+        .catch {
+            when (it) {
+                is IOException -> {
+                    // TODO
+                }
+                else -> throw it
+            }
+        }
+        .broadcastIn(scope = executor)
+    internal val menuItemState: Flow<MenuItemState> = tweetItem.openSubscription()
+        .receiveAsFlow()
+        .scan(MenuItemState()) { _, tweet ->
+            MenuItemState(
+                isMainGroupEnabled = true,
+                isRetweetChecked = tweet.body.isRetweeted,
+                isFavChecked = tweet.body.isFavorited,
+                isDeleteVisible = oAuthTokenRepository.getCurrentUserId() == tweet.originalUser.id
+            )
+        }.distinctUntilChanged()
+
+    data class MenuItemState(
+        val isMainGroupEnabled: Boolean = false,
+        val isRetweetChecked: Boolean = false,
+        val isFavChecked: Boolean = false,
+        val isDeleteVisible: Boolean = false
     )
 
     private val compositeDisposable = CompositeDisposable(
