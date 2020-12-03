@@ -15,8 +15,8 @@
  */
 
 object Versions {
-    const val KOTLIN = "1.4.10"
-    const val KOTLIN_COROUTINES = "1.3.9"
+    const val KOTLIN = "1.4.20"
+    const val KOTLIN_COROUTINES = "1.4.2"
 
     const val ANDROIDX_APPCOMPAT = "1.2.0"
     const val ANDROIDX_ACTIVITY = "1.2.0-beta01"
