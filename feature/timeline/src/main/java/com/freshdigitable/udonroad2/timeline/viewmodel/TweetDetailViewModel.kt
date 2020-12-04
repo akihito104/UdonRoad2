@@ -27,11 +27,12 @@ import com.freshdigitable.udonroad2.timeline.TweetListItemClickListener
 import com.freshdigitable.udonroad2.timeline.UserIconClickedAction
 import io.reactivex.disposables.CompositeDisposable
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.broadcastIn
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.scan
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transformLatest
 import timber.log.Timber
 import java.io.IOException
@@ -47,8 +48,6 @@ class TweetDetailViewModel(
         coroutineContext ?: viewModelScope.coroutineContext
 
     val tweetItem: LiveData<TweetListItem?> = viewStates.tweetItem
-        .openSubscription()
-        .receiveAsFlow()
         .asLiveData(this.coroutineContext)
     val menuItemStates: LiveData<TweetDetailViewStates.MenuItemState> = viewStates.menuItemState
         .asLiveData(this.coroutineContext)
@@ -133,7 +132,7 @@ class TweetDetailViewStates @Inject constructor(
     activityEventDelegate: ActivityEventDelegate,
     executor: AppExecutor
 ) {
-    internal val tweetItem = repository.getTweetItemSource(tweetId)
+    internal val tweetItem: StateFlow<TweetListItem?> = repository.getTweetItemSource(tweetId)
         .transformLatest {
             when {
                 it != null -> emit(it)
@@ -151,17 +150,18 @@ class TweetDetailViewStates @Inject constructor(
                 else -> throw it
             }
         }
-        .broadcastIn(scope = executor)
-    internal val menuItemState: Flow<MenuItemState> = tweetItem.openSubscription()
-        .receiveAsFlow()
-        .scan(MenuItemState()) { _, tweet ->
-            MenuItemState(
+        .stateIn(scope = executor, started = SharingStarted.Eagerly, null)
+    internal val menuItemState: Flow<MenuItemState> = tweetItem.scan(MenuItemState()) { _, tweet ->
+        when (tweet) {
+            null -> MenuItemState()
+            else -> MenuItemState(
                 isMainGroupEnabled = true,
                 isRetweetChecked = tweet.body.isRetweeted,
                 isFavChecked = tweet.body.isFavorited,
                 isDeleteVisible = oAuthTokenRepository.getCurrentUserId() == tweet.originalUser.id
             )
-        }.distinctUntilChanged()
+        }
+    }.distinctUntilChanged()
 
     data class MenuItemState(
         val isMainGroupEnabled: Boolean = false,
