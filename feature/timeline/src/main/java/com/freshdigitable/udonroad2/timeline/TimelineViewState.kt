@@ -34,9 +34,7 @@ import com.freshdigitable.udonroad2.model.app.navigation.subscribeToUpdate
 import com.freshdigitable.udonroad2.model.app.navigation.toViewState
 import com.freshdigitable.udonroad2.shortcut.ShortcutViewStates
 import io.reactivex.disposables.CompositeDisposable
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 
-@ExperimentalCoroutinesApi
 class TimelineViewState(
     owner: ListOwner<*>,
     actions: TimelineActions,

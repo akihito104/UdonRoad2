@@ -35,9 +35,6 @@ import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
 import com.freshdigitable.udonroad2.model.MediaItem
 import dagger.android.support.AndroidSupportInjection
-import kotlinx.android.synthetic.main.view_media_movie.view.media_progressBar
-import kotlinx.android.synthetic.main.view_media_movie.view.media_progressText
-import kotlinx.android.synthetic.main.view_media_movie.view.media_video
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -99,9 +96,9 @@ class MovieMediaFragment(
 
         view.setOnClickListener { mediaViewModel.toggleUiVisibility() }
 
-        val surfaceView: SurfaceView = view.media_video
-        val progressText: TextView = view.media_progressText
-        val progressBar: ProgressBar = view.media_progressBar
+        val surfaceView: SurfaceView = view.findViewById(R.id.media_video)
+        val progressText: TextView = view.findViewById(R.id.media_progressText)
+        val progressBar: ProgressBar = view.findViewById(R.id.media_progressBar)
 
         surfaceView.holder.addCallback(object : SurfaceHolder.Callback {
             override fun surfaceCreated(surfaceHolder: SurfaceHolder?) {

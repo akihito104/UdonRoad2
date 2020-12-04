@@ -95,7 +95,9 @@ class TweetInputViewModelTest {
         @Test
         fun onWriteClicked_then_isVisibleIsTrue(): Unit = with(rule) {
             // exercise
-            sut.onWriteClicked()
+            coroutineTestRule.runBlockingTest {
+                sut.onWriteClicked()
+            }
 
             // verify
             assertThat(sut.text.value).isEmpty()
@@ -440,8 +442,10 @@ class TweetInputViewModelTest {
 
         @Before
         fun setup(): Unit = with(rule) {
-            setupReplyTargetTweet(targetTweetId, "@user200 ")
-            dispatchReply(targetTweetId)
+            coroutineTestRule.runBlockingTest {
+                setupReplyTargetTweet(targetTweetId, "@user200 ")
+                dispatchReply(targetTweetId)
+            }
 
             assertThat(sut.isExpanded.value).isTrue()
             assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.SEND_ENABLED)
@@ -493,7 +497,9 @@ class TweetInputViewModelTest {
 
         @Before
         fun setup(): Unit = with(rule) {
-            dispatchQuote(selectedTweetId)
+            coroutineTestRule.runBlockingTest {
+                dispatchQuote(selectedTweetId)
+            }
 
             assertThat(sut.isExpanded.value).isTrue()
             assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.SEND_DISABLED)
