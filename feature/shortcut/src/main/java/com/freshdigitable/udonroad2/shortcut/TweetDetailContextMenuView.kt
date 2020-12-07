@@ -30,6 +30,7 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.SubMenu
 import android.view.View
+import android.view.View.OnClickListener
 import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.ImageView
@@ -68,6 +69,12 @@ class TweetDetailContextMenuView @JvmOverloads constructor(
     private val mainMenu = DetailMenu()
     private val moreMenu = DetailMenu()
 
+    var itemClickListener: ItemClickListener? = null
+    private val callback: OnClickListener = OnClickListener { v ->
+        val item = checkNotNull(mainMenu.findItem(v.id) ?: moreMenu.findItem(v.id))
+        itemClickListener?.onItemClicked(item)
+    }
+
     init {
         View.inflate(context, R.layout.view_detail_menu_list, this).also {
             mainContextMenuList = it.findViewById(R.id.detail_menu_main)
@@ -93,7 +100,7 @@ class TweetDetailContextMenuView @JvmOverloads constructor(
     }
 
     private fun setupMenuItems() {
-        mainContextMenuList.setupMainMenu(mainMenu)
+        mainContextMenuList.setupMainMenu(mainMenu, callback)
         if (moreMenu.size() > 0) {
             mainContextMenuList.addView(
                 Space(context),
@@ -121,7 +128,7 @@ class TweetDetailContextMenuView @JvmOverloads constructor(
                 }
             )
 
-            moreContextMenuList.setupMoreMenu(moreMenu)
+            moreContextMenuList.setupMoreMenu(moreMenu, callback)
         }
     }
 
@@ -157,19 +164,24 @@ class TweetDetailContextMenuView @JvmOverloads constructor(
         }
     }
 
+    interface ItemClickListener {
+        fun onItemClicked(item: MenuItem)
+    }
+
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
         (layoutParams as? CoordinatorLayout.LayoutParams)?.behavior = bottomSheetBehavior
     }
 
     companion object {
-        private fun LinearLayout.setupMainMenu(mainMenu: DetailMenu) {
+        private fun LinearLayout.setupMainMenu(mainMenu: DetailMenu, callback: OnClickListener) {
             for (i in 0 until mainMenu.size()) {
                 val item = mainMenu[i] as DetailMenu.Item
                 addMainMenuItemView(item.itemId) {
                     setIcon(item)
                     setContentDescription(item)
                     setImageState(item.parseToState(), false)
+                    setOnClickListener(callback)
                 }
             }
         }
@@ -198,9 +210,9 @@ class TweetDetailContextMenuView @JvmOverloads constructor(
             return button
         }
 
-        private fun RecyclerView.setupMoreMenu(moreMenu: DetailMenu) {
+        private fun RecyclerView.setupMoreMenu(moreMenu: DetailMenu, callback: OnClickListener) {
             layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
-            adapter = MoreItemAdapter(moreMenu)
+            adapter = MoreItemAdapter(moreMenu, callback)
         }
 
         private fun AppCompatImageButton.setIcon(item: DetailMenu.Item) {
@@ -452,11 +464,13 @@ internal class MoreItemViewHolder(itemView: View) : RecyclerView.ViewHolder(item
     val text: TextView = itemView as TextView
 }
 
+private val DetailMenu.visibleItems: List<MenuItem>
+    get() = (0 until size()).map { this[it] }.filter { it.isVisible }
+
 internal class MoreItemAdapter(
-    private val moreMenu: DetailMenu
+    private val moreMenu: DetailMenu,
+    private val callback: OnClickListener
 ) : RecyclerView.Adapter<MoreItemViewHolder>() {
-    private val visibleItems: List<MenuItem>
-        get() = (0 until moreMenu.size()).map { moreMenu[it] }.filter { it.isVisible }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MoreItemViewHolder {
         val view = MaterialTextView(parent.context).apply {
@@ -477,7 +491,7 @@ internal class MoreItemAdapter(
     override fun onBindViewHolder(holder: MoreItemViewHolder, position: Int) {
         val context = holder.itemView.context
         val iconSize = context.resources.getDimensionPixelSize(R.dimen.menu_more_icon_size)
-        val item = visibleItems[position] as DetailMenu.Item
+        val item = moreMenu.visibleItems[position] as DetailMenu.Item
         holder.itemView.id = item.itemId
         holder.text.text = item.title
         val drawable = when {
@@ -493,5 +507,15 @@ internal class MoreItemAdapter(
         holder.text.setCompoundDrawables(drawable, null, null, null)
     }
 
-    override fun getItemCount(): Int = visibleItems.size
+    override fun onViewAttachedToWindow(holder: MoreItemViewHolder) {
+        super.onViewAttachedToWindow(holder)
+        holder.itemView.setOnClickListener(callback)
+    }
+
+    override fun onViewDetachedFromWindow(holder: MoreItemViewHolder) {
+        super.onViewDetachedFromWindow(holder)
+        holder.itemView.setOnClickListener(null)
+    }
+
+    override fun getItemCount(): Int = moreMenu.visibleItems.size
 }

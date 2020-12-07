@@ -23,16 +23,18 @@ import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.postEvents
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 
-sealed class SelectedItemShortcut : AppEvent {
+sealed class SelectedItemShortcut : TweetContextMenuEvent {
     data class TweetDetail(override val tweetId: TweetId) : SelectedItemShortcut()
     data class Like(override val tweetId: TweetId) : SelectedItemShortcut()
     data class Retweet(override val tweetId: TweetId) : SelectedItemShortcut()
     data class Reply(override val tweetId: TweetId) : SelectedItemShortcut()
     data class Quote(override val tweetId: TweetId) : SelectedItemShortcut()
 
-    abstract val tweetId: TweetId
-
     companion object
+}
+
+interface TweetContextMenuEvent : AppEvent {
+    val tweetId: TweetId
 }
 
 fun EventDispatcher.postSelectedItemShortcutEvent(

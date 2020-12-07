@@ -36,6 +36,13 @@ class TweetRepository(
         }
     }
 
+    // todo: already unliked error
+    suspend fun postUnlike(id: TweetId): TweetEntity {
+        val unliked = restClient.postUnlike(id)
+        dao.addTweet(unliked)
+        return unliked
+    }
+
     suspend fun postRetweet(id: TweetId): TweetEntity {
         try {
             val retweeted = restClient.postRetweet(id)
@@ -47,6 +54,20 @@ class TweetRepository(
             }
             throw ex
         }
+    }
+
+    // todo: already unretweeted error
+    suspend fun postUnretweet(id: TweetId): TweetEntity {
+        val unretweeted = restClient.postUnretweet(id)
+        dao.addTweet(unretweeted)
+        return unretweeted
+    }
+
+    // todo: already deleted error
+    suspend fun deleteTweet(id: TweetId): TweetEntity {
+        val deleted = restClient.deleteTweet(id)
+        dao.deleteTweet(id)
+        return deleted
     }
 }
 
