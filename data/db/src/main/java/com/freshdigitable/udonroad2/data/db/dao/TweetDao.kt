@@ -17,19 +17,16 @@
 package com.freshdigitable.udonroad2.data.db.dao
 
 import androidx.paging.DataSource
-import androidx.room.ColumnInfo
 import androidx.room.Dao
-import androidx.room.Entity
-import androidx.room.ForeignKey
-import androidx.room.Index
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
-import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.Transaction
 import com.freshdigitable.udonroad2.data.db.AppDatabase
 import com.freshdigitable.udonroad2.data.db.dbview.TweetListItem
+import com.freshdigitable.udonroad2.data.db.entity.StructuredTweetEntity
 import com.freshdigitable.udonroad2.data.db.entity.TweetEntityDb
+import com.freshdigitable.udonroad2.data.db.entity.TweetListEntity
 import com.freshdigitable.udonroad2.data.db.entity.TweetMediaRelation
 import com.freshdigitable.udonroad2.data.db.entity.UserReplyEntityDb
 import com.freshdigitable.udonroad2.data.db.entity.VideoValiantEntity
@@ -169,64 +166,3 @@ abstract class TweetDao(
     @Query("DELETE FROM tweet_list WHERE owner = :owner")
     abstract suspend fun clear(owner: String)
 }
-
-@Entity(
-    tableName = "structured_tweet",
-    foreignKeys = [
-        ForeignKey(
-            entity = TweetEntityDb::class,
-            parentColumns = ["id"],
-            childColumns = ["original_id"],
-            deferred = true
-        ),
-        ForeignKey(
-            entity = TweetEntityDb::class,
-            parentColumns = ["id"],
-            childColumns = ["body_item_id"],
-            deferred = true
-        )
-    ],
-    indices = [
-        Index("body_item_id")
-    ]
-)
-internal class StructuredTweetEntity(
-    @PrimaryKey
-    @ColumnInfo(name = "original_id")
-    val originalId: TweetId,
-
-    @ColumnInfo(name = "body_item_id")
-    val bodyTweetId: TweetId,
-
-    @ColumnInfo(name = "quoted_item_id")
-    val quotedTweetId: TweetId?
-)
-
-@Entity(
-    tableName = "tweet_list",
-    primaryKeys = ["original_id", "owner"],
-    foreignKeys = [
-        ForeignKey(
-            entity = StructuredTweetEntity::class,
-            parentColumns = ["original_id"],
-            childColumns = ["original_id"],
-            deferred = true
-        )
-    ],
-    indices = [
-        Index(
-            "original_id", "owner",
-            name = "tweet_list_entity_idx"
-        )
-    ]
-)
-internal class TweetListEntity(
-    @ColumnInfo(name = "original_id")
-    val originalId: TweetId,
-
-    @ColumnInfo(name = "order")
-    val order: Long,
-
-    @ColumnInfo(name = "owner")
-    val owner: String
-)

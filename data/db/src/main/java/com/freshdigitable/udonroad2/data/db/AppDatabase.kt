@@ -28,14 +28,10 @@ import com.freshdigitable.udonroad2.data.db.converter.TweetIdConverter
 import com.freshdigitable.udonroad2.data.db.converter.UserIdConverter
 import com.freshdigitable.udonroad2.data.db.dao.MediaDao
 import com.freshdigitable.udonroad2.data.db.dao.MemberListDao
-import com.freshdigitable.udonroad2.data.db.dao.MemberListListEntity
 import com.freshdigitable.udonroad2.data.db.dao.RelationshipDao
-import com.freshdigitable.udonroad2.data.db.dao.StructuredTweetEntity
 import com.freshdigitable.udonroad2.data.db.dao.TweetDao
-import com.freshdigitable.udonroad2.data.db.dao.TweetListEntity
 import com.freshdigitable.udonroad2.data.db.dao.UrlDao
 import com.freshdigitable.udonroad2.data.db.dao.UserDao
-import com.freshdigitable.udonroad2.data.db.dao.UserListEntity
 import com.freshdigitable.udonroad2.data.db.dao.UserReplyEntityDao
 import com.freshdigitable.udonroad2.data.db.dao.VideoValiantDao
 import com.freshdigitable.udonroad2.data.db.dbview.MediaDbView
@@ -46,11 +42,15 @@ import com.freshdigitable.udonroad2.data.db.dbview.TweetingUser
 import com.freshdigitable.udonroad2.data.db.dbview.UserListDbView
 import com.freshdigitable.udonroad2.data.db.entity.MediaEntity
 import com.freshdigitable.udonroad2.data.db.entity.MemberListEntity
+import com.freshdigitable.udonroad2.data.db.entity.MemberListListEntity
 import com.freshdigitable.udonroad2.data.db.entity.RelationshipEntity
+import com.freshdigitable.udonroad2.data.db.entity.StructuredTweetEntity
 import com.freshdigitable.udonroad2.data.db.entity.TweetEntityDb
+import com.freshdigitable.udonroad2.data.db.entity.TweetListEntity
 import com.freshdigitable.udonroad2.data.db.entity.TweetMediaRelation
 import com.freshdigitable.udonroad2.data.db.entity.UrlEntity
 import com.freshdigitable.udonroad2.data.db.entity.UserEntity
+import com.freshdigitable.udonroad2.data.db.entity.UserListEntity
 import com.freshdigitable.udonroad2.data.db.entity.UserReplyEntityDb
 import com.freshdigitable.udonroad2.data.db.entity.VideoValiantEntity
 

@@ -19,17 +19,14 @@ package com.freshdigitable.udonroad2.data.db.dao
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.map
 import androidx.paging.DataSource
-import androidx.room.ColumnInfo
 import androidx.room.Dao
-import androidx.room.Entity
-import androidx.room.ForeignKey
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
-import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.Transaction
 import com.freshdigitable.udonroad2.data.db.dbview.UserListDbView
 import com.freshdigitable.udonroad2.data.db.entity.UserEntity
+import com.freshdigitable.udonroad2.data.db.entity.UserListEntity
 import com.freshdigitable.udonroad2.data.db.ext.toEntity
 import com.freshdigitable.udonroad2.model.user.User
 import com.freshdigitable.udonroad2.model.user.UserId
@@ -91,25 +88,3 @@ abstract class UserDao {
     @Query("DELETE FROM user_list WHERE owner = :owner")
     abstract suspend fun clear(owner: String)
 }
-
-@Entity(
-    tableName = "user_list",
-    foreignKeys = [
-        ForeignKey(
-            entity = UserEntity::class,
-            parentColumns = ["id"],
-            childColumns = ["user_id"]
-        )
-    ]
-)
-internal data class UserListEntity(
-    @PrimaryKey(autoGenerate = true)
-    @ColumnInfo(name = "id")
-    val id: Int = 0,
-
-    @ColumnInfo(name = "user_id", index = true)
-    val userId: UserId,
-
-    @ColumnInfo(name = "owner")
-    val owner: String
-)

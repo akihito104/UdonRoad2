@@ -1,10 +1,10 @@
 package com.freshdigitable.udonroad2.data.db.ext
 
-import com.freshdigitable.udonroad2.data.db.dao.StructuredTweetEntity
-import com.freshdigitable.udonroad2.data.db.dao.TweetListEntity
 import com.freshdigitable.udonroad2.data.db.entity.MediaEntity
 import com.freshdigitable.udonroad2.data.db.entity.MemberListEntity
+import com.freshdigitable.udonroad2.data.db.entity.StructuredTweetEntity
 import com.freshdigitable.udonroad2.data.db.entity.TweetEntityDb
+import com.freshdigitable.udonroad2.data.db.entity.TweetListEntity
 import com.freshdigitable.udonroad2.data.db.entity.UrlEntity
 import com.freshdigitable.udonroad2.data.db.entity.UserEntity
 import com.freshdigitable.udonroad2.model.MediaItem
