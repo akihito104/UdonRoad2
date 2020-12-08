@@ -1,0 +1,166 @@
+@startuml
+
+entity media {
+  * id: MediaId [PK]
+  * url: String
+  * type: String
+  large: Size <<embedded>>
+  medium: Size <<embedded>>
+  small: Size <<embedded>>
+  thumb: Size <<embedded>>
+  video_aspect_ratio_width: Int
+  video_aspect_ratio_height: Int
+  video_duration_millis: Long
+}
+
+entity video_valiant {
+  * media_id: MediaId [PK]
+  * url: String [PK]
+  * bitrate: Int
+  * content_type: String
+}
+
+entity media_url {
+  * tweet_id: TweetId [PK]
+  * media_id: MediaId [PK]
+  * text: String
+  * display: String
+  * expanded: String
+  * start: Int
+  * end: Int
+}
+
+entity custom_timeline {
+  * id: CustomTimelineId [PK]
+  * name: String
+  * description: String
+  * user_id: UserId
+  * member_count: Int
+  * follower_count: Int
+  * is_public: Boolean
+}
+
+entity custom_timeline_list {
+  * custom_timeline_id: CustomTimelineId [PK]
+  * order: Long <<generated>> [PK]
+  * owner: String
+}
+
+entity relationship {
+  * source_user_id: UserId [PK]
+  * target_user_id: UserId [PK]
+  * following: Boolean
+  * blocking: Boolean
+  * muting: Boolean
+  * want_retweets: Boolean
+  * notifications_enabled: Boolean
+}
+
+entity tweet_element {
+  * id: TweetId [PK]
+  * text: String
+  * retweet_count: Int
+  * favorite_count: Int
+  * user_id: UserId
+  retweeted_tweet_id: TweetId
+  quoted_tweet_id: TweetId
+  in_reply_to_tweet_id: TweetId
+  * possibly_sensitive: Boolean
+  * source: String
+  * created_at: Instant
+}
+
+entity user_reply {
+  * tweet_id: TweetId [PK]
+  * user_id: UserId
+  * screen_name: String
+  * start: Int [PK]
+  * end: Int
+}
+
+entity hash_tag {
+  * tweet_id: TweetId [PK]
+  * text: String
+  * start: Int [PK]
+  * end: Int
+}
+
+entity tweet {
+  * original_id: TweetId [PK]
+  * body_item_id: TweetId
+  quoted_item_id: TweetId
+}
+
+entity tweet_list {
+  * original_id: TweetId
+  * order: Long
+  * owner: String
+}
+
+entity url {
+  * tweet_id: TweetId [PK]
+  * text: String
+  * display: String
+  * expanded: String
+  * start: Int [PK]
+  * end: Int
+}
+
+entity user {
+  * id: UserId [PK]
+  * name: String
+  * screen_name: String
+  * icon_url: String
+  * description: String
+  profile_banner_image_url: String
+  * follower_count: Int
+  * following_count: Int
+  * tweet_count: Int
+  * favorite_count: Int
+  * listed_count: Int
+  * profile_link_color: Int
+  location: String
+  url: String
+  * verified: Boolean
+  * is_protected: Boolean
+}
+
+entity user_list {
+  * id: Int <<generated>> [PK]
+  * user_id: UserId
+  * owner: String
+}
+
+entity favorited {
+  * tweet_id: TweetId
+  * favorited_user_id: UserId
+}
+
+entity retweeted {
+  * tweet_id: TweetId
+  * retweet_id: TweetId
+  * retweeted_user_id: UserId
+}
+
+tweet_list }--{ tweet
+tweet --|{ tweet_element
+tweet_element --o{ media_url
+tweet_element --o{ url
+tweet_element ---o{ user_reply
+tweet_element ---o{ hash_tag
+tweet_element --o| favorited
+tweet_element --o| retweeted
+
+media_url -- media
+media --o{ video_valiant
+
+user_list }--{ user
+user }--{ relationship
+user --o{ url
+user -o{ tweet
+
+custom_timeline_list }--{ custom_timeline
+custom_timeline }-{ user
+custom_timeline }-{ tweet
+
+@enduml
