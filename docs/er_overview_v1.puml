@@ -1,0 +1,233 @@
+@startuml
+''' MediaEntity.kt
+entity media {
+  * id: MediaId [PK]
+  * media_url: String
+  * url: String
+  * type: String
+  large_embedded: Size
+  medium_embedded: Size
+  small_embedded: Size
+  thumb_embedded: Size
+  video_aspect_ratio_width: Int
+  video_aspect_ratio_height: Int
+  video_duration_millis: Long
+}
+entity video_valiant {
+  * media_id: MediaId
+  * url: String
+  * bitrate: Int
+  * content_type: String
+}
+entity relation_tweet_media {
+  * tweet_id: TweetId
+  * media_id: MediaId
+}
+''' MemberListEntity.kt
+entity member_list {
+  * id: MemberListId [PK]
+  * name: String
+  * description: String
+  * user_id: UserId
+  * member_count: Int
+  * follower_count: Int
+  * is_public: Boolean
+}
+''' MemberListListEntity.kt
+entity member_list_list {
+  * member_list_id: MemberListId
+  * order: Long <<generated>> [PK]
+  * owner: String
+}
+''' RelationshipEntity.kt
+entity relationship {
+  * user_id: UserId [PK]
+  * following: Boolean
+  * blocking: Boolean
+  * muting: Boolean
+  * want_retweets: Boolean
+  * notifications_enabled: Boolean
+}
+''' TweetEntityDb.kt
+entity tweet {
+  * id: TweetId [PK]
+  * text: String
+  * retweet_count: Int
+  * favorite_count: Int
+  * user_id: UserId
+  retweeted_tweet_id: TweetId
+  quoted_tweet_id: TweetId
+  in_reply_to_tweet_id: TweetId
+  * is_retweeted: Boolean
+  * is_favorited: Boolean
+  * possibly_sensitive: Boolean
+  * source: String
+  * created_at: Instant
+}
+entity user_reply {
+  * tweet_id: TweetId
+  * user_id: UserId
+  * screen_name: String
+  * start: Int
+  * end: Int
+}
+''' TweetListEntity.kt
+entity structured_tweet {
+  * original_id: TweetId [PK]
+  * body_item_id: TweetId
+  quoted_item_id: TweetId
+}
+entity tweet_list {
+  * original_id: TweetId
+  * order: Long
+  * owner: String
+}
+''' UrlEntity.kt
+entity url {
+  * text: String [PK]
+  * display: String
+  * expanded: String
+}
+''' UserEntity.kt
+entity user {
+  * id: UserId [PK]
+  * name: String
+  * screen_name: String
+  * icon_url: String
+  * description: String
+  profile_banner_image_url: String
+  * follower_count: Int
+  * following_count: Int
+  * tweet_count: Int
+  * favorite_count: Int
+  * listed_count: Int
+  * profile_link_color: Int
+  * location: String
+  url: String
+  * verified: Boolean
+  * is_protected: Boolean
+}
+''' UserListEntity.kt
+entity user_list {
+  * id: Int <<generated>> [PK]
+  * user_id: UserId
+  * owner: String
+}
+
+''' MediaDbView.kt
+entity view_media <<view>> {
+  * id: MediaId
+  * media_url: String
+  * url_embedded: UrlEntity
+  * type: MediaType
+  large_embedded: MediaEntity.Size
+  medium_embedded: MediaEntity.Size
+  small_embedded: MediaEntity.Size
+  thumb_embedded: MediaEntity.Size
+  video_aspect_ratio_width: Int
+  video_aspect_ratio_height: Int
+  video_duration_millis: Long
+  * tweet_id: TweetId
+}
+''' MemberListDbView.kt
+entity view_member_list <<view>> {
+  * id: MemberListId
+  * name: String
+  * description: String
+  * user_embedded: TweetingUser
+  * member_count: Int
+  * follower_count: Int
+  * is_public: Boolean
+}
+''' TweetingUser.kt
+entity view_user_in_tweet <<view>> {
+  * id: UserId
+  * name: String
+  * screen_name: String
+  * icon_url: String
+}
+''' Tweet.kt
+entity view_tweet <<view>> {
+  * id: TweetId
+  * text: String
+  * is_retweeted: Boolean
+  * retweet_count: Int
+  * is_favorited: Boolean
+  * favorite_count: Int
+  * user_embedded: TweetingUser
+  * source: String
+  * created_at: Instant
+}
+entity tweet_list_item <<view>> {
+  * original_id: TweetId
+  * original_user_embedded: TweetingUser
+  * embedded: TweetDbView
+  qt_embedded: TweetDbView
+}
+''' UserListDbView.kt
+entity user_list_item <<view>> {
+  * id: UserId
+  * name: String
+  * screen_name: String
+  * icon_url: String
+  * description: String
+  * follower_count: Int
+  * following_count: Int
+  * verified: Boolean
+  * is_protected: Boolean
+}
+
+tweet_list --{ structured_tweet
+structured_tweet --{ tweet
+tweet - user
+tweet --{ user_reply
+tweet --{ relation_tweet_media
+relation_tweet_media --{ media
+view_tweet - tweet
+tweet_list_item - structured_tweet
+tweet_list_item -{ tweet
+tweet_list_item -{ view_tweet
+view_tweet -- view_user_in_tweet
+view_tweet -{ view_media
+tweet_list_item -- view_user_in_tweet
+
+media --{ video_valiant
+media --{ url
+view_media - media
+
+user_list }--{ user
+user - relationship
+view_user_in_tweet - user
+user_list_item - user
+
+member_list_list --{ member_list
+member_list }--{ user
+view_member_list - member_list
+@enduml
+
+/' parse Room @Entity class to PlantUML entity
+```
+echo '@startuml';\
+for f in *.kt; do echo "''' ${f}"; \
+cat $f |\
+  sed -z "s/\/\*.*\*\///" |\
+  sed -r "/(package|import)/d" |\
+  sed -zr "s/ForeignKey\([^)]*\)//g"| sed -zr "s/foreignKeys = \[[^]]*\]//g" |\
+  sed -zr "s/indices = \[[^]]*\]//g" |\
+  sed -zr "s/primaryKeys = \[[^]]*\]//g" |\
+  sed -zr 's/"""[^"]*"""//g' | sed -zr 's/value = \"[^"]\"//' |\
+  sed -zr 's/constructor\([^)]*\) : this\([^)]*\)[^}]\}//' |\
+  sed -zr 's/@Entity\([^)]*tableName = \"([^"]*)\"[^)]*\)/entity \1 {/g' |\
+  sed -zr 's/@DatabaseView\([^)]*viewName = \"([^"]*)\"[^)]*\)/entity \1 <<view>> {/g' |\
+  sed -r 's/^.*@Embedded\(prefix = \"(.*)\".*\)/  * \1embedded/' |\
+  sed -r "s/^.*@ColumnInfo\(name = \"(.*)\".*\)/  * \1/"|\
+  sed -r "s/^.*val.*:/:/"|\
+  sed -e "s/,//" |\
+  sed -z "s/\n:/:/g" |\
+  sed -r 's/\* (.*)\?$/\1/' |\
+  sed -zr 's/ *@PrimaryKey[^\n]*\n([^:]*\:[^\n]*)\n/\1 [PK]\n/g' |\
+  sed -zr "s/(internal|data|class)[^(]*\(([^)]*)\)([^:]*\:[^{]*)?([^{]*\{[^}]*\})?/\2}/g" |\
+  sed -e "/^$/d"; done;\
+echo '@enduml'
+```
+'/
