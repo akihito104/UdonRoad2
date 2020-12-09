@@ -1,5 +1,9 @@
 @startuml
 
+skinparam class {
+  BackgroundColor<<view>> white
+}
+
 entity media {
   * id: MediaId [PK]
   * url: String
@@ -132,14 +136,18 @@ entity user_list {
 }
 
 entity favorited {
-  * tweet_id: TweetId
-  * favorited_user_id: UserId
+  * tweet_id: TweetId [PK]
+  * source_user_id: UserId [PK]
 }
 
 entity retweeted {
-  * tweet_id: TweetId
+  * tweeted_id: TweetId [PK]
+  * source_user_id: UserId [PK]
   * retweet_id: TweetId
-  * retweeted_user_id: UserId
+}
+
+entity current_user {
+  * id: UserId [PK] [FK]
 }
 
 tweet_list }--{ tweet
@@ -158,9 +166,75 @@ user_list }--{ user
 user }--{ relationship
 user --o{ url
 user -o{ tweet
+user - current_user
+
+current_user -o{ relationship
+current_user -o{ favorited
+current_user -o{ retweeted
 
 custom_timeline_list }--{ custom_timeline
 custom_timeline }-{ user
 custom_timeline }-{ tweet
+
+package database_views {
+  entity view_tweet_item << (V, #ffffff) view >> {
+    * original_tweet_id: TweetId
+    * original_user: TweetingUser <<embedded>>
+    * body: TweetElementItem <<embedded>>
+    quoted: TweetElementItem <<embedded>>
+  }
+
+  entity view_tweet_item_element << (V, #ffffff) view >> {
+    * id: TweetId
+    is_retweeted: FavoriteReaction <<embedded>>
+    is_favorited: RetweetReaction <<embedded>>
+  }
+
+  entity view_tweet_item_media << (V, #ffffff) view >> {
+    * id: MediaId
+    * tweet_id: TweetId
+    * display_url: String
+    * expanded_url: String
+    * start: Int
+    * end: Int
+  }
+
+  entity view_custom_timeline_item << (V, #ffffff) view >> {
+    * id: CustomTimelineId
+    * name: String
+    * description: String
+    * member_count: Int
+    * follower_count: Int
+    * is_public: Boolean
+    * owner_user: TweetingUser <<embedded>>
+  }
+
+  entity view_user_item << (V, #ffffff) view >> {
+    * id: UserId
+    * name: String
+    * screen_name: String
+    * is_protected: Boolean
+    * is_verified: Boolean
+    * description: String
+    * follower_count: Int
+    * following_count: Int
+  }
+
+  view_tweet_item -- view_tweet_item_element
+  view_tweet_item -- view_user_item
+
+  view_tweet_item_element - tweet_element
+  view_tweet_item_element -- favorited
+  view_tweet_item_element -- retweeted
+  view_tweet_item_element --o{ view_tweet_item_media
+
+  view_user_item - user
+
+  view_tweet_item_media - media_url
+
+  view_custom_timeline_item - custom_timeline
+
+  view_user_item - user
+}
 
 @enduml
