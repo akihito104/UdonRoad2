@@ -19,12 +19,13 @@ package com.freshdigitable.udonroad2.data.restclient.data
 import com.freshdigitable.udonroad2.model.MediaId
 import com.freshdigitable.udonroad2.model.MediaItem
 import com.freshdigitable.udonroad2.model.MediaType
-import com.freshdigitable.udonroad2.model.UrlItem
 
 internal data class MediaItemRest(
     override val id: MediaId,
     override val mediaUrl: String,
-    override val url: UrlItem,
+    override val url: String,
+    override val start: Int,
+    override val end: Int,
     override val type: MediaType,
     override val largeSize: MediaItem.Size?,
     override val mediumSize: MediaItem.Size?,
@@ -33,7 +34,8 @@ internal data class MediaItemRest(
     override val videoAspectRatioWidth: Int?,
     override val videoAspectRatioHeight: Int?,
     override val videoDurationMillis: Long?,
-    override val videoValiantItems: List<MediaItem.VideoValiant>
+    override val videoValiantItems: List<MediaItem.VideoValiant>,
+    override val order: Int = 0,
 ) : MediaItem
 
 internal data class SizeRest(

@@ -16,20 +16,25 @@
 
 package com.freshdigitable.udonroad2.model
 
-interface TweetMediaItem {
+interface TweetMediaItem : UrlItem {
     val id: MediaId
 
     val mediaUrl: String
 
-    val url: UrlItem
-
     val type: MediaType
+
+    val order: Int
+
+    override val displayUrl: String
+        get() = ""
+    override val expandedUrl: String
+        get() = ""
 }
 
 val TweetMediaItem.thumbMediaUrl: String
     get() = "$mediaUrl:thumb"
 
-interface MediaItem : TweetMediaItem {
+interface MediaItem : UrlItem, TweetMediaItem {
 
     val largeSize: Size?
 

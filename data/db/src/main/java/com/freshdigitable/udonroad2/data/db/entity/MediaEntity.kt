@@ -26,7 +26,6 @@ import androidx.room.Relation
 import com.freshdigitable.udonroad2.model.MediaId
 import com.freshdigitable.udonroad2.model.MediaItem
 import com.freshdigitable.udonroad2.model.MediaType
-import com.freshdigitable.udonroad2.model.UrlItem
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 
 @Entity(
@@ -57,18 +56,12 @@ internal data class MediaUrlEntity(
 
     @ColumnInfo(name = "end")
     val end: Int,
+
+    @ColumnInfo(name = "order")
+    val order: Int,
 )
 
-@Entity(
-    tableName = "media",
-    foreignKeys = [
-        ForeignKey(
-            entity = UrlEntity::class,
-            parentColumns = ["text"],
-            childColumns = ["url"]
-        )
-    ]
-)
+@Entity(tableName = "media")
 internal data class MediaEntity(
     @PrimaryKey
     @ColumnInfo(name = "id")
@@ -145,7 +138,13 @@ internal data class VideoValiantEntity(
 
 internal data class MediaItemDb(
     @Embedded
-    private val entity: MediaEntity
+    private val entity: MediaEntity,
+    @ColumnInfo(name = "start")
+    override val start: Int,
+    @ColumnInfo(name = "end")
+    override val end: Int,
+    @ColumnInfo(name = "order")
+    override val order: Int,
 ) : MediaItem {
     @Ignore
     override val largeSize: MediaItem.Size? = entity.largeSize
@@ -175,15 +174,11 @@ internal data class MediaItemDb(
     override val mediaUrl: String = entity.mediaUrl
 
     @Ignore
-    override val url: UrlItem = object : UrlItem {
-        override val displayUrl: String = ""
-        override val expandedUrl: String = entity.url
-        override val text: String = entity.url
-    }
+    override val url: String = entity.url
 
     @Ignore
     override val type: MediaType = entity.type
 
     @Relation(entity = VideoValiantEntity::class, entityColumn = "media_id", parentColumn = "id")
-    override var videoValiantItems: List<VideoValiantEntity> = listOf()
+    override var videoValiantItems: List<VideoValiantEntity> = emptyList()
 }

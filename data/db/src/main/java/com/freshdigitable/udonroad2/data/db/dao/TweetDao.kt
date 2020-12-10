@@ -119,17 +119,21 @@ abstract class TweetDao(
         val mediaItems = tweetEntities.filter { it.mediaItems.isNotEmpty() }
             .map { t -> t.mediaItems.map { t to it } }
             .flatten()
-        db.urlDao().addUrlEntities(mediaItems.map { it.second.url.toEntity() })
         db.mediaDao().addMediaEntities(mediaItems.map { it.second.toEntity() })
         db.mediaDao().addTweetMediaRelations(
-            mediaItems.map {
-                MediaUrlEntity(
-                    tweetId = it.first.id,
-                    id = it.second.id,
-                    start = 0, // FIXME
-                    end = 0, // FIXME
-                )
-            }
+            tweetEntities.filter { it.mediaItems.isNotEmpty() }
+                .map { t ->
+                    t.mediaItems.mapIndexed { i, m ->
+                        MediaUrlEntity(
+                            tweetId = t.id,
+                            id = m.id,
+                            start = m.start,
+                            end = m.end,
+                            order = i
+                        )
+                    }
+                }
+                .flatten()
         )
         val videoVariantEntities = mediaItems.map { it.second }
             .filter { it.videoValiantItems.isNotEmpty() }

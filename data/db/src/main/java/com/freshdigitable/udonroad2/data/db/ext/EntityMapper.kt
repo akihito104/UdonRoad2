@@ -59,7 +59,7 @@ internal fun TweetEntity.toListEntity(owner: String): TweetListEntity {
 internal fun MediaItem.toEntity(): MediaEntity {
     return MediaEntity(
         id = id,
-        url = url.text,
+        url = url,
         type = MediaType.find(type.value),
         largeSize = largeSize?.toEntity(),
         mediumSize = mediumSize?.toEntity(),
@@ -77,7 +77,7 @@ internal fun MediaItem.Size.toEntity(): MediaEntity.Size {
 }
 
 internal fun UrlItem.toEntity(): UrlEntity {
-    return UrlEntity(text, displayUrl, expandedUrl)
+    return UrlEntity(url, displayUrl, expandedUrl, start, end)
 }
 
 internal fun MemberList.toEntity(): MemberListEntity {

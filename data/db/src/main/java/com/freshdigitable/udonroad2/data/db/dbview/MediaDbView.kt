@@ -18,11 +18,9 @@ package com.freshdigitable.udonroad2.data.db.dbview
 
 import androidx.room.ColumnInfo
 import androidx.room.DatabaseView
-import androidx.room.Ignore
 import com.freshdigitable.udonroad2.model.MediaId
 import com.freshdigitable.udonroad2.model.MediaType
 import com.freshdigitable.udonroad2.model.TweetMediaItem
-import com.freshdigitable.udonroad2.model.UrlItem
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 
 @DatabaseView(
@@ -41,20 +39,21 @@ internal data class MediaDbView(
     override val mediaUrl: String,
 
     @ColumnInfo(name = "url")
-    private val _url: String,
+    override val url: String,
 
     @ColumnInfo(name = "type")
     override val type: MediaType,
 
+    @ColumnInfo(name = "start")
+    override val start: Int,
+
+    @ColumnInfo(name = "end")
+    override val end: Int,
+
     @ColumnInfo(name = "tweet_id")
-    val tweetId: TweetId
-) : TweetMediaItem {
-    @Ignore
-    override val url: UrlItem = object : UrlItem {
-        override val displayUrl: String
-            get() = ""
-        override val expandedUrl: String = _url
-        override val text: String = _url
-    }
-}
+    val tweetId: TweetId,
+
+    @ColumnInfo(name = "order")
+    override val order: Int,
+) : TweetMediaItem
 

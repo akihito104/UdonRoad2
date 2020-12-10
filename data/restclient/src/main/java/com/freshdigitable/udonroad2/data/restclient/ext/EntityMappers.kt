@@ -22,7 +22,6 @@ import com.freshdigitable.udonroad2.data.restclient.data.MemberListImpl
 import com.freshdigitable.udonroad2.data.restclient.data.PagedResponseList
 import com.freshdigitable.udonroad2.data.restclient.data.SizeRest
 import com.freshdigitable.udonroad2.data.restclient.data.TweetEntityRest
-import com.freshdigitable.udonroad2.data.restclient.data.UrlEntityRest
 import com.freshdigitable.udonroad2.data.restclient.data.UserEntityRest
 import com.freshdigitable.udonroad2.data.restclient.data.UserReplyEntityRest
 import com.freshdigitable.udonroad2.data.restclient.data.VideoValiantRest
@@ -120,9 +119,9 @@ fun MediaEntity.toItem(): MediaItem {
         videoAspectRatioHeight = videoAspectRatioHeight,
         videoAspectRatioWidth = videoAspectRatioWidth,
         videoDurationMillis = videoDurationMillis,
-        url = UrlEntityRest(
-            text = text, displayUrl = displayURL, expandedUrl = expandedURL
-        ),
+        url = text,
+        start = start,
+        end = end,
         videoValiantItems = videoVariants.map(MediaEntity.Variant::toItem)
     )
 }

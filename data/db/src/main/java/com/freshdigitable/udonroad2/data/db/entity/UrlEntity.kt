@@ -25,11 +25,17 @@ import com.freshdigitable.udonroad2.model.UrlItem
 internal data class UrlEntity(
     @PrimaryKey
     @ColumnInfo(name = "text", index = true)
-    override val text: String,
+    override val url: String,
 
     @ColumnInfo(name = "display")
     override val displayUrl: String,
 
     @ColumnInfo(name = "expanded")
-    override val expandedUrl: String
+    override val expandedUrl: String,
+
+    @ColumnInfo(name = "start")
+    override val start: Int,
+
+    @ColumnInfo(name = "end")
+    override val end: Int,
 ) : UrlItem

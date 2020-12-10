@@ -17,9 +17,13 @@
 package com.freshdigitable.udonroad2.model
 
 interface UrlItem {
-    val text: String
+    val url: String
 
     val displayUrl: String
 
     val expandedUrl: String
+
+    val start: Int
+
+    val end: Int
 }

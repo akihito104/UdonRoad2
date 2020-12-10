@@ -173,10 +173,16 @@ internal data class TweetListItem(
         tweetListItem.originalUser
 
     @Relation(entity = MediaDbView::class, parentColumn = "id", entityColumn = "tweet_id")
-    var bodyMediaItems: List<MediaDbView> = listOf()
+    var bodyMediaItems: List<MediaDbView> = emptyList()
+        set(value) {
+            field = value.sortedBy { it.order }
+        }
 
     @Relation(entity = MediaDbView::class, parentColumn = "qt_id", entityColumn = "tweet_id")
-    var quoteMediaItems: List<MediaDbView> = listOf()
+    var quoteMediaItems: List<MediaDbView> = emptyList()
+        set(value) {
+            field = value.sortedBy { it.order }
+        }
 
     override val body: Tweet
         @Ignore get() = Tweet(tweetListItem.body).apply { mediaItems = bodyMediaItems }

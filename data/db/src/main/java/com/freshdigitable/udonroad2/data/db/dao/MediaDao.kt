@@ -28,6 +28,7 @@ import com.freshdigitable.udonroad2.data.db.entity.VideoValiantEntity
 import com.freshdigitable.udonroad2.model.MediaItem
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 @Dao
 abstract class MediaDao {
@@ -40,7 +41,7 @@ abstract class MediaDao {
     @Transaction
     @Query(
         """
-            SELECT media.* 
+            SELECT media.*, media_url.start, media_url.`end`, media_url.`order`
              FROM media_url
              INNER JOIN media ON media.id = media_url.id
              WHERE tweet_id = :tweetId 
@@ -49,7 +50,7 @@ abstract class MediaDao {
     internal abstract fun getMediaSourceByTweetId(tweetId: TweetId): Flow<List<MediaItemDb>>
 
     fun getMediaItemSource(tweetId: TweetId): Flow<List<MediaItem>> =
-        getMediaSourceByTweetId(tweetId)
+        getMediaSourceByTweetId(tweetId).map { i -> i.sortedBy { it.order } }
 }
 
 @Dao
