@@ -19,9 +19,15 @@ package com.freshdigitable.udonroad2.data.db.dao
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import androidx.room.Transaction
 import com.freshdigitable.udonroad2.data.db.entity.MediaEntity
-import com.freshdigitable.udonroad2.data.db.entity.TweetMediaRelation
+import com.freshdigitable.udonroad2.data.db.entity.MediaItemDb
+import com.freshdigitable.udonroad2.data.db.entity.MediaUrlEntity
 import com.freshdigitable.udonroad2.data.db.entity.VideoValiantEntity
+import com.freshdigitable.udonroad2.model.MediaItem
+import com.freshdigitable.udonroad2.model.tweet.TweetId
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 abstract class MediaDao {
@@ -29,7 +35,21 @@ abstract class MediaDao {
     internal abstract suspend fun addMediaEntities(entities: Iterable<MediaEntity>)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    internal abstract suspend fun addTweetMediaRelations(rels: Iterable<TweetMediaRelation>)
+    internal abstract suspend fun addTweetMediaRelations(rels: Iterable<MediaUrlEntity>)
+
+    @Transaction
+    @Query(
+        """
+            SELECT media.* 
+             FROM media_url
+             INNER JOIN media ON media.id = media_url.id
+             WHERE tweet_id = :tweetId 
+        """
+    )
+    internal abstract fun getMediaSourceByTweetId(tweetId: TweetId): Flow<List<MediaItemDb>>
+
+    fun getMediaItemSource(tweetId: TweetId): Flow<List<MediaItem>> =
+        getMediaSourceByTweetId(tweetId)
 }
 
 @Dao

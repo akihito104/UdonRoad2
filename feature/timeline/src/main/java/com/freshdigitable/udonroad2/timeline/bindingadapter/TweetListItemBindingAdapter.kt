@@ -30,8 +30,9 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.freshdigitable.udonroad2.media.MediaThumbnailContainer
 import com.freshdigitable.udonroad2.media.mediaViews
-import com.freshdigitable.udonroad2.model.MediaItem
 import com.freshdigitable.udonroad2.model.MediaType
+import com.freshdigitable.udonroad2.model.TweetMediaItem
+import com.freshdigitable.udonroad2.model.thumbMediaUrl
 import com.freshdigitable.udonroad2.model.user.TweetingUser
 import com.freshdigitable.udonroad2.timeline.R
 import org.threeten.bp.Duration
@@ -124,7 +125,7 @@ fun bindUserIcon(v: ImageView, url: String?) {
 private val movieType: Set<MediaType> = EnumSet.of(MediaType.VIDEO, MediaType.ANIMATED_GIF)
 
 @BindingAdapter("bindMedia")
-fun MediaThumbnailContainer.bindMedia(items: List<MediaItem>?) {
+fun MediaThumbnailContainer.bindMedia(items: List<TweetMediaItem>?) {
     if (items.isNullOrEmpty()) {
         return
     }

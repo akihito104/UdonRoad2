@@ -24,10 +24,10 @@ import androidx.room.Query
 import androidx.room.Transaction
 import com.freshdigitable.udonroad2.data.db.AppDatabase
 import com.freshdigitable.udonroad2.data.db.dbview.TweetListItem
+import com.freshdigitable.udonroad2.data.db.entity.MediaUrlEntity
 import com.freshdigitable.udonroad2.data.db.entity.StructuredTweetEntity
 import com.freshdigitable.udonroad2.data.db.entity.TweetEntityDb
 import com.freshdigitable.udonroad2.data.db.entity.TweetListEntity
-import com.freshdigitable.udonroad2.data.db.entity.TweetMediaRelation
 import com.freshdigitable.udonroad2.data.db.entity.UserReplyEntityDb
 import com.freshdigitable.udonroad2.data.db.entity.VideoValiantEntity
 import com.freshdigitable.udonroad2.data.db.ext.toDbEntity
@@ -123,9 +123,11 @@ abstract class TweetDao(
         db.mediaDao().addMediaEntities(mediaItems.map { it.second.toEntity() })
         db.mediaDao().addTweetMediaRelations(
             mediaItems.map {
-                TweetMediaRelation(
-                    it.first.id,
-                    it.second.id
+                MediaUrlEntity(
+                    tweetId = it.first.id,
+                    id = it.second.id,
+                    start = 0, // FIXME
+                    end = 0, // FIXME
                 )
             }
         )

@@ -7,6 +7,7 @@ skinparam class {
 entity media {
   * id: MediaId [PK]
   * url: String
+  * media_url: String
   * type: String
   large: Size <<embedded>>
   medium: Size <<embedded>>
@@ -27,9 +28,7 @@ entity video_valiant {
 entity media_url {
   * tweet_id: TweetId [PK]
   * media_id: MediaId [PK]
-  * text: String
-  * display: String
-  * expanded: String
+  * order: Int
   * start: Int
   * end: Int
 }
@@ -193,8 +192,10 @@ package database_views {
   entity view_tweet_item_media << (V, #ffffff) view >> {
     * id: MediaId
     * tweet_id: TweetId
-    * display_url: String
-    * expanded_url: String
+    * url: String
+    * media_url: String
+    * type: String
+    * order: Int
     * start: Int
     * end: Int
   }
@@ -231,6 +232,7 @@ package database_views {
   view_user_item - user
 
   view_tweet_item_media - media_url
+  view_tweet_item_media - media
 
   view_custom_timeline_item - custom_timeline
 

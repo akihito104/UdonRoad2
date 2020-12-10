@@ -8,6 +8,7 @@ import com.freshdigitable.udonroad2.data.db.entity.TweetListEntity
 import com.freshdigitable.udonroad2.data.db.entity.UrlEntity
 import com.freshdigitable.udonroad2.data.db.entity.UserEntity
 import com.freshdigitable.udonroad2.model.MediaItem
+import com.freshdigitable.udonroad2.model.MediaType
 import com.freshdigitable.udonroad2.model.MemberList
 import com.freshdigitable.udonroad2.model.UrlItem
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
@@ -59,7 +60,7 @@ internal fun MediaItem.toEntity(): MediaEntity {
     return MediaEntity(
         id = id,
         url = url.text,
-        type = type.value,
+        type = MediaType.find(type.value),
         largeSize = largeSize?.toEntity(),
         mediumSize = mediumSize?.toEntity(),
         smallSize = smallSize?.toEntity(),

@@ -21,7 +21,7 @@ import androidx.room.DatabaseView
 import androidx.room.Embedded
 import androidx.room.Ignore
 import androidx.room.Relation
-import com.freshdigitable.udonroad2.model.MediaItem
+import com.freshdigitable.udonroad2.model.TweetMediaItem
 import com.freshdigitable.udonroad2.model.tweet.Tweet
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
@@ -30,7 +30,7 @@ import org.threeten.bp.Instant
 @DatabaseView(
     viewName = "view_tweet",
     value =
-        """
+    """
     SELECT
      t.id, text, created_at, is_retweeted, retweet_count, is_favorited, favorite_count, source, 
      u.id AS user_id,
@@ -104,13 +104,13 @@ internal data class Tweet(
     @Relation(
         entity = MediaDbView::class, parentColumn = "id", entityColumn = "tweet_id"
     )
-    override var mediaItems: List<MediaItem> = listOf()
+    override var mediaItems: List<TweetMediaItem> = listOf()
 }
 
 @DatabaseView(
     viewName = "tweet_list_item",
     value =
-        """
+    """
     WITH
     original AS (
     SELECT
@@ -173,10 +173,10 @@ internal data class TweetListItem(
         tweetListItem.originalUser
 
     @Relation(entity = MediaDbView::class, parentColumn = "id", entityColumn = "tweet_id")
-    var bodyMediaItems: List<MediaItemDb> = listOf()
+    var bodyMediaItems: List<MediaDbView> = listOf()
 
     @Relation(entity = MediaDbView::class, parentColumn = "qt_id", entityColumn = "tweet_id")
-    var quoteMediaItems: List<MediaItemDb> = listOf()
+    var quoteMediaItems: List<MediaDbView> = listOf()
 
     override val body: Tweet
         @Ignore get() = Tweet(tweetListItem.body).apply { mediaItems = bodyMediaItems }
