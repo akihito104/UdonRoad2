@@ -23,8 +23,8 @@ import androidx.room.ForeignKey
 import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import androidx.room.Relation
+import com.freshdigitable.udonroad2.model.MediaEntity
 import com.freshdigitable.udonroad2.model.MediaId
-import com.freshdigitable.udonroad2.model.MediaItem
 import com.freshdigitable.udonroad2.model.MediaType
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 
@@ -33,7 +33,7 @@ import com.freshdigitable.udonroad2.model.tweet.TweetId
     primaryKeys = ["id", "tweet_id"],
     foreignKeys = [
         ForeignKey(
-            entity = MediaEntity::class,
+            entity = MediaDbEntity::class,
             parentColumns = ["id"],
             childColumns = ["id"]
         ),
@@ -62,7 +62,7 @@ internal data class MediaUrlEntity(
 )
 
 @Entity(tableName = "media")
-internal data class MediaEntity(
+internal data class MediaDbEntity(
     @PrimaryKey
     @ColumnInfo(name = "id")
     val id: MediaId,
@@ -108,7 +108,7 @@ internal data class MediaEntity(
 
         @ColumnInfo(name = "resize_type")
         override val resizeType: Int
-    ) : MediaItem.Size
+    ) : MediaEntity.Size
 }
 
 @Entity(
@@ -116,7 +116,7 @@ internal data class MediaEntity(
     primaryKeys = ["media_id", "url"],
     foreignKeys = [
         ForeignKey(
-            entity = MediaEntity::class,
+            entity = MediaDbEntity::class,
             parentColumns = ["id"],
             childColumns = ["media_id"]
         )
@@ -134,29 +134,29 @@ internal data class VideoValiantEntity(
 
     @ColumnInfo(name = "content_type")
     override val contentType: String
-) : MediaItem.VideoValiant
+) : MediaEntity.VideoValiant
 
-internal data class MediaItemDb(
+internal data class MediaEntityImpl(
     @Embedded
-    private val entity: MediaEntity,
+    private val entity: MediaDbEntity,
     @ColumnInfo(name = "start")
     override val start: Int,
     @ColumnInfo(name = "end")
     override val end: Int,
     @ColumnInfo(name = "order")
     override val order: Int,
-) : MediaItem {
+) : MediaEntity {
     @Ignore
-    override val largeSize: MediaItem.Size? = entity.largeSize
+    override val largeSize: MediaEntity.Size? = entity.largeSize
 
     @Ignore
-    override val mediumSize: MediaItem.Size? = entity.mediumSize
+    override val mediumSize: MediaEntity.Size? = entity.mediumSize
 
     @Ignore
-    override val smallSize: MediaItem.Size? = entity.smallSize
+    override val smallSize: MediaEntity.Size? = entity.smallSize
 
     @Ignore
-    override val thumbSize: MediaItem.Size? = entity.thumbSize
+    override val thumbSize: MediaEntity.Size? = entity.thumbSize
 
     @Ignore
     override val videoAspectRatioWidth: Int? = entity.videoAspectRatioWidth

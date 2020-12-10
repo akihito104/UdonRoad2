@@ -1,6 +1,6 @@
 package com.freshdigitable.udonroad2.data.restclient.data
 
-import com.freshdigitable.udonroad2.model.MediaItem
+import com.freshdigitable.udonroad2.model.MediaEntity
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.tweet.UserReplyEntity
@@ -22,7 +22,7 @@ internal class TweetEntityRest(
     override val possiblySensitive: Boolean,
     override val source: String,
     override val createdAt: Instant,
-    override val mediaItems: List<MediaItem>,
+    override val media: List<MediaEntity>,
     override val replyEntities: List<UserReplyEntity>,
 ) : TweetEntity
 

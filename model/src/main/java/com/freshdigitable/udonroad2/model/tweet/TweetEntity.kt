@@ -16,7 +16,7 @@
 
 package com.freshdigitable.udonroad2.model.tweet
 
-import com.freshdigitable.udonroad2.model.MediaItem
+import com.freshdigitable.udonroad2.model.MediaEntity
 import com.freshdigitable.udonroad2.model.user.User
 import com.freshdigitable.udonroad2.model.user.UserId
 
@@ -34,7 +34,7 @@ interface TweetEntity : Tweet {
 
     val replyEntities: List<UserReplyEntity>
 
-    override val mediaItems: List<MediaItem>
+    override val media: List<MediaEntity>
 }
 
 interface UserReplyEntity {

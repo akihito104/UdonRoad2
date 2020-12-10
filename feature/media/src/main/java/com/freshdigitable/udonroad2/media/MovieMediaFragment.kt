@@ -33,7 +33,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
-import com.freshdigitable.udonroad2.model.MediaItem
+import com.freshdigitable.udonroad2.model.MediaEntity
 import dagger.android.support.AndroidSupportInjection
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -52,11 +52,11 @@ class MovieMediaFragment(
 
     companion object {
         private const val ARGS_URL = "url"
-        fun create(mediaItem: MediaItem): MovieMediaFragment {
+        fun create(mediaEntity: MediaEntity): MovieMediaFragment {
             val args = Bundle().apply {
                 putString(
                     ARGS_URL,
-                    mediaItem.videoValiantItems.first { it.contentType == "video/mp4" }.url
+                    mediaEntity.videoValiantItems.first { it.contentType == "video/mp4" }.url
                 )
             }
             return MovieMediaFragment().apply {

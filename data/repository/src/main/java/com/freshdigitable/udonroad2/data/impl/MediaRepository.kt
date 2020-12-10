@@ -17,7 +17,7 @@
 package com.freshdigitable.udonroad2.data.impl
 
 import com.freshdigitable.udonroad2.data.db.dao.MediaDao
-import com.freshdigitable.udonroad2.model.MediaItem
+import com.freshdigitable.udonroad2.model.MediaEntity
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
@@ -25,7 +25,7 @@ import javax.inject.Inject
 class MediaRepository @Inject constructor(
     private val mediaDao: MediaDao
 ) {
-    fun getMediaItemSource(tweetId: TweetId): Flow<List<MediaItem>> {
+    fun getMediaItemSource(tweetId: TweetId): Flow<List<MediaEntity>> {
         return mediaDao.getMediaItemSource(tweetId)
     }
 }

@@ -17,7 +17,7 @@
 package com.freshdigitable.udonroad2.data.restclient.ext
 
 import android.graphics.Color
-import com.freshdigitable.udonroad2.data.restclient.data.MediaItemRest
+import com.freshdigitable.udonroad2.data.restclient.data.MediaEntityRest
 import com.freshdigitable.udonroad2.data.restclient.data.MemberListImpl
 import com.freshdigitable.udonroad2.data.restclient.data.PagedResponseList
 import com.freshdigitable.udonroad2.data.restclient.data.SizeRest
@@ -25,8 +25,8 @@ import com.freshdigitable.udonroad2.data.restclient.data.TweetEntityRest
 import com.freshdigitable.udonroad2.data.restclient.data.UserEntityRest
 import com.freshdigitable.udonroad2.data.restclient.data.UserReplyEntityRest
 import com.freshdigitable.udonroad2.data.restclient.data.VideoValiantRest
+import com.freshdigitable.udonroad2.model.MediaEntity
 import com.freshdigitable.udonroad2.model.MediaId
-import com.freshdigitable.udonroad2.model.MediaItem
 import com.freshdigitable.udonroad2.model.MediaType
 import com.freshdigitable.udonroad2.model.MemberList
 import com.freshdigitable.udonroad2.model.MemberListId
@@ -35,7 +35,10 @@ import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.tweet.UserReplyEntity
 import com.freshdigitable.udonroad2.model.user.UserId
 import org.threeten.bp.Instant
-import twitter4j.MediaEntity
+import twitter4j.MediaEntity.Size.LARGE
+import twitter4j.MediaEntity.Size.MEDIUM
+import twitter4j.MediaEntity.Size.SMALL
+import twitter4j.MediaEntity.Size.THUMB
 import twitter4j.PagableResponseList
 import twitter4j.Status
 import twitter4j.TwitterResponse
@@ -57,7 +60,7 @@ internal fun Status.toEntity(): TweetEntity {
         possiblySensitive = isPossiblySensitive,
         source = source,
         createdAt = Instant.ofEpochMilli(createdAt.time),
-        mediaItems = mediaEntities.map { it.toItem() },
+        media = mediaEntities.map { it.toItem() },
         replyEntities = userMentionEntities.map { UserReplyEntity.create(it) }
     )
 }
@@ -107,26 +110,26 @@ internal fun <I : TwitterResponse, O> PagableResponseList<I>.toPagedResponseList
     nextCursor = if (this.hasNext()) this.nextCursor else 0
 )
 
-fun MediaEntity.toItem(): MediaItem {
-    return MediaItemRest(
+internal fun twitter4j.MediaEntity.toItem(): MediaEntityRest {
+    return MediaEntityRest(
         id = MediaId(id),
         mediaUrl = mediaURLHttps,
         type = MediaType.find(type),
-        largeSize = sizes[MediaEntity.Size.LARGE]?.toItem(),
-        mediumSize = sizes[MediaEntity.Size.MEDIUM]?.toItem(),
-        smallSize = sizes[MediaEntity.Size.SMALL]?.toItem(),
-        thumbSize = sizes[MediaEntity.Size.THUMB]?.toItem(),
+        largeSize = sizes[LARGE]?.toItem(),
+        mediumSize = sizes[MEDIUM]?.toItem(),
+        smallSize = sizes[SMALL]?.toItem(),
+        thumbSize = sizes[THUMB]?.toItem(),
         videoAspectRatioHeight = videoAspectRatioHeight,
         videoAspectRatioWidth = videoAspectRatioWidth,
         videoDurationMillis = videoDurationMillis,
         url = text,
         start = start,
         end = end,
-        videoValiantItems = videoVariants.map(MediaEntity.Variant::toItem)
+        videoValiantItems = videoVariants.map(twitter4j.MediaEntity.Variant::toItem)
     )
 }
 
-internal fun MediaEntity.Size.toItem(): MediaItem.Size {
+internal fun twitter4j.MediaEntity.Size.toItem(): MediaEntity.Size {
     return SizeRest(
         resizeType = this.resize,
         height = height,
@@ -134,7 +137,7 @@ internal fun MediaEntity.Size.toItem(): MediaItem.Size {
     )
 }
 
-internal fun MediaEntity.Variant.toItem(): VideoValiantRest {
+internal fun twitter4j.MediaEntity.Variant.toItem(): VideoValiantRest {
     return VideoValiantRest(
         bitrate = bitrate,
         contentType = contentType,

@@ -31,7 +31,7 @@ import com.freshdigitable.udonroad2.model.tweet.TweetId
 """,
     viewName = "view_tweet_item_media"
 )
-internal data class MediaDbView(
+internal data class TweetItemMediaDbView(
     @ColumnInfo(name = "id")
     override val id: MediaId,
 

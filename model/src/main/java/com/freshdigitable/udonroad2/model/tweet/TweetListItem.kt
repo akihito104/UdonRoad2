@@ -59,7 +59,7 @@ interface Tweet {
 
     val createdAt: Instant
 
-    val mediaItems: List<TweetMediaItem>
+    val media: List<TweetMediaItem>
 }
 
 data class TweetId(val value: Long) : Serializable

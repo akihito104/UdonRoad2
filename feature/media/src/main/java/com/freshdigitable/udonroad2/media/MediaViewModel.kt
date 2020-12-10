@@ -25,7 +25,7 @@ import androidx.lifecycle.asLiveData
 import androidx.lifecycle.map
 import com.freshdigitable.udonroad2.data.impl.MediaRepository
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
-import com.freshdigitable.udonroad2.model.MediaItem
+import com.freshdigitable.udonroad2.model.MediaEntity
 import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.ext.combineLatest
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
@@ -54,7 +54,7 @@ class MediaViewModel @Inject constructor(
     private val eventDispatcher: EventDispatcher,
     private val viewStates: MediaViewModelViewStates,
 ) : ViewModel(), ShortcutViewModel {
-    val mediaItems: LiveData<List<MediaItem>> = viewStates.mediaItems
+    val mediaItems: LiveData<List<MediaEntity>> = viewStates.mediaItems
 
     internal val systemUiVisibility: LiveData<SystemUiVisibility> = viewStates.systemUiVisibility
 
@@ -116,15 +116,16 @@ class MediaViewModelViewStates @Inject constructor(
     eventDelegate: ActivityEventDelegate,
     executor: AppExecutor,
 ) : ShortcutViewStates by ShortcutViewStates.create(actions, tweetRepository, executor) {
-    internal val mediaItems: AppViewState<List<MediaItem>> = repository.getMediaItemSource(tweetId)
-        .transformLatest {
-            if (it.isNotEmpty()) {
-                emit(it)
-            } else {
-                tweetRepository.findTweetListItem(tweetId)
+    internal val mediaItems: AppViewState<List<MediaEntity>> =
+        repository.getMediaItemSource(tweetId)
+            .transformLatest {
+                if (it.isNotEmpty()) {
+                    emit(it)
+                } else {
+                    tweetRepository.findTweetListItem(tweetId)
+                }
             }
-        }
-        .asLiveData(executor.dispatcher.mainContext)
+            .asLiveData(executor.dispatcher.mainContext)
 
     internal val systemUiVisibility: AppViewState<SystemUiVisibility> = AppAction.merge(
         AppAction.just(SystemUiVisibility.SHOW),

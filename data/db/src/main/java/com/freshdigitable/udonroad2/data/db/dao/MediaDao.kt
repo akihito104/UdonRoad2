@@ -21,11 +21,11 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
-import com.freshdigitable.udonroad2.data.db.entity.MediaEntity
-import com.freshdigitable.udonroad2.data.db.entity.MediaItemDb
+import com.freshdigitable.udonroad2.data.db.entity.MediaDbEntity
+import com.freshdigitable.udonroad2.data.db.entity.MediaEntityImpl
 import com.freshdigitable.udonroad2.data.db.entity.MediaUrlEntity
 import com.freshdigitable.udonroad2.data.db.entity.VideoValiantEntity
-import com.freshdigitable.udonroad2.model.MediaItem
+import com.freshdigitable.udonroad2.model.MediaEntity
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -33,7 +33,7 @@ import kotlinx.coroutines.flow.map
 @Dao
 abstract class MediaDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    internal abstract suspend fun addMediaEntities(entities: Iterable<MediaEntity>)
+    internal abstract suspend fun addMediaEntities(entities: Iterable<MediaDbEntity>)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     internal abstract suspend fun addTweetMediaRelations(rels: Iterable<MediaUrlEntity>)
@@ -47,9 +47,9 @@ abstract class MediaDao {
              WHERE tweet_id = :tweetId 
         """
     )
-    internal abstract fun getMediaSourceByTweetId(tweetId: TweetId): Flow<List<MediaItemDb>>
+    internal abstract fun getMediaSourceByTweetId(tweetId: TweetId): Flow<List<MediaEntityImpl>>
 
-    fun getMediaItemSource(tweetId: TweetId): Flow<List<MediaItem>> =
+    fun getMediaItemSource(tweetId: TweetId): Flow<List<MediaEntity>> =
         getMediaSourceByTweetId(tweetId).map { i -> i.sortedBy { it.order } }
 }
 

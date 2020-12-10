@@ -116,8 +116,8 @@
             app:layout_constraintStart_toStartOf="@id/quotedItem_text"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toTopOf="@id/quotedItem_via"
-            android:visibility="@{tweet.quoted.mediaItems.isEmpty() ? View.GONE : View.VISIBLE}"
-            app:bindMedia="@{tweet.quoted.mediaItems}"
+            android:visibility="@{tweet.quoted.media.isEmpty() ? View.GONE : View.VISIBLE}"
+            app:bindMedia="@{tweet.quoted.media}"
             app:itemClickListener="@{(v, i) -> clickListener.onMediaItemClicked(tweet.originalId, tweet.quoted.id, tweet.quoted, i)}"
             tools:visibility="visible"
             />

@@ -102,9 +102,9 @@ internal data class Tweet(
     override val createdAt: Instant = tweet.createdAt
 
     @Relation(
-        entity = MediaDbView::class, parentColumn = "id", entityColumn = "tweet_id"
+        entity = TweetItemMediaDbView::class, parentColumn = "id", entityColumn = "tweet_id"
     )
-    override var mediaItems: List<TweetMediaItem> = listOf()
+    override var media: List<TweetMediaItem> = emptyList()
 }
 
 @DatabaseView(
@@ -172,24 +172,28 @@ internal data class TweetListItem(
     override val originalUser: com.freshdigitable.udonroad2.model.user.TweetingUser =
         tweetListItem.originalUser
 
-    @Relation(entity = MediaDbView::class, parentColumn = "id", entityColumn = "tweet_id")
-    var bodyMediaItems: List<MediaDbView> = emptyList()
+    @Relation(entity = TweetItemMediaDbView::class, parentColumn = "id", entityColumn = "tweet_id")
+    var bodyMediaItems: List<TweetItemMediaDbView> = emptyList()
         set(value) {
             field = value.sortedBy { it.order }
         }
 
-    @Relation(entity = MediaDbView::class, parentColumn = "qt_id", entityColumn = "tweet_id")
-    var quoteMediaItems: List<MediaDbView> = emptyList()
+    @Relation(
+        entity = TweetItemMediaDbView::class,
+        parentColumn = "qt_id",
+        entityColumn = "tweet_id"
+    )
+    var quoteMediaItems: List<TweetItemMediaDbView> = emptyList()
         set(value) {
             field = value.sortedBy { it.order }
         }
 
     override val body: Tweet
-        @Ignore get() = Tweet(tweetListItem.body).apply { mediaItems = bodyMediaItems }
+        @Ignore get() = Tweet(tweetListItem.body).apply { media = bodyMediaItems }
 
     override val quoted: Tweet?
         @Ignore get() = if (tweetListItem.quoted != null) {
-            Tweet(tweetListItem.quoted).apply { mediaItems = quoteMediaItems }
+            Tweet(tweetListItem.quoted).apply { media = quoteMediaItems }
         } else {
             null
         }

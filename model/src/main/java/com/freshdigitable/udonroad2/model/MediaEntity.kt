@@ -34,7 +34,7 @@ interface TweetMediaItem : UrlItem {
 val TweetMediaItem.thumbMediaUrl: String
     get() = "$mediaUrl:thumb"
 
-interface MediaItem : UrlItem, TweetMediaItem {
+interface MediaEntity : UrlItem, TweetMediaItem {
 
     val largeSize: Size?
 

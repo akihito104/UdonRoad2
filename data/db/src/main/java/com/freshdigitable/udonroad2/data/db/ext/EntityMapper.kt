@@ -1,13 +1,13 @@
 package com.freshdigitable.udonroad2.data.db.ext
 
-import com.freshdigitable.udonroad2.data.db.entity.MediaEntity
+import com.freshdigitable.udonroad2.data.db.entity.MediaDbEntity
 import com.freshdigitable.udonroad2.data.db.entity.MemberListEntity
 import com.freshdigitable.udonroad2.data.db.entity.StructuredTweetEntity
 import com.freshdigitable.udonroad2.data.db.entity.TweetEntityDb
 import com.freshdigitable.udonroad2.data.db.entity.TweetListEntity
 import com.freshdigitable.udonroad2.data.db.entity.UrlEntity
 import com.freshdigitable.udonroad2.data.db.entity.UserEntity
-import com.freshdigitable.udonroad2.model.MediaItem
+import com.freshdigitable.udonroad2.model.MediaEntity
 import com.freshdigitable.udonroad2.model.MediaType
 import com.freshdigitable.udonroad2.model.MemberList
 import com.freshdigitable.udonroad2.model.UrlItem
@@ -56,8 +56,8 @@ internal fun TweetEntity.toListEntity(owner: String): TweetListEntity {
     )
 }
 
-internal fun MediaItem.toEntity(): MediaEntity {
-    return MediaEntity(
+internal fun MediaEntity.toEntity(): MediaDbEntity {
+    return MediaDbEntity(
         id = id,
         url = url,
         type = MediaType.find(type.value),
@@ -72,8 +72,8 @@ internal fun MediaItem.toEntity(): MediaEntity {
     )
 }
 
-internal fun MediaItem.Size.toEntity(): MediaEntity.Size {
-    return MediaEntity.Size(width, height, resizeType)
+internal fun MediaEntity.Size.toEntity(): MediaDbEntity.Size {
+    return MediaDbEntity.Size(width, height, resizeType)
 }
 
 internal fun UrlItem.toEntity(): UrlEntity {

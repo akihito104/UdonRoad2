@@ -116,14 +116,14 @@ abstract class TweetDao(
             addTweetListEntities(tweet.map { it.toListEntity(owner) })
         }
 
-        val mediaItems = tweetEntities.filter { it.mediaItems.isNotEmpty() }
-            .map { t -> t.mediaItems.map { t to it } }
+        val mediaItems = tweetEntities.filter { it.media.isNotEmpty() }
+            .map { t -> t.media.map { t to it } }
             .flatten()
         db.mediaDao().addMediaEntities(mediaItems.map { it.second.toEntity() })
         db.mediaDao().addTweetMediaRelations(
-            tweetEntities.filter { it.mediaItems.isNotEmpty() }
+            tweetEntities.filter { it.media.isNotEmpty() }
                 .map { t ->
-                    t.mediaItems.mapIndexed { i, m ->
+                    t.media.mapIndexed { i, m ->
                         MediaUrlEntity(
                             tweetId = t.id,
                             id = m.id,

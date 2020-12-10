@@ -18,7 +18,7 @@ package com.freshdigitable.udonroad2.media
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.freshdigitable.udonroad2.data.impl.MediaRepository
-import com.freshdigitable.udonroad2.model.MediaItem
+import com.freshdigitable.udonroad2.model.MediaEntity
 import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.tweet.Tweet
@@ -51,13 +51,13 @@ class MediaViewModelTest {
         .around(tweetRepositoryRule)
         .around(mediaRepositoryRule)
 
-    private val mediaItemSource: Channel<List<MediaItem>> = Channel()
+    private val mediaEntitySource: Channel<List<MediaEntity>> = Channel()
     private val tweetListItem: TweetListItem = mockk<TweetListItem>().apply {
         val tweetId = TweetId(1000)
         every { originalId } returns tweetId
         every { body } returns mockk<Tweet>().apply {
             every { id } returns tweetId
-            every { mediaItems } returns listOf(mockk())
+            every { media } returns listOf(mockk())
         }
     }
     private val sut: MediaViewModel by lazy {
@@ -78,7 +78,7 @@ class MediaViewModelTest {
     fun setup() {
         mediaRepositoryRule.setupResponseWithVerify(
             { mediaRepositoryRule.mock.getMediaItemSource(tweetListItem.originalId) },
-            mediaItemSource.consumeAsFlow()
+            mediaEntitySource.consumeAsFlow()
         )
         with(sut) {
             listOf(mediaItems, currentPosition, systemUiVisibility, isFabVisible).forEach {
@@ -101,7 +101,7 @@ class MediaViewModelTest {
     fun setTweetId_foundTweetItem_mediaItewHasItem() {
         // exercise
         coroutineRule.runBlockingTest {
-            mediaItemSource.send(listOf(mockk()))
+            mediaEntitySource.send(listOf(mockk()))
         }
 
         // verify

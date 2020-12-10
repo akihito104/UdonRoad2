@@ -34,13 +34,13 @@ import com.freshdigitable.udonroad2.data.db.dao.UrlDao
 import com.freshdigitable.udonroad2.data.db.dao.UserDao
 import com.freshdigitable.udonroad2.data.db.dao.UserReplyEntityDao
 import com.freshdigitable.udonroad2.data.db.dao.VideoValiantDao
-import com.freshdigitable.udonroad2.data.db.dbview.MediaDbView
 import com.freshdigitable.udonroad2.data.db.dbview.MemberListDbView
 import com.freshdigitable.udonroad2.data.db.dbview.TweetDbView
+import com.freshdigitable.udonroad2.data.db.dbview.TweetItemMediaDbView
 import com.freshdigitable.udonroad2.data.db.dbview.TweetListItemDbView
 import com.freshdigitable.udonroad2.data.db.dbview.TweetingUser
 import com.freshdigitable.udonroad2.data.db.dbview.UserListDbView
-import com.freshdigitable.udonroad2.data.db.entity.MediaEntity
+import com.freshdigitable.udonroad2.data.db.entity.MediaDbEntity
 import com.freshdigitable.udonroad2.data.db.entity.MediaUrlEntity
 import com.freshdigitable.udonroad2.data.db.entity.MemberListEntity
 import com.freshdigitable.udonroad2.data.db.entity.MemberListListEntity
@@ -65,7 +65,7 @@ import com.freshdigitable.udonroad2.data.db.entity.VideoValiantEntity
         MemberListListEntity::class,
         RelationshipEntity::class,
         UrlEntity::class,
-        MediaEntity::class,
+        MediaDbEntity::class,
         MediaUrlEntity::class,
         VideoValiantEntity::class,
         UserReplyEntityDb::class,
@@ -76,7 +76,7 @@ import com.freshdigitable.udonroad2.data.db.entity.VideoValiantEntity
         TweetingUser::class,
         UserListDbView::class,
         MemberListDbView::class,
-        MediaDbView::class
+        TweetItemMediaDbView::class
     ],
     exportSchema = false,
     version = 1

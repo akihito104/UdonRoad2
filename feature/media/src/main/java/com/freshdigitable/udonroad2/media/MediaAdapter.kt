@@ -18,25 +18,25 @@ package com.freshdigitable.udonroad2.media
 
 import androidx.fragment.app.Fragment
 import androidx.viewpager2.adapter.FragmentStateAdapter
-import com.freshdigitable.udonroad2.model.MediaItem
+import com.freshdigitable.udonroad2.model.MediaEntity
 import com.freshdigitable.udonroad2.model.MediaType
 
 internal class MediaAdapter(
     activity: MediaActivity
 ) : FragmentStateAdapter(activity) {
 
-    private val items: MutableList<MediaItem> = mutableListOf()
+    private val entities: MutableList<MediaEntity> = mutableListOf()
 
-    fun setItems(items: List<MediaItem>) {
-        this.items.apply {
+    fun setItems(entities: List<MediaEntity>) {
+        this.entities.apply {
             clear()
-            addAll(items)
+            addAll(entities)
         }
         notifyDataSetChanged()
     }
 
     override fun getItemViewType(position: Int): Int {
-        return when (items[position].type) {
+        return when (entities[position].type) {
             MediaType.PHOTO -> R.layout.view_media_image
             MediaType.VIDEO, MediaType.ANIMATED_GIF -> R.layout.view_media_movie
         }
@@ -44,11 +44,11 @@ internal class MediaAdapter(
 
     override fun createFragment(position: Int): Fragment {
         return when (getItemViewType(position)) {
-            R.layout.view_media_image -> PhotoMediaFragment.create(items[position])
-            R.layout.view_media_movie -> MovieMediaFragment.create(items[position])
+            R.layout.view_media_image -> PhotoMediaFragment.create(entities[position])
+            R.layout.view_media_movie -> MovieMediaFragment.create(entities[position])
             else -> throw IllegalStateException()
         }
     }
 
-    override fun getItemCount(): Int = items.size
+    override fun getItemCount(): Int = entities.size
 }
