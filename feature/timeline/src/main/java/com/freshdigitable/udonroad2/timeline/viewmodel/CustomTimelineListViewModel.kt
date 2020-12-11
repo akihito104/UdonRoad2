@@ -16,7 +16,7 @@ import com.freshdigitable.udonroad2.timeline.ListItemClickListener
 import com.freshdigitable.udonroad2.timeline.ListItemLoadable
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 
-class MemberListListViewModel(
+class CustomTimelineListViewModel(
     private val owner: ListOwner<QueryType.UserListMembership>,
     private val repository: ListRepository<QueryType.UserListMembership>,
     private val eventDispatcher: EventDispatcher,
@@ -43,7 +43,7 @@ class MemberListListViewModel(
     }
 
     override fun onBodyItemClicked(item: CustomTimelineItem) {
-        eventDispatcher.postEvent(TimelineEvent.MemberListClicked(item))
+        eventDispatcher.postEvent(TimelineEvent.CustomTimelineClicked(item))
     }
 
     override fun onCleared() {

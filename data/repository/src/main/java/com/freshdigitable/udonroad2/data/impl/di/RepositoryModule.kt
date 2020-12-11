@@ -29,7 +29,7 @@ import com.freshdigitable.udonroad2.data.impl.RelationshipRepositoryModule
 import com.freshdigitable.udonroad2.data.impl.ReplyRepositoryModule
 import com.freshdigitable.udonroad2.data.impl.TweetRepositoryModule
 import com.freshdigitable.udonroad2.data.impl.UserRepositoryModule
-import com.freshdigitable.udonroad2.data.restclient.MemberListDataSourceModule
+import com.freshdigitable.udonroad2.data.restclient.CustomTimelineDataSourceModule
 import com.freshdigitable.udonroad2.data.restclient.RemoteListDataSourceProvider
 import com.freshdigitable.udonroad2.data.restclient.TweetTimelineDataSourceModule
 import com.freshdigitable.udonroad2.data.restclient.UserListDataSourceModule
@@ -55,7 +55,7 @@ interface RepositoryModule
         LocalListDataSourceModule::class,
         TweetTimelineDataSourceModule::class,
         UserListDataSourceModule::class,
-        MemberListDataSourceModule::class,
+        CustomTimelineDataSourceModule::class,
         PagedListDataSourceFactoryModule::class
     ]
 )

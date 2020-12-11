@@ -70,7 +70,7 @@ interface UserListDataSourceModule {
 }
 
 @Module
-interface MemberListDataSourceModule {
+interface CustomTimelineDataSourceModule {
     @Binds
     @IntoMap
     @RemoteListDataSourceKey(QueryType.UserListMembership::class)

@@ -40,7 +40,7 @@ import com.freshdigitable.udonroad2.model.user.UserListItem
 import com.freshdigitable.udonroad2.timeline.TimelineActions
 import com.freshdigitable.udonroad2.timeline.TimelineNavigationDelegate
 import com.freshdigitable.udonroad2.timeline.TimelineViewState
-import com.freshdigitable.udonroad2.timeline.viewmodel.MemberListListViewModel
+import com.freshdigitable.udonroad2.timeline.viewmodel.CustomTimelineListViewModel
 import com.freshdigitable.udonroad2.timeline.viewmodel.TimelineViewModel
 import com.freshdigitable.udonroad2.timeline.viewmodel.UserListViewModel
 import dagger.Module
@@ -52,7 +52,7 @@ import kotlin.reflect.KClass
     includes = [
         TimelineViewModelModule::class,
         UserListViewModelModule::class,
-        MemberListListViewModelModule::class,
+        CustomTimelineListViewModelModule::class,
         ListRepositoryComponentModule::class
     ]
 )
@@ -143,13 +143,13 @@ internal interface UserListViewModelModule {
 }
 
 @Module
-internal interface MemberListListViewModelModule {
+internal interface CustomTimelineListViewModelModule {
     companion object {
         @Provides
         @IntoMap
-        @ViewModelKey(MemberListListViewModel::class)
+        @ViewModelKey(CustomTimelineListViewModel::class)
         @IntoFactory
-        fun provideMemberListListViewModel(
+        fun provideCustomTimelineListViewModel(
             owner: ListOwner<*>,
             eventDispatcher: EventDispatcher,
             listRepositoryFactory: ListRepositoryComponent.Factory
@@ -157,14 +157,14 @@ internal interface MemberListListViewModelModule {
             owner,
             listRepositoryFactory
         ) { o, repository, pagedListProvider ->
-            MemberListListViewModel(o, repository, eventDispatcher, pagedListProvider)
+            CustomTimelineListViewModel(o, repository, eventDispatcher, pagedListProvider)
         }
 
         @Provides
         @IntoMap
         @QueryTypeKey(QueryType.UserListMembership::class)
-        fun provideMemberListListViewModelKClass(): KClass<out ViewModel> =
-            MemberListListViewModel::class
+        fun provideCustomTimelineListViewModelKClass(): KClass<out ViewModel> =
+            CustomTimelineListViewModel::class
     }
 }
 

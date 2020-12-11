@@ -28,12 +28,12 @@ import com.freshdigitable.udonroad2.model.CustomTimelineId
         ForeignKey(
             entity = CustomTimelineDb::class,
             parentColumns = ["id"],
-            childColumns = ["member_list_id"]
+            childColumns = ["custom_timeline_id"]
         )
     ]
 )
 internal data class CustomTimelineListDb(
-    @ColumnInfo(name = "member_list_id", index = true)
+    @ColumnInfo(name = "custom_timeline_id", index = true)
     val customTimelineId: CustomTimelineId,
 
     @PrimaryKey(autoGenerate = true)

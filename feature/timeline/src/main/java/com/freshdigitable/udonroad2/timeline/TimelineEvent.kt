@@ -31,7 +31,7 @@ sealed class TimelineEvent : AppEvent {
         abstract val owner: ListOwner<*>
     }
 
-    data class MemberListClicked(val customTimeline: CustomTimelineItem) : TimelineEvent()
+    data class CustomTimelineClicked(val customTimeline: CustomTimelineItem) : TimelineEvent()
 
     data class MediaItemClicked(
         val tweetId: TweetId,

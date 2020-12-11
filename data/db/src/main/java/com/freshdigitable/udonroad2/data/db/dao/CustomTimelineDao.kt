@@ -20,7 +20,7 @@ abstract class CustomTimelineDao(
     @Query(
         """
         SELECT v.* FROM custom_timeline_list AS l
-        INNER JOIN view_custom_timeline_item AS v ON l.member_list_id = v.id
+        INNER JOIN view_custom_timeline_item AS v ON l.custom_timeline_id = v.id
         WHERE l.owner = :owner
         ORDER BY l.`order` ASC"""
     )
@@ -32,9 +32,9 @@ abstract class CustomTimelineDao(
         owner: String?
     ) {
         val users = entities.map { it.user.toEntity() }
-        val memberLists = entities.map { it.toEntity() }
+        val customTimelines = entities.map { it.toEntity() }
         db.userDao().addUsers(users)
-        addCustomTimelineEntities(memberLists)
+        addCustomTimelineEntities(customTimelines)
 
         if (owner != null) {
             val listEntity = entities.map { e ->
