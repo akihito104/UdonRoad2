@@ -26,8 +26,8 @@ import com.freshdigitable.udonroad2.data.db.converter.MemberListIdConverter
 import com.freshdigitable.udonroad2.data.db.converter.TimestampConverter
 import com.freshdigitable.udonroad2.data.db.converter.TweetIdConverter
 import com.freshdigitable.udonroad2.data.db.converter.UserIdConverter
+import com.freshdigitable.udonroad2.data.db.dao.CustomTimelineDao
 import com.freshdigitable.udonroad2.data.db.dao.MediaDao
-import com.freshdigitable.udonroad2.data.db.dao.MemberListDao
 import com.freshdigitable.udonroad2.data.db.dao.RelationshipDao
 import com.freshdigitable.udonroad2.data.db.dao.TweetDao
 import com.freshdigitable.udonroad2.data.db.dao.UrlDao
@@ -92,7 +92,7 @@ abstract class AppDatabase : RoomDatabase() {
 
     abstract fun userDao(): UserDao
 
-    abstract fun memberListDao(): MemberListDao
+    abstract fun customTimelineDao(): CustomTimelineDao
 
     abstract fun relationshipDao(): RelationshipDao
 

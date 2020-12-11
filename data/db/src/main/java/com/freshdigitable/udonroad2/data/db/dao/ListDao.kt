@@ -55,12 +55,12 @@ class UserListDao(
     }
 }
 
-class MemberListListDao(
-    private val dao: MemberListDao
+class CustomTimelineListDao(
+    private val dao: CustomTimelineDao
 ) : LocalListDataSource<QueryType.UserListMembership, MemberList>,
     PagedListProvider.DataSourceFactory<MemberListItem> {
     override fun getDataSourceFactory(owner: String): DataSource.Factory<Int, MemberListItem> {
-        return dao.getMemberList(owner).map { it as MemberListItem }
+        return dao.getCustomTimeline(owner).map { it as MemberListItem }
     }
 
     override suspend fun putList(
@@ -68,7 +68,7 @@ class MemberListListDao(
         query: ListQuery<QueryType.UserListMembership>?,
         owner: String?
     ) {
-        dao.addMemberList(entities, owner)
+        dao.addCustomTimeline(entities, owner)
     }
 
     override suspend fun clean(owner: String) {
