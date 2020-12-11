@@ -8,12 +8,12 @@ import com.freshdigitable.udonroad2.model.MemberListId
 import com.freshdigitable.udonroad2.model.user.UserId
 
 @Entity(
-    tableName = "member_list",
+    tableName = "custom_timeline",
     foreignKeys = [
         ForeignKey(entity = UserEntityDb::class, parentColumns = ["id"], childColumns = ["user_id"])
     ]
 )
-internal data class MemberListEntity(
+internal data class CustomTimelineDb(
     @PrimaryKey
     @ColumnInfo(name = "id")
     val id: MemberListId,

@@ -34,15 +34,15 @@ import com.freshdigitable.udonroad2.data.db.dao.UrlDao
 import com.freshdigitable.udonroad2.data.db.dao.UserDao
 import com.freshdigitable.udonroad2.data.db.dao.UserReplyEntityDao
 import com.freshdigitable.udonroad2.data.db.dao.VideoValiantDao
-import com.freshdigitable.udonroad2.data.db.dbview.MemberListDbView
+import com.freshdigitable.udonroad2.data.db.dbview.CustomTimelineListItemDb
 import com.freshdigitable.udonroad2.data.db.dbview.TweetDbView
 import com.freshdigitable.udonroad2.data.db.dbview.TweetItemMediaDbView
 import com.freshdigitable.udonroad2.data.db.dbview.TweetListItemDbView
 import com.freshdigitable.udonroad2.data.db.dbview.UserListDbView
+import com.freshdigitable.udonroad2.data.db.entity.CustomTimelineDb
+import com.freshdigitable.udonroad2.data.db.entity.CustomTimelineListDb
 import com.freshdigitable.udonroad2.data.db.entity.MediaDbEntity
 import com.freshdigitable.udonroad2.data.db.entity.MediaUrlEntity
-import com.freshdigitable.udonroad2.data.db.entity.MemberListEntity
-import com.freshdigitable.udonroad2.data.db.entity.MemberListListEntity
 import com.freshdigitable.udonroad2.data.db.entity.RelationshipEntity
 import com.freshdigitable.udonroad2.data.db.entity.StructuredTweetEntity
 import com.freshdigitable.udonroad2.data.db.entity.TweetEntityDb
@@ -60,8 +60,8 @@ import com.freshdigitable.udonroad2.data.db.entity.VideoValiantEntity
         TweetListEntity::class,
         UserEntityDb::class,
         UserListEntity::class,
-        MemberListEntity::class,
-        MemberListListEntity::class,
+        CustomTimelineDb::class,
+        CustomTimelineListDb::class,
         RelationshipEntity::class,
         UrlEntity::class,
         MediaDbEntity::class,
@@ -73,7 +73,7 @@ import com.freshdigitable.udonroad2.data.db.entity.VideoValiantEntity
         TweetDbView::class,
         TweetListItemDbView::class,
         UserListDbView::class,
-        MemberListDbView::class,
+        CustomTimelineListItemDb::class,
         TweetItemMediaDbView::class
     ],
     exportSchema = false,
