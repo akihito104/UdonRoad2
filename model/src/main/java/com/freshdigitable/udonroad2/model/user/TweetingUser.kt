@@ -28,6 +28,10 @@ interface TweetingUser : Serializable {
 
     val iconUrl: String
 
+    val isVerified: Boolean
+
+    val isProtected: Boolean
+
     override fun equals(other: Any?): Boolean
     override fun hashCode(): Int
 }
@@ -36,8 +40,6 @@ interface UserListItem : TweetingUser {
     val description: String
     val followerCount: Int
     val followingCount: Int
-    val isVerified: Boolean
-    val isProtected: Boolean
 
     override fun equals(other: Any?): Boolean
     override fun hashCode(): Int

@@ -38,7 +38,6 @@ import com.freshdigitable.udonroad2.data.db.dbview.MemberListDbView
 import com.freshdigitable.udonroad2.data.db.dbview.TweetDbView
 import com.freshdigitable.udonroad2.data.db.dbview.TweetItemMediaDbView
 import com.freshdigitable.udonroad2.data.db.dbview.TweetListItemDbView
-import com.freshdigitable.udonroad2.data.db.dbview.TweetingUser
 import com.freshdigitable.udonroad2.data.db.dbview.UserListDbView
 import com.freshdigitable.udonroad2.data.db.entity.MediaDbEntity
 import com.freshdigitable.udonroad2.data.db.entity.MediaUrlEntity
@@ -73,7 +72,6 @@ import com.freshdigitable.udonroad2.data.db.entity.VideoValiantEntity
     views = [
         TweetDbView::class,
         TweetListItemDbView::class,
-        TweetingUser::class,
         UserListDbView::class,
         MemberListDbView::class,
         TweetItemMediaDbView::class

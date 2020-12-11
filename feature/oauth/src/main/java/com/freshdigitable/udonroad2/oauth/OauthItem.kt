@@ -35,7 +35,9 @@ data class OauthUser(
     override val id: UserId,
     override val name: String,
     override val screenName: String,
-    override val iconUrl: String
+    override val iconUrl: String,
+    override val isProtected: Boolean = false,
+    override val isVerified: Boolean = false,
 ) : TweetingUser
 
 data class OauthTweet(
