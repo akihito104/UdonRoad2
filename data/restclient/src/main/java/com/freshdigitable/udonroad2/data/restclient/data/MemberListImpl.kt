@@ -18,10 +18,10 @@ package com.freshdigitable.udonroad2.data.restclient.data
 
 import com.freshdigitable.udonroad2.model.MemberList
 import com.freshdigitable.udonroad2.model.MemberListId
-import com.freshdigitable.udonroad2.model.user.User
+import com.freshdigitable.udonroad2.model.user.UserEntity
 
 internal data class MemberListImpl(
-    override val user: User,
+    override val user: UserEntity,
     override val id: MemberListId,
     override val name: String,
     override val description: String,

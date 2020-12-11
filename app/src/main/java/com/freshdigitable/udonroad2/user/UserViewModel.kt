@@ -11,7 +11,7 @@ import com.freshdigitable.udonroad2.model.app.navigation.CommonEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.user.Relationship
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
-import com.freshdigitable.udonroad2.model.user.User
+import com.freshdigitable.udonroad2.model.user.UserEntity
 import com.freshdigitable.udonroad2.model.user.UserId
 import com.freshdigitable.udonroad2.shortcut.postSelectedItemShortcutEvent
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
@@ -24,7 +24,7 @@ class UserViewModel(
     private val eventDispatcher: EventDispatcher,
     private val viewState: UserActivityViewStates,
 ) : ViewModel() {
-    val user: LiveData<User?> = viewState.user
+    val user: LiveData<UserEntity?> = viewState.user
     val relationship: LiveData<Relationship?> = viewState.relationship
     val titleAlpha: LiveData<Float> = viewState.titleAlpha
     val fabVisible: LiveData<Boolean> = viewState.fabVisible

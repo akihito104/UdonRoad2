@@ -1,6 +1,6 @@
 package com.freshdigitable.udonroad2.data.restclient.data
 
-import com.freshdigitable.udonroad2.model.user.User
+import com.freshdigitable.udonroad2.model.user.UserEntity
 import com.freshdigitable.udonroad2.model.user.UserId
 
 internal data class UserEntityRest(
@@ -20,4 +20,4 @@ internal data class UserEntityRest(
     override val url: String?,
     override val isVerified: Boolean,
     override val isProtected: Boolean
-) : User
+) : UserEntity

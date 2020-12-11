@@ -34,7 +34,7 @@ import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.user.Relationship
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
-import com.freshdigitable.udonroad2.model.user.User
+import com.freshdigitable.udonroad2.model.user.UserEntity
 import com.freshdigitable.udonroad2.model.user.UserId
 import com.freshdigitable.udonroad2.test_common.MatcherScopedSuspendBlock
 import com.freshdigitable.udonroad2.test_common.MockVerified
@@ -355,7 +355,7 @@ class UserViewModelTestRule : TestWatcher() {
         every { id } returns targetId
         every { screenName } returns "user1"
     }
-    val user = mockk<User>().apply {
+    val user = mockk<UserEntity>().apply {
         every { id } returns targetId
     }
     val userRepositoryMock = MockVerified.create<UserRepository>()
@@ -403,7 +403,7 @@ class UserViewModelTestRule : TestWatcher() {
             .apply(super.apply(base, description), description)
     }
 
-    val userSource = MutableLiveData<User>()
+    val userSource = MutableLiveData<UserEntity>()
 
     private fun setupUserSource(targetId: UserId) {
         with(userRepositoryMock) {

@@ -10,7 +10,7 @@ import com.freshdigitable.udonroad2.model.MemberListItem
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
-import com.freshdigitable.udonroad2.model.user.User
+import com.freshdigitable.udonroad2.model.user.UserEntity
 import com.freshdigitable.udonroad2.model.user.UserListItem
 
 class TweetListDao(
@@ -36,14 +36,14 @@ class TweetListDao(
 
 class UserListDao(
     private val dao: UserDao
-) : LocalListDataSource<QueryType.UserQueryType, User>,
+) : LocalListDataSource<QueryType.UserQueryType, UserEntity>,
     PagedListProvider.DataSourceFactory<UserListItem> {
     override fun getDataSourceFactory(owner: String): DataSource.Factory<Int, UserListItem> {
         return dao.getUserList(owner).map { it as UserListItem }
     }
 
     override suspend fun putList(
-        entities: List<User>,
+        entities: List<UserEntity>,
         query: ListQuery<QueryType.UserQueryType>?,
         owner: String?
     ) {

@@ -29,7 +29,7 @@ import com.freshdigitable.udonroad2.model.app.AppTwitterException
 import com.freshdigitable.udonroad2.model.app.mainContext
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.tweet.TweetId
-import com.freshdigitable.udonroad2.model.user.User
+import com.freshdigitable.udonroad2.model.user.UserEntity
 import com.freshdigitable.udonroad2.model.user.UserId
 import com.freshdigitable.udonroad2.shortcut.SelectedItemShortcut
 import com.freshdigitable.udonroad2.test_common.MatcherScopedBlock
@@ -603,7 +603,7 @@ class TweetInputViewModelRule(
     override fun starting(description: Description?) {
         super.starting(description)
         val userId = UserId(1000)
-        val authenticatedUser = mockk<User>().apply {
+        val authenticatedUser = mockk<UserEntity>().apply {
             every { id } returns userId
             every { name } returns "user1"
             every { screenName } returns "User1"

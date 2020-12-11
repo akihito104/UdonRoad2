@@ -1,11 +1,11 @@
 package com.freshdigitable.udonroad2.model
 
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
-import com.freshdigitable.udonroad2.model.user.User
+import com.freshdigitable.udonroad2.model.user.UserEntity
 import java.io.Serializable
 
 interface MemberList : MemberListItem {
-    override val user: User
+    override val user: UserEntity
 }
 
 interface MemberListItem {

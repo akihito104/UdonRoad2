@@ -2,7 +2,7 @@ package com.freshdigitable.udonroad2.data.restclient
 
 import com.freshdigitable.udonroad2.data.restclient.ext.toEntity
 import com.freshdigitable.udonroad2.model.user.Relationship
-import com.freshdigitable.udonroad2.model.user.User
+import com.freshdigitable.udonroad2.model.user.UserEntity
 import com.freshdigitable.udonroad2.model.user.UserId
 import javax.inject.Inject
 
@@ -13,27 +13,27 @@ class FriendshipRestClient @Inject constructor(
         showFriendship(id, userId.value).toEntity()
     }
 
-    suspend fun createFriendship(userId: UserId): User = twitter.fetch {
+    suspend fun createFriendship(userId: UserId): UserEntity = twitter.fetch {
         createFriendship(userId.value).toEntity()
     }
 
-    suspend fun destroyFriendship(userId: UserId): User = twitter.fetch {
+    suspend fun destroyFriendship(userId: UserId): UserEntity = twitter.fetch {
         destroyFriendship(userId.value).toEntity()
     }
 
-    suspend fun createMute(userId: UserId): User = twitter.fetch {
+    suspend fun createMute(userId: UserId): UserEntity = twitter.fetch {
         createMute(userId.value).toEntity()
     }
 
-    suspend fun destroyMute(userId: UserId): User = twitter.fetch {
+    suspend fun destroyMute(userId: UserId): UserEntity = twitter.fetch {
         destroyMute(userId.value).toEntity()
     }
 
-    suspend fun createBlock(userId: UserId): User = twitter.fetch {
+    suspend fun createBlock(userId: UserId): UserEntity = twitter.fetch {
         createBlock(userId.value).toEntity()
     }
 
-    suspend fun destroyBlock(userId: UserId): User = twitter.fetch {
+    suspend fun destroyBlock(userId: UserId): UserEntity = twitter.fetch {
         destroyBlock(userId.value).toEntity()
     }
 
@@ -45,7 +45,7 @@ class FriendshipRestClient @Inject constructor(
         updateFriendship(userId.value, notificationsEnabled, wantRetweets).toEntity()
     }
 
-    suspend fun reportSpam(userId: UserId): User = twitter.fetch {
+    suspend fun reportSpam(userId: UserId): UserEntity = twitter.fetch {
         reportSpam(userId.value).toEntity()
     }
 }

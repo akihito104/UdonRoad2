@@ -12,9 +12,9 @@ import com.freshdigitable.udonroad2.model.MediaType
 import com.freshdigitable.udonroad2.model.MemberList
 import com.freshdigitable.udonroad2.model.UrlItem
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
-import com.freshdigitable.udonroad2.model.user.User
+import com.freshdigitable.udonroad2.model.user.UserEntity
 
-internal fun User.toEntity(): UserEntityDb {
+internal fun UserEntity.toEntity(): UserEntityDb {
     return if (this is UserEntityDb) {
         return this
     } else {

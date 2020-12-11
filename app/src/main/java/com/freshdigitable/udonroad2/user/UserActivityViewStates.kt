@@ -38,7 +38,7 @@ import com.freshdigitable.udonroad2.model.app.navigation.suspendMap
 import com.freshdigitable.udonroad2.model.app.navigation.toViewState
 import com.freshdigitable.udonroad2.model.user.Relationship
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
-import com.freshdigitable.udonroad2.model.user.User
+import com.freshdigitable.udonroad2.model.user.UserEntity
 import io.reactivex.disposables.CompositeDisposable
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import javax.inject.Inject
@@ -54,7 +54,7 @@ class UserActivityViewStates @Inject constructor(
     private val navigationDelegate: UserActivityNavigationDelegate,
     executor: AppExecutor,
 ) {
-    val user: AppViewState<User?> = userRepository.getUserSource(tweetUserItem.id).onNull(
+    val user: AppViewState<UserEntity?> = userRepository.getUserSource(tweetUserItem.id).onNull(
         executor = executor,
         onNull = { userRepository.getUser(tweetUserItem.id) },
         onError = {

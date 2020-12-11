@@ -4,7 +4,7 @@ import com.freshdigitable.udonroad2.model.MediaEntity
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.tweet.UserReplyEntity
-import com.freshdigitable.udonroad2.model.user.User
+import com.freshdigitable.udonroad2.model.user.UserEntity
 import com.freshdigitable.udonroad2.model.user.UserId
 import org.threeten.bp.Instant
 
@@ -13,7 +13,7 @@ internal class TweetEntityRest(
     override val text: String,
     override val retweetCount: Int,
     override val favoriteCount: Int,
-    override val user: User,
+    override val user: UserEntity,
     override val retweetedTweet: TweetEntity?,
     override val quotedTweet: TweetEntity?,
     override val inReplyToTweetId: TweetId?,

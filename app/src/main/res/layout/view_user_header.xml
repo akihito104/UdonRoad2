@@ -11,7 +11,7 @@
 
         <variable
             name="item"
-            type="com.freshdigitable.udonroad2.model.user.User"
+            type="com.freshdigitable.udonroad2.model.user.UserEntity"
             />
 
         <variable

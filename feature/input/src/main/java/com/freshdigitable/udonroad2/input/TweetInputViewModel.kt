@@ -38,7 +38,7 @@ import com.freshdigitable.udonroad2.model.app.navigation.subscribeToUpdate
 import com.freshdigitable.udonroad2.model.app.navigation.suspendMap
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
 import com.freshdigitable.udonroad2.model.tweet.TweetId
-import com.freshdigitable.udonroad2.model.user.User
+import com.freshdigitable.udonroad2.model.user.UserEntity
 import io.reactivex.disposables.CompositeDisposable
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -70,7 +70,7 @@ class TweetInputViewModel @Inject constructor(
         eventDispatcher.toAction<TweetInputEvent.Opened>().asFlow()
     internal val chooserForCameraApp = viewState.chooserForCameraApp.asFlow()
 
-    val user: LiveData<User?> = viewState.user
+    val user: LiveData<UserEntity?> = viewState.user
 
     fun onWriteClicked() {
         eventDispatcher.postEvent(TweetInputEvent.Open)
@@ -171,7 +171,7 @@ class TweetInputViewState @Inject constructor(
         }.asLiveDataWithMain(executor)
 
     @ExperimentalCoroutinesApi
-    internal val user: AppViewState<User?> = oauthRepository.getCurrentUserIdFlow()
+    internal val user: AppViewState<UserEntity?> = oauthRepository.getCurrentUserIdFlow()
         .flatMapLatest { id ->
             userRepository.getUserFlow(id)
                 .mapLatest { it ?: userRepository.getUser(id) }

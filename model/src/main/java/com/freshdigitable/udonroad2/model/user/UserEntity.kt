@@ -45,7 +45,7 @@ interface UserListItem : TweetUserItem {
     override fun hashCode(): Int
 }
 
-interface User : UserListItem {
+interface UserEntity : UserListItem {
     val profileBannerImageUrl: String?
     val tweetCount: Int
     val favoriteCount: Int
