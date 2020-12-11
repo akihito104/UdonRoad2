@@ -4,7 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
-import com.freshdigitable.udonroad2.model.MemberListId
+import com.freshdigitable.udonroad2.model.CustomTimelineId
 import com.freshdigitable.udonroad2.model.user.UserId
 
 @Entity(
@@ -16,7 +16,7 @@ import com.freshdigitable.udonroad2.model.user.UserId
 internal data class CustomTimelineDb(
     @PrimaryKey
     @ColumnInfo(name = "id")
-    val id: MemberListId,
+    val id: CustomTimelineId,
 
     @ColumnInfo(name = "name")
     val name: String,

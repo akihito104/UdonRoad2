@@ -5,14 +5,14 @@ import android.view.ViewGroup
 import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.freshdigitable.udonroad2.model.MemberListItem
+import com.freshdigitable.udonroad2.model.CustomTimelineItem
 import com.freshdigitable.udonroad2.timeline.R
 import com.freshdigitable.udonroad2.timeline.databinding.ViewMemberListItemBinding
 import com.freshdigitable.udonroad2.timeline.viewmodel.MemberListListViewModel
 
 class MemberListListAdapter(
     private val viewModel: MemberListListViewModel
-) : PagedListAdapter<MemberListItem, MemberListViewHolder>(diffUtil) {
+) : PagedListAdapter<CustomTimelineItem, MemberListViewHolder>(diffUtil) {
 
     init {
         setHasStableIds(true)
@@ -51,15 +51,15 @@ class MemberListListAdapter(
     override fun getItemId(position: Int): Long = getItem(position)?.id?.value ?: -1
 }
 
-private val diffUtil = object : DiffUtil.ItemCallback<MemberListItem>() {
+private val diffUtil = object : DiffUtil.ItemCallback<CustomTimelineItem>() {
     override fun areItemsTheSame(
-        oldItem: MemberListItem,
-        newItem: MemberListItem
+        oldItem: CustomTimelineItem,
+        newItem: CustomTimelineItem
     ): Boolean = oldItem.id == newItem.id
 
     override fun areContentsTheSame(
-        oldItem: MemberListItem,
-        newItem: MemberListItem
+        oldItem: CustomTimelineItem,
+        newItem: CustomTimelineItem
     ): Boolean = oldItem == newItem
 }
 

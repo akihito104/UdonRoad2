@@ -17,19 +17,19 @@
 package com.freshdigitable.udonroad2.data.restclient.ext
 
 import android.graphics.Color
+import com.freshdigitable.udonroad2.data.restclient.data.CustomTimelineEntityImpl
 import com.freshdigitable.udonroad2.data.restclient.data.MediaEntityRest
-import com.freshdigitable.udonroad2.data.restclient.data.MemberListImpl
 import com.freshdigitable.udonroad2.data.restclient.data.PagedResponseList
 import com.freshdigitable.udonroad2.data.restclient.data.SizeRest
 import com.freshdigitable.udonroad2.data.restclient.data.TweetEntityRest
 import com.freshdigitable.udonroad2.data.restclient.data.UserEntityRest
 import com.freshdigitable.udonroad2.data.restclient.data.UserReplyEntityRest
 import com.freshdigitable.udonroad2.data.restclient.data.VideoValiantRest
+import com.freshdigitable.udonroad2.model.CustomTimelineEntity
+import com.freshdigitable.udonroad2.model.CustomTimelineId
 import com.freshdigitable.udonroad2.model.MediaEntity
 import com.freshdigitable.udonroad2.model.MediaId
 import com.freshdigitable.udonroad2.model.MediaType
-import com.freshdigitable.udonroad2.model.MemberList
-import com.freshdigitable.udonroad2.model.MemberListId
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.tweet.UserReplyEntity
@@ -91,9 +91,9 @@ internal fun twitter4j.User.toEntity(): UserEntityRest {
     )
 }
 
-internal fun UserList.toEntity(): MemberList {
-    return MemberListImpl(
-        id = MemberListId(this.id),
+internal fun UserList.toEntity(): CustomTimelineEntity {
+    return CustomTimelineEntityImpl(
+        id = CustomTimelineId(this.id),
         name = name,
         description = description,
         user = user.toEntity(),

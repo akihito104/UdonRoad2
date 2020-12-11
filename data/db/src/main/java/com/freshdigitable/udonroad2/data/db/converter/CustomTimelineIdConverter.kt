@@ -17,12 +17,12 @@
 package com.freshdigitable.udonroad2.data.db.converter
 
 import androidx.room.TypeConverter
-import com.freshdigitable.udonroad2.model.MemberListId
+import com.freshdigitable.udonroad2.model.CustomTimelineId
 
-internal class MemberListIdConverter {
+internal class CustomTimelineIdConverter {
     @TypeConverter
-    fun toDb(id: MemberListId?): Long? = id?.value
+    fun toDb(id: CustomTimelineId?): Long? = id?.value
 
     @TypeConverter
-    fun toObject(value: Long?): MemberListId? = MemberListId.create(value)
+    fun toObject(value: Long?): CustomTimelineId? = CustomTimelineId.create(value)
 }

@@ -3,8 +3,8 @@ package com.freshdigitable.udonroad2.data.db.dbview
 import androidx.room.ColumnInfo
 import androidx.room.DatabaseView
 import androidx.room.Embedded
-import com.freshdigitable.udonroad2.model.MemberListId
-import com.freshdigitable.udonroad2.model.MemberListItem
+import com.freshdigitable.udonroad2.model.CustomTimelineId
+import com.freshdigitable.udonroad2.model.CustomTimelineItem
 
 private const val PREFIX_OWNER = "user_"
 
@@ -24,7 +24,7 @@ private const val PREFIX_OWNER = "user_"
 )
 internal data class CustomTimelineListItemDb(
     @ColumnInfo(name = "id")
-    override val id: MemberListId,
+    override val id: CustomTimelineId,
 
     @ColumnInfo(name = "name")
     override val name: String,
@@ -43,4 +43,4 @@ internal data class CustomTimelineListItemDb(
 
     @ColumnInfo(name = "is_public")
     override val isPublic: Boolean
-) : MemberListItem
+) : CustomTimelineItem

@@ -5,9 +5,9 @@ import androidx.lifecycle.ViewModel
 import androidx.paging.PagedList
 import com.freshdigitable.udonroad2.data.ListRepository
 import com.freshdigitable.udonroad2.data.PagedListProvider
+import com.freshdigitable.udonroad2.model.CustomTimelineItem
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.ListQuery
-import com.freshdigitable.udonroad2.model.MemberListItem
 import com.freshdigitable.udonroad2.model.PageOption
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
@@ -20,9 +20,9 @@ class MemberListListViewModel(
     private val owner: ListOwner<QueryType.UserListMembership>,
     private val repository: ListRepository<QueryType.UserListMembership>,
     private val eventDispatcher: EventDispatcher,
-    pagedListProvider: PagedListProvider<QueryType.UserListMembership, MemberListItem>
-) : ListItemLoadable<QueryType.UserListMembership, MemberListItem>,
-    ListItemClickListener<MemberListItem>, ViewModel() {
+    pagedListProvider: PagedListProvider<QueryType.UserListMembership, CustomTimelineItem>
+) : ListItemLoadable<QueryType.UserListMembership, CustomTimelineItem>,
+    ListItemClickListener<CustomTimelineItem>, ViewModel() {
     override val loading: LiveData<Boolean>
         get() = repository.loading
 
@@ -35,14 +35,14 @@ class MemberListListViewModel(
         repository.loadList(q, owner.value)
     }
 
-    override val timeline: LiveData<PagedList<MemberListItem>> =
+    override val timeline: LiveData<PagedList<CustomTimelineItem>> =
         pagedListProvider.getList(owner.query, owner.value)
 
     override fun onUserIconClicked(user: TweetUserItem) {
         eventDispatcher.postEvent(TimelineEvent.UserIconClicked(user))
     }
 
-    override fun onBodyItemClicked(item: MemberListItem) {
+    override fun onBodyItemClicked(item: CustomTimelineItem) {
         eventDispatcher.postEvent(TimelineEvent.MemberListClicked(item))
     }
 

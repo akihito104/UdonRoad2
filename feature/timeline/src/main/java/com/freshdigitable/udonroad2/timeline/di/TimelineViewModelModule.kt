@@ -25,9 +25,9 @@ import com.freshdigitable.udonroad2.data.impl.di.ListRepositoryComponent
 import com.freshdigitable.udonroad2.data.impl.di.ListRepositoryComponentModule
 import com.freshdigitable.udonroad2.data.impl.di.listRepository
 import com.freshdigitable.udonroad2.data.impl.di.pagedListProvider
+import com.freshdigitable.udonroad2.model.CustomTimelineItem
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
-import com.freshdigitable.udonroad2.model.MemberListItem
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.di.IntoFactory
@@ -153,7 +153,7 @@ internal interface MemberListListViewModelModule {
             owner: ListOwner<*>,
             eventDispatcher: EventDispatcher,
             listRepositoryFactory: ListRepositoryComponent.Factory
-        ): ViewModel = provideViewModel<QueryType.UserListMembership, MemberListItem>(
+        ): ViewModel = provideViewModel<QueryType.UserListMembership, CustomTimelineItem>(
             owner,
             listRepositoryFactory
         ) { o, repository, pagedListProvider ->

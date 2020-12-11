@@ -11,7 +11,7 @@ import com.freshdigitable.udonroad2.data.db.dbview.CustomTimelineListItemDb
 import com.freshdigitable.udonroad2.data.db.entity.CustomTimelineDb
 import com.freshdigitable.udonroad2.data.db.entity.CustomTimelineListDb
 import com.freshdigitable.udonroad2.data.db.ext.toEntity
-import com.freshdigitable.udonroad2.model.MemberList
+import com.freshdigitable.udonroad2.model.CustomTimelineEntity
 
 @Dao
 abstract class CustomTimelineDao(
@@ -28,7 +28,7 @@ abstract class CustomTimelineDao(
 
     @Transaction
     internal open suspend fun addCustomTimeline(
-        entities: List<MemberList>,
+        entities: List<CustomTimelineEntity>,
         owner: String?
     ) {
         val users = entities.map { it.user.toEntity() }
@@ -38,7 +38,7 @@ abstract class CustomTimelineDao(
 
         if (owner != null) {
             val listEntity = entities.map { e ->
-                CustomTimelineListDb(memberListId = e.id, owner = owner)
+                CustomTimelineListDb(customTimelineId = e.id, owner = owner)
             }
             addCustomTimelineListEntities(listEntity)
         }

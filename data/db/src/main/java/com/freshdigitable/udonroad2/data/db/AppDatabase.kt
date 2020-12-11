@@ -20,9 +20,9 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverter
 import androidx.room.TypeConverters
+import com.freshdigitable.udonroad2.data.db.converter.CustomTimelineIdConverter
 import com.freshdigitable.udonroad2.data.db.converter.MediaIdConverter
 import com.freshdigitable.udonroad2.data.db.converter.MediaTypeConverter
-import com.freshdigitable.udonroad2.data.db.converter.MemberListIdConverter
 import com.freshdigitable.udonroad2.data.db.converter.TimestampConverter
 import com.freshdigitable.udonroad2.data.db.converter.TweetIdConverter
 import com.freshdigitable.udonroad2.data.db.converter.UserIdConverter
@@ -85,7 +85,7 @@ import com.freshdigitable.udonroad2.data.db.entity.VideoValiantEntity
     MediaTypeConverter::class,
     TweetIdConverter::class,
     UserIdConverter::class,
-    MemberListIdConverter::class
+    CustomTimelineIdConverter::class
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun tweetDao(): TweetDao
