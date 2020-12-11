@@ -67,8 +67,8 @@ internal data class UserEntity(
     @ColumnInfo(name = "url")
     override val url: String?,
 
-    @ColumnInfo(name = "verified")
-    override val verified: Boolean,
+    @ColumnInfo(name = "is_verified")
+    override val isVerified: Boolean,
 
     @ColumnInfo(name = "is_protected")
     override val isProtected: Boolean
@@ -89,7 +89,7 @@ internal data class UserEntity(
         profileLinkColor = user.profileLinkColor,
         location = user.location,
         url = user.url,
-        verified = user.verified,
+        isVerified = user.isVerified,
         isProtected = user.isProtected
     )
 }

@@ -36,7 +36,7 @@ interface UserListItem : TweetingUser {
     val description: String
     val followerCount: Int
     val followingCount: Int
-    val verified: Boolean
+    val isVerified: Boolean
     val isProtected: Boolean
 
     override fun equals(other: Any?): Boolean

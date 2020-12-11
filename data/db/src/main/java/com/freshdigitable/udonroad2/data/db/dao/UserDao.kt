@@ -76,7 +76,7 @@ abstract class UserDao {
         """
         SELECT i.*
         FROM user_list AS l
-        INNER JOIN user_list_item AS i ON l.user_id = i.id
+        INNER JOIN view_user_item AS i ON l.user_id = i.id
         WHERE owner = :owner
         ORDER BY l.id"""
     )

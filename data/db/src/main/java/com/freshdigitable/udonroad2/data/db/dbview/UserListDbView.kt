@@ -6,11 +6,11 @@ import com.freshdigitable.udonroad2.model.user.UserId
 import com.freshdigitable.udonroad2.model.user.UserListItem
 
 @DatabaseView(
-    viewName = "user_list_item",
+    viewName = "view_user_item",
     value =
-        """
+    """
      SELECT id, name, screen_name, icon_url, description,
-      follower_count, following_count, verified, is_protected
+      follower_count, following_count, is_verified, is_protected
      FROM user
     """
 )
@@ -36,8 +36,8 @@ internal data class UserListDbView(
     @ColumnInfo(name = "following_count")
     override val followingCount: Int,
 
-    @ColumnInfo(name = "verified")
-    override val verified: Boolean,
+    @ColumnInfo(name = "is_verified")
+    override val isVerified: Boolean,
 
     @ColumnInfo(name = "is_protected")
     override val isProtected: Boolean

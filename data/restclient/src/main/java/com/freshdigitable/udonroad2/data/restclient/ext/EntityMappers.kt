@@ -86,7 +86,7 @@ internal fun twitter4j.User.toEntity(): UserEntityRest {
         profileLinkColor = Color.parseColor("#$profileLinkColor"),
         location = location,
         url = url,
-        verified = isVerified,
+        isVerified = isVerified,
         isProtected = isProtected
     )
 }

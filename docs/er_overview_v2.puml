@@ -216,6 +216,7 @@ package database_views {
     * screen_name: String
     * is_protected: Boolean
     * is_verified: Boolean
+    * icon_url: String
     * description: String
     * follower_count: Int
     * following_count: Int
@@ -228,8 +229,6 @@ package database_views {
   view_tweet_item_element -- favorited
   view_tweet_item_element -- retweeted
   view_tweet_item_element --o{ view_tweet_item_media
-
-  view_user_item - user
 
   view_tweet_item_media - media_url
   view_tweet_item_media - media
