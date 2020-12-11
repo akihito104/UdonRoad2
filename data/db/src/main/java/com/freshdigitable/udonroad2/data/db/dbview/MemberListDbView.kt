@@ -31,7 +31,7 @@ internal data class MemberListDbView(
     override val description: String,
 
     @Embedded(prefix = "user_")
-    override val user: TweetingUserDb,
+    override val user: TweetUserItemDb,
 
     @ColumnInfo(name = "member_count")
     override val memberCount: Int,

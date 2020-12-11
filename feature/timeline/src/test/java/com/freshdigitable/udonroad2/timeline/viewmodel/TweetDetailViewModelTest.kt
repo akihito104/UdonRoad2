@@ -23,7 +23,7 @@ import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.tweet.Tweet
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
-import com.freshdigitable.udonroad2.model.user.TweetingUser
+import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.model.user.UserId
 import com.freshdigitable.udonroad2.test_common.MockVerified
 import com.freshdigitable.udonroad2.test_common.jvm.CoroutineTestRule
@@ -65,12 +65,12 @@ class TweetDetailViewModelTest {
 
     private val tweet = mockk<TweetListItem>().apply {
         every { originalId } returns TweetId(1000)
-        every { originalUser } returns mockk<TweetingUser>().apply {
+        every { originalUser } returns mockk<TweetUserItem>().apply {
             every { id } returns UserId(3000)
         }
         every { body } returns mockk<Tweet>().apply {
             every { id } returns TweetId(1001)
-            every { user } returns mockk<TweetingUser>().apply {
+            every { user } returns mockk<TweetUserItem>().apply {
                 every { id } returns UserId(3001)
             }
             every { isRetweeted } returns false

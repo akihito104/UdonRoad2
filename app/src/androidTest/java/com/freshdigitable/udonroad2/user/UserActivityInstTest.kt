@@ -24,7 +24,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.media.MediaActivityArgs
 import com.freshdigitable.udonroad2.model.tweet.TweetId
-import com.freshdigitable.udonroad2.model.user.TweetingUser
+import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.model.user.UserId
 import com.freshdigitable.udonroad2.test.TwitterRobot
 import com.freshdigitable.udonroad2.test.createStatus
@@ -52,7 +52,7 @@ class UserActivityInstTest {
 
     @Before
     fun setup() {
-        val tweetingUser = TweetingUserImpl(UserId(1000), "user1", "user1", "")
+        val tweetingUser = TweetUserItemImpl(UserId(1000), "user1", "user1", "")
         val user = createUser(tweetingUser.id.value, tweetingUser.name, tweetingUser.screenName)
         twitterRobot.setupShowUser(user)
         twitterRobot.setupRelationships(UserId(100), tweetingUser.id)
@@ -167,12 +167,14 @@ class UserActivityInstTest {
     }
 }
 
-data class TweetingUserImpl(
+data class TweetUserItemImpl(
     override val id: UserId,
     override val name: String,
     override val screenName: String,
-    override val iconUrl: String
-) : TweetingUser
+    override val iconUrl: String,
+    override val isVerified: Boolean = false,
+    override val isProtected: Boolean = false,
+) : TweetUserItem
 
 fun waitForListItem(block: () -> Unit) {
     waitForActivity<UserActivity>(

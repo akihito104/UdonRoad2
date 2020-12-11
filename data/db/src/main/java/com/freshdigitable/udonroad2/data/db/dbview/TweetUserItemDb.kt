@@ -17,10 +17,10 @@
 package com.freshdigitable.udonroad2.data.db.dbview
 
 import androidx.room.ColumnInfo
-import com.freshdigitable.udonroad2.model.user.TweetingUser
+import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.model.user.UserId
 
-internal data class TweetingUserDb(
+internal data class TweetUserItemDb(
     @ColumnInfo(name = "id")
     override val id: UserId,
 
@@ -38,4 +38,4 @@ internal data class TweetingUserDb(
 
     @ColumnInfo(name = "is_protected")
     override val isProtected: Boolean,
-) : TweetingUser
+) : TweetUserItem

@@ -33,7 +33,7 @@ import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.user.Relationship
-import com.freshdigitable.udonroad2.model.user.TweetingUser
+import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.model.user.User
 import com.freshdigitable.udonroad2.model.user.UserId
 import com.freshdigitable.udonroad2.test_common.MatcherScopedSuspendBlock
@@ -351,7 +351,7 @@ class UserViewModelTest {
 @ExperimentalCoroutinesApi
 class UserViewModelTestRule : TestWatcher() {
     val targetId = UserId(1000)
-    private val targetUser: TweetingUser = mockk<TweetingUser>().apply {
+    private val targetUser: TweetUserItem = mockk<TweetUserItem>().apply {
         every { id } returns targetId
         every { screenName } returns "user1"
     }

@@ -6,7 +6,7 @@ import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.tweet.TweetId
-import com.freshdigitable.udonroad2.model.user.TweetingUser
+import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import java.io.Serializable
 
 sealed class TimelineEvent : AppEvent {
@@ -14,9 +14,9 @@ sealed class TimelineEvent : AppEvent {
 
     object Init : TimelineEvent()
 
-    data class UserIconClicked(val user: TweetingUser) : TimelineEvent()
+    data class UserIconClicked(val user: TweetUserItem) : TimelineEvent()
 
-    data class RetweetUserClicked(val user: TweetingUser) : TimelineEvent()
+    data class RetweetUserClicked(val user: TweetUserItem) : TimelineEvent()
 
     sealed class TweetItemSelection : TimelineEvent() {
         data class Selected(val selectedItemId: SelectedItemId) : TweetItemSelection() {
@@ -50,7 +50,7 @@ sealed class TimelineEvent : AppEvent {
             override val type: NavigationEvent.Type = NavigationEvent.Type.NAVIGATE
         ) : Navigate()
 
-        data class UserInfo(val tweetingUser: TweetingUser) : Navigate() {
+        data class UserInfo(val tweetUserItem: TweetUserItem) : Navigate() {
             override val type: NavigationEvent.Type = NavigationEvent.Type.NAVIGATE
         }
 

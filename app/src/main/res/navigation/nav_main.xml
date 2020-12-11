@@ -35,7 +35,7 @@
         >
         <argument
             android:name="user"
-            app:argType="com.freshdigitable.udonroad2.model.user.TweetingUser"
+            app:argType="com.freshdigitable.udonroad2.model.user.TweetUserItem"
             />
     </activity>
 

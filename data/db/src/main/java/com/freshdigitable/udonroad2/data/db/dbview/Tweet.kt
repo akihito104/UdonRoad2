@@ -25,7 +25,7 @@ import com.freshdigitable.udonroad2.model.TweetMediaItem
 import com.freshdigitable.udonroad2.model.tweet.Tweet
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
-import com.freshdigitable.udonroad2.model.user.TweetingUser
+import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import org.threeten.bp.Instant
 
 @DatabaseView(
@@ -64,7 +64,7 @@ internal data class TweetDbView(
     val favoriteCount: Int,
 
     @Embedded(prefix = "user_")
-    val user: TweetingUserDb,
+    val user: TweetUserItemDb,
 
     @ColumnInfo(name = "source")
     val source: String,
@@ -96,7 +96,7 @@ internal data class Tweet(
     override val favoriteCount: Int = tweet.favoriteCount
 
     @Ignore
-    override val user: TweetingUser = tweet.user
+    override val user: TweetUserItem = tweet.user
 
     @Ignore
     override val source: String = tweet.source
@@ -159,7 +159,7 @@ internal data class TweetListItemDbView(
     val originalId: TweetId,
 
     @Embedded(prefix = "original_user_")
-    val originalUser: TweetingUserDb,
+    val originalUser: TweetUserItemDb,
 
     @Embedded
     val body: TweetDbView,
@@ -176,7 +176,7 @@ internal data class TweetListItem(
     override val originalId: TweetId = tweetListItem.originalId
 
     @Ignore
-    override val originalUser: TweetingUser = tweetListItem.originalUser
+    override val originalUser: TweetUserItem = tweetListItem.originalUser
 
     @Relation(entity = TweetItemMediaDbView::class, parentColumn = "id", entityColumn = "tweet_id")
     var bodyMediaItems: List<TweetItemMediaDbView> = emptyList()

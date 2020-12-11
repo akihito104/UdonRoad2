@@ -18,7 +18,7 @@ package com.freshdigitable.udonroad2.model.user
 
 import java.io.Serializable
 
-interface TweetingUser : Serializable {
+interface TweetUserItem : Serializable {
 
     val id: UserId
 
@@ -36,7 +36,7 @@ interface TweetingUser : Serializable {
     override fun hashCode(): Int
 }
 
-interface UserListItem : TweetingUser {
+interface UserListItem : TweetUserItem {
     val description: String
     val followerCount: Int
     val followingCount: Int

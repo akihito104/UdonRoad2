@@ -32,7 +32,7 @@ import com.freshdigitable.udonroad2.test.intendingToAuthorizationUrl
 import com.freshdigitable.udonroad2.test.mainList
 import com.freshdigitable.udonroad2.test.oauth
 import com.freshdigitable.udonroad2.test.onMainActivity
-import com.freshdigitable.udonroad2.user.TweetingUserImpl
+import com.freshdigitable.udonroad2.user.TweetUserItemImpl
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -55,7 +55,7 @@ class MainActivityInstTest {
         fun startOauth(): Unit = onMainActivity {
             // setup
             val authedUserId = UserId(10000)
-            val tweetingUser = TweetingUserImpl(authedUserId, "user1", "user1", "")
+            val tweetingUser = TweetUserItemImpl(authedUserId, "user1", "user1", "")
             val user = createUser(tweetingUser.id.value, tweetingUser.name, tweetingUser.screenName)
             twitterRobot.setupShowUser(user)
 

@@ -13,7 +13,7 @@ import androidx.viewpager.widget.ViewPager
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.databinding.ActivityUserBinding
 import com.freshdigitable.udonroad2.di.UserViewModelComponent
-import com.freshdigitable.udonroad2.model.user.TweetingUser
+import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.model.user.User
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.tabs.TabLayout
@@ -102,16 +102,16 @@ class UserActivity : HasAndroidInjector, AppCompatActivity() {
     private val args: UserActivityArgs by lazy {
         UserActivityArgs.fromBundle(requireNotNull(intent.extras))
     }
-    private val user: TweetingUser get() = args.user
+    private val user: TweetUserItem get() = args.user
 
     companion object {
-        fun getIntent(context: Context, user: TweetingUser): Intent {
+        fun getIntent(context: Context, user: TweetUserItem): Intent {
             val intent = Intent(context, UserActivity::class.java)
             intent.putExtras(UserActivityArgs(user).toBundle())
             return intent
         }
 
-        fun start(context: Context, user: TweetingUser) {
+        fun start(context: Context, user: TweetUserItem) {
             val intent = getIntent(context, user)
             context.startActivity(intent)
         }

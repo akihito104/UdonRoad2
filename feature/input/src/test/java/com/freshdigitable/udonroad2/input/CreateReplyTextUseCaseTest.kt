@@ -22,7 +22,7 @@ import com.freshdigitable.udonroad2.model.tweet.Tweet
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import com.freshdigitable.udonroad2.model.tweet.UserReplyEntity
-import com.freshdigitable.udonroad2.model.user.TweetingUser
+import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.model.user.UserId
 import com.freshdigitable.udonroad2.test_common.MockVerified
 import com.freshdigitable.udonroad2.test_common.jvm.OAuthTokenRepositoryRule
@@ -61,43 +61,43 @@ class CreateReplyTextUseCaseTest(private val param: Param) {
     }
 
     enum class Param(
-        val tweetingUser: TweetingUser,
+        val tweetUserItem: TweetUserItem,
         val isTargetRetweet: Boolean = false,
         val targetBodyTweetId: TweetId = selectedTweetId,
-        val targetBodyTweetingUser: TweetingUser = tweetingUser,
+        val targetBodyTweetUserItem: TweetUserItem = tweetUserItem,
         val replyEntities: List<UserReplyEntity> = emptyList(),
         val expectedText: String,
     ) {
         SimpleTweet(
-            tweetingUser = user200,
+            tweetUserItem = user200,
             expectedText = "@user200 "
         ),
         TweetOfMine(
-            tweetingUser = tweetingUser(authenticatedUserId, authenticatedUserScreenName),
+            tweetUserItem = tweetingUser(authenticatedUserId, authenticatedUserScreenName),
             expectedText = ""
         ),
         SimpleTweetWithReplyEntity(
-            tweetingUser = user200,
+            tweetUserItem = user200,
             replyEntities = listOf(replyEntity(UserId(400), "user400")),
             expectedText = "@user400 @user200 "
         ),
         RepliedToMe(
-            tweetingUser = user200,
+            tweetUserItem = user200,
             replyEntities = listOf(replyEntity(authenticatedUserId, authenticatedUserScreenName)),
             expectedText = "@user200 "
         ),
         SimpleRetweet(
-            tweetingUser = user200,
+            tweetUserItem = user200,
             isTargetRetweet = true,
             targetBodyTweetId = TweetId(3000),
-            targetBodyTweetingUser = user300,
+            targetBodyTweetUserItem = user300,
             expectedText = "@user200 @user300 "
         ),
         RetweetWithReplyEntity(
-            tweetingUser = user200,
+            tweetUserItem = user200,
             isTargetRetweet = true,
             targetBodyTweetId = TweetId(3000),
-            targetBodyTweetingUser = user300,
+            targetBodyTweetUserItem = user300,
             replyEntities = listOf(replyEntity(UserId(400), "user400")),
             expectedText = "@user400 @user200 @user300 "
         ),
@@ -110,9 +110,9 @@ class CreateReplyTextUseCaseTest(private val param: Param) {
     fun setup() = with(param) {
         val tweet = tweetItem(
             selectedTweetId,
-            tweetingUser,
+            tweetUserItem,
             isTargetRetweet,
-            tweet(targetBodyTweetId, targetBodyTweetingUser)
+            tweet(targetBodyTweetId, targetBodyTweetUserItem)
         )
         oAuthTokenRepositoryRule.setupCurrentUserId(authenticatedUserId.value)
         tweetRepositoryRule.coSetupResponseWithVerify(
@@ -158,21 +158,21 @@ class CreateQuoteTextUseCaseTest(private val param: Param) {
     }
 
     enum class Param(
-        val tweetingUser: TweetingUser,
+        val tweetUserItem: TweetUserItem,
         val isTargetRetweet: Boolean = false,
         val targetBodyTweetId: TweetId = selectedTweetId,
-        val targetBodyTweetingUser: TweetingUser = tweetingUser,
+        val targetBodyTweetUserItem: TweetUserItem = tweetUserItem,
         val expectedText: String,
     ) {
         SimpleTweet(
-            tweetingUser = user200,
+            tweetUserItem = user200,
             expectedText = "https://twitter.com/user200/status/1000"
         ),
         SimpleRetweet(
-            tweetingUser = user200,
+            tweetUserItem = user200,
             isTargetRetweet = true,
             targetBodyTweetId = TweetId(3000),
-            targetBodyTweetingUser = user300,
+            targetBodyTweetUserItem = user300,
             expectedText = "https://twitter.com/user300/status/3000"
         ),
         ;
@@ -184,9 +184,9 @@ class CreateQuoteTextUseCaseTest(private val param: Param) {
     fun setup() = with(param) {
         val tweet = tweetItem(
             selectedTweetId,
-            tweetingUser,
+            tweetUserItem,
             isTargetRetweet,
-            tweet(targetBodyTweetId, targetBodyTweetingUser)
+            tweet(targetBodyTweetId, targetBodyTweetUserItem)
         )
         tweetRepositoryRule.coSetupResponseWithVerify(
             target = { tweetRepositoryRule.mock.findTweetListItem(selectedTweetId) },
@@ -206,23 +206,23 @@ class CreateQuoteTextUseCaseTest(private val param: Param) {
     }
 }
 
-fun tweetingUser(targetUserId: UserId, targetUserScreenName: String): TweetingUser {
-    return mockk<TweetingUser>().apply {
+fun tweetingUser(targetUserId: UserId, targetUserScreenName: String): TweetUserItem {
+    return mockk<TweetUserItem>().apply {
         every { id } returns targetUserId
         every { screenName } returns targetUserScreenName
     }
 }
 
-private fun tweet(targetTweetId: TweetId, tweetingUser: TweetingUser): Tweet {
+private fun tweet(targetTweetId: TweetId, tweetUserItem: TweetUserItem): Tweet {
     return mockk<Tweet>().apply {
         every { id } returns targetTweetId
-        every { user } returns tweetingUser
+        every { user } returns tweetUserItem
     }
 }
 
 private fun tweetItem(
     resOriginalId: TweetId,
-    resOriginalUser: TweetingUser,
+    resOriginalUser: TweetUserItem,
     resIsRetweet: Boolean,
     resBody: Tweet
 ): TweetListItem {
