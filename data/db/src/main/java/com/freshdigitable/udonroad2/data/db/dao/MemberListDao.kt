@@ -1,21 +1,17 @@
 package com.freshdigitable.udonroad2.data.db.dao
 
 import androidx.paging.DataSource
-import androidx.room.ColumnInfo
 import androidx.room.Dao
-import androidx.room.Entity
-import androidx.room.ForeignKey
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
-import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.Transaction
 import com.freshdigitable.udonroad2.data.db.AppDatabase
 import com.freshdigitable.udonroad2.data.db.dbview.MemberListDbView
 import com.freshdigitable.udonroad2.data.db.entity.MemberListEntity
+import com.freshdigitable.udonroad2.data.db.entity.MemberListListEntity
 import com.freshdigitable.udonroad2.data.db.ext.toEntity
 import com.freshdigitable.udonroad2.model.MemberList
-import com.freshdigitable.udonroad2.model.MemberListId
 
 @Dao
 abstract class MemberListDao(
@@ -57,25 +53,3 @@ abstract class MemberListDao(
     @Query("DELETE FROM member_list_list WHERE owner = :owner")
     abstract suspend fun clean(owner: String)
 }
-
-@Entity(
-    tableName = "member_list_list",
-    foreignKeys = [
-        ForeignKey(
-            entity = MemberListEntity::class,
-            parentColumns = ["id"],
-            childColumns = ["member_list_id"]
-        )
-    ]
-)
-internal data class MemberListListEntity(
-    @ColumnInfo(name = "member_list_id", index = true)
-    val memberListId: MemberListId,
-
-    @PrimaryKey(autoGenerate = true)
-    @ColumnInfo(name = "order")
-    val order: Long = 0,
-
-    @ColumnInfo(name = "owner")
-    val owner: String
-)

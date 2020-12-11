@@ -19,7 +19,9 @@ package com.freshdigitable.udonroad2.data.restclient.data
 import com.freshdigitable.udonroad2.model.UrlItem
 
 data class UrlEntityRest(
-    override val text: String,
+    override val url: String,
     override val displayUrl: String,
-    override val expandedUrl: String
+    override val expandedUrl: String,
+    override val start: Int,
+    override val end: Int
 ) : UrlItem

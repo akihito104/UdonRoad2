@@ -16,7 +16,7 @@
 
 package com.freshdigitable.udonroad2.model.tweet
 
-import com.freshdigitable.udonroad2.model.MediaItem
+import com.freshdigitable.udonroad2.model.TweetMediaItem
 import com.freshdigitable.udonroad2.model.user.TweetingUser
 import org.threeten.bp.Instant
 import java.io.Serializable
@@ -59,7 +59,7 @@ interface Tweet {
 
     val createdAt: Instant
 
-    val mediaItems: List<MediaItem>
+    val media: List<TweetMediaItem>
 }
 
 data class TweetId(val value: Long) : Serializable

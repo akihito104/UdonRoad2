@@ -14,34 +14,18 @@
  * limitations under the License.
  */
 
-package com.freshdigitable.udonroad2.model.tweet
+package com.freshdigitable.udonroad2.data.impl
 
+import com.freshdigitable.udonroad2.data.db.dao.MediaDao
 import com.freshdigitable.udonroad2.model.MediaEntity
-import com.freshdigitable.udonroad2.model.user.User
-import com.freshdigitable.udonroad2.model.user.UserId
+import com.freshdigitable.udonroad2.model.tweet.TweetId
+import kotlinx.coroutines.flow.Flow
+import javax.inject.Inject
 
-interface TweetEntity : Tweet {
-
-    override val user: User
-
-    val retweetedTweet: TweetEntity?
-
-    val quotedTweet: TweetEntity?
-
-    val inReplyToTweetId: TweetId?
-
-    val possiblySensitive: Boolean
-
-    val replyEntities: List<UserReplyEntity>
-
-    override val media: List<MediaEntity>
-}
-
-interface UserReplyEntity {
-    val userId: UserId
-    val screenName: String
-    val start: Int
-    val end: Int
-
-    companion object
+class MediaRepository @Inject constructor(
+    private val mediaDao: MediaDao
+) {
+    fun getMediaItemSource(tweetId: TweetId): Flow<List<MediaEntity>> {
+        return mediaDao.getMediaItemSource(tweetId)
+    }
 }

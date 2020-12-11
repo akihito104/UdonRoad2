@@ -16,14 +16,25 @@
 
 package com.freshdigitable.udonroad2.model
 
-interface MediaItem {
+interface TweetMediaItem : UrlItem {
     val id: MediaId
 
     val mediaUrl: String
 
-    val url: UrlItem
-
     val type: MediaType
+
+    val order: Int
+
+    override val displayUrl: String
+        get() = ""
+    override val expandedUrl: String
+        get() = ""
+}
+
+val TweetMediaItem.thumbMediaUrl: String
+    get() = "$mediaUrl:thumb"
+
+interface MediaEntity : UrlItem, TweetMediaItem {
 
     val largeSize: Size?
 
@@ -40,9 +51,6 @@ interface MediaItem {
     val videoDurationMillis: Long?
 
     val videoValiantItems: List<VideoValiant>
-
-    val thumbMediaUrl: String
-        get() = "$mediaUrl:thumb"
 
     interface Size {
         val width: Int

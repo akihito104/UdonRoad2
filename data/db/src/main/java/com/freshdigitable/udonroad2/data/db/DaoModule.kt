@@ -19,6 +19,7 @@ package com.freshdigitable.udonroad2.data.db
 import android.app.Application
 import androidx.room.Room
 import com.freshdigitable.udonroad2.data.ReplyRepository
+import com.freshdigitable.udonroad2.data.db.dao.MediaDao
 import com.freshdigitable.udonroad2.data.db.dao.MemberListDao
 import com.freshdigitable.udonroad2.data.db.dao.MemberListListDao
 import com.freshdigitable.udonroad2.data.db.dao.RelationshipDao
@@ -63,6 +64,9 @@ object DaoModule {
 
     @Provides
     fun provideRelationshipDao(db: AppDatabase): RelationshipDao = db.relationshipDao()
+
+    @Provides
+    fun provideMediaDao(db: AppDatabase): MediaDao = db.mediaDao()
 }
 
 @Module

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019. Matsuda, Akihit (akihito104)
+ * Copyright (c) 2020. Matsuda, Akihit (akihito104)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,24 +18,28 @@ package com.freshdigitable.udonroad2.data.db.entity
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
-import com.freshdigitable.udonroad2.model.UrlItem
+import com.freshdigitable.udonroad2.model.MemberListId
 
-@Entity(tableName = "url")
-internal data class UrlEntity(
-    @PrimaryKey
-    @ColumnInfo(name = "text", index = true)
-    override val url: String,
+@Entity(
+    tableName = "member_list_list",
+    foreignKeys = [
+        ForeignKey(
+            entity = MemberListEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["member_list_id"]
+        )
+    ]
+)
+internal data class MemberListListEntity(
+    @ColumnInfo(name = "member_list_id", index = true)
+    val memberListId: MemberListId,
 
-    @ColumnInfo(name = "display")
-    override val displayUrl: String,
+    @PrimaryKey(autoGenerate = true)
+    @ColumnInfo(name = "order")
+    val order: Long = 0,
 
-    @ColumnInfo(name = "expanded")
-    override val expandedUrl: String,
-
-    @ColumnInfo(name = "start")
-    override val start: Int,
-
-    @ColumnInfo(name = "end")
-    override val end: Int,
-) : UrlItem
+    @ColumnInfo(name = "owner")
+    val owner: String
+)

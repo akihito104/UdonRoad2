@@ -16,34 +16,36 @@
 
 package com.freshdigitable.udonroad2.data.restclient.data
 
+import com.freshdigitable.udonroad2.model.MediaEntity
 import com.freshdigitable.udonroad2.model.MediaId
-import com.freshdigitable.udonroad2.model.MediaItem
 import com.freshdigitable.udonroad2.model.MediaType
-import com.freshdigitable.udonroad2.model.UrlItem
 
-internal data class MediaItemRest(
+internal data class MediaEntityRest(
     override val id: MediaId,
     override val mediaUrl: String,
-    override val url: UrlItem,
+    override val url: String,
+    override val start: Int,
+    override val end: Int,
     override val type: MediaType,
-    override val largeSize: MediaItem.Size?,
-    override val mediumSize: MediaItem.Size?,
-    override val smallSize: MediaItem.Size?,
-    override val thumbSize: MediaItem.Size?,
+    override val largeSize: MediaEntity.Size?,
+    override val mediumSize: MediaEntity.Size?,
+    override val smallSize: MediaEntity.Size?,
+    override val thumbSize: MediaEntity.Size?,
     override val videoAspectRatioWidth: Int?,
     override val videoAspectRatioHeight: Int?,
     override val videoDurationMillis: Long?,
-    override val videoValiantItems: List<MediaItem.VideoValiant>
-) : MediaItem
+    override val videoValiantItems: List<MediaEntity.VideoValiant>,
+    override val order: Int = 0,
+) : MediaEntity
 
 internal data class SizeRest(
     override val width: Int,
     override val height: Int,
     override val resizeType: Int
-) : MediaItem.Size
+) : MediaEntity.Size
 
 internal data class VideoValiantRest(
     override val bitrate: Int,
     override val contentType: String,
     override val url: String
-) : MediaItem.VideoValiant
+) : MediaEntity.VideoValiant

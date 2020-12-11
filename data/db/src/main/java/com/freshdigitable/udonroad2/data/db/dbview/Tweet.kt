@@ -21,7 +21,7 @@ import androidx.room.DatabaseView
 import androidx.room.Embedded
 import androidx.room.Ignore
 import androidx.room.Relation
-import com.freshdigitable.udonroad2.model.MediaItem
+import com.freshdigitable.udonroad2.model.TweetMediaItem
 import com.freshdigitable.udonroad2.model.tweet.Tweet
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
@@ -30,7 +30,7 @@ import org.threeten.bp.Instant
 @DatabaseView(
     viewName = "view_tweet",
     value =
-        """
+    """
     SELECT
      t.id, text, created_at, is_retweeted, retweet_count, is_favorited, favorite_count, source, 
      u.id AS user_id,
@@ -102,15 +102,15 @@ internal data class Tweet(
     override val createdAt: Instant = tweet.createdAt
 
     @Relation(
-        entity = MediaDbView::class, parentColumn = "id", entityColumn = "tweet_id"
+        entity = TweetItemMediaDbView::class, parentColumn = "id", entityColumn = "tweet_id"
     )
-    override var mediaItems: List<MediaItem> = listOf()
+    override var media: List<TweetMediaItem> = emptyList()
 }
 
 @DatabaseView(
     viewName = "tweet_list_item",
     value =
-        """
+    """
     WITH
     original AS (
     SELECT
@@ -172,18 +172,28 @@ internal data class TweetListItem(
     override val originalUser: com.freshdigitable.udonroad2.model.user.TweetingUser =
         tweetListItem.originalUser
 
-    @Relation(entity = MediaDbView::class, parentColumn = "id", entityColumn = "tweet_id")
-    var bodyMediaItems: List<MediaItemDb> = listOf()
+    @Relation(entity = TweetItemMediaDbView::class, parentColumn = "id", entityColumn = "tweet_id")
+    var bodyMediaItems: List<TweetItemMediaDbView> = emptyList()
+        set(value) {
+            field = value.sortedBy { it.order }
+        }
 
-    @Relation(entity = MediaDbView::class, parentColumn = "qt_id", entityColumn = "tweet_id")
-    var quoteMediaItems: List<MediaItemDb> = listOf()
+    @Relation(
+        entity = TweetItemMediaDbView::class,
+        parentColumn = "qt_id",
+        entityColumn = "tweet_id"
+    )
+    var quoteMediaItems: List<TweetItemMediaDbView> = emptyList()
+        set(value) {
+            field = value.sortedBy { it.order }
+        }
 
     override val body: Tweet
-        @Ignore get() = Tweet(tweetListItem.body).apply { mediaItems = bodyMediaItems }
+        @Ignore get() = Tweet(tweetListItem.body).apply { media = bodyMediaItems }
 
     override val quoted: Tweet?
         @Ignore get() = if (tweetListItem.quoted != null) {
-            Tweet(tweetListItem.quoted).apply { mediaItems = quoteMediaItems }
+            Tweet(tweetListItem.quoted).apply { media = quoteMediaItems }
         } else {
             null
         }

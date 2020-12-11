@@ -173,8 +173,8 @@
             app:layout_constraintStart_toStartOf="@id/tweetItem_text"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toTopOf="@id/tweetItem_via"
-            android:visibility="@{tweet.body.mediaItems.isEmpty() ? View.GONE : View.VISIBLE}"
-            app:bindMedia="@{tweet.body.mediaItems}"
+            android:visibility="@{tweet.body.media.isEmpty() ? View.GONE : View.VISIBLE}"
+            app:bindMedia="@{tweet.body.media}"
             app:itemClickListener="@{(v, i) -> clickListener.onMediaItemClicked(tweet.originalId, tweet.body, i)}"
             tools:visibility="visible"
             />

@@ -17,11 +17,14 @@
 package com.freshdigitable.udonroad2.media
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import com.freshdigitable.udonroad2.data.impl.MediaRepository
+import com.freshdigitable.udonroad2.model.MediaEntity
 import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.tweet.Tweet
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
+import com.freshdigitable.udonroad2.test_common.MockVerified
 import com.freshdigitable.udonroad2.test_common.jvm.CoroutineTestRule
 import com.freshdigitable.udonroad2.test_common.jvm.TweetRepositoryRule
 import com.google.common.truth.Truth.assertThat
@@ -40,19 +43,21 @@ import org.junit.rules.TestRule
 class MediaViewModelTest {
     private val coroutineRule = CoroutineTestRule()
     private val tweetRepositoryRule = TweetRepositoryRule()
+    private val mediaRepositoryRule = MockVerified.create<MediaRepository>()
 
     @get:Rule
     val rules: TestRule = RuleChain.outerRule(coroutineRule)
         .around(InstantTaskExecutorRule())
         .around(tweetRepositoryRule)
+        .around(mediaRepositoryRule)
 
-    private val tweetItemSource: Channel<TweetListItem?> = Channel()
+    private val mediaEntitySource: Channel<List<MediaEntity>> = Channel()
     private val tweetListItem: TweetListItem = mockk<TweetListItem>().apply {
         val tweetId = TweetId(1000)
         every { originalId } returns tweetId
         every { body } returns mockk<Tweet>().apply {
             every { id } returns tweetId
-            every { mediaItems } returns listOf(mockk())
+            every { media } returns listOf(mockk())
         }
     }
     private val sut: MediaViewModel by lazy {
@@ -61,6 +66,7 @@ class MediaViewModelTest {
             tweetListItem.originalId,
             0,
             MediaViewModelActions(eventDispatcher),
+            mediaRepositoryRule.mock,
             tweetRepositoryRule.mock,
             mockk(relaxed = true),
             AppExecutor(dispatcher = coroutineRule.coroutineContextProvider),
@@ -70,9 +76,9 @@ class MediaViewModelTest {
 
     @Before
     fun setup() {
-        tweetRepositoryRule.setupShowTweet(
-            tweetListItem.originalId,
-            tweetItemSource.consumeAsFlow()
+        mediaRepositoryRule.setupResponseWithVerify(
+            { mediaRepositoryRule.mock.getMediaItemSource(tweetListItem.originalId) },
+            mediaEntitySource.consumeAsFlow()
         )
         with(sut) {
             listOf(mediaItems, currentPosition, systemUiVisibility, isFabVisible).forEach {
@@ -92,10 +98,10 @@ class MediaViewModelTest {
     }
 
     @Test
-    fun setTweetId_foundTweetItem_tweetHasItem() {
+    fun setTweetId_foundTweetItem_mediaItewHasItem() {
         // exercise
         coroutineRule.runBlockingTest {
-            tweetItemSource.send(tweetListItem)
+            mediaEntitySource.send(listOf(mockk()))
         }
 
         // verify

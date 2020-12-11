@@ -20,34 +20,63 @@ import androidx.room.ColumnInfo
 import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Ignore
 import androidx.room.PrimaryKey
+import androidx.room.Relation
+import com.freshdigitable.udonroad2.model.MediaEntity
 import com.freshdigitable.udonroad2.model.MediaId
-import com.freshdigitable.udonroad2.model.MediaItem
+import com.freshdigitable.udonroad2.model.MediaType
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 
 @Entity(
-    tableName = "media",
+    tableName = "media_url",
+    primaryKeys = ["id", "tweet_id"],
     foreignKeys = [
         ForeignKey(
-            entity = UrlEntity::class,
-            parentColumns = ["text"],
-            childColumns = ["url"]
+            entity = MediaDbEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["id"]
+        ),
+        ForeignKey(
+            entity = TweetEntityDb::class,
+            parentColumns = ["id"],
+            childColumns = ["tweet_id"]
         )
     ]
 )
-internal data class MediaEntity(
+internal data class MediaUrlEntity(
+    @ColumnInfo(name = "id")
+    val id: MediaId,
+
+    @ColumnInfo(name = "tweet_id", index = true)
+    val tweetId: TweetId,
+
+    @ColumnInfo(name = "start")
+    val start: Int,
+
+    @ColumnInfo(name = "end")
+    val end: Int,
+
+    @ColumnInfo(name = "order")
+    val order: Int,
+)
+
+@Entity(tableName = "media")
+internal data class MediaDbEntity(
     @PrimaryKey
     @ColumnInfo(name = "id")
     val id: MediaId,
 
+    // picture file url to get
     @ColumnInfo(name = "media_url")
     val mediaUrl: String,
 
+    // t.co url included into tweet as a text
     @ColumnInfo(name = "url", index = true)
     val url: String,
 
     @ColumnInfo(name = "type")
-    val type: String,
+    val type: MediaType,
 
     @Embedded(prefix = "large_")
     val largeSize: Size?,
@@ -79,7 +108,7 @@ internal data class MediaEntity(
 
         @ColumnInfo(name = "resize_type")
         override val resizeType: Int
-    ) : MediaItem.Size
+    ) : MediaEntity.Size
 }
 
 @Entity(
@@ -87,7 +116,7 @@ internal data class MediaEntity(
     primaryKeys = ["media_id", "url"],
     foreignKeys = [
         ForeignKey(
-            entity = MediaEntity::class,
+            entity = MediaDbEntity::class,
             parentColumns = ["id"],
             childColumns = ["media_id"]
         )
@@ -105,28 +134,51 @@ internal data class VideoValiantEntity(
 
     @ColumnInfo(name = "content_type")
     override val contentType: String
-) : MediaItem.VideoValiant
+) : MediaEntity.VideoValiant
 
-@Entity(
-    tableName = "relation_tweet_media",
-    primaryKeys = ["tweet_id", "media_id"],
-    foreignKeys = [
-        ForeignKey(
-            entity = TweetEntityDb::class,
-            parentColumns = ["id"],
-            childColumns = ["tweet_id"]
-        ),
-        ForeignKey(
-            entity = MediaEntity::class,
-            parentColumns = ["id"],
-            childColumns = ["media_id"]
-        )
-    ]
-)
-internal data class TweetMediaRelation(
-    @ColumnInfo(name = "tweet_id")
-    val tweetId: TweetId,
+internal data class MediaEntityImpl(
+    @Embedded
+    private val entity: MediaDbEntity,
+    @ColumnInfo(name = "start")
+    override val start: Int,
+    @ColumnInfo(name = "end")
+    override val end: Int,
+    @ColumnInfo(name = "order")
+    override val order: Int,
+) : MediaEntity {
+    @Ignore
+    override val largeSize: MediaEntity.Size? = entity.largeSize
 
-    @ColumnInfo(name = "media_id", index = true)
-    val mediaId: MediaId
-)
+    @Ignore
+    override val mediumSize: MediaEntity.Size? = entity.mediumSize
+
+    @Ignore
+    override val smallSize: MediaEntity.Size? = entity.smallSize
+
+    @Ignore
+    override val thumbSize: MediaEntity.Size? = entity.thumbSize
+
+    @Ignore
+    override val videoAspectRatioWidth: Int? = entity.videoAspectRatioWidth
+
+    @Ignore
+    override val videoAspectRatioHeight: Int? = entity.videoAspectRatioHeight
+
+    @Ignore
+    override val videoDurationMillis: Long? = entity.videoDurationMillis
+
+    @Ignore
+    override val id: MediaId = entity.id
+
+    @Ignore
+    override val mediaUrl: String = entity.mediaUrl
+
+    @Ignore
+    override val url: String = entity.url
+
+    @Ignore
+    override val type: MediaType = entity.type
+
+    @Relation(entity = VideoValiantEntity::class, entityColumn = "media_id", parentColumn = "id")
+    override var videoValiantItems: List<VideoValiantEntity> = emptyList()
+}

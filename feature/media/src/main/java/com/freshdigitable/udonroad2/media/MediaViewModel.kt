@@ -23,8 +23,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.map
+import com.freshdigitable.udonroad2.data.impl.MediaRepository
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
-import com.freshdigitable.udonroad2.model.MediaItem
+import com.freshdigitable.udonroad2.model.MediaEntity
 import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.ext.combineLatest
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
@@ -34,7 +35,6 @@ import com.freshdigitable.udonroad2.model.app.navigation.AppViewState
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessageDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.SnackbarFeedbackMessageDelegate
-import com.freshdigitable.udonroad2.model.app.navigation.onNull
 import com.freshdigitable.udonroad2.model.app.navigation.subscribeToUpdate
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
 import com.freshdigitable.udonroad2.model.app.navigation.toViewState
@@ -45,6 +45,7 @@ import com.freshdigitable.udonroad2.shortcut.ShortcutViewModel
 import com.freshdigitable.udonroad2.shortcut.ShortcutViewStates
 import com.freshdigitable.udonroad2.shortcut.postSelectedItemShortcutEvent
 import io.reactivex.disposables.CompositeDisposable
+import kotlinx.coroutines.flow.transformLatest
 import javax.inject.Inject
 import kotlin.math.min
 
@@ -53,7 +54,7 @@ class MediaViewModel @Inject constructor(
     private val eventDispatcher: EventDispatcher,
     private val viewStates: MediaViewModelViewStates,
 ) : ViewModel(), ShortcutViewModel {
-    val mediaItems: LiveData<List<MediaItem>> = viewStates.mediaItems
+    val mediaItems: LiveData<List<MediaEntity>> = viewStates.mediaItems
 
     internal val systemUiVisibility: LiveData<SystemUiVisibility> = viewStates.systemUiVisibility
 
@@ -110,19 +111,21 @@ class MediaViewModelViewStates @Inject constructor(
     tweetId: TweetId,
     firstPosition: Int,
     actions: MediaViewModelActions,
+    repository: MediaRepository,
     tweetRepository: TweetRepository,
     eventDelegate: ActivityEventDelegate,
     executor: AppExecutor,
 ) : ShortcutViewStates by ShortcutViewStates.create(actions, tweetRepository, executor) {
-    internal val mediaItems: AppViewState<List<MediaItem>> =
-        tweetRepository.getTweetItemSource(tweetId)
+    internal val mediaItems: AppViewState<List<MediaEntity>> =
+        repository.getMediaItemSource(tweetId)
+            .transformLatest {
+                if (it.isNotEmpty()) {
+                    emit(it)
+                } else {
+                    tweetRepository.findTweetListItem(tweetId)
+                }
+            }
             .asLiveData(executor.dispatcher.mainContext)
-            .onNull(
-                executor = executor,
-                onNull = { tweetRepository.findTweetListItem(tweetId) },
-                onError = { }
-            )
-            .map { it?.body?.mediaItems ?: listOf() }
 
     internal val systemUiVisibility: AppViewState<SystemUiVisibility> = AppAction.merge(
         AppAction.just(SystemUiVisibility.SHOW),

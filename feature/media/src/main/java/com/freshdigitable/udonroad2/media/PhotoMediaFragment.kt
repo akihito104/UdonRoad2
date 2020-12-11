@@ -27,17 +27,17 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
-import com.freshdigitable.udonroad2.model.MediaItem
+import com.freshdigitable.udonroad2.model.MediaEntity
 import dagger.android.support.AndroidSupportInjection
 
 class PhotoMediaFragment : Fragment() {
 
     companion object {
         private const val ARGS_URL = "url"
-        fun create(mediaItem: MediaItem): PhotoMediaFragment {
+        fun create(mediaEntity: MediaEntity): PhotoMediaFragment {
             return PhotoMediaFragment().apply {
                 arguments = Bundle().apply {
-                    putString(ARGS_URL, mediaItem.mediaUrl)
+                    putString(ARGS_URL, mediaEntity.mediaUrl)
                 }
             }
         }
