@@ -30,7 +30,7 @@ import org.threeten.bp.Instant
     tableName = "tweet",
     foreignKeys = [
         ForeignKey(
-            entity = UserEntity::class,
+            entity = UserEntityDb::class,
             parentColumns = ["id"],
             childColumns = ["user_id"],
             deferred = true

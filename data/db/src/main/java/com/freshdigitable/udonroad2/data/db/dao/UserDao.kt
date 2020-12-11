@@ -25,7 +25,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import com.freshdigitable.udonroad2.data.db.dbview.UserListDbView
-import com.freshdigitable.udonroad2.data.db.entity.UserEntity
+import com.freshdigitable.udonroad2.data.db.entity.UserEntityDb
 import com.freshdigitable.udonroad2.data.db.entity.UserListEntity
 import com.freshdigitable.udonroad2.data.db.ext.toEntity
 import com.freshdigitable.udonroad2.model.user.User
@@ -39,7 +39,7 @@ abstract class UserDao {
     open suspend fun addUsers(users: List<User>) {
         val u = users.map {
             when (it) {
-                is UserEntity -> it
+                is UserEntityDb -> it
                 else -> it.toEntity()
             }
         }
@@ -47,22 +47,22 @@ abstract class UserDao {
     }
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    internal abstract suspend fun addUsers(users: List<UserEntity>)
+    internal abstract suspend fun addUsers(users: List<UserEntityDb>)
 
     @Query("SELECT * FROM user WHERE id = :id")
-    internal abstract fun getUserSource(id: UserId): LiveData<UserEntity?>
+    internal abstract fun getUserSource(id: UserId): LiveData<UserEntityDb?>
     open fun getUserSourceById(id: UserId): LiveData<User?> = getUserSource(id).map { it }
 
     @Query("SELECT * FROM user WHERE id = :id")
-    internal abstract suspend fun getUser(id: UserId): UserEntity?
+    internal abstract suspend fun getUser(id: UserId): UserEntityDb?
     open suspend fun getUserById(id: UserId): User? = getUser(id)
 
     @Query("SELECT * FROM user WHERE id = :id")
-    internal abstract fun getUserFlow(id: UserId): Flow<UserEntity?>
+    internal abstract fun getUserFlow(id: UserId): Flow<UserEntityDb?>
     open fun getUserFlowById(id: UserId): Flow<User?> = getUserFlow(id).distinctUntilChanged()
 
     @Transaction
-    internal open suspend fun addUsers(entities: List<UserEntity>, owner: String? = null) {
+    internal open suspend fun addUsers(entities: List<UserEntityDb>, owner: String? = null) {
         addUsers(entities)
         if (owner != null) {
             val listEntities = entities.map {

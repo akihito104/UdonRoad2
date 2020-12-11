@@ -48,7 +48,7 @@ import com.freshdigitable.udonroad2.data.db.entity.StructuredTweetEntity
 import com.freshdigitable.udonroad2.data.db.entity.TweetEntityDb
 import com.freshdigitable.udonroad2.data.db.entity.TweetListEntity
 import com.freshdigitable.udonroad2.data.db.entity.UrlEntity
-import com.freshdigitable.udonroad2.data.db.entity.UserEntity
+import com.freshdigitable.udonroad2.data.db.entity.UserEntityDb
 import com.freshdigitable.udonroad2.data.db.entity.UserListEntity
 import com.freshdigitable.udonroad2.data.db.entity.UserReplyEntityDb
 import com.freshdigitable.udonroad2.data.db.entity.VideoValiantEntity
@@ -58,7 +58,7 @@ import com.freshdigitable.udonroad2.data.db.entity.VideoValiantEntity
         TweetEntityDb::class,
         StructuredTweetEntity::class,
         TweetListEntity::class,
-        UserEntity::class,
+        UserEntityDb::class,
         UserListEntity::class,
         MemberListEntity::class,
         MemberListListEntity::class,

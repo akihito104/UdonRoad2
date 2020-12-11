@@ -23,7 +23,7 @@ import com.freshdigitable.udonroad2.model.user.User
 import com.freshdigitable.udonroad2.model.user.UserId
 
 @Entity(tableName = "user")
-internal data class UserEntity(
+internal data class UserEntityDb(
     @PrimaryKey
     @ColumnInfo(name = "id")
     override val id: UserId,

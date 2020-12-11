@@ -11,7 +11,7 @@ import com.freshdigitable.udonroad2.model.user.UserId
     tableName = "relationship",
     foreignKeys = [
         ForeignKey(
-            entity = UserEntity::class,
+            entity = UserEntityDb::class,
             parentColumns = ["id"],
             childColumns = ["user_id"]
         )
