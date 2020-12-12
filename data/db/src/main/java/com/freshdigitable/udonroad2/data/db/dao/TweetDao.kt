@@ -25,15 +25,15 @@ import androidx.room.Transaction
 import com.freshdigitable.udonroad2.data.db.AppDatabase
 import com.freshdigitable.udonroad2.data.db.dbview.TweetListItem
 import com.freshdigitable.udonroad2.data.db.entity.MediaUrlEntity
-import com.freshdigitable.udonroad2.data.db.entity.StructuredTweetEntity
 import com.freshdigitable.udonroad2.data.db.entity.TweetElementDb
+import com.freshdigitable.udonroad2.data.db.entity.TweetEntityDb
 import com.freshdigitable.udonroad2.data.db.entity.TweetListEntity
 import com.freshdigitable.udonroad2.data.db.entity.UserReplyEntityDb
 import com.freshdigitable.udonroad2.data.db.entity.VideoValiantEntity
 import com.freshdigitable.udonroad2.data.db.ext.toDbEntity
 import com.freshdigitable.udonroad2.data.db.ext.toEntity
 import com.freshdigitable.udonroad2.data.db.ext.toListEntity
-import com.freshdigitable.udonroad2.data.db.ext.toStructuredTweet
+import com.freshdigitable.udonroad2.data.db.ext.toTweetEntityDb
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import kotlinx.coroutines.flow.Flow
@@ -111,7 +111,7 @@ abstract class TweetDao(
                 .toList()
         )
         addTweetEntitiesInternal(tweetEntities.map(TweetEntity::toDbEntity))
-        addStructuredTweetEntities(tweet.map { it.toStructuredTweet() })
+        addTweetEntities(tweet.map { it.toTweetEntityDb() })
         if (owner != null) {
             addTweetListEntities(tweet.map { it.toListEntity(owner) })
         }
@@ -162,9 +162,7 @@ abstract class TweetDao(
     internal abstract suspend fun addTweetEntitiesInternal(tweet: List<TweetElementDb>)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    internal abstract suspend fun addStructuredTweetEntities(
-        listEntities: List<StructuredTweetEntity>
-    )
+    internal abstract suspend fun addTweetEntities(listEntities: List<TweetEntityDb>)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     internal abstract suspend fun addTweetListEntities(listEntities: List<TweetListEntity>)

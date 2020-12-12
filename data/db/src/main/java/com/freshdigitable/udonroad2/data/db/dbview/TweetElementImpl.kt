@@ -147,11 +147,11 @@ internal data class TweetElementImpl(
     INNER JOIN view_user_item AS u ON tweet_element.user_id = u.id
     )
     SELECT t.*, original.*, quoted.* 
-    FROM structured_tweet
-    INNER JOIN view_tweet_item_element AS t ON t.id = structured_tweet.body_item_id
+    FROM tweet
+    INNER JOIN view_tweet_item_element AS t ON t.id = tweet.body_item_id
     INNER JOIN view_user_item AS vu ON t.user_id = vu.id
-    INNER JOIN original ON original.original_id = structured_tweet.original_id
-    LEFT OUTER JOIN quoted ON quoted.qt_id = structured_tweet.quoted_item_id
+    INNER JOIN original ON original.original_id = tweet.original_id
+    LEFT OUTER JOIN quoted ON quoted.qt_id = tweet.quoted_item_id
 """
 )
 internal data class TweetListItemDbView(
