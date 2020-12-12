@@ -1,18 +1,18 @@
 package com.freshdigitable.udonroad2.model
 
-import com.freshdigitable.udonroad2.model.user.TweetingUser
-import com.freshdigitable.udonroad2.model.user.User
+import com.freshdigitable.udonroad2.model.user.TweetUserItem
+import com.freshdigitable.udonroad2.model.user.UserEntity
 import java.io.Serializable
 
 interface MemberList : MemberListItem {
-    override val user: User
+    override val user: UserEntity
 }
 
 interface MemberListItem {
     val id: MemberListId
     val name: String
     val description: String
-    val user: TweetingUser
+    val user: TweetUserItem
     val memberCount: Int
     val followerCount: Int
     val isPublic: Boolean

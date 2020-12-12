@@ -8,8 +8,9 @@ import com.freshdigitable.udonroad2.model.ListQuery
 import com.freshdigitable.udonroad2.model.MemberList
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.QueryType.UserQueryType
-import com.freshdigitable.udonroad2.model.user.User
+import com.freshdigitable.udonroad2.model.user.UserEntity
 import twitter4j.Twitter
+import twitter4j.User
 import twitter4j.UserList
 import javax.inject.Inject
 
@@ -32,33 +33,29 @@ private class PagedListDataSource<Q : QueryType, E>(
 
 class FollowerListDataSource @Inject constructor(
     twitter: AppTwitter
-) : RemoteListDataSource<UserQueryType.Follower, User> by PagedListDataSource(
-        twitter,
-        { query, nextCursor ->
-            getFollowersList(query.type.userId.value, nextCursor).toPagedResponseList(
-                twitter4j.User::toEntity
-            )
-        }
-    )
+) : RemoteListDataSource<UserQueryType.Follower, UserEntity> by PagedListDataSource(
+    twitter,
+    { query, nextCursor ->
+        getFollowersList(query.type.userId.value, nextCursor).toPagedResponseList(User::toEntity)
+    }
+)
 
 class FollowingListDataSource @Inject constructor(
     twitter: AppTwitter
-) : RemoteListDataSource<UserQueryType.Following, User> by PagedListDataSource(
-        twitter,
-        { query, nextCursor ->
-            getFriendsList(query.type.userId.value, nextCursor).toPagedResponseList(
-                twitter4j.User::toEntity
-            )
-        }
-    )
+) : RemoteListDataSource<UserQueryType.Following, UserEntity> by PagedListDataSource(
+    twitter,
+    { query, nextCursor ->
+        getFriendsList(query.type.userId.value, nextCursor).toPagedResponseList(User::toEntity)
+    }
+)
 
 class ListMembershipListDataSource @Inject constructor(
     twitter: AppTwitter
 ) : RemoteListDataSource<QueryType.UserListMembership, MemberList> by PagedListDataSource(
-        twitter,
-        { query, nextCursor ->
-            getUserListMemberships(
-                query.type.userId.value, query.pageOption.count, nextCursor
-            ).toPagedResponseList(UserList::toEntity)
-        }
-    )
+    twitter,
+    { query, nextCursor ->
+        getUserListMemberships(
+            query.type.userId.value, query.pageOption.count, nextCursor
+        ).toPagedResponseList(UserList::toEntity)
+    }
+)

@@ -17,7 +17,7 @@
 package com.freshdigitable.udonroad2.model.tweet
 
 import com.freshdigitable.udonroad2.model.TweetMediaItem
-import com.freshdigitable.udonroad2.model.user.TweetingUser
+import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import org.threeten.bp.Instant
 import java.io.Serializable
 
@@ -25,7 +25,7 @@ interface TweetListItem {
 
     val originalId: TweetId
 
-    val originalUser: TweetingUser
+    val originalUser: TweetUserItem
 
     val body: Tweet
 
@@ -53,7 +53,7 @@ interface Tweet {
 
     val favoriteCount: Int
 
-    val user: TweetingUser
+    val user: TweetUserItem
 
     val source: String
 

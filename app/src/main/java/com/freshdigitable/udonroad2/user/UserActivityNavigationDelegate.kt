@@ -23,7 +23,7 @@ class UserActivityNavigationDelegate(
 
     override fun dispatchNavHostNavigate(event: NavigationEvent) {
         when (event) {
-            is TimelineEvent.Navigate.UserInfo -> UserActivity.start(activity, event.tweetingUser)
+            is TimelineEvent.Navigate.UserInfo -> UserActivity.start(activity, event.tweetUserItem)
             is TimelineEvent.Navigate.MediaViewer -> MediaActivity.start(
                 activity,
                 MediaActivityArgs(event.tweetId, event.index)

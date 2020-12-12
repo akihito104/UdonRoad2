@@ -13,8 +13,8 @@ import androidx.viewpager.widget.ViewPager
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.databinding.ActivityUserBinding
 import com.freshdigitable.udonroad2.di.UserViewModelComponent
-import com.freshdigitable.udonroad2.model.user.TweetingUser
-import com.freshdigitable.udonroad2.model.user.User
+import com.freshdigitable.udonroad2.model.user.TweetUserItem
+import com.freshdigitable.udonroad2.model.user.UserEntity
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.tabs.TabLayout
 import dagger.android.AndroidInjection
@@ -102,16 +102,16 @@ class UserActivity : HasAndroidInjector, AppCompatActivity() {
     private val args: UserActivityArgs by lazy {
         UserActivityArgs.fromBundle(requireNotNull(intent.extras))
     }
-    private val user: TweetingUser get() = args.user
+    private val user: TweetUserItem get() = args.user
 
     companion object {
-        fun getIntent(context: Context, user: TweetingUser): Intent {
+        fun getIntent(context: Context, user: TweetUserItem): Intent {
             val intent = Intent(context, UserActivity::class.java)
             intent.putExtras(UserActivityArgs(user).toBundle())
             return intent
         }
 
-        fun start(context: Context, user: TweetingUser) {
+        fun start(context: Context, user: TweetUserItem) {
             val intent = getIntent(context, user)
             context.startActivity(intent)
         }
@@ -124,7 +124,7 @@ class UserActivity : HasAndroidInjector, AppCompatActivity() {
 }
 
 @BindingAdapter("updateTabTexts")
-fun TabLayout.updateText(user: User?) {
+fun TabLayout.updateText(user: UserEntity?) {
     for (index in UserPage.values().indices) {
         val tab = getTabAt(index)
         val page = UserPage.values()[index]

@@ -11,7 +11,7 @@ import com.freshdigitable.udonroad2.model.MemberListItem
 import com.freshdigitable.udonroad2.model.PageOption
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
-import com.freshdigitable.udonroad2.model.user.TweetingUser
+import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.timeline.ListItemClickListener
 import com.freshdigitable.udonroad2.timeline.ListItemLoadable
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
@@ -38,7 +38,7 @@ class MemberListListViewModel(
     override val timeline: LiveData<PagedList<MemberListItem>> =
         pagedListProvider.getList(owner.query, owner.value)
 
-    override fun onUserIconClicked(user: TweetingUser) {
+    override fun onUserIconClicked(user: TweetUserItem) {
         eventDispatcher.postEvent(TimelineEvent.UserIconClicked(user))
     }
 

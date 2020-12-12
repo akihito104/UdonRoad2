@@ -21,7 +21,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
-import com.freshdigitable.udonroad2.model.user.TweetingUser
+import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.user.UserActivity
 import com.freshdigitable.udonroad2.user.UserActivityNavigationDelegate
 import com.freshdigitable.udonroad2.user.UserActivityViewStates
@@ -45,7 +45,6 @@ interface UserActivityModule {
         eventDelegate: UserActivityNavigationDelegate
     ): ActivityEventDelegate
 
-    @Module
     companion object {
         @Provides
         fun provideActivityEventDelegate(activity: UserActivity): UserActivityNavigationDelegate {
@@ -61,7 +60,7 @@ interface UserViewModelModule {
         @IntoMap
         @ViewModelKey(UserViewModel::class)
         fun provideUserViewModel(
-            user: TweetingUser,
+            user: TweetUserItem,
             eventDispatcher: EventDispatcher,
             viewState: UserActivityViewStates,
         ): ViewModel = UserViewModel(user, eventDispatcher, viewState)
@@ -72,7 +71,7 @@ interface UserViewModelModule {
 interface UserViewModelComponent {
     @Subcomponent.Factory
     interface Factory {
-        fun create(@BindsInstance user: TweetingUser): UserViewModelComponent
+        fun create(@BindsInstance user: TweetUserItem): UserViewModelComponent
     }
 
     val viewModelProviderFactory: ViewModelProvider.Factory

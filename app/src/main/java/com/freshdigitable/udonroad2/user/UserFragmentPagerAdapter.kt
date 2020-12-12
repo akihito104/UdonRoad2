@@ -8,8 +8,8 @@ import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.QueryType.TweetQueryType
 import com.freshdigitable.udonroad2.model.QueryType.UserQueryType
-import com.freshdigitable.udonroad2.model.user.TweetingUser
-import com.freshdigitable.udonroad2.model.user.User
+import com.freshdigitable.udonroad2.model.user.TweetUserItem
+import com.freshdigitable.udonroad2.model.user.UserEntity
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragment
 
 class UserFragmentPagerAdapter(
@@ -26,9 +26,9 @@ class UserFragmentPagerAdapter(
 
 @Keep
 enum class UserPage(
-    val createQuery: (TweetingUser) -> QueryType,
+    val createQuery: (TweetUserItem) -> QueryType,
     val titleRes: Int,
-    val count: ((User?) -> Int?)? = null
+    val count: ((UserEntity?) -> Int?)? = null
 ) {
     TWEET(
         createQuery = { user -> TweetQueryType.Timeline(user.id) },

@@ -19,11 +19,11 @@ package com.freshdigitable.udonroad2.data.db.entity
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.freshdigitable.udonroad2.model.user.User
+import com.freshdigitable.udonroad2.model.user.UserEntity
 import com.freshdigitable.udonroad2.model.user.UserId
 
 @Entity(tableName = "user")
-internal data class UserEntity(
+internal data class UserEntityDb(
     @PrimaryKey
     @ColumnInfo(name = "id")
     override val id: UserId,
@@ -67,14 +67,14 @@ internal data class UserEntity(
     @ColumnInfo(name = "url")
     override val url: String?,
 
-    @ColumnInfo(name = "verified")
-    override val verified: Boolean,
+    @ColumnInfo(name = "is_verified")
+    override val isVerified: Boolean,
 
     @ColumnInfo(name = "is_protected")
     override val isProtected: Boolean
-) : User {
+) : UserEntity {
 
-    constructor(user: User) : this(
+    constructor(user: UserEntity) : this(
         id = user.id,
         name = user.name,
         screenName = user.screenName,
@@ -89,7 +89,7 @@ internal data class UserEntity(
         profileLinkColor = user.profileLinkColor,
         location = user.location,
         url = user.url,
-        verified = user.verified,
+        isVerified = user.isVerified,
         isProtected = user.isProtected
     )
 }

@@ -25,10 +25,10 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import com.freshdigitable.udonroad2.data.db.dbview.UserListDbView
-import com.freshdigitable.udonroad2.data.db.entity.UserEntity
+import com.freshdigitable.udonroad2.data.db.entity.UserEntityDb
 import com.freshdigitable.udonroad2.data.db.entity.UserListEntity
 import com.freshdigitable.udonroad2.data.db.ext.toEntity
-import com.freshdigitable.udonroad2.model.user.User
+import com.freshdigitable.udonroad2.model.user.UserEntity
 import com.freshdigitable.udonroad2.model.user.UserId
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -36,10 +36,10 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 @Dao
 abstract class UserDao {
 
-    open suspend fun addUsers(users: List<User>) {
+    open suspend fun addUsers(users: List<UserEntity>) {
         val u = users.map {
             when (it) {
-                is UserEntity -> it
+                is UserEntityDb -> it
                 else -> it.toEntity()
             }
         }
@@ -47,22 +47,22 @@ abstract class UserDao {
     }
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    internal abstract suspend fun addUsers(users: List<UserEntity>)
+    internal abstract suspend fun addUsers(users: List<UserEntityDb>)
 
     @Query("SELECT * FROM user WHERE id = :id")
-    internal abstract fun getUserSource(id: UserId): LiveData<UserEntity?>
-    open fun getUserSourceById(id: UserId): LiveData<User?> = getUserSource(id).map { it }
+    internal abstract fun getUserSource(id: UserId): LiveData<UserEntityDb?>
+    open fun getUserSourceById(id: UserId): LiveData<UserEntity?> = getUserSource(id).map { it }
 
     @Query("SELECT * FROM user WHERE id = :id")
-    internal abstract suspend fun getUser(id: UserId): UserEntity?
-    open suspend fun getUserById(id: UserId): User? = getUser(id)
+    internal abstract suspend fun getUser(id: UserId): UserEntityDb?
+    open suspend fun getUserById(id: UserId): UserEntity? = getUser(id)
 
     @Query("SELECT * FROM user WHERE id = :id")
-    internal abstract fun getUserFlow(id: UserId): Flow<UserEntity?>
-    open fun getUserFlowById(id: UserId): Flow<User?> = getUserFlow(id).distinctUntilChanged()
+    internal abstract fun getUserFlow(id: UserId): Flow<UserEntityDb?>
+    open fun getUserFlowById(id: UserId): Flow<UserEntity?> = getUserFlow(id).distinctUntilChanged()
 
     @Transaction
-    internal open suspend fun addUsers(entities: List<UserEntity>, owner: String? = null) {
+    internal open suspend fun addUsers(entities: List<UserEntityDb>, owner: String? = null) {
         addUsers(entities)
         if (owner != null) {
             val listEntities = entities.map {
@@ -76,7 +76,7 @@ abstract class UserDao {
         """
         SELECT i.*
         FROM user_list AS l
-        INNER JOIN user_list_item AS i ON l.user_id = i.id
+        INNER JOIN view_user_item AS i ON l.user_id = i.id
         WHERE owner = :owner
         ORDER BY l.id"""
     )

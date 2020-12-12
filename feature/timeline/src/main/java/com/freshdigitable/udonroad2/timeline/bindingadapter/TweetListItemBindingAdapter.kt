@@ -33,7 +33,7 @@ import com.freshdigitable.udonroad2.media.mediaViews
 import com.freshdigitable.udonroad2.model.MediaType
 import com.freshdigitable.udonroad2.model.TweetMediaItem
 import com.freshdigitable.udonroad2.model.thumbMediaUrl
-import com.freshdigitable.udonroad2.model.user.TweetingUser
+import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.timeline.R
 import org.threeten.bp.Duration
 import org.threeten.bp.Instant
@@ -60,7 +60,7 @@ fun bindSource(v: TextView, source: String?) {
 private val NAME_STYLE = StyleSpan(Typeface.BOLD)
 
 @BindingAdapter("bindNames")
-fun bindNames(v: TextView, user: TweetingUser?) {
+fun bindNames(v: TextView, user: TweetUserItem?) {
     v.text = user?.let {
         SpannableStringBuilder(it.name).apply {
             setSpan(NAME_STYLE, 0, it.name.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)

@@ -12,9 +12,11 @@ import com.freshdigitable.udonroad2.model.MemberListItem
      u.id AS user_id,
      u.name AS user_name,
      u.screen_name AS user_screen_name,
-     u.icon_url AS user_icon_url
+     u.icon_url AS user_icon_url,
+     u.is_protected AS user_is_protected,
+     u.is_verified AS user_is_verified
     FROM member_list AS m
-    INNER JOIN view_user_in_tweet AS u ON m.user_id = u.id
+    INNER JOIN view_user_item AS u ON m.user_id = u.id
 """,
     viewName = "view_member_list"
 )
@@ -29,7 +31,7 @@ internal data class MemberListDbView(
     override val description: String,
 
     @Embedded(prefix = "user_")
-    override val user: TweetingUser,
+    override val user: TweetUserItemDb,
 
     @ColumnInfo(name = "member_count")
     override val memberCount: Int,

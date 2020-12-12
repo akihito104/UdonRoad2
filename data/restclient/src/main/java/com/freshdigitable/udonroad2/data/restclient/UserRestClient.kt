@@ -17,14 +17,14 @@
 package com.freshdigitable.udonroad2.data.restclient
 
 import com.freshdigitable.udonroad2.data.restclient.ext.toEntity
-import com.freshdigitable.udonroad2.model.user.User
+import com.freshdigitable.udonroad2.model.user.UserEntity
 import com.freshdigitable.udonroad2.model.user.UserId
 import javax.inject.Inject
 
 class UserRestClient @Inject constructor(
     private val twitter: AppTwitter
 ) {
-    suspend fun showUser(id: UserId): User {
+    suspend fun showUser(id: UserId): UserEntity {
         val u = twitter.fetch { showUser(id.value) }
         return u.toEntity()
     }

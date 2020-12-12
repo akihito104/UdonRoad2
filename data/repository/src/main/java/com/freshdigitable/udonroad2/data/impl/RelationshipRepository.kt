@@ -7,7 +7,7 @@ import com.freshdigitable.udonroad2.data.db.dao.RelationshipDao
 import com.freshdigitable.udonroad2.data.restclient.FriendshipRestClient
 import com.freshdigitable.udonroad2.model.app.AppTwitterException
 import com.freshdigitable.udonroad2.model.user.Relationship
-import com.freshdigitable.udonroad2.model.user.User
+import com.freshdigitable.udonroad2.model.user.UserEntity
 import com.freshdigitable.udonroad2.model.user.UserId
 import dagger.Module
 import dagger.Provides
@@ -26,7 +26,7 @@ class RelationshipRepository(
         return f
     }
 
-    suspend fun updateFollowingStatus(targetUserId: UserId, isFollowing: Boolean): User {
+    suspend fun updateFollowingStatus(targetUserId: UserId, isFollowing: Boolean): UserEntity {
         try {
             val user = when {
                 isFollowing -> restClient.createFriendship(targetUserId)
@@ -40,7 +40,7 @@ class RelationshipRepository(
         }
     }
 
-    suspend fun updateMutingStatus(targetUserId: UserId, isMuting: Boolean): User {
+    suspend fun updateMutingStatus(targetUserId: UserId, isMuting: Boolean): UserEntity {
         try {
             val user = when {
                 isMuting -> restClient.createMute(targetUserId)
@@ -54,7 +54,7 @@ class RelationshipRepository(
         }
     }
 
-    suspend fun updateBlockingStatus(targetUserId: UserId, isBlocking: Boolean): User {
+    suspend fun updateBlockingStatus(targetUserId: UserId, isBlocking: Boolean): UserEntity {
         try {
             val user = when {
                 isBlocking -> restClient.createBlock(targetUserId)
@@ -84,7 +84,7 @@ class RelationshipRepository(
         }
     }
 
-    suspend fun reportSpam(userId: UserId): User {
+    suspend fun reportSpam(userId: UserId): UserEntity {
         val user = restClient.reportSpam(userId)
         dao.updateBlockingStatusTransaction(user.id, true)
         return user

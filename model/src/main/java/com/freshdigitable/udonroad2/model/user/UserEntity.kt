@@ -18,7 +18,7 @@ package com.freshdigitable.udonroad2.model.user
 
 import java.io.Serializable
 
-interface TweetingUser : Serializable {
+interface TweetUserItem : Serializable {
 
     val id: UserId
 
@@ -28,22 +28,24 @@ interface TweetingUser : Serializable {
 
     val iconUrl: String
 
-    override fun equals(other: Any?): Boolean
-    override fun hashCode(): Int
-}
+    val isVerified: Boolean
 
-interface UserListItem : TweetingUser {
-    val description: String
-    val followerCount: Int
-    val followingCount: Int
-    val verified: Boolean
     val isProtected: Boolean
 
     override fun equals(other: Any?): Boolean
     override fun hashCode(): Int
 }
 
-interface User : UserListItem {
+interface UserListItem : TweetUserItem {
+    val description: String
+    val followerCount: Int
+    val followingCount: Int
+
+    override fun equals(other: Any?): Boolean
+    override fun hashCode(): Int
+}
+
+interface UserEntity : UserListItem {
     val profileBannerImageUrl: String?
     val tweetCount: Int
     val favoriteCount: Int

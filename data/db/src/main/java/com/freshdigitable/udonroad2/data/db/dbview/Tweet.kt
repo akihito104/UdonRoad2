@@ -25,6 +25,7 @@ import com.freshdigitable.udonroad2.model.TweetMediaItem
 import com.freshdigitable.udonroad2.model.tweet.Tweet
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
+import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import org.threeten.bp.Instant
 
 @DatabaseView(
@@ -36,9 +37,11 @@ import org.threeten.bp.Instant
      u.id AS user_id,
      u.name AS user_name,
      u.screen_name AS user_screen_name,
-     u.icon_url AS user_icon_url
+     u.icon_url AS user_icon_url,
+     u.is_verified AS user_is_verified,
+     u.is_protected AS user_is_protected
     FROM tweet AS t 
-    INNER JOIN view_user_in_tweet AS u ON t.user_id = u.id
+    INNER JOIN view_user_item AS u ON t.user_id = u.id
 """
 )
 internal data class TweetDbView(
@@ -61,7 +64,7 @@ internal data class TweetDbView(
     val favoriteCount: Int,
 
     @Embedded(prefix = "user_")
-    val user: TweetingUser,
+    val user: TweetUserItemDb,
 
     @ColumnInfo(name = "source")
     val source: String,
@@ -93,7 +96,7 @@ internal data class Tweet(
     override val favoriteCount: Int = tweet.favoriteCount
 
     @Ignore
-    override val user: com.freshdigitable.udonroad2.model.user.TweetingUser = tweet.user
+    override val user: TweetUserItem = tweet.user
 
     @Ignore
     override val source: String = tweet.source
@@ -118,9 +121,11 @@ internal data class Tweet(
      u.id AS original_user_id,
      u.name AS original_user_name,
      u.screen_name AS original_user_screen_name,
-     u.icon_url AS original_user_icon_url
+     u.icon_url AS original_user_icon_url,
+     u.is_verified AS original_user_is_verified,
+     u.is_protected AS original_user_is_protected
     FROM tweet AS t 
-    INNER JOIN view_user_in_tweet AS u ON t.user_id = u.id
+    INNER JOIN view_user_item AS u ON t.user_id = u.id
     ),
     quoted AS (
     SELECT
@@ -135,14 +140,16 @@ internal data class Tweet(
      u.id AS qt_user_id,
      u.name AS qt_user_name,
      u.screen_name AS qt_user_screen_name,
-     u.icon_url AS qt_user_icon_url
+     u.icon_url AS qt_user_icon_url,
+     u.is_verified AS qt_user_is_verified,
+     u.is_protected AS qt_user_is_protected
     FROM tweet
-    INNER JOIN view_user_in_tweet AS u ON tweet.user_id = u.id
+    INNER JOIN view_user_item AS u ON tweet.user_id = u.id
     )
     SELECT t.*, original.*, quoted.* 
     FROM structured_tweet
     INNER JOIN view_tweet AS t ON t.id = structured_tweet.body_item_id
-    INNER JOIN view_user_in_tweet AS vu ON t.user_id = vu.id
+    INNER JOIN view_user_item AS vu ON t.user_id = vu.id
     INNER JOIN original ON original.original_id = structured_tweet.original_id
     LEFT OUTER JOIN quoted ON quoted.qt_id = structured_tweet.quoted_item_id
 """
@@ -152,7 +159,7 @@ internal data class TweetListItemDbView(
     val originalId: TweetId,
 
     @Embedded(prefix = "original_user_")
-    val originalUser: TweetingUser,
+    val originalUser: TweetUserItemDb,
 
     @Embedded
     val body: TweetDbView,
@@ -169,8 +176,7 @@ internal data class TweetListItem(
     override val originalId: TweetId = tweetListItem.originalId
 
     @Ignore
-    override val originalUser: com.freshdigitable.udonroad2.model.user.TweetingUser =
-        tweetListItem.originalUser
+    override val originalUser: TweetUserItem = tweetListItem.originalUser
 
     @Relation(entity = TweetItemMediaDbView::class, parentColumn = "id", entityColumn = "tweet_id")
     var bodyMediaItems: List<TweetItemMediaDbView> = emptyList()

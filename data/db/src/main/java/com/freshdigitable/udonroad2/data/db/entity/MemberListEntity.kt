@@ -10,7 +10,7 @@ import com.freshdigitable.udonroad2.model.user.UserId
 @Entity(
     tableName = "member_list",
     foreignKeys = [
-        ForeignKey(entity = UserEntity::class, parentColumns = ["id"], childColumns = ["user_id"])
+        ForeignKey(entity = UserEntityDb::class, parentColumns = ["id"], childColumns = ["user_id"])
     ]
 )
 internal data class MemberListEntity(

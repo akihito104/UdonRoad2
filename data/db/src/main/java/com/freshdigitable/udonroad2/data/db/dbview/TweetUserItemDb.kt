@@ -17,15 +17,10 @@
 package com.freshdigitable.udonroad2.data.db.dbview
 
 import androidx.room.ColumnInfo
-import androidx.room.DatabaseView
-import com.freshdigitable.udonroad2.model.user.TweetingUser
+import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.model.user.UserId
 
-@DatabaseView(
-    viewName = "view_user_in_tweet",
-    value = "SELECT id, name, screen_name, icon_url FROM user"
-)
-internal data class TweetingUser(
+internal data class TweetUserItemDb(
     @ColumnInfo(name = "id")
     override val id: UserId,
 
@@ -36,5 +31,11 @@ internal data class TweetingUser(
     override val screenName: String,
 
     @ColumnInfo(name = "icon_url")
-    override val iconUrl: String
-) : TweetingUser
+    override val iconUrl: String,
+
+    @ColumnInfo(name = "is_verified")
+    override val isVerified: Boolean,
+
+    @ColumnInfo(name = "is_protected")
+    override val isProtected: Boolean,
+) : TweetUserItem

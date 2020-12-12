@@ -5,11 +5,11 @@ import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.tweet.Tweet
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
-import com.freshdigitable.udonroad2.model.user.TweetingUser
+import com.freshdigitable.udonroad2.model.user.TweetUserItem
 
 interface ListItemClickListener<I> {
     fun onBodyItemClicked(item: I) {}
-    fun onUserIconClicked(user: TweetingUser) {}
+    fun onUserIconClicked(user: TweetUserItem) {}
 }
 
 interface TweetListItemClickListener : ListItemClickListener<TweetListItem> {

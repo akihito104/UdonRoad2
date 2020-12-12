@@ -85,7 +85,7 @@ class MainActivityNavigationDelegate @Inject constructor(
             }
             is TimelineEvent.Navigate.UserInfo -> {
                 navController.navigate(
-                    UserActivityDirections.actionTimelineToActivityUser(event.tweetingUser)
+                    UserActivityDirections.actionTimelineToActivityUser(event.tweetUserItem)
                 )
             }
             is TimelineEvent.Navigate.MediaViewer -> {

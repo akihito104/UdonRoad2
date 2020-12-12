@@ -10,8 +10,8 @@ import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.app.navigation.CommonEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.user.Relationship
-import com.freshdigitable.udonroad2.model.user.TweetingUser
-import com.freshdigitable.udonroad2.model.user.User
+import com.freshdigitable.udonroad2.model.user.TweetUserItem
+import com.freshdigitable.udonroad2.model.user.UserEntity
 import com.freshdigitable.udonroad2.model.user.UserId
 import com.freshdigitable.udonroad2.shortcut.postSelectedItemShortcutEvent
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
@@ -20,11 +20,11 @@ import timber.log.Timber
 import java.util.EnumSet
 
 class UserViewModel(
-    private val tweetingUser: TweetingUser,
+    private val tweetUserItem: TweetUserItem,
     private val eventDispatcher: EventDispatcher,
     private val viewState: UserActivityViewStates,
 ) : ViewModel() {
-    val user: LiveData<User?> = viewState.user
+    val user: LiveData<UserEntity?> = viewState.user
     val relationship: LiveData<Relationship?> = viewState.relationship
     val titleAlpha: LiveData<Float> = viewState.titleAlpha
     val fabVisible: LiveData<Boolean> = viewState.fabVisible
@@ -58,7 +58,7 @@ class UserViewModel(
     }
 
     fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return eventDispatcher.postRelationshipEvent(tweetingUser.id, item)
+        return eventDispatcher.postRelationshipEvent(tweetUserItem.id, item)
     }
 
     override fun onCleared() {

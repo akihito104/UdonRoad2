@@ -37,15 +37,15 @@ import com.freshdigitable.udonroad2.model.app.navigation.subscribeToUpdate
 import com.freshdigitable.udonroad2.model.app.navigation.suspendMap
 import com.freshdigitable.udonroad2.model.app.navigation.toViewState
 import com.freshdigitable.udonroad2.model.user.Relationship
-import com.freshdigitable.udonroad2.model.user.TweetingUser
-import com.freshdigitable.udonroad2.model.user.User
+import com.freshdigitable.udonroad2.model.user.TweetUserItem
+import com.freshdigitable.udonroad2.model.user.UserEntity
 import io.reactivex.disposables.CompositeDisposable
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import javax.inject.Inject
 import kotlin.math.min
 
 class UserActivityViewStates @Inject constructor(
-    tweetingUser: TweetingUser,
+    tweetUserItem: TweetUserItem,
     actions: UserActivityActions,
     userRepository: UserRepository,
     relationshipRepository: RelationshipRepository,
@@ -54,9 +54,9 @@ class UserActivityViewStates @Inject constructor(
     private val navigationDelegate: UserActivityNavigationDelegate,
     executor: AppExecutor,
 ) {
-    val user: AppViewState<User?> = userRepository.getUserSource(tweetingUser.id).onNull(
+    val user: AppViewState<UserEntity?> = userRepository.getUserSource(tweetUserItem.id).onNull(
         executor = executor,
-        onNull = { userRepository.getUser(tweetingUser.id) },
+        onNull = { userRepository.getUser(tweetUserItem.id) },
         onError = {
             navigationDelegate.dispatchFeedbackMessage(UserResourceFeedbackMessage.FAILED_FETCH)
         }
@@ -83,7 +83,7 @@ class UserActivityViewStates @Inject constructor(
 
     // TODO: save to state handle
     val pages: Map<UserPage, ListOwner<*>> = UserPage.values()
-        .map { it to ownerGenerator.create(it.createQuery(tweetingUser)) }
+        .map { it to ownerGenerator.create(it.createQuery(tweetUserItem)) }
         .toMap()
 
     private val currentPage: AppViewState<UserPage> = actions.currentPageChanged
