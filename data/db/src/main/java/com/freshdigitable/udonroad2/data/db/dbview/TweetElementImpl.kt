@@ -22,14 +22,14 @@ import androidx.room.Embedded
 import androidx.room.Ignore
 import androidx.room.Relation
 import com.freshdigitable.udonroad2.model.TweetMediaItem
-import com.freshdigitable.udonroad2.model.tweet.Tweet
+import com.freshdigitable.udonroad2.model.tweet.TweetElement
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import org.threeten.bp.Instant
 
 @DatabaseView(
-    viewName = "view_tweet",
+    viewName = "view_tweet_item_element",
     value =
     """
     SELECT
@@ -40,7 +40,7 @@ import org.threeten.bp.Instant
      u.icon_url AS user_icon_url,
      u.is_verified AS user_is_verified,
      u.is_protected AS user_is_protected
-    FROM tweet AS t 
+    FROM tweet_element AS t 
     INNER JOIN view_user_item AS u ON t.user_id = u.id
 """
 )
@@ -73,10 +73,10 @@ internal data class TweetDbView(
     val createdAt: Instant
 )
 
-internal data class Tweet(
+internal data class TweetElementImpl(
     @Embedded
     val tweet: TweetDbView
-) : Tweet {
+) : TweetElement {
     @Ignore
     override val id: TweetId = tweet.id
 
@@ -124,12 +124,12 @@ internal data class Tweet(
      u.icon_url AS original_user_icon_url,
      u.is_verified AS original_user_is_verified,
      u.is_protected AS original_user_is_protected
-    FROM tweet AS t 
+    FROM tweet_element AS t 
     INNER JOIN view_user_item AS u ON t.user_id = u.id
     ),
     quoted AS (
     SELECT
-     tweet.id AS qt_id,
+     tweet_element.id AS qt_id,
      text AS qt_text,
      created_at AS qt_created_at,
      is_retweeted AS qt_is_retweeted,
@@ -143,12 +143,12 @@ internal data class Tweet(
      u.icon_url AS qt_user_icon_url,
      u.is_verified AS qt_user_is_verified,
      u.is_protected AS qt_user_is_protected
-    FROM tweet
-    INNER JOIN view_user_item AS u ON tweet.user_id = u.id
+    FROM tweet_element
+    INNER JOIN view_user_item AS u ON tweet_element.user_id = u.id
     )
     SELECT t.*, original.*, quoted.* 
     FROM structured_tweet
-    INNER JOIN view_tweet AS t ON t.id = structured_tweet.body_item_id
+    INNER JOIN view_tweet_item_element AS t ON t.id = structured_tweet.body_item_id
     INNER JOIN view_user_item AS vu ON t.user_id = vu.id
     INNER JOIN original ON original.original_id = structured_tweet.original_id
     LEFT OUTER JOIN quoted ON quoted.qt_id = structured_tweet.quoted_item_id
@@ -194,12 +194,12 @@ internal data class TweetListItem(
             field = value.sortedBy { it.order }
         }
 
-    override val body: Tweet
-        @Ignore get() = Tweet(tweetListItem.body).apply { media = bodyMediaItems }
+    override val body: TweetElement
+        @Ignore get() = TweetElementImpl(tweetListItem.body).apply { media = bodyMediaItems }
 
-    override val quoted: Tweet?
+    override val quoted: TweetElement?
         @Ignore get() = if (tweetListItem.quoted != null) {
-            Tweet(tweetListItem.quoted).apply { media = quoteMediaItems }
+            TweetElementImpl(tweetListItem.quoted).apply { media = quoteMediaItems }
         } else {
             null
         }

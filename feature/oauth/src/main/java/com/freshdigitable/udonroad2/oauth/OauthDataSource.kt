@@ -33,7 +33,7 @@ internal class OauthDataSource(context: Context) : PositionalDataSource<OauthIte
         OauthItem(
             originalId = TweetId(2),
             originalUser = user,
-            body = OauthTweet(
+            body = OauthTweetElement(
                 id = TweetId(2),
                 user = user,
                 text = context.getString(R.string.oauth_demo_tweet),
@@ -45,7 +45,7 @@ internal class OauthDataSource(context: Context) : PositionalDataSource<OauthIte
         OauthItem(
             originalId = TweetId(1),
             originalUser = user,
-            body = OauthTweet(
+            body = OauthTweetElement(
                 id = TweetId(1),
                 user = user,
                 text = "",

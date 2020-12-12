@@ -26,7 +26,7 @@ import com.freshdigitable.udonroad2.data.db.AppDatabase
 import com.freshdigitable.udonroad2.data.db.dbview.TweetListItem
 import com.freshdigitable.udonroad2.data.db.entity.MediaUrlEntity
 import com.freshdigitable.udonroad2.data.db.entity.StructuredTweetEntity
-import com.freshdigitable.udonroad2.data.db.entity.TweetEntityDb
+import com.freshdigitable.udonroad2.data.db.entity.TweetElementDb
 import com.freshdigitable.udonroad2.data.db.entity.TweetListEntity
 import com.freshdigitable.udonroad2.data.db.entity.UserReplyEntityDb
 import com.freshdigitable.udonroad2.data.db.entity.VideoValiantEntity
@@ -78,10 +78,10 @@ abstract class TweetDao(
         addTweets(listOf(tweet), owner)
     }
 
-    @Query("UPDATE tweet SET is_favorited = :isFavorited WHERE id = :tweetId")
+    @Query("UPDATE tweet_element SET is_favorited = :isFavorited WHERE id = :tweetId")
     abstract suspend fun updateFav(tweetId: TweetId, isFavorited: Boolean)
 
-    @Query("UPDATE tweet SET is_retweeted = :isRetweeted WHERE id = :tweetId")
+    @Query("UPDATE tweet_element SET is_retweeted = :isRetweeted WHERE id = :tweetId")
     abstract suspend fun updateRetweeted(tweetId: TweetId, isRetweeted: Boolean)
 
     @Transaction
@@ -159,7 +159,7 @@ abstract class TweetDao(
     abstract suspend fun deleteTweet(id: TweetId)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    internal abstract suspend fun addTweetEntitiesInternal(tweet: List<TweetEntityDb>)
+    internal abstract suspend fun addTweetEntitiesInternal(tweet: List<TweetElementDb>)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     internal abstract suspend fun addStructuredTweetEntities(

@@ -27,13 +27,13 @@ import com.freshdigitable.udonroad2.model.tweet.TweetId
     tableName = "structured_tweet",
     foreignKeys = [
         ForeignKey(
-            entity = TweetEntityDb::class,
+            entity = TweetElementDb::class,
             parentColumns = ["id"],
             childColumns = ["original_id"],
             deferred = true
         ),
         ForeignKey(
-            entity = TweetEntityDb::class,
+            entity = TweetElementDb::class,
             parentColumns = ["id"],
             childColumns = ["body_item_id"],
             deferred = true

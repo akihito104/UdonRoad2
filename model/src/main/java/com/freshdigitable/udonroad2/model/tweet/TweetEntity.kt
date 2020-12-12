@@ -20,7 +20,7 @@ import com.freshdigitable.udonroad2.model.MediaEntity
 import com.freshdigitable.udonroad2.model.user.UserEntity
 import com.freshdigitable.udonroad2.model.user.UserId
 
-interface TweetEntity : Tweet {
+interface TweetEntity : TweetElement {
 
     override val user: UserEntity
 

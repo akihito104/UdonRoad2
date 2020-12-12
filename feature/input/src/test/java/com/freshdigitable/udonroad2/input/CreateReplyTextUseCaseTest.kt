@@ -18,7 +18,7 @@ package com.freshdigitable.udonroad2.input
 
 import com.freshdigitable.udonroad2.data.ReplyRepository
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
-import com.freshdigitable.udonroad2.model.tweet.Tweet
+import com.freshdigitable.udonroad2.model.tweet.TweetElement
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import com.freshdigitable.udonroad2.model.tweet.UserReplyEntity
@@ -213,8 +213,8 @@ fun tweetingUser(targetUserId: UserId, targetUserScreenName: String): TweetUserI
     }
 }
 
-private fun tweet(targetTweetId: TweetId, tweetUserItem: TweetUserItem): Tweet {
-    return mockk<Tweet>().apply {
+private fun tweet(targetTweetId: TweetId, tweetUserItem: TweetUserItem): TweetElement {
+    return mockk<TweetElement>().apply {
         every { id } returns targetTweetId
         every { user } returns tweetUserItem
     }
@@ -224,7 +224,7 @@ private fun tweetItem(
     resOriginalId: TweetId,
     resOriginalUser: TweetUserItem,
     resIsRetweet: Boolean,
-    resBody: Tweet
+    resBody: TweetElement
 ): TweetListItem {
     return mockk<TweetListItem>().apply {
         every { originalId } returns resOriginalId
