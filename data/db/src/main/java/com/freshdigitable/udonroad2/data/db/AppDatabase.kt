@@ -41,9 +41,11 @@ import com.freshdigitable.udonroad2.data.db.dbview.TweetListItemDbView
 import com.freshdigitable.udonroad2.data.db.dbview.UserListDbView
 import com.freshdigitable.udonroad2.data.db.entity.CustomTimelineDb
 import com.freshdigitable.udonroad2.data.db.entity.CustomTimelineListDb
+import com.freshdigitable.udonroad2.data.db.entity.Favorited
 import com.freshdigitable.udonroad2.data.db.entity.MediaDbEntity
 import com.freshdigitable.udonroad2.data.db.entity.MediaUrlEntity
 import com.freshdigitable.udonroad2.data.db.entity.RelationshipEntity
+import com.freshdigitable.udonroad2.data.db.entity.Retweeted
 import com.freshdigitable.udonroad2.data.db.entity.StructuredTweetEntity
 import com.freshdigitable.udonroad2.data.db.entity.TweetEntityDb
 import com.freshdigitable.udonroad2.data.db.entity.TweetListEntity
@@ -58,6 +60,8 @@ import com.freshdigitable.udonroad2.data.db.entity.VideoValiantEntity
         TweetEntityDb::class,
         StructuredTweetEntity::class,
         TweetListEntity::class,
+        Favorited::class,
+        Retweeted::class,
         UserEntityDb::class,
         UserListEntity::class,
         CustomTimelineDb::class,

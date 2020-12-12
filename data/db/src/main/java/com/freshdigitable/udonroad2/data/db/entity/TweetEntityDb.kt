@@ -90,6 +90,52 @@ internal class TweetEntityDb(
 )
 
 @Entity(
+    primaryKeys = ["tweet_id", "source_user_id"],
+    foreignKeys = [
+        ForeignKey(
+            entity = TweetEntityDb::class,
+            parentColumns = ["id"],
+            childColumns = ["tweet_id"]
+        ),
+        ForeignKey(
+            entity = UserEntityDb::class,
+            parentColumns = ["id"],
+            childColumns = ["source_user_id"]
+        )
+    ]
+)
+internal data class Favorited(
+    @ColumnInfo(name = "tweet_id")
+    val tweetId: TweetId,
+    @ColumnInfo(name = "source_user_id", index = true)
+    val sourceUserId: UserId,
+)
+
+@Entity(
+    primaryKeys = ["tweet_id", "source_user_id"],
+    foreignKeys = [
+        ForeignKey(
+            entity = TweetEntityDb::class,
+            parentColumns = ["id"],
+            childColumns = ["tweet_id"]
+        ),
+        ForeignKey(
+            entity = UserEntityDb::class,
+            parentColumns = ["id"],
+            childColumns = ["source_user_id"]
+        )
+    ]
+)
+internal data class Retweeted(
+    @ColumnInfo(name = "tweet_id")
+    val tweetId: TweetId,
+    @ColumnInfo(name = "source_user_id", index = true)
+    val sourceUserId: UserId,
+    @ColumnInfo(name = "retweet_id")
+    val retweetId: TweetId,
+)
+
+@Entity(
     tableName = "user_reply",
     primaryKeys = ["tweet_id", "user_id"],
     foreignKeys = [
