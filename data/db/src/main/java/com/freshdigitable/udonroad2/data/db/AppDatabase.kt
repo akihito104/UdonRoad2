@@ -35,7 +35,6 @@ import com.freshdigitable.udonroad2.data.db.dao.UserDao
 import com.freshdigitable.udonroad2.data.db.dao.UserReplyEntityDao
 import com.freshdigitable.udonroad2.data.db.dao.VideoValiantDao
 import com.freshdigitable.udonroad2.data.db.dbview.CustomTimelineListItemDb
-import com.freshdigitable.udonroad2.data.db.dbview.TweetDbView
 import com.freshdigitable.udonroad2.data.db.dbview.TweetItemMediaDbView
 import com.freshdigitable.udonroad2.data.db.dbview.TweetListItemDbView
 import com.freshdigitable.udonroad2.data.db.dbview.UserListDbView
@@ -76,7 +75,6 @@ import com.freshdigitable.udonroad2.data.db.entity.VideoValiantEntity
         UserReplyEntityDb::class,
     ],
     views = [
-        TweetDbView::class,
         TweetListItemDbView::class,
         UserListDbView::class,
         CustomTimelineListItemDb::class,

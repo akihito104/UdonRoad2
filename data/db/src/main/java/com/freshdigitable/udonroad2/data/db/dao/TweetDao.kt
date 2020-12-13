@@ -45,7 +45,7 @@ abstract class TweetDao(
 ) {
     companion object {
         private const val QUERY_FIND_TWEET_LIST_ITEM_BY_ID =
-            "SELECT * FROM tweet_list_item WHERE original_id = :id"
+            "SELECT * FROM view_tweet_list_item WHERE original_id = :id"
     }
 
     @Transaction
@@ -53,7 +53,7 @@ abstract class TweetDao(
         """
         SELECT v.*
         FROM tweet_list AS l
-        INNER JOIN tweet_list_item AS v ON v.original_id = l.original_id
+        INNER JOIN view_tweet_list_item AS v ON v.original_id = l.original_id
         WHERE l.owner = :owner
         ORDER BY l.`order` DESC"""
     )
