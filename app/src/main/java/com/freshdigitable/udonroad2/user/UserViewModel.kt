@@ -30,7 +30,7 @@ class UserViewModel(
     val fabVisible: LiveData<Boolean> = viewState.fabVisible
     val relationshipMenuItems: LiveData<Set<RelationshipMenu>> = viewState.relationshipMenuItems
 
-    fun getOwner(userPage: UserPage): ListOwner<*> = requireNotNull(viewState.pages[userPage])
+    fun getOwner(userPage: UserPage): ListOwner<*> = requireNotNull(viewState.pages.value[userPage])
 
     fun setAppBarScrollRate(rate: Float) {
         eventDispatcher.postEvent(UserActivityEvent.AppbarScrolled(rate))

@@ -22,6 +22,7 @@ import com.freshdigitable.udonroad2.AppFileProviderImpl
 import com.freshdigitable.udonroad2.AppSetup
 import com.freshdigitable.udonroad2.AppSetupModule
 import com.freshdigitable.udonroad2.data.db.DatabaseModule
+import com.freshdigitable.udonroad2.data.impl.create
 import com.freshdigitable.udonroad2.data.impl.di.RepositoryModule
 import com.freshdigitable.udonroad2.data.restclient.AppTwitterModule
 import com.freshdigitable.udonroad2.data.restclient.TwitterModule
@@ -72,7 +73,7 @@ interface AppComponent {
 object ListOwnerGeneratorProvider {
     @Singleton
     @Provides
-    fun provideListOwnerGenerator(): ListOwnerGenerator = ListOwnerGenerator()
+    fun provideListOwnerGenerator(): ListOwnerGenerator = ListOwnerGenerator.create()
 }
 
 @Module

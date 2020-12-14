@@ -59,10 +59,9 @@ interface OauthViewModelModule {
         @Provides
         fun provideOauthNavigationDelegate(
             fragment: ListItemFragment,
-            listOwnerGenerator: ListOwnerGenerator,
             activityEventDelegate: ActivityEventDelegate
         ): OauthNavigationDelegate {
-            return OauthNavigationDelegate(fragment, listOwnerGenerator, activityEventDelegate)
+            return OauthNavigationDelegate(fragment, activityEventDelegate)
         }
 
         @Provides
@@ -79,10 +78,18 @@ interface OauthViewModelModule {
             actions: OauthAction,
             navDelegate: OauthNavigationDelegate,
             repository: OAuthTokenRepository,
+            listOwnerGenerator: ListOwnerGenerator,
             savedState: OauthSavedStates,
             appExecutor: AppExecutor
         ): OauthViewStates {
-            return OauthViewStates(actions, navDelegate, repository, savedState, appExecutor)
+            return OauthViewStates(
+                actions,
+                navDelegate,
+                repository,
+                listOwnerGenerator,
+                savedState,
+                appExecutor
+            )
         }
 
         @Provides

@@ -20,6 +20,7 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.SavedStateHandle
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.freshdigitable.udonroad2.data.impl.create
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.app.AppExecutor
@@ -123,7 +124,7 @@ class OauthViewModelTestRule : TestWatcher() {
     private val _activityEventDelegate = MockVerified.create<ActivityEventDelegate>()
     val activityEventDelegate: ActivityEventDelegate = _activityEventDelegate.mock
     private val navDelegate: OauthNavigationDelegate =
-        OauthNavigationDelegate(mockk(relaxed = true), ListOwnerGenerator(), activityEventDelegate)
+        OauthNavigationDelegate(mockk(relaxed = true), activityEventDelegate)
 
     val sut = OauthViewModel(
         OauthDataSource(ApplicationProvider.getApplicationContext()),
@@ -132,6 +133,7 @@ class OauthViewModelTestRule : TestWatcher() {
             OauthAction(dispatcher),
             navDelegate,
             repositoryRule.mock,
+            ListOwnerGenerator.create(),
             OauthSavedStates(SavedStateHandle(), coroutineRule.coroutineContextProvider),
             AppExecutor(dispatcher = coroutineRule.coroutineContextProvider)
         )

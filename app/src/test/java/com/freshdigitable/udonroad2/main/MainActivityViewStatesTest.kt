@@ -19,15 +19,18 @@ package com.freshdigitable.udonroad2.main
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.MutableLiveData
 import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
+import com.freshdigitable.udonroad2.data.impl.create
 import com.freshdigitable.udonroad2.input.TweetInputSharedState
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
+import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.CommonEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.postEvents
 import com.freshdigitable.udonroad2.test_common.MockVerified
 import com.freshdigitable.udonroad2.test_common.RxExceptionHandler
+import com.freshdigitable.udonroad2.test_common.jvm.CoroutineTestRule
 import com.freshdigitable.udonroad2.test_common.jvm.OAuthTokenRepositoryRule
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import io.mockk.every
@@ -132,6 +135,7 @@ class MainActivityStateModelTestRule : TestWatcher() {
     val selectedItemRepository = SelectedItemRepository()
     val navDelegateRule = MainActivityNavigationDelegateRule()
     val navDelegate: MainActivityNavigationDelegate = navDelegateRule.mock
+    private val coroutineRule = CoroutineTestRule()
 
     val isExpandedSource = MutableLiveData<Boolean>()
     private val tweetInputSharedState = MockVerified.create<TweetInputSharedState>().apply {
@@ -143,8 +147,9 @@ class MainActivityStateModelTestRule : TestWatcher() {
         selectedItemRepository,
         oauthTokenRepositoryMock.mock,
         tweetInputSharedState.mock,
-        ListOwnerGenerator(),
-        navDelegateRule.mock
+        ListOwnerGenerator.create(),
+        navDelegateRule.mock,
+        AppExecutor(dispatcher = coroutineRule.coroutineContextProvider),
     )
 
     fun dispatchEvents(vararg events: AppEvent) {
@@ -160,6 +165,7 @@ class MainActivityStateModelTestRule : TestWatcher() {
 
     override fun apply(base: Statement?, description: Description?): Statement {
         return RuleChain.outerRule(InstantTaskExecutorRule())
+            .around(coroutineRule)
             .around(navDelegateRule)
             .around(RxExceptionHandler())
             .apply(super.apply(base, description), description)

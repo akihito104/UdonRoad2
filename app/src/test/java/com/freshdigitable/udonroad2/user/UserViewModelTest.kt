@@ -23,6 +23,7 @@ import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.data.impl.RelationshipRepository
 import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
 import com.freshdigitable.udonroad2.data.impl.UserRepository
+import com.freshdigitable.udonroad2.data.impl.create
 import com.freshdigitable.udonroad2.main.menuItem
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
@@ -373,7 +374,7 @@ class UserViewModelTestRule : TestWatcher() {
             userRepositoryMock.mock,
             relationshipRepository,
             selectedItemRepository,
-            ListOwnerGenerator(),
+            ListOwnerGenerator.create(),
             navigationDelegate,
             AppExecutor(dispatcher = coroutineRule.coroutineContextProvider)
         )

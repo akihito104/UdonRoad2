@@ -41,6 +41,11 @@ import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.model.user.UserEntity
 import io.reactivex.disposables.CompositeDisposable
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 import kotlin.math.min
 
@@ -82,15 +87,15 @@ class UserActivityViewStates @Inject constructor(
     }
 
     // TODO: save to state handle
-    val pages: Map<UserPage, ListOwner<*>> = UserPage.values()
-        .map { it to ownerGenerator.create(it.createQuery(tweetUserItem)) }
-        .toMap()
+    val pages: StateFlow<Map<UserPage, ListOwner<*>>> = flowOf(UserPage.values()).map {
+        it.map { p -> p to ownerGenerator.create(p.createQuery(tweetUserItem)) }.toMap()
+    }.stateIn(executor, SharingStarted.Eagerly, emptyMap())
 
     private val currentPage: AppViewState<UserPage> = actions.currentPageChanged
         .map { it.page }
         .toViewState()
     val selectedItemId = currentPage.switchMap {
-        selectedItemRepository.observe(requireNotNull(pages[it]))
+        selectedItemRepository.observe(requireNotNull(pages.value[it]))
     }
     val fabVisible: AppViewState<Boolean> = selectedItemId
         .map { it != null }

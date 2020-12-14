@@ -17,7 +17,6 @@
 package com.freshdigitable.udonroad2.model
 
 import java.io.Serializable
-import java.util.concurrent.atomic.AtomicInteger
 
 data class ListOwner<Q : QueryType>(
     val id: Int,
@@ -26,9 +25,8 @@ data class ListOwner<Q : QueryType>(
     val value: String = "$id"
 }
 
-class ListOwnerGenerator(
-    private val idGenerator: AtomicInteger = AtomicInteger(0)
-) {
-    fun <Q : QueryType> create(type: Q): ListOwner<Q> =
-        ListOwner(idGenerator.getAndIncrement(), type)
+interface ListOwnerGenerator {
+    suspend fun <Q : QueryType> create(type: Q): ListOwner<Q>
+
+    companion object
 }

@@ -21,6 +21,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
 import com.freshdigitable.udonroad2.model.AccessTokenEntity
+import com.freshdigitable.udonroad2.model.ListOwnerGenerator
+import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.RequestTokenItem
 import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.DispatcherProvider
@@ -29,16 +31,20 @@ import com.freshdigitable.udonroad2.model.app.mainContext
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.AppViewState
 import com.freshdigitable.udonroad2.model.app.navigation.EventResult
+import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.subscribeToUpdate
 import com.freshdigitable.udonroad2.model.app.navigation.suspendMap
 import com.freshdigitable.udonroad2.model.app.navigation.toViewState
+import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import io.reactivex.disposables.CompositeDisposable
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class OauthViewStates(
     actions: OauthAction,
     private val navDelegate: OauthNavigationDelegate,
     repository: OAuthTokenRepository,
+    listOwnerGenerator: ListOwnerGenerator,
     savedState: OauthSavedStates,
     appExecutor: AppExecutor,
 ) {
@@ -77,7 +83,15 @@ class OauthViewStates(
                 else -> it.rethrow() // FIXME: send feedback
             }
         },
-        completeAuthProcess.subscribeToUpdate(navDelegate) { toTimeline() },
+        completeAuthProcess.subscribeToUpdate(navDelegate) {
+            appExecutor.launch(appExecutor.mainContext) {
+                val nav = TimelineEvent.Navigate.Timeline(
+                    listOwnerGenerator.create(QueryType.TweetQueryType.Timeline()),
+                    NavigationEvent.Type.INIT
+                )
+                dispatchNavHostNavigate(nav)
+            }
+        },
     )
 
     fun clear() {
