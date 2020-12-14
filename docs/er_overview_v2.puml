@@ -44,9 +44,9 @@ entity custom_timeline {
 }
 
 entity custom_timeline_list {
-  * custom_timeline_id: CustomTimelineId [PK]
   * order: Long <<generated>> [PK]
-  * owner: String
+  * list_id: ListId [PK] [FK]
+  * custom_timeline_id: CustomTimelineId [FK]
 }
 
 entity relationship {
@@ -95,9 +95,8 @@ entity tweet {
 }
 
 entity tweet_list {
-  * original_id: TweetId
-  * order: Long
-  * owner: String
+  * list_id: ListId [PK] [FK]
+  * tweet_id: TweetId [PK] [FK]
 }
 
 entity url {
@@ -129,9 +128,9 @@ entity user {
 }
 
 entity user_list {
-  * id: Int <<generated>> [PK]
-  * user_id: UserId
-  * owner: String
+  * order: Long <<generated>> [PK]
+  * list_id: ListId [PK] [FK]
+  * user_id: UserId [FK]
 }
 
 entity favorited {
@@ -145,9 +144,16 @@ entity retweeted {
   * retweet_id: TweetId
 }
 
-entity current_user {
-  * id: UserId [PK] [FK]
+entity list {
+  * id: ListId <<generated>> [PK]
+  * owner_id: UserId [FK]
+  next_token_head: String <<reserved>>
+  next_token_tail: String <<reserved>>
 }
+
+list --{ tweet_list
+list --{ user_list
+list --{ custom_timeline_list
 
 tweet_list }--{ tweet
 tweet --|{ tweet_element
@@ -165,11 +171,6 @@ user_list }--{ user
 user }--{ relationship
 user --o{ url
 user -o{ tweet
-user - current_user
-
-current_user -o{ relationship
-current_user -o{ favorited
-current_user -o{ retweeted
 
 custom_timeline_list }--{ custom_timeline
 custom_timeline }-{ user
@@ -181,12 +182,6 @@ package database_views {
     * original_user: TweetingUser <<embedded>>
     * body: TweetElementItem <<embedded>>
     quoted: TweetElementItem <<embedded>>
-  }
-
-  entity view_tweet_item_element << (V, #ffffff) view >> {
-    * id: TweetId
-    is_retweeted: FavoriteReaction <<embedded>>
-    is_favorited: RetweetReaction <<embedded>>
   }
 
   entity view_tweet_item_media << (V, #ffffff) view >> {
@@ -222,13 +217,8 @@ package database_views {
     * following_count: Int
   }
 
-  view_tweet_item -- view_tweet_item_element
-  view_tweet_item -- view_user_item
-
-  view_tweet_item_element - tweet_element
-  view_tweet_item_element -- favorited
-  view_tweet_item_element -- retweeted
-  view_tweet_item_element --o{ view_tweet_item_media
+  view_tweet_item --{ view_user_item
+  view_tweet_item --o{ view_tweet_item_media
 
   view_tweet_item_media - media_url
   view_tweet_item_media - media
