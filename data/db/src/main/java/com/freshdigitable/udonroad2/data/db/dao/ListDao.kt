@@ -4,9 +4,9 @@ import androidx.paging.DataSource
 import com.freshdigitable.udonroad2.data.LocalListDataSource
 import com.freshdigitable.udonroad2.data.PagedListProvider
 import com.freshdigitable.udonroad2.data.db.ext.toEntity
+import com.freshdigitable.udonroad2.model.CustomTimelineEntity
+import com.freshdigitable.udonroad2.model.CustomTimelineItem
 import com.freshdigitable.udonroad2.model.ListQuery
-import com.freshdigitable.udonroad2.model.MemberList
-import com.freshdigitable.udonroad2.model.MemberListItem
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
@@ -55,20 +55,20 @@ class UserListDao(
     }
 }
 
-class MemberListListDao(
-    private val dao: MemberListDao
-) : LocalListDataSource<QueryType.UserListMembership, MemberList>,
-    PagedListProvider.DataSourceFactory<MemberListItem> {
-    override fun getDataSourceFactory(owner: String): DataSource.Factory<Int, MemberListItem> {
-        return dao.getMemberList(owner).map { it as MemberListItem }
+class CustomTimelineListDao(
+    private val dao: CustomTimelineDao
+) : LocalListDataSource<QueryType.UserListMembership, CustomTimelineEntity>,
+    PagedListProvider.DataSourceFactory<CustomTimelineItem> {
+    override fun getDataSourceFactory(owner: String): DataSource.Factory<Int, CustomTimelineItem> {
+        return dao.getCustomTimeline(owner).map { it as CustomTimelineItem }
     }
 
     override suspend fun putList(
-        entities: List<MemberList>,
+        entities: List<CustomTimelineEntity>,
         query: ListQuery<QueryType.UserListMembership>?,
         owner: String?
     ) {
-        dao.addMemberList(entities, owner)
+        dao.addCustomTimeline(entities, owner)
     }
 
     override suspend fun clean(owner: String) {

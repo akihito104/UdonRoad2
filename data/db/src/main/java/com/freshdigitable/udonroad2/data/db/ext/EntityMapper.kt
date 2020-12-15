@@ -1,15 +1,15 @@
 package com.freshdigitable.udonroad2.data.db.ext
 
+import com.freshdigitable.udonroad2.data.db.entity.CustomTimelineDb
 import com.freshdigitable.udonroad2.data.db.entity.MediaDbEntity
-import com.freshdigitable.udonroad2.data.db.entity.MemberListEntity
 import com.freshdigitable.udonroad2.data.db.entity.StructuredTweetEntity
 import com.freshdigitable.udonroad2.data.db.entity.TweetEntityDb
 import com.freshdigitable.udonroad2.data.db.entity.TweetListEntity
 import com.freshdigitable.udonroad2.data.db.entity.UrlEntity
 import com.freshdigitable.udonroad2.data.db.entity.UserEntityDb
+import com.freshdigitable.udonroad2.model.CustomTimelineEntity
 import com.freshdigitable.udonroad2.model.MediaEntity
 import com.freshdigitable.udonroad2.model.MediaType
-import com.freshdigitable.udonroad2.model.MemberList
 import com.freshdigitable.udonroad2.model.UrlItem
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
 import com.freshdigitable.udonroad2.model.user.UserEntity
@@ -80,8 +80,8 @@ internal fun UrlItem.toEntity(): UrlEntity {
     return UrlEntity(url, displayUrl, expandedUrl, start, end)
 }
 
-internal fun MemberList.toEntity(): MemberListEntity {
-    return MemberListEntity(
+internal fun CustomTimelineEntity.toEntity(): CustomTimelineDb {
+    return CustomTimelineDb(
         id = id,
         name = name,
         description = description,

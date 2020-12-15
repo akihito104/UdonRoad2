@@ -16,16 +16,16 @@
 
 package com.freshdigitable.udonroad2.data.restclient.data
 
-import com.freshdigitable.udonroad2.model.MemberList
-import com.freshdigitable.udonroad2.model.MemberListId
+import com.freshdigitable.udonroad2.model.CustomTimelineEntity
+import com.freshdigitable.udonroad2.model.CustomTimelineId
 import com.freshdigitable.udonroad2.model.user.UserEntity
 
-internal data class MemberListImpl(
+internal data class CustomTimelineEntityImpl(
     override val user: UserEntity,
-    override val id: MemberListId,
+    override val id: CustomTimelineId,
     override val name: String,
     override val description: String,
     override val memberCount: Int,
     override val followerCount: Int,
     override val isPublic: Boolean
-) : MemberList
+) : CustomTimelineEntity

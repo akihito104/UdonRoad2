@@ -20,21 +20,21 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
-import com.freshdigitable.udonroad2.model.MemberListId
+import com.freshdigitable.udonroad2.model.CustomTimelineId
 
 @Entity(
-    tableName = "member_list_list",
+    tableName = "custom_timeline_list",
     foreignKeys = [
         ForeignKey(
-            entity = MemberListEntity::class,
+            entity = CustomTimelineDb::class,
             parentColumns = ["id"],
-            childColumns = ["member_list_id"]
+            childColumns = ["custom_timeline_id"]
         )
     ]
 )
-internal data class MemberListListEntity(
-    @ColumnInfo(name = "member_list_id", index = true)
-    val memberListId: MemberListId,
+internal data class CustomTimelineListDb(
+    @ColumnInfo(name = "custom_timeline_id", index = true)
+    val customTimelineId: CustomTimelineId,
 
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "order")

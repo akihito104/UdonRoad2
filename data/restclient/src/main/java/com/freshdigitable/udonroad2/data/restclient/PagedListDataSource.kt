@@ -4,8 +4,8 @@ import com.freshdigitable.udonroad2.data.RemoteListDataSource
 import com.freshdigitable.udonroad2.data.restclient.data.PagedResponseList
 import com.freshdigitable.udonroad2.data.restclient.ext.toEntity
 import com.freshdigitable.udonroad2.data.restclient.ext.toPagedResponseList
+import com.freshdigitable.udonroad2.model.CustomTimelineEntity
 import com.freshdigitable.udonroad2.model.ListQuery
-import com.freshdigitable.udonroad2.model.MemberList
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.QueryType.UserQueryType
 import com.freshdigitable.udonroad2.model.user.UserEntity
@@ -51,7 +51,7 @@ class FollowingListDataSource @Inject constructor(
 
 class ListMembershipListDataSource @Inject constructor(
     twitter: AppTwitter
-) : RemoteListDataSource<QueryType.UserListMembership, MemberList> by PagedListDataSource(
+) : RemoteListDataSource<QueryType.UserListMembership, CustomTimelineEntity> by PagedListDataSource(
     twitter,
     { query, nextCursor ->
         getUserListMemberships(

@@ -19,9 +19,9 @@ package com.freshdigitable.udonroad2.data.db
 import android.app.Application
 import androidx.room.Room
 import com.freshdigitable.udonroad2.data.ReplyRepository
+import com.freshdigitable.udonroad2.data.db.dao.CustomTimelineDao
+import com.freshdigitable.udonroad2.data.db.dao.CustomTimelineListDao
 import com.freshdigitable.udonroad2.data.db.dao.MediaDao
-import com.freshdigitable.udonroad2.data.db.dao.MemberListDao
-import com.freshdigitable.udonroad2.data.db.dao.MemberListListDao
 import com.freshdigitable.udonroad2.data.db.dao.RelationshipDao
 import com.freshdigitable.udonroad2.data.db.dao.ReplyLocalDataSource
 import com.freshdigitable.udonroad2.data.db.dao.TweetDao
@@ -57,10 +57,11 @@ object DaoModule {
     fun provideUserListDao(dao: UserDao): UserListDao = UserListDao(dao)
 
     @Provides
-    fun provideMemberListDao(db: AppDatabase): MemberListDao = db.memberListDao()
+    fun provideCustomTimelineDao(db: AppDatabase): CustomTimelineDao = db.customTimelineDao()
 
     @Provides
-    fun provideMemberListListDao(dao: MemberListDao): MemberListListDao = MemberListListDao(dao)
+    fun provideCustomTimelineListDao(dao: CustomTimelineDao): CustomTimelineListDao =
+        CustomTimelineListDao(dao)
 
     @Provides
     fun provideRelationshipDao(db: AppDatabase): RelationshipDao = db.relationshipDao()

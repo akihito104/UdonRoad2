@@ -20,10 +20,10 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 import androidx.paging.PagedListAdapter
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
-import com.freshdigitable.udonroad2.timeline.listadapter.MemberListListAdapter
+import com.freshdigitable.udonroad2.timeline.listadapter.CustomTimelineListAdapter
 import com.freshdigitable.udonroad2.timeline.listadapter.TimelineAdapter
 import com.freshdigitable.udonroad2.timeline.listadapter.UserListAdapter
-import com.freshdigitable.udonroad2.timeline.viewmodel.MemberListListViewModel
+import com.freshdigitable.udonroad2.timeline.viewmodel.CustomTimelineListViewModel
 import com.freshdigitable.udonroad2.timeline.viewmodel.TimelineViewModel
 import com.freshdigitable.udonroad2.timeline.viewmodel.UserListViewModel
 import dagger.Module
@@ -34,7 +34,7 @@ import dagger.multibindings.IntoMap
     includes = [
         TimelineAdapterModule::class,
         UserListAdapterModule::class,
-        MemberListListAdapterModule::class
+        CustomTimelineListAdapterModule::class
     ]
 )
 interface TimelineAdapterModules
@@ -65,12 +65,12 @@ internal object UserListAdapterModule {
 }
 
 @Module
-internal object MemberListListAdapterModule {
+internal object CustomTimelineListAdapterModule {
     @Provides
     @IntoMap
-    @ViewModelKey(MemberListListViewModel::class)
+    @ViewModelKey(CustomTimelineListViewModel::class)
     fun provideTimelineAdapter(viewModel: ViewModel): PagedListAdapter<out Any, *> {
-        val vm = viewModel as MemberListListViewModel
-        return MemberListListAdapter(vm)
+        val vm = viewModel as CustomTimelineListViewModel
+        return CustomTimelineListAdapter(vm)
     }
 }

@@ -1,7 +1,7 @@
 package com.freshdigitable.udonroad2.timeline
 
+import com.freshdigitable.udonroad2.model.CustomTimelineItem
 import com.freshdigitable.udonroad2.model.ListOwner
-import com.freshdigitable.udonroad2.model.MemberListItem
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
@@ -31,7 +31,7 @@ sealed class TimelineEvent : AppEvent {
         abstract val owner: ListOwner<*>
     }
 
-    data class MemberListClicked(val memberList: MemberListItem) : TimelineEvent()
+    data class CustomTimelineClicked(val customTimeline: CustomTimelineItem) : TimelineEvent()
 
     data class MediaItemClicked(
         val tweetId: TweetId,

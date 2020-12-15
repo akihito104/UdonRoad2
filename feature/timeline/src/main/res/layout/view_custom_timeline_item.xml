@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ Copyright (c) 2018. Matsuda, Akihit (akihito104)
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,19 +14,24 @@
   ~ limitations under the License.
   -->
 
-<layout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools">
+<layout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    >
 
     <data>
+
         <import type="android.view.View" />
+
         <variable
-            name="memberList"
-            type="com.freshdigitable.udonroad2.model.MemberListItem"
+            name="customTimeline"
+            type="com.freshdigitable.udonroad2.model.CustomTimelineItem"
             />
+
         <variable
             name="viewModel"
-            type="com.freshdigitable.udonroad2.timeline.viewmodel.MemberListListViewModel"
+            type="com.freshdigitable.udonroad2.timeline.viewmodel.CustomTimelineListViewModel"
             />
     </data>
 
@@ -36,74 +40,78 @@
         android:layout_height="wrap_content"
         android:padding="8dp"
         android:background="@drawable/selector_item_background"
-        android:onClick="@{v -> viewModel.onBodyItemClicked(memberList)}"
+        android:onClick="@{v -> viewModel.onBodyItemClicked(customTimeline)}"
         >
+
         <ImageView
-            android:id="@+id/memberListItem_icon"
+            android:id="@+id/customTimelineItem_icon"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:layout_marginEnd="@dimen/margin"
             android:layout_marginRight="@dimen/margin"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/memberListItem_names"
-            app:bindUserIcon="@{memberList.user.iconUrl}"
-            android:onClick="@{v -> viewModel.onUserIconClicked(memberList.user)}"
+            app:layout_constraintEnd_toStartOf="@id/customTimelineItem_names"
+            app:bindUserIcon="@{customTimeline.user.iconUrl}"
+            android:onClick="@{v -> viewModel.onUserIconClicked(customTimeline.user)}"
             tools:background="#888"
             />
+
         <TextView
-            android:id="@+id/memberListItem_names"
+            android:id="@+id/customTimelineItem_names"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toTopOf="@id/memberListItem_text"
-            app:layout_constraintStart_toEndOf="@id/memberListItem_icon"
+            app:layout_constraintBottom_toTopOf="@id/customTimelineItem_text"
+            app:layout_constraintStart_toEndOf="@id/customTimelineItem_icon"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0"
-            android:text="@{memberList.name}"
+            android:text="@{customTimeline.name}"
             android:lines="1"
             android:ellipsize="end"
             tools:text="NAME"
             />
+
         <TextView
-            android:id="@+id/memberListItem_text"
+            android:id="@+id/customTimelineItem_text"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/margin_half"
-            app:layout_constraintTop_toBottomOf="@id/memberListItem_names"
-            app:layout_constraintStart_toStartOf="@id/memberListItem_names"
+            app:layout_constraintTop_toBottomOf="@id/customTimelineItem_names"
+            app:layout_constraintStart_toStartOf="@id/customTimelineItem_names"
             app:layout_constraintEnd_toEndOf="parent"
-            android:text="@{memberList.description}"
+            android:text="@{customTimeline.description}"
             tools:text="description body"
             />
 
         <TextView
-            android:id="@+id/memberListItem_follower"
+            android:id="@+id/customTimelineItem_follower"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/margin_half"
             android:layout_marginEnd="@dimen/margin"
             android:layout_marginRight="@dimen/margin"
-            app:layout_constraintTop_toBottomOf="@id/memberListItem_text"
-            app:layout_constraintStart_toStartOf="@id/memberListItem_text"
-            app:layout_constraintEnd_toStartOf="@id/memberListItem_following"
+            app:layout_constraintTop_toBottomOf="@id/customTimelineItem_text"
+            app:layout_constraintStart_toStartOf="@id/customTimelineItem_text"
+            app:layout_constraintEnd_toStartOf="@id/customTimelineItem_following"
             app:layout_constraintHorizontal_bias="0"
             app:layout_constraintHorizontal_chainStyle="packed"
-            android:text="@{`follower:` + memberList.followerCount}"
+            android:text="@{`follower:` + customTimeline.followerCount}"
             android:textSize="12sp"
             android:lines="1"
             tools:text="follower:100"
             />
+
         <TextView
-            android:id="@+id/memberListItem_following"
+            android:id="@+id/customTimelineItem_following"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/margin_half"
-            app:layout_constraintTop_toBottomOf="@id/memberListItem_text"
-            app:layout_constraintStart_toEndOf="@id/memberListItem_follower"
+            app:layout_constraintTop_toBottomOf="@id/customTimelineItem_text"
+            app:layout_constraintStart_toEndOf="@id/customTimelineItem_follower"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0"
-            android:text="@{`subscribed:` + memberList.memberCount}"
+            android:text="@{`subscribed:` + customTimeline.memberCount}"
             android:textSize="12sp"
             android:lines="1"
             tools:text="subscribed:100"

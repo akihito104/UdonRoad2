@@ -25,9 +25,9 @@ import com.freshdigitable.udonroad2.data.impl.di.ListRepositoryComponent
 import com.freshdigitable.udonroad2.data.impl.di.ListRepositoryComponentModule
 import com.freshdigitable.udonroad2.data.impl.di.listRepository
 import com.freshdigitable.udonroad2.data.impl.di.pagedListProvider
+import com.freshdigitable.udonroad2.model.CustomTimelineItem
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
-import com.freshdigitable.udonroad2.model.MemberListItem
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.di.IntoFactory
@@ -40,7 +40,7 @@ import com.freshdigitable.udonroad2.model.user.UserListItem
 import com.freshdigitable.udonroad2.timeline.TimelineActions
 import com.freshdigitable.udonroad2.timeline.TimelineNavigationDelegate
 import com.freshdigitable.udonroad2.timeline.TimelineViewState
-import com.freshdigitable.udonroad2.timeline.viewmodel.MemberListListViewModel
+import com.freshdigitable.udonroad2.timeline.viewmodel.CustomTimelineListViewModel
 import com.freshdigitable.udonroad2.timeline.viewmodel.TimelineViewModel
 import com.freshdigitable.udonroad2.timeline.viewmodel.UserListViewModel
 import dagger.Module
@@ -52,7 +52,7 @@ import kotlin.reflect.KClass
     includes = [
         TimelineViewModelModule::class,
         UserListViewModelModule::class,
-        MemberListListViewModelModule::class,
+        CustomTimelineListViewModelModule::class,
         ListRepositoryComponentModule::class
     ]
 )
@@ -143,28 +143,28 @@ internal interface UserListViewModelModule {
 }
 
 @Module
-internal interface MemberListListViewModelModule {
+internal interface CustomTimelineListViewModelModule {
     companion object {
         @Provides
         @IntoMap
-        @ViewModelKey(MemberListListViewModel::class)
+        @ViewModelKey(CustomTimelineListViewModel::class)
         @IntoFactory
-        fun provideMemberListListViewModel(
+        fun provideCustomTimelineListViewModel(
             owner: ListOwner<*>,
             eventDispatcher: EventDispatcher,
             listRepositoryFactory: ListRepositoryComponent.Factory
-        ): ViewModel = provideViewModel<QueryType.UserListMembership, MemberListItem>(
+        ): ViewModel = provideViewModel<QueryType.UserListMembership, CustomTimelineItem>(
             owner,
             listRepositoryFactory
         ) { o, repository, pagedListProvider ->
-            MemberListListViewModel(o, repository, eventDispatcher, pagedListProvider)
+            CustomTimelineListViewModel(o, repository, eventDispatcher, pagedListProvider)
         }
 
         @Provides
         @IntoMap
         @QueryTypeKey(QueryType.UserListMembership::class)
-        fun provideMemberListListViewModelKClass(): KClass<out ViewModel> =
-            MemberListListViewModel::class
+        fun provideCustomTimelineListViewModelKClass(): KClass<out ViewModel> =
+            CustomTimelineListViewModel::class
     }
 }
 

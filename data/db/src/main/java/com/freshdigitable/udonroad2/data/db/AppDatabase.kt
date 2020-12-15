@@ -20,29 +20,29 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverter
 import androidx.room.TypeConverters
+import com.freshdigitable.udonroad2.data.db.converter.CustomTimelineIdConverter
 import com.freshdigitable.udonroad2.data.db.converter.MediaIdConverter
 import com.freshdigitable.udonroad2.data.db.converter.MediaTypeConverter
-import com.freshdigitable.udonroad2.data.db.converter.MemberListIdConverter
 import com.freshdigitable.udonroad2.data.db.converter.TimestampConverter
 import com.freshdigitable.udonroad2.data.db.converter.TweetIdConverter
 import com.freshdigitable.udonroad2.data.db.converter.UserIdConverter
+import com.freshdigitable.udonroad2.data.db.dao.CustomTimelineDao
 import com.freshdigitable.udonroad2.data.db.dao.MediaDao
-import com.freshdigitable.udonroad2.data.db.dao.MemberListDao
 import com.freshdigitable.udonroad2.data.db.dao.RelationshipDao
 import com.freshdigitable.udonroad2.data.db.dao.TweetDao
 import com.freshdigitable.udonroad2.data.db.dao.UrlDao
 import com.freshdigitable.udonroad2.data.db.dao.UserDao
 import com.freshdigitable.udonroad2.data.db.dao.UserReplyEntityDao
 import com.freshdigitable.udonroad2.data.db.dao.VideoValiantDao
-import com.freshdigitable.udonroad2.data.db.dbview.MemberListDbView
+import com.freshdigitable.udonroad2.data.db.dbview.CustomTimelineListItemDb
 import com.freshdigitable.udonroad2.data.db.dbview.TweetDbView
 import com.freshdigitable.udonroad2.data.db.dbview.TweetItemMediaDbView
 import com.freshdigitable.udonroad2.data.db.dbview.TweetListItemDbView
 import com.freshdigitable.udonroad2.data.db.dbview.UserListDbView
+import com.freshdigitable.udonroad2.data.db.entity.CustomTimelineDb
+import com.freshdigitable.udonroad2.data.db.entity.CustomTimelineListDb
 import com.freshdigitable.udonroad2.data.db.entity.MediaDbEntity
 import com.freshdigitable.udonroad2.data.db.entity.MediaUrlEntity
-import com.freshdigitable.udonroad2.data.db.entity.MemberListEntity
-import com.freshdigitable.udonroad2.data.db.entity.MemberListListEntity
 import com.freshdigitable.udonroad2.data.db.entity.RelationshipEntity
 import com.freshdigitable.udonroad2.data.db.entity.StructuredTweetEntity
 import com.freshdigitable.udonroad2.data.db.entity.TweetEntityDb
@@ -60,8 +60,8 @@ import com.freshdigitable.udonroad2.data.db.entity.VideoValiantEntity
         TweetListEntity::class,
         UserEntityDb::class,
         UserListEntity::class,
-        MemberListEntity::class,
-        MemberListListEntity::class,
+        CustomTimelineDb::class,
+        CustomTimelineListDb::class,
         RelationshipEntity::class,
         UrlEntity::class,
         MediaDbEntity::class,
@@ -73,7 +73,7 @@ import com.freshdigitable.udonroad2.data.db.entity.VideoValiantEntity
         TweetDbView::class,
         TweetListItemDbView::class,
         UserListDbView::class,
-        MemberListDbView::class,
+        CustomTimelineListItemDb::class,
         TweetItemMediaDbView::class
     ],
     exportSchema = false,
@@ -85,14 +85,14 @@ import com.freshdigitable.udonroad2.data.db.entity.VideoValiantEntity
     MediaTypeConverter::class,
     TweetIdConverter::class,
     UserIdConverter::class,
-    MemberListIdConverter::class
+    CustomTimelineIdConverter::class
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun tweetDao(): TweetDao
 
     abstract fun userDao(): UserDao
 
-    abstract fun memberListDao(): MemberListDao
+    abstract fun customTimelineDao(): CustomTimelineDao
 
     abstract fun relationshipDao(): RelationshipDao
 

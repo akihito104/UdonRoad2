@@ -5,14 +5,14 @@ import android.view.ViewGroup
 import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.freshdigitable.udonroad2.model.MemberListItem
+import com.freshdigitable.udonroad2.model.CustomTimelineItem
 import com.freshdigitable.udonroad2.timeline.R
-import com.freshdigitable.udonroad2.timeline.databinding.ViewMemberListItemBinding
-import com.freshdigitable.udonroad2.timeline.viewmodel.MemberListListViewModel
+import com.freshdigitable.udonroad2.timeline.databinding.ViewCustomTimelineItemBinding
+import com.freshdigitable.udonroad2.timeline.viewmodel.CustomTimelineListViewModel
 
-class MemberListListAdapter(
-    private val viewModel: MemberListListViewModel
-) : PagedListAdapter<MemberListItem, MemberListViewHolder>(diffUtil) {
+class CustomTimelineListAdapter(
+    private val viewModel: CustomTimelineListViewModel
+) : PagedListAdapter<CustomTimelineItem, CustomTimelineViewHolder>(diffUtil) {
 
     init {
         setHasStableIds(true)
@@ -21,26 +21,26 @@ class MemberListListAdapter(
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int
-    ): MemberListViewHolder =
-        MemberListViewHolder(
-            ViewMemberListItemBinding.inflate(
+    ): CustomTimelineViewHolder =
+        CustomTimelineViewHolder(
+            ViewCustomTimelineItemBinding.inflate(
                 LayoutInflater.from(parent.context),
                 parent,
                 false
             )
         )
 
-    override fun onBindViewHolder(holder: MemberListViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: CustomTimelineViewHolder, position: Int) {
         val item = getItem(position) ?: return
-        holder.binding.memberList = item
+        holder.binding.customTimeline = item
     }
 
-    override fun onViewAttachedToWindow(holder: MemberListViewHolder) {
+    override fun onViewAttachedToWindow(holder: CustomTimelineViewHolder) {
         super.onViewAttachedToWindow(holder)
         holder.binding.viewModel = viewModel
     }
 
-    override fun onViewDetachedFromWindow(holder: MemberListViewHolder) {
+    override fun onViewDetachedFromWindow(holder: CustomTimelineViewHolder) {
         super.onViewDetachedFromWindow(holder)
         holder.binding.viewModel = null
     }
@@ -51,20 +51,20 @@ class MemberListListAdapter(
     override fun getItemId(position: Int): Long = getItem(position)?.id?.value ?: -1
 }
 
-private val diffUtil = object : DiffUtil.ItemCallback<MemberListItem>() {
+private val diffUtil = object : DiffUtil.ItemCallback<CustomTimelineItem>() {
     override fun areItemsTheSame(
-        oldItem: MemberListItem,
-        newItem: MemberListItem
+        oldItem: CustomTimelineItem,
+        newItem: CustomTimelineItem
     ): Boolean = oldItem.id == newItem.id
 
     override fun areContentsTheSame(
-        oldItem: MemberListItem,
-        newItem: MemberListItem
+        oldItem: CustomTimelineItem,
+        newItem: CustomTimelineItem
     ): Boolean = oldItem == newItem
 }
 
-class MemberListViewHolder(
-    internal val binding: ViewMemberListItemBinding
+class CustomTimelineViewHolder(
+    internal val binding: ViewCustomTimelineItemBinding
 ) : RecyclerView.ViewHolder(binding.root) {
     internal val root: ViewGroup = itemView as ViewGroup
 }

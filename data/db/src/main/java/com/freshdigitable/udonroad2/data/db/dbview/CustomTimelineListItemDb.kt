@@ -3,26 +3,28 @@ package com.freshdigitable.udonroad2.data.db.dbview
 import androidx.room.ColumnInfo
 import androidx.room.DatabaseView
 import androidx.room.Embedded
-import com.freshdigitable.udonroad2.model.MemberListId
-import com.freshdigitable.udonroad2.model.MemberListItem
+import com.freshdigitable.udonroad2.model.CustomTimelineId
+import com.freshdigitable.udonroad2.model.CustomTimelineItem
+
+private const val PREFIX_OWNER = "user_"
 
 @DatabaseView(
     """
     SELECT m.id, m.name, m.description, m.member_count, m.follower_count, m.is_public,
      u.id AS user_id,
-     u.name AS user_name,
-     u.screen_name AS user_screen_name,
-     u.icon_url AS user_icon_url,
-     u.is_protected AS user_is_protected,
-     u.is_verified AS user_is_verified
-    FROM member_list AS m
+     u.name AS ${PREFIX_OWNER}name,
+     u.screen_name AS ${PREFIX_OWNER}screen_name,
+     u.icon_url AS ${PREFIX_OWNER}icon_url,
+     u.is_protected AS ${PREFIX_OWNER}is_protected,
+     u.is_verified AS ${PREFIX_OWNER}is_verified
+    FROM custom_timeline AS m
     INNER JOIN view_user_item AS u ON m.user_id = u.id
 """,
-    viewName = "view_member_list"
+    viewName = "view_custom_timeline_item"
 )
-internal data class MemberListDbView(
+internal data class CustomTimelineListItemDb(
     @ColumnInfo(name = "id")
-    override val id: MemberListId,
+    override val id: CustomTimelineId,
 
     @ColumnInfo(name = "name")
     override val name: String,
@@ -30,7 +32,7 @@ internal data class MemberListDbView(
     @ColumnInfo(name = "description")
     override val description: String,
 
-    @Embedded(prefix = "user_")
+    @Embedded(prefix = PREFIX_OWNER)
     override val user: TweetUserItemDb,
 
     @ColumnInfo(name = "member_count")
@@ -41,4 +43,4 @@ internal data class MemberListDbView(
 
     @ColumnInfo(name = "is_public")
     override val isPublic: Boolean
-) : MemberListItem
+) : CustomTimelineItem
