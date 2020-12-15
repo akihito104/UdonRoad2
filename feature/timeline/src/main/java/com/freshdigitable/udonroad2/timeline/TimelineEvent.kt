@@ -2,6 +2,8 @@ package com.freshdigitable.udonroad2.timeline
 
 import com.freshdigitable.udonroad2.model.CustomTimelineItem
 import com.freshdigitable.udonroad2.model.ListOwner
+import com.freshdigitable.udonroad2.model.ListOwnerGenerator
+import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
@@ -71,3 +73,8 @@ sealed class TimelineEvent : AppEvent {
         abstract val type: NavigationEvent.Type
     }
 }
+
+suspend fun ListOwnerGenerator.getTimelineEvent(
+    queryType: QueryType,
+    navType: NavigationEvent.Type
+): TimelineEvent.Navigate.Timeline = TimelineEvent.Navigate.Timeline(generate(queryType), navType)

@@ -34,7 +34,7 @@
             />
         <argument
             android:name="owner_id"
-            app:argType="integer"
+            app:argType="com.freshdigitable.udonroad2.model.ListId"
             />
         <argument
             android:name="label"

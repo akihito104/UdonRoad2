@@ -78,8 +78,8 @@ class TimelineViewState(
 
     private val updateNavHost: AppAction<out TimelineEvent.Navigate> = AppAction.merge(
         actions.showTimeline.suspendMap(executor.mainContext) {
-            TimelineEvent.Navigate.Timeline(
-                listOwnerGenerator.create(QueryType.TweetQueryType.Timeline()),
+            listOwnerGenerator.getTimelineEvent(
+                QueryType.TweetQueryType.Timeline(),
                 NavigationEvent.Type.INIT
             )
         }.map { it.value!! }, // FIXME

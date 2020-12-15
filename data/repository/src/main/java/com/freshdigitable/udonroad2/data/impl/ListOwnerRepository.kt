@@ -16,19 +16,41 @@
 
 package com.freshdigitable.udonroad2.data.impl
 
+import com.freshdigitable.udonroad2.data.db.entity.ListDao
+import com.freshdigitable.udonroad2.model.ListId
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
 import java.util.concurrent.atomic.AtomicInteger
+import javax.inject.Inject
+import javax.inject.Singleton
 
-internal class ListOwnerGeneratorImpl(
-    private val idGenerator: AtomicInteger = AtomicInteger(0)
+@Singleton
+class ListOwnerRepository @Inject constructor(
+    private val listDao: ListDao,
+    private val prefsDataSource: SharedPreferenceDataSource,
 ) : ListOwnerGenerator {
-    override suspend fun <Q : QueryType> create(type: Q): ListOwner<Q> {
-        return ListOwner(idGenerator.getAndIncrement(), type)
+    companion object {
+        private val oauthListId: ListId = ListId(-1)
+    }
+
+    override suspend fun <Q : QueryType> generate(type: Q): ListOwner<Q> {
+        val id = when (type) {
+            QueryType.Oauth -> oauthListId
+            else -> {
+                val currentUserId =
+                    checkNotNull(prefsDataSource.getCurrentUserId()) { "needs login" }
+                listDao.addList(currentUserId)
+            }
+        }
+        return ListOwner(id, type)
     }
 }
 
 fun ListOwnerGenerator.Companion.create(
     idGenerator: AtomicInteger = AtomicInteger(0)
-): ListOwnerGenerator = ListOwnerGeneratorImpl(idGenerator)
+): ListOwnerGenerator = object : ListOwnerGenerator {
+    override suspend fun <Q : QueryType> generate(type: Q): ListOwner<Q> {
+        return ListOwner(idGenerator.getAndIncrement(), type)
+    }
+}

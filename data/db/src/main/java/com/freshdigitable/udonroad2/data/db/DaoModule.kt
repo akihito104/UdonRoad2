@@ -28,6 +28,7 @@ import com.freshdigitable.udonroad2.data.db.dao.TweetDao
 import com.freshdigitable.udonroad2.data.db.dao.TweetListDao
 import com.freshdigitable.udonroad2.data.db.dao.UserDao
 import com.freshdigitable.udonroad2.data.db.dao.UserListDao
+import com.freshdigitable.udonroad2.data.db.entity.ListDao
 import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton
@@ -68,6 +69,9 @@ object DaoModule {
 
     @Provides
     fun provideMediaDao(db: AppDatabase): MediaDao = db.mediaDao()
+
+    @Provides
+    fun provideListDao(db: AppDatabase): ListDao = db.listDao()
 }
 
 @Module

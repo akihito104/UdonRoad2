@@ -37,7 +37,7 @@ import com.freshdigitable.udonroad2.model.app.navigation.AppViewState
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.ViewState
 import com.freshdigitable.udonroad2.model.app.navigation.subscribeToUpdate
-import com.freshdigitable.udonroad2.timeline.TimelineEvent
+import com.freshdigitable.udonroad2.timeline.getTimelineEvent
 import io.reactivex.disposables.CompositeDisposable
 import kotlinx.coroutines.launch
 import java.io.Serializable
@@ -69,8 +69,7 @@ class MainActivityViewStates @Inject constructor(
     private val disposables = CompositeDisposable(
         initContainer.subscribeToUpdate(navDelegate) {
             executor.launch(executor.mainContext) {
-                val owner = listOwnerGenerator.create(it)
-                val nav = TimelineEvent.Navigate.Timeline(owner, NavigationEvent.Type.INIT)
+                val nav = listOwnerGenerator.getTimelineEvent(it, NavigationEvent.Type.INIT)
                 dispatchNavHostNavigate(nav)
             }
         },

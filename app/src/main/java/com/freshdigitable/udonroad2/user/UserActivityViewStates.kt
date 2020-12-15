@@ -88,7 +88,7 @@ class UserActivityViewStates @Inject constructor(
 
     // TODO: save to state handle
     val pages: StateFlow<Map<UserPage, ListOwner<*>>> = flowOf(UserPage.values()).map {
-        it.map { p -> p to ownerGenerator.create(p.createQuery(tweetUserItem)) }.toMap()
+        it.map { p -> p to ownerGenerator.generate(p.createQuery(tweetUserItem)) }.toMap()
     }.stateIn(executor, SharingStarted.Eagerly, emptyMap())
 
     private val currentPage: AppViewState<UserPage> = actions.currentPageChanged

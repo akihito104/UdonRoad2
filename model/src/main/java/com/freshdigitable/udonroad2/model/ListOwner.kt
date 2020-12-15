@@ -19,14 +19,19 @@ package com.freshdigitable.udonroad2.model
 import java.io.Serializable
 
 data class ListOwner<Q : QueryType>(
-    val id: Int,
+    val id: ListId,
     val query: Q
 ) : Serializable {
-    val value: String = "$id"
+    constructor(id: Int, query: Q) : this(ListId(id), query)
+
+    @Deprecated("use ListOwner.id")
+    val value: String = "${id.value}"
 }
 
+data class ListId(val value: Int) : Serializable
+
 interface ListOwnerGenerator {
-    suspend fun <Q : QueryType> create(type: Q): ListOwner<Q>
+    suspend fun <Q : QueryType> generate(type: Q): ListOwner<Q>
 
     companion object
 }

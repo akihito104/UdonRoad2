@@ -17,29 +17,53 @@
 package com.freshdigitable.udonroad2.data.db.entity
 
 import androidx.room.ColumnInfo
+import androidx.room.Dao
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Insert
 import androidx.room.PrimaryKey
+import androidx.room.Query
+import androidx.room.TypeConverter
+import com.freshdigitable.udonroad2.data.db.AppTypeConverter
+import com.freshdigitable.udonroad2.model.ListId
 import com.freshdigitable.udonroad2.model.user.UserId
 
 @Entity(
-    tableName = "user_list",
+    tableName = "list",
     foreignKeys = [
         ForeignKey(
             entity = UserEntityDb::class,
             parentColumns = ["id"],
-            childColumns = ["user_id"]
+            childColumns = ["owner_id"]
         )
     ]
 )
-internal data class UserListEntity(
+data class ListEntityDb(
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "id")
     val id: Int? = null,
-
-    @ColumnInfo(name = "user_id", index = true)
-    val userId: UserId,
-
-    @ColumnInfo(name = "owner")
-    val owner: String
+    @ColumnInfo(name = "owner_id", index = true)
+    val ownerId: UserId,
 )
+
+class ListIdConverter : AppTypeConverter<ListId, Int> {
+    @TypeConverter
+    override fun toItem(v: Int): ListId = ListId(v)
+
+    @TypeConverter
+    override fun toEntity(v: ListId): Int = v.value
+}
+
+@Dao
+abstract class ListDao {
+    @Insert
+    internal abstract suspend fun addList(entity: ListEntityDb): Long
+
+    @Query("SELECT * FROM list WHERE rowid = :id")
+    internal abstract suspend fun getListByRowId(id: Long): ListEntityDb
+
+    suspend fun addList(ownerId: UserId): ListId {
+        val rowId = addList(ListEntityDb(ownerId = ownerId))
+        return ListId(getListByRowId(rowId).id!!)
+    }
+}

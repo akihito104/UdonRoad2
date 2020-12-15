@@ -35,7 +35,7 @@ import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.subscribeToUpdate
 import com.freshdigitable.udonroad2.model.app.navigation.suspendMap
 import com.freshdigitable.udonroad2.model.app.navigation.toViewState
-import com.freshdigitable.udonroad2.timeline.TimelineEvent
+import com.freshdigitable.udonroad2.timeline.getTimelineEvent
 import io.reactivex.disposables.CompositeDisposable
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -85,8 +85,8 @@ class OauthViewStates(
         },
         completeAuthProcess.subscribeToUpdate(navDelegate) {
             appExecutor.launch(appExecutor.mainContext) {
-                val nav = TimelineEvent.Navigate.Timeline(
-                    listOwnerGenerator.create(QueryType.TweetQueryType.Timeline()),
+                val nav = listOwnerGenerator.getTimelineEvent(
+                    QueryType.TweetQueryType.Timeline(),
                     NavigationEvent.Type.INIT
                 )
                 dispatchNavHostNavigate(nav)
