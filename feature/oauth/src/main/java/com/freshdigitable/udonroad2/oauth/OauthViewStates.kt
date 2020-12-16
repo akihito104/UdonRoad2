@@ -19,6 +19,7 @@ package com.freshdigitable.udonroad2.oauth
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
+import com.freshdigitable.udonroad2.data.impl.LoginUseCase
 import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
 import com.freshdigitable.udonroad2.model.AccessTokenEntity
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
@@ -42,6 +43,7 @@ import kotlinx.coroutines.withContext
 
 class OauthViewStates(
     actions: OauthAction,
+    login: LoginUseCase,
     private val navDelegate: OauthNavigationDelegate,
     repository: OAuthTokenRepository,
     listOwnerGenerator: ListOwnerGenerator,
@@ -71,7 +73,7 @@ class OauthViewStates(
             val verifier = pinText.value.toString()
             val t = repository.getAccessToken(token, verifier)
             savedState.setToken(null)
-            repository.login(t.userId)
+            login(t.userId)
             t
         }
 
@@ -84,6 +86,9 @@ class OauthViewStates(
             }
         },
         completeAuthProcess.subscribeToUpdate(navDelegate) {
+            if (it.isFailure) {
+                it.rethrow() // FIXME: send feedback
+            }
             appExecutor.launch(appExecutor.mainContext) {
                 val nav = listOwnerGenerator.getTimelineEvent(
                     QueryType.TweetQueryType.Timeline(),

@@ -19,8 +19,10 @@ package com.freshdigitable.udonroad2.data.db.entity
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.ForeignKey.CASCADE
 import androidx.room.PrimaryKey
 import com.freshdigitable.udonroad2.model.CustomTimelineId
+import com.freshdigitable.udonroad2.model.ListId
 
 @Entity(
     tableName = "custom_timeline_list",
@@ -29,7 +31,13 @@ import com.freshdigitable.udonroad2.model.CustomTimelineId
             entity = CustomTimelineDb::class,
             parentColumns = ["id"],
             childColumns = ["custom_timeline_id"]
-        )
+        ),
+        ForeignKey(
+            entity = ListEntityDb::class,
+            parentColumns = ["id"],
+            childColumns = ["list_id"],
+            onDelete = CASCADE
+        ),
     ]
 )
 internal data class CustomTimelineListDb(
@@ -40,6 +48,6 @@ internal data class CustomTimelineListDb(
     @ColumnInfo(name = "order")
     val order: Long = 0,
 
-    @ColumnInfo(name = "owner")
-    val owner: String
+    @ColumnInfo(name = "list_id", index = true)
+    val listId: ListId
 )

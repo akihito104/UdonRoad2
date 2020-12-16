@@ -49,7 +49,7 @@ class TimelineViewModel(
     TweetListEventListener, ViewModel() {
 
     override val timeline: LiveData<PagedList<TweetListItem>> =
-        pagedListProvider.getList(owner.query, owner.value) { i ->
+        pagedListProvider.getList(owner.query, owner.id) { i ->
             PageOption.OnTail(i.originalId.value - 1)
         }
 
@@ -62,13 +62,13 @@ class TimelineViewModel(
         } else {
             ListQuery(owner.query, PageOption.OnInit)
         }
-        homeRepository.loadList(query, owner.value)
+        homeRepository.loadList(query, owner.id)
     }
 
     override fun onCleared() {
         Timber.tag("TimelineViewModel").d("onCleared: $owner")
         super.onCleared()
-        homeRepository.clear(owner.value)
+        homeRepository.clear(owner.id)
         viewStates.clear()
     }
 

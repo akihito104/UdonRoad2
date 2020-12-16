@@ -17,14 +17,18 @@
 package com.freshdigitable.udonroad2
 
 import android.app.Application
+import com.freshdigitable.udonroad2.data.impl.LoginUseCase
+import com.freshdigitable.udonroad2.data.impl.invokeIfCan
 import com.freshdigitable.udonroad2.di.AppComponent
 import com.freshdigitable.udonroad2.di.DaggerAppComponent
+import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.jakewharton.threetenabp.AndroidThreeTen
 import dagger.Module
 import dagger.Provides
 import dagger.android.AndroidInjector
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasAndroidInjector
+import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -59,5 +63,12 @@ typealias AppSetup = () -> Unit
 object AppSetupModule {
     @Provides
     @Singleton
-    fun provideSetup(): AppSetup = {}
+    fun provideSetup(
+        login: LoginUseCase,
+        executor: AppExecutor,
+    ): AppSetup = {
+        executor.launch {
+            login.invokeIfCan()
+        }
+    }
 }

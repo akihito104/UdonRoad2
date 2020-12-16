@@ -58,7 +58,6 @@ class MainActivityViewStates @Inject constructor(
         actions.showFirstView.map {
             when {
                 tokenRepository.getCurrentUserId() != null -> {
-                    tokenRepository.login()
                     QueryType.TweetQueryType.Timeline()
                 }
                 else -> QueryType.Oauth

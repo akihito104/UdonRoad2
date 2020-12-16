@@ -19,8 +19,11 @@ package com.freshdigitable.udonroad2.test_common.jvm
 import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
 import com.freshdigitable.udonroad2.model.AccessTokenEntity
 import com.freshdigitable.udonroad2.model.RequestTokenItem
+import com.freshdigitable.udonroad2.model.user.UserEntity
 import com.freshdigitable.udonroad2.model.user.UserId
 import com.freshdigitable.udonroad2.test_common.MockVerified
+import io.mockk.every
+import io.mockk.mockk
 import kotlinx.coroutines.flow.flow
 import org.junit.rules.TestRule
 import java.io.Serializable
@@ -45,8 +48,10 @@ class OAuthTokenRepositoryRule(
         )
     }
 
-    fun setupLogin(id: UserId) {
-        mockVerified.setupResponseWithVerify({ mock.login(id) }, Unit)
+    fun setupLogin(userId: UserId) {
+        mockVerified.coSetupResponseWithVerify({ mock.login(userId) }, mockk<UserEntity>().apply {
+            every { id } returns userId
+        })
     }
 
     fun setupGetRequestTokenItem(token: RequestTokenItem = requestTokenItem) {

@@ -16,12 +16,13 @@
 
 package com.freshdigitable.udonroad2.user
 
-import android.content.Context
 import androidx.recyclerview.widget.RecyclerView
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.espresso.intent.rule.IntentsTestRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.freshdigitable.udonroad2.R
+import com.freshdigitable.udonroad2.TestApplicationBase
+import com.freshdigitable.udonroad2.data.restclient.ext.toEntity
 import com.freshdigitable.udonroad2.media.MediaActivityArgs
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
@@ -34,6 +35,7 @@ import com.freshdigitable.udonroad2.test.intendingWithExtras
 import com.freshdigitable.udonroad2.test.mainList
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Ignore
 import org.junit.Rule
@@ -77,7 +79,19 @@ class UserActivityInstTest {
         twitterRobot.setupGetUserTimeline(tweetingUser.id, { any() }, emptyList())
         twitterRobot.setupGetFollowersList(tweetingUser.id, emptyList())
 
-        val context = ApplicationProvider.getApplicationContext<Context>()
+        val context = ApplicationProvider.getApplicationContext<TestApplicationBase>()
+        context.component.apply {
+            val authenticatedUserId = UserId(3000)
+            sharedPreferencesDao.apply {
+                setCurrentUserId(authenticatedUserId)
+            }
+            userDao.apply {
+                runBlocking {
+                    val authedUser = createUser(authenticatedUserId.value, "user2", "User2")
+                    addUsers(listOf(authedUser.toEntity()))
+                }
+            }
+        }
         activityTestRule.launchActivity(UserActivity.getIntent(context, tweetingUser))
     }
 

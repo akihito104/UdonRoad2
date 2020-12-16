@@ -26,7 +26,6 @@ import com.freshdigitable.udonroad2.model.MediaId
 import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.AppFilePath
 import com.freshdigitable.udonroad2.model.app.AppTwitterException
-import com.freshdigitable.udonroad2.model.app.mainContext
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.user.UserEntity
@@ -36,6 +35,7 @@ import com.freshdigitable.udonroad2.test_common.MatcherScopedBlock
 import com.freshdigitable.udonroad2.test_common.MockVerified
 import com.freshdigitable.udonroad2.test_common.jvm.CoroutineTestRule
 import com.freshdigitable.udonroad2.test_common.jvm.OAuthTokenRepositoryRule
+import com.freshdigitable.udonroad2.test_common.jvm.testCollect
 import com.google.common.truth.Subject
 import com.google.common.truth.Truth.assertThat
 import io.mockk.coVerify
@@ -46,10 +46,7 @@ import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.verifyOrder
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.launch
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -697,14 +694,6 @@ class TweetInputViewModelRule(
             res = s
         )
     }
-}
-
-fun <T> Flow<T>.testCollect(executor: AppExecutor): List<T> {
-    val actual = mutableListOf<T>()
-    executor.launch(executor.mainContext) {
-        collect { actual.add(it) }
-    }
-    return actual
 }
 
 inline fun <reified T> Subject.isInstanceOf() {

@@ -17,8 +17,12 @@ class UserRepository(
     fun getUserSource(id: UserId): LiveData<UserEntity?> = dao.getUserSourceById(id)
     fun getUserFlow(id: UserId): Flow<UserEntity?> = dao.getUserFlowById(id)
 
-    suspend fun getUser(id: UserId): UserEntity? {
+    suspend fun getUser(id: UserId): UserEntity {
         return dao.getUserById(id) ?: restClient.showUser(id).also { dao.addUsers(listOf(it)) }
+    }
+
+    suspend fun addUser(user: UserEntity) {
+        dao.addUsers(listOf(user))
     }
 }
 

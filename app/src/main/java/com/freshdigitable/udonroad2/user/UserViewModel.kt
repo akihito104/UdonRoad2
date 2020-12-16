@@ -16,6 +16,7 @@ import com.freshdigitable.udonroad2.model.user.UserId
 import com.freshdigitable.udonroad2.shortcut.postSelectedItemShortcutEvent
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.user.UserActivityEvent.Relationships
+import kotlinx.coroutines.flow.Flow
 import timber.log.Timber
 import java.util.EnumSet
 
@@ -29,8 +30,7 @@ class UserViewModel(
     val titleAlpha: LiveData<Float> = viewState.titleAlpha
     val fabVisible: LiveData<Boolean> = viewState.fabVisible
     val relationshipMenuItems: LiveData<Set<RelationshipMenu>> = viewState.relationshipMenuItems
-
-    fun getOwner(userPage: UserPage): ListOwner<*> = requireNotNull(viewState.pages.value[userPage])
+    val pages: Flow<Map<UserPage, ListOwner<*>>> = viewState.pages
 
     fun setAppBarScrollRate(rate: Float) {
         eventDispatcher.postEvent(UserActivityEvent.AppbarScrolled(rate))

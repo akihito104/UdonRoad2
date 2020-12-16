@@ -179,6 +179,10 @@ class TwitterRobot : TestWatcher() {
         setupResponseWithVerify({ twitter.showUser(user.id) }, user)
     }
 
+    fun setupVerifyCredential(user: User) {
+        setupResponseWithVerify({ twitter.verifyCredentials() }, user)
+    }
+
     fun setupRelationships(userId: UserId, targetUserId: UserId) {
         setupResponseWithVerify({ twitter.id }, userId.value)
         val relationship = mockk<Relationship>().apply {
@@ -250,6 +254,7 @@ fun createStatus(
     user: User,
     createdAt: Date,
     mediaEntities: Array<MediaEntity> = emptyArray(),
+    userMentionEntities: Array<UserMentionEntity> = emptyArray(),
     quotedStatus: Status? = null
 ): Status {
     return object : Status {
@@ -273,9 +278,7 @@ fun createStatus(
 
         override fun getRateLimitStatus(): RateLimitStatus = TODO("Not yet implemented")
         override fun getAccessLevel(): Int = TODO("Not yet implemented")
-        override fun getUserMentionEntities(): Array<UserMentionEntity> =
-            TODO("Not yet implemented")
-
+        override fun getUserMentionEntities(): Array<UserMentionEntity> = userMentionEntities
         override fun getURLEntities(): Array<URLEntity> = TODO("Not yet implemented")
         override fun getHashtagEntities(): Array<HashtagEntity> = TODO("Not yet implemented")
         override fun getSymbolEntities(): Array<SymbolEntity> = TODO("Not yet implemented")

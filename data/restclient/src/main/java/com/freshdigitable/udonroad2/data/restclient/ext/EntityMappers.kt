@@ -33,6 +33,7 @@ import com.freshdigitable.udonroad2.model.MediaType
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.tweet.UserReplyEntity
+import com.freshdigitable.udonroad2.model.user.UserEntity
 import com.freshdigitable.udonroad2.model.user.UserId
 import org.threeten.bp.Instant
 import twitter4j.MediaEntity.Size.LARGE
@@ -70,7 +71,7 @@ fun UserReplyEntity.Companion.create(
 ): UserReplyEntity =
     UserReplyEntityRest(UserId(entity.id), entity.screenName, entity.start, entity.end)
 
-internal fun twitter4j.User.toEntity(): UserEntityRest {
+fun twitter4j.User.toEntity(): UserEntity {
     return UserEntityRest(
         id = UserId(id),
         name = name,

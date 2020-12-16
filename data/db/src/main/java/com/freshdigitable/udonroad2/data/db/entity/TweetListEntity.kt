@@ -19,8 +19,10 @@ package com.freshdigitable.udonroad2.data.db.entity
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.ForeignKey.CASCADE
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.freshdigitable.udonroad2.model.ListId
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 
 @Entity(
@@ -57,29 +59,26 @@ internal class TweetEntityDb(
 
 @Entity(
     tableName = "tweet_list",
-    primaryKeys = ["original_id", "owner"],
+    primaryKeys = ["original_id", "list_id"],
     foreignKeys = [
         ForeignKey(
             entity = TweetEntityDb::class,
             parentColumns = ["original_id"],
             childColumns = ["original_id"],
             deferred = true
-        )
+        ),
+        ForeignKey(
+            entity = ListEntityDb::class,
+            parentColumns = ["id"],
+            childColumns = ["list_id"],
+            onDelete = CASCADE
+        ),
     ],
-    indices = [
-        Index(
-            "original_id", "owner",
-            name = "tweet_list_entity_idx"
-        )
-    ]
 )
 internal class TweetListEntity(
     @ColumnInfo(name = "original_id")
     val originalId: TweetId,
 
-    @ColumnInfo(name = "order")
-    val order: Long,
-
-    @ColumnInfo(name = "owner")
-    val owner: String
+    @ColumnInfo(name = "list_id", index = true)
+    val listId: ListId
 )

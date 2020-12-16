@@ -156,8 +156,9 @@ class UserViewModelTest {
         @Test
         fun fabVisible_changeCurrentPage_then_fabVisibleIsFalse(): Unit = with(rule) {
             // exercise
-            sut.setCurrentPage(1)
-
+            coroutineRule.runBlockingTest {
+                sut.setCurrentPage(1)
+            }
             // verify
             assertThat(sut.fabVisible.value).isFalse()
         }
@@ -363,8 +364,9 @@ class UserViewModelTestRule : TestWatcher() {
     val relationshipRepositoryMock = MockVerified.create<RelationshipRepository>()
     val relationshipRepository: RelationshipRepository = relationshipRepositoryMock.mock
     val selectedItemRepository = SelectedItemRepository()
-    private val coroutineRule = CoroutineTestRule()
+    val coroutineRule = CoroutineTestRule()
     val navigationDelegate = mockk<UserActivityNavigationDelegate>(relaxed = true)
+    private val executor = AppExecutor(dispatcher = coroutineRule.coroutineContextProvider)
 
     val sut: UserViewModel by lazy {
         val eventDispatcher = EventDispatcher()
@@ -376,7 +378,7 @@ class UserViewModelTestRule : TestWatcher() {
             selectedItemRepository,
             ListOwnerGenerator.create(),
             navigationDelegate,
-            AppExecutor(dispatcher = coroutineRule.coroutineContextProvider)
+            executor
         )
         UserViewModel(targetUser, eventDispatcher, viewStates)
     }

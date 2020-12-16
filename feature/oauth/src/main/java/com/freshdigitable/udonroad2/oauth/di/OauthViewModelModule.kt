@@ -21,6 +21,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.paging.DataSource
 import androidx.savedstate.SavedStateRegistryOwner
+import com.freshdigitable.udonroad2.data.impl.LoginUseCase
 import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
 import com.freshdigitable.udonroad2.data.impl.di.ListRepositoryComponentModule
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
@@ -76,6 +77,7 @@ interface OauthViewModelModule {
         @Provides
         fun provideOauthViewStates(
             actions: OauthAction,
+            login: LoginUseCase,
             navDelegate: OauthNavigationDelegate,
             repository: OAuthTokenRepository,
             listOwnerGenerator: ListOwnerGenerator,
@@ -84,6 +86,7 @@ interface OauthViewModelModule {
         ): OauthViewStates {
             return OauthViewStates(
                 actions,
+                login,
                 navDelegate,
                 repository,
                 listOwnerGenerator,

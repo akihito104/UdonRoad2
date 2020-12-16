@@ -18,6 +18,7 @@ package com.freshdigitable.udonroad2.user
 
 import androidx.annotation.Keep
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.liveData
 import androidx.lifecycle.map
 import androidx.lifecycle.switchMap
@@ -43,9 +44,11 @@ import io.reactivex.disposables.CompositeDisposable
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combineTransform
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.rx2.asFlow
 import javax.inject.Inject
 import kotlin.math.min
 
@@ -91,11 +94,17 @@ class UserActivityViewStates @Inject constructor(
         it.map { p -> p to ownerGenerator.generate(p.createQuery(tweetUserItem)) }.toMap()
     }.stateIn(executor, SharingStarted.Eagerly, emptyMap())
 
-    private val currentPage: AppViewState<UserPage> = actions.currentPageChanged
-        .map { it.page }
-        .toViewState()
-    val selectedItemId = currentPage.switchMap {
-        selectedItemRepository.observe(requireNotNull(pages.value[it]))
+    val selectedItemId = combineTransform(
+        pages,
+        actions.currentPageChanged.asFlow()
+            .map { it.page }
+            .stateIn(executor, SharingStarted.Eagerly, UserPage.TWEET)
+    ) { p, current ->
+        if (p.isNotEmpty()) {
+            emit(p[current])
+        }
+    }.asLiveData(executor.mainContext).switchMap {
+        selectedItemRepository.observe(requireNotNull(it))
     }
     val fabVisible: AppViewState<Boolean> = selectedItemId
         .map { it != null }
