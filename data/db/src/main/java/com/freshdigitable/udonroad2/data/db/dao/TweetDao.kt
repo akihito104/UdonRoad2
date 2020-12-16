@@ -24,7 +24,9 @@ import androidx.room.Query
 import androidx.room.Transaction
 import com.freshdigitable.udonroad2.data.db.AppDatabase
 import com.freshdigitable.udonroad2.data.db.dbview.TweetListItem
+import com.freshdigitable.udonroad2.data.db.entity.Favorited
 import com.freshdigitable.udonroad2.data.db.entity.MediaUrlEntity
+import com.freshdigitable.udonroad2.data.db.entity.Retweeted
 import com.freshdigitable.udonroad2.data.db.entity.TweetElementDb
 import com.freshdigitable.udonroad2.data.db.entity.TweetEntityDb
 import com.freshdigitable.udonroad2.data.db.entity.TweetListEntity
@@ -37,6 +39,7 @@ import com.freshdigitable.udonroad2.data.db.ext.toTweetEntityDb
 import com.freshdigitable.udonroad2.model.ListId
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
 import com.freshdigitable.udonroad2.model.tweet.TweetId
+import com.freshdigitable.udonroad2.model.user.UserId
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -46,15 +49,38 @@ abstract class TweetDao(
 ) {
     companion object {
         private const val QUERY_FIND_TWEET_LIST_ITEM_BY_ID =
-            "SELECT * FROM view_tweet_list_item WHERE original_id = :id"
+            """SELECT v.*, b_r.tweet_id NOT NULL AS is_retweeted, b_f.tweet_id NOT NULL AS is_favorited,
+         q_r.tweet_id NOT NULL AS qt_is_retweeted, q_f.tweet_id NOT NULL AS qt_is_favorited
+        FROM tweet_list AS l
+        INNER JOIN list ON l.list_id = list.id
+        INNER JOIN view_tweet_list_item AS v ON v.original_id = l.original_id
+        LEFT OUTER JOIN retweeted AS b_r ON list.owner_id = b_r.source_user_id
+          AND v.id = b_r.tweet_id
+        LEFT OUTER JOIN favorited AS b_f ON list.owner_id = b_f.source_user_id
+          AND v.id = b_f.tweet_id
+        LEFT OUTER JOIN retweeted AS q_r ON list.owner_id = q_r.source_user_id
+          AND v.id = q_r.tweet_id
+        LEFT OUTER JOIN favorited AS q_f ON list.owner_id = q_f.source_user_id
+          AND v.id = q_f.tweet_id
+        WHERE l.original_id = :id LIMIT 1"""
     }
 
     @Transaction
     @Query(
         """
-        SELECT v.*
+        SELECT v.*, b_r.tweet_id NOT NULL AS is_retweeted, b_f.tweet_id NOT NULL AS is_favorited,
+         q_r.tweet_id NOT NULL AS qt_is_retweeted, q_f.tweet_id NOT NULL AS qt_is_favorited
         FROM tweet_list AS l
+        INNER JOIN list ON l.list_id = list.id
         INNER JOIN view_tweet_list_item AS v ON v.original_id = l.original_id
+        LEFT OUTER JOIN retweeted AS b_r ON list.owner_id = b_r.source_user_id
+          AND v.id = b_r.tweet_id
+        LEFT OUTER JOIN favorited AS b_f ON list.owner_id = b_f.source_user_id
+          AND v.id = b_f.tweet_id
+        LEFT OUTER JOIN retweeted AS q_r ON list.owner_id = q_r.source_user_id
+          AND v.id = q_r.tweet_id
+        LEFT OUTER JOIN favorited AS q_f ON list.owner_id = q_f.source_user_id
+          AND v.id = q_f.tweet_id
         WHERE l.list_id = :owner
         ORDER BY l.original_id DESC"""
     )
@@ -79,11 +105,37 @@ abstract class TweetDao(
         addTweets(listOf(tweet), owner)
     }
 
-    @Query("UPDATE tweet_element SET is_favorited = :isFavorited WHERE id = :tweetId")
-    abstract suspend fun updateFav(tweetId: TweetId, isFavorited: Boolean)
+    suspend fun updateFav(tweetId: TweetId, isFavorited: Boolean) {
+        when (isFavorited) {
+            true -> addFav(Favorited(tweetId, UserId(0))) // FIXME
+            false -> deleteFav(tweetId, UserId(0)) // FIXME
+        }
+    }
 
-    @Query("UPDATE tweet_element SET is_retweeted = :isRetweeted WHERE id = :tweetId")
-    abstract suspend fun updateRetweeted(tweetId: TweetId, isRetweeted: Boolean)
+    @Insert
+    internal abstract suspend fun addFav(favorited: Favorited)
+
+    @Query("DELETE FROM favorited WHERE tweet_id = :tweetId AND source_user_id = :userId")
+    internal abstract suspend fun deleteFav(tweetId: TweetId, userId: UserId)
+
+    suspend fun updateRetweeted(tweetId: TweetId, retweetedId: TweetId?, isRetweeted: Boolean) {
+        when (isRetweeted) {
+            true -> addRetweeted(
+                Retweeted(
+                    tweetId = tweetId,
+                    sourceUserId = UserId(0), // FIXME
+                    retweetId = retweetedId!!
+                )
+            )
+            false -> deleteRetweeted(tweetId, UserId(0)) // FIXME
+        }
+    }
+
+    @Insert
+    internal abstract suspend fun addRetweeted(retweeted: Retweeted)
+
+    @Query("DELETE FROM retweeted WHERE tweet_id = :tweetId AND source_user_id = :sourceUserId")
+    internal abstract suspend fun deleteRetweeted(tweetId: TweetId, sourceUserId: UserId)
 
     @Transaction
     internal open suspend fun addTweets(

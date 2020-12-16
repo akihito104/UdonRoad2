@@ -50,7 +50,7 @@ class TweetRepository(
             return retweeted
         } catch (ex: AppTwitterException) {
             if (ex.errorType == AppTwitterException.ErrorType.ALREADY_RETWEETED) {
-                dao.updateRetweeted(id, true)
+                dao.updateRetweeted(id, TweetId(0), true) // FIXME
             }
             throw ex
         }

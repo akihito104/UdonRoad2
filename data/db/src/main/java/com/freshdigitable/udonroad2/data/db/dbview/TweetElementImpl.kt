@@ -50,9 +50,7 @@ import org.threeten.bp.Instant
      tweet_element.id AS qt_id,
      text AS qt_text,
      created_at AS qt_created_at,
-     is_retweeted AS qt_is_retweeted,
      retweet_count AS qt_retweet_count,
-     is_favorited AS qt_is_favorited,
      favorite_count AS qt_favorite_count,
      source AS qt_source,
      u.id AS qt_user_id,
@@ -64,7 +62,7 @@ import org.threeten.bp.Instant
     FROM tweet_element
     INNER JOIN view_user_item AS u ON tweet_element.user_id = u.id
     )
-    SELECT t.id, t.text, t.created_at, t.is_retweeted, t.retweet_count, t.is_favorited,
+    SELECT t.id, t.text, t.created_at, t.retweet_count,
      t.favorite_count, t.source,
      vu.id AS user_id, vu.name AS user_name, vu.screen_name AS user_screen_name,
      vu.icon_url AS user_icon_url, vu.is_verified AS user_is_verified, 
@@ -97,14 +95,8 @@ internal data class TweetListItemDbView(
         @ColumnInfo(name = "text")
         val text: String,
 
-        @ColumnInfo(name = "is_retweeted")
-        val isRetweeted: Boolean,
-
         @ColumnInfo(name = "retweet_count")
         val retweetCount: Int,
-
-        @ColumnInfo(name = "is_favorited")
-        val isFavorited: Boolean,
 
         @ColumnInfo(name = "favorite_count")
         val favoriteCount: Int,
@@ -122,7 +114,15 @@ internal data class TweetListItemDbView(
 
 internal data class TweetListItem(
     @Embedded
-    val tweetListItem: TweetListItemDbView
+    private val tweetListItem: TweetListItemDbView,
+    @ColumnInfo(name = "is_retweeted")
+    private val isRetweeted: Boolean,
+    @ColumnInfo(name = "is_favorited")
+    private val isFavorited: Boolean,
+    @ColumnInfo(name = "qt_is_retweeted")
+    private val isQuoteRetweeted: Boolean,
+    @ColumnInfo(name = "qt_is_favorited")
+    private val isQuoteFavorited: Boolean,
 ) : TweetListItem {
     @Ignore
     override val originalId: TweetId = tweetListItem.originalId
@@ -147,24 +147,29 @@ internal data class TweetListItem(
         }
 
     override val body: TweetElement
-        @Ignore get() = TweetElementImpl(tweetListItem.body, bodyMediaItems)
+        @Ignore get() = TweetElementImpl(
+            tweetListItem.body,
+            bodyMediaItems,
+            isRetweeted,
+            isFavorited
+        )
 
     override val quoted: TweetElement?
         @Ignore get() = when (val q = tweetListItem.quoted) {
             null -> null
-            else -> TweetElementImpl(q, quoteMediaItems)
+            else -> TweetElementImpl(q, quoteMediaItems, isQuoteRetweeted, isQuoteFavorited)
         }
 }
 
 internal data class TweetElementImpl(
     private val tweet: TweetListItemDbView.TweetElementDb,
-    override val media: List<TweetMediaItem> = emptyList()
+    override val media: List<TweetMediaItem> = emptyList(),
+    override val isRetweeted: Boolean,
+    override val isFavorited: Boolean,
 ) : TweetElement {
     override val id: TweetId = tweet.id
     override val text: String = tweet.text
-    override val isRetweeted: Boolean = tweet.isRetweeted
     override val retweetCount: Int = tweet.retweetCount
-    override val isFavorited: Boolean = tweet.isFavorited
     override val favoriteCount: Int = tweet.favoriteCount
     override val user: TweetUserItem = tweet.user
     override val source: String = tweet.source

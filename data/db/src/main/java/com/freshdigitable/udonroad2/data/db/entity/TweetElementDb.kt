@@ -73,12 +73,6 @@ internal class TweetElementDb(
     @ColumnInfo(name = "in_reply_to_tweet_id")
     val inReplyToTweetId: TweetId?,
 
-    @ColumnInfo(name = "is_retweeted")
-    val isRetweeted: Boolean,
-
-    @ColumnInfo(name = "is_favorited")
-    val isFavorited: Boolean,
-
     @ColumnInfo(name = "possibly_sensitive")
     val possiblySensitive: Boolean,
 

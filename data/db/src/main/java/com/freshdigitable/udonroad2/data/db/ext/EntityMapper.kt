@@ -29,8 +29,6 @@ internal fun TweetEntity.toDbEntity(): TweetElementDb {
         createdAt = createdAt,
         favoriteCount = favoriteCount,
         inReplyToTweetId = inReplyToTweetId,
-        isFavorited = isFavorited,
-        isRetweeted = isRetweeted,
         possiblySensitive = possiblySensitive,
         quotedTweetId = quotedTweet?.id,
         retweetCount = retweetCount,
