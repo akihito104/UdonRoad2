@@ -19,7 +19,6 @@ package com.freshdigitable.udonroad2.data.db.entity
 import androidx.room.ColumnInfo
 import androidx.room.Dao
 import androidx.room.Entity
-import androidx.room.ForeignKey
 import androidx.room.Insert
 import androidx.room.PrimaryKey
 import androidx.room.Query
@@ -30,13 +29,14 @@ import com.freshdigitable.udonroad2.model.user.UserId
 
 @Entity(
     tableName = "list",
-    foreignKeys = [
-        ForeignKey(
-            entity = UserEntityDb::class,
-            parentColumns = ["id"],
-            childColumns = ["owner_id"]
-        )
-    ]
+    // FIXME: redesign launch sequence
+//    foreignKeys = [
+//        ForeignKey(
+//            entity = UserEntityDb::class,
+//            parentColumns = ["id"],
+//            childColumns = ["owner_id"]
+//        )
+//    ]
 )
 data class ListEntityDb(
     @PrimaryKey(autoGenerate = true)
@@ -66,4 +66,7 @@ abstract class ListDao {
         val rowId = addList(ListEntityDb(ownerId = ownerId))
         return ListId(getListByRowId(rowId).id!!)
     }
+
+    @Query("DELETE FROM list WHERE id = :id")
+    abstract suspend fun deleteList(id: ListId)
 }

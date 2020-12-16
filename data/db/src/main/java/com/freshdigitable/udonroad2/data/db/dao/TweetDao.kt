@@ -169,5 +169,9 @@ abstract class TweetDao(
     internal abstract suspend fun addTweetListEntities(listEntities: List<TweetListEntity>)
 
     @Query("DELETE FROM tweet_list WHERE list_id = :owner")
-    abstract suspend fun clear(owner: ListId)
+    internal abstract suspend fun deleteByListId(owner: ListId)
+
+    suspend fun clear(owner: ListId) {
+        db.listDao().deleteList(owner)
+    }
 }

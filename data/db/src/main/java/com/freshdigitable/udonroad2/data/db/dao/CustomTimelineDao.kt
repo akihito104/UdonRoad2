@@ -52,5 +52,9 @@ abstract class CustomTimelineDao(
     internal abstract suspend fun addCustomTimelineListEntities(entities: List<CustomTimelineListDb>)
 
     @Query("DELETE FROM custom_timeline_list WHERE list_id = :owner")
-    abstract suspend fun clean(owner: ListId)
+    internal abstract suspend fun deleteByListId(owner: ListId)
+
+    suspend fun clear(owner: ListId) {
+        db.listDao().deleteList(owner)
+    }
 }

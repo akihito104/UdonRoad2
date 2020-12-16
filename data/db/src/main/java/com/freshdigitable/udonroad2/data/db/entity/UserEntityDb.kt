@@ -18,7 +18,6 @@ package com.freshdigitable.udonroad2.data.db.entity
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
-import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 import com.freshdigitable.udonroad2.model.user.UserEntity
 import com.freshdigitable.udonroad2.model.user.UserId
@@ -94,15 +93,3 @@ internal data class UserEntityDb(
         isProtected = user.isProtected
     )
 }
-
-@Entity(
-    tableName = "current_user",
-    foreignKeys = [
-        ForeignKey(entity = UserEntityDb::class, parentColumns = ["id"], childColumns = ["user_id"])
-    ]
-)
-data class CurrentUserEntityDb(
-    @PrimaryKey
-    @ColumnInfo(name = "user_id")
-    val userId: UserId
-)

@@ -73,6 +73,6 @@ class CustomTimelineListDao(
     }
 
     override suspend fun clean(owner: ListId) {
-        dao.clean(owner)
+        dao.clear(owner)
     }
 }
