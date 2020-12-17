@@ -35,16 +35,18 @@ import com.freshdigitable.udonroad2.data.db.dao.UserDao
 import com.freshdigitable.udonroad2.data.db.dao.UserReplyEntityDao
 import com.freshdigitable.udonroad2.data.db.dao.VideoValiantDao
 import com.freshdigitable.udonroad2.data.db.dbview.CustomTimelineListItemDb
-import com.freshdigitable.udonroad2.data.db.dbview.TweetDbView
 import com.freshdigitable.udonroad2.data.db.dbview.TweetItemMediaDbView
 import com.freshdigitable.udonroad2.data.db.dbview.TweetListItemDbView
 import com.freshdigitable.udonroad2.data.db.dbview.UserListDbView
+import com.freshdigitable.udonroad2.data.db.entity.CurrentUserEntityDb
 import com.freshdigitable.udonroad2.data.db.entity.CustomTimelineDb
 import com.freshdigitable.udonroad2.data.db.entity.CustomTimelineListDb
+import com.freshdigitable.udonroad2.data.db.entity.Favorited
 import com.freshdigitable.udonroad2.data.db.entity.MediaDbEntity
 import com.freshdigitable.udonroad2.data.db.entity.MediaUrlEntity
 import com.freshdigitable.udonroad2.data.db.entity.RelationshipEntity
-import com.freshdigitable.udonroad2.data.db.entity.StructuredTweetEntity
+import com.freshdigitable.udonroad2.data.db.entity.Retweeted
+import com.freshdigitable.udonroad2.data.db.entity.TweetElementDb
 import com.freshdigitable.udonroad2.data.db.entity.TweetEntityDb
 import com.freshdigitable.udonroad2.data.db.entity.TweetListEntity
 import com.freshdigitable.udonroad2.data.db.entity.UrlEntity
@@ -55,11 +57,14 @@ import com.freshdigitable.udonroad2.data.db.entity.VideoValiantEntity
 
 @Database(
     entities = [
+        TweetElementDb::class,
         TweetEntityDb::class,
-        StructuredTweetEntity::class,
         TweetListEntity::class,
+        Favorited::class,
+        Retweeted::class,
         UserEntityDb::class,
         UserListEntity::class,
+        CurrentUserEntityDb::class,
         CustomTimelineDb::class,
         CustomTimelineListDb::class,
         RelationshipEntity::class,
@@ -70,7 +75,6 @@ import com.freshdigitable.udonroad2.data.db.entity.VideoValiantEntity
         UserReplyEntityDb::class,
     ],
     views = [
-        TweetDbView::class,
         TweetListItemDbView::class,
         UserListDbView::class,
         CustomTimelineListItemDb::class,

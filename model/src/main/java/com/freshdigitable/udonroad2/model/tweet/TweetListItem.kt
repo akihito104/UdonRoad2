@@ -27,9 +27,9 @@ interface TweetListItem {
 
     val originalUser: TweetUserItem
 
-    val body: Tweet
+    val body: TweetElement
 
-    val quoted: Tweet?
+    val quoted: TweetElement?
 
     val isRetweet: Boolean
         get() = originalId != body.id
@@ -39,7 +39,7 @@ interface TweetListItem {
     override fun hashCode(): Int
 }
 
-interface Tweet {
+interface TweetElement {
 
     val id: TweetId
 

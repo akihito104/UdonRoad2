@@ -22,96 +22,14 @@ import androidx.room.Embedded
 import androidx.room.Ignore
 import androidx.room.Relation
 import com.freshdigitable.udonroad2.model.TweetMediaItem
-import com.freshdigitable.udonroad2.model.tweet.Tweet
+import com.freshdigitable.udonroad2.model.tweet.TweetElement
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import org.threeten.bp.Instant
 
 @DatabaseView(
-    viewName = "view_tweet",
-    value =
-    """
-    SELECT
-     t.id, text, created_at, is_retweeted, retweet_count, is_favorited, favorite_count, source, 
-     u.id AS user_id,
-     u.name AS user_name,
-     u.screen_name AS user_screen_name,
-     u.icon_url AS user_icon_url,
-     u.is_verified AS user_is_verified,
-     u.is_protected AS user_is_protected
-    FROM tweet AS t 
-    INNER JOIN view_user_item AS u ON t.user_id = u.id
-"""
-)
-internal data class TweetDbView(
-    @ColumnInfo(name = "id")
-    val id: TweetId,
-
-    @ColumnInfo(name = "text")
-    val text: String,
-
-    @ColumnInfo(name = "is_retweeted")
-    val isRetweeted: Boolean,
-
-    @ColumnInfo(name = "retweet_count")
-    val retweetCount: Int,
-
-    @ColumnInfo(name = "is_favorited")
-    val isFavorited: Boolean,
-
-    @ColumnInfo(name = "favorite_count")
-    val favoriteCount: Int,
-
-    @Embedded(prefix = "user_")
-    val user: TweetUserItemDb,
-
-    @ColumnInfo(name = "source")
-    val source: String,
-
-    @ColumnInfo(name = "created_at")
-    val createdAt: Instant
-)
-
-internal data class Tweet(
-    @Embedded
-    val tweet: TweetDbView
-) : Tweet {
-    @Ignore
-    override val id: TweetId = tweet.id
-
-    @Ignore
-    override val text: String = tweet.text
-
-    @Ignore
-    override val isRetweeted: Boolean = tweet.isRetweeted
-
-    @Ignore
-    override val retweetCount: Int = tweet.retweetCount
-
-    @Ignore
-    override val isFavorited: Boolean = tweet.isFavorited
-
-    @Ignore
-    override val favoriteCount: Int = tweet.favoriteCount
-
-    @Ignore
-    override val user: TweetUserItem = tweet.user
-
-    @Ignore
-    override val source: String = tweet.source
-
-    @Ignore
-    override val createdAt: Instant = tweet.createdAt
-
-    @Relation(
-        entity = TweetItemMediaDbView::class, parentColumn = "id", entityColumn = "tweet_id"
-    )
-    override var media: List<TweetMediaItem> = emptyList()
-}
-
-@DatabaseView(
-    viewName = "tweet_list_item",
+    viewName = "view_tweet_list_item",
     value =
     """
     WITH
@@ -124,12 +42,12 @@ internal data class Tweet(
      u.icon_url AS original_user_icon_url,
      u.is_verified AS original_user_is_verified,
      u.is_protected AS original_user_is_protected
-    FROM tweet AS t 
+    FROM tweet_element AS t 
     INNER JOIN view_user_item AS u ON t.user_id = u.id
     ),
     quoted AS (
     SELECT
-     tweet.id AS qt_id,
+     tweet_element.id AS qt_id,
      text AS qt_text,
      created_at AS qt_created_at,
      is_retweeted AS qt_is_retweeted,
@@ -143,15 +61,20 @@ internal data class Tweet(
      u.icon_url AS qt_user_icon_url,
      u.is_verified AS qt_user_is_verified,
      u.is_protected AS qt_user_is_protected
-    FROM tweet
-    INNER JOIN view_user_item AS u ON tweet.user_id = u.id
+    FROM tweet_element
+    INNER JOIN view_user_item AS u ON tweet_element.user_id = u.id
     )
-    SELECT t.*, original.*, quoted.* 
-    FROM structured_tweet
-    INNER JOIN view_tweet AS t ON t.id = structured_tweet.body_item_id
+    SELECT t.id, t.text, t.created_at, t.is_retweeted, t.retweet_count, t.is_favorited,
+     t.favorite_count, t.source,
+     vu.id AS user_id, vu.name AS user_name, vu.screen_name AS user_screen_name,
+     vu.icon_url AS user_icon_url, vu.is_verified AS user_is_verified, 
+     vu.is_protected AS user_is_protected,
+     original.*, quoted.* 
+    FROM tweet
+    INNER JOIN tweet_element AS t ON t.id = tweet.body_item_id
     INNER JOIN view_user_item AS vu ON t.user_id = vu.id
-    INNER JOIN original ON original.original_id = structured_tweet.original_id
-    LEFT OUTER JOIN quoted ON quoted.qt_id = structured_tweet.quoted_item_id
+    INNER JOIN original ON original.original_id = tweet.original_id
+    LEFT OUTER JOIN quoted ON quoted.qt_id = tweet.quoted_item_id
 """
 )
 internal data class TweetListItemDbView(
@@ -162,11 +85,40 @@ internal data class TweetListItemDbView(
     val originalUser: TweetUserItemDb,
 
     @Embedded
-    val body: TweetDbView,
+    val body: TweetElementDb,
 
     @Embedded(prefix = "qt_")
-    val quoted: TweetDbView?
-)
+    val quoted: TweetElementDb?,
+) {
+    internal data class TweetElementDb(
+        @ColumnInfo(name = "id")
+        val id: TweetId,
+
+        @ColumnInfo(name = "text")
+        val text: String,
+
+        @ColumnInfo(name = "is_retweeted")
+        val isRetweeted: Boolean,
+
+        @ColumnInfo(name = "retweet_count")
+        val retweetCount: Int,
+
+        @ColumnInfo(name = "is_favorited")
+        val isFavorited: Boolean,
+
+        @ColumnInfo(name = "favorite_count")
+        val favoriteCount: Int,
+
+        @Embedded(prefix = "user_")
+        val user: TweetUserItemDb,
+
+        @ColumnInfo(name = "source")
+        val source: String,
+
+        @ColumnInfo(name = "created_at")
+        val createdAt: Instant,
+    )
+}
 
 internal data class TweetListItem(
     @Embedded
@@ -194,13 +146,27 @@ internal data class TweetListItem(
             field = value.sortedBy { it.order }
         }
 
-    override val body: Tweet
-        @Ignore get() = Tweet(tweetListItem.body).apply { media = bodyMediaItems }
+    override val body: TweetElement
+        @Ignore get() = TweetElementImpl(tweetListItem.body, bodyMediaItems)
 
-    override val quoted: Tweet?
-        @Ignore get() = if (tweetListItem.quoted != null) {
-            Tweet(tweetListItem.quoted).apply { media = quoteMediaItems }
-        } else {
-            null
+    override val quoted: TweetElement?
+        @Ignore get() = when (val q = tweetListItem.quoted) {
+            null -> null
+            else -> TweetElementImpl(q, quoteMediaItems)
         }
+}
+
+internal data class TweetElementImpl(
+    private val tweet: TweetListItemDbView.TweetElementDb,
+    override val media: List<TweetMediaItem> = emptyList()
+) : TweetElement {
+    override val id: TweetId = tweet.id
+    override val text: String = tweet.text
+    override val isRetweeted: Boolean = tweet.isRetweeted
+    override val retweetCount: Int = tweet.retweetCount
+    override val isFavorited: Boolean = tweet.isFavorited
+    override val favoriteCount: Int = tweet.favoriteCount
+    override val user: TweetUserItem = tweet.user
+    override val source: String = tweet.source
+    override val createdAt: Instant = tweet.createdAt
 }

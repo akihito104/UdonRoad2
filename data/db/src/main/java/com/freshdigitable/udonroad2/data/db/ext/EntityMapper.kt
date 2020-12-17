@@ -2,7 +2,7 @@ package com.freshdigitable.udonroad2.data.db.ext
 
 import com.freshdigitable.udonroad2.data.db.entity.CustomTimelineDb
 import com.freshdigitable.udonroad2.data.db.entity.MediaDbEntity
-import com.freshdigitable.udonroad2.data.db.entity.StructuredTweetEntity
+import com.freshdigitable.udonroad2.data.db.entity.TweetElementDb
 import com.freshdigitable.udonroad2.data.db.entity.TweetEntityDb
 import com.freshdigitable.udonroad2.data.db.entity.TweetListEntity
 import com.freshdigitable.udonroad2.data.db.entity.UrlEntity
@@ -22,8 +22,8 @@ internal fun UserEntity.toEntity(): UserEntityDb {
     }
 }
 
-internal fun TweetEntity.toDbEntity(): TweetEntityDb {
-    return TweetEntityDb(
+internal fun TweetEntity.toDbEntity(): TweetElementDb {
+    return TweetElementDb(
         id = id,
         createdAt = createdAt,
         favoriteCount = favoriteCount,
@@ -40,8 +40,8 @@ internal fun TweetEntity.toDbEntity(): TweetEntityDb {
     )
 }
 
-internal fun TweetEntity.toStructuredTweet(): StructuredTweetEntity {
-    return StructuredTweetEntity(
+internal fun TweetEntity.toTweetEntityDb(): TweetEntityDb {
+    return TweetEntityDb(
         originalId = id,
         bodyTweetId = retweetedTweet?.id ?: id,
         quotedTweetId = retweetedTweet?.quotedTweet?.id ?: quotedTweet?.id

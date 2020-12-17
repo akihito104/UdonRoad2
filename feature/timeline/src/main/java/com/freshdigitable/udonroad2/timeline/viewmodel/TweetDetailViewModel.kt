@@ -15,7 +15,7 @@ import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.subscribeToUpdate
 import com.freshdigitable.udonroad2.model.app.navigation.suspendMap
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
-import com.freshdigitable.udonroad2.model.tweet.Tweet
+import com.freshdigitable.udonroad2.model.tweet.TweetElement
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import com.freshdigitable.udonroad2.shortcut.SelectedItemShortcut
@@ -67,7 +67,7 @@ class TweetDetailViewModel(
     override fun onMediaItemClicked(
         originalId: TweetId,
         quotedId: TweetId?,
-        item: Tweet,
+        item: TweetElement,
         index: Int
     ) {
         eventDispatcher.postEvent(TimelineEvent.MediaItemClicked(item.id, index))

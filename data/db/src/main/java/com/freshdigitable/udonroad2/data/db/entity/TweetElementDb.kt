@@ -27,7 +27,7 @@ import com.freshdigitable.udonroad2.model.user.UserId
 import org.threeten.bp.Instant
 
 @Entity(
-    tableName = "tweet",
+    tableName = "tweet_element",
     foreignKeys = [
         ForeignKey(
             entity = UserEntityDb::class,
@@ -36,7 +36,7 @@ import org.threeten.bp.Instant
             deferred = true
         ),
         ForeignKey(
-            entity = TweetEntityDb::class,
+            entity = TweetElementDb::class,
             parentColumns = ["id"],
             childColumns = ["retweeted_tweet_id"],
             deferred = true
@@ -47,7 +47,7 @@ import org.threeten.bp.Instant
         Index("retweeted_tweet_id")
     ]
 )
-internal class TweetEntityDb(
+internal class TweetElementDb(
     @PrimaryKey
     @ColumnInfo(name = "id")
     val id: TweetId,
@@ -90,20 +90,64 @@ internal class TweetEntityDb(
 )
 
 @Entity(
-    tableName = "user_reply",
-    primaryKeys = ["tweet_id", "user_id"],
+    tableName = "favorited",
+    primaryKeys = ["tweet_id", "source_user_id"],
     foreignKeys = [
         ForeignKey(
-            entity = TweetEntityDb::class,
+            entity = TweetElementDb::class,
+            parentColumns = ["id"],
+            childColumns = ["tweet_id"]
+        ),
+        ForeignKey(
+            entity = UserEntityDb::class,
+            parentColumns = ["id"],
+            childColumns = ["source_user_id"]
+        )
+    ]
+)
+internal data class Favorited(
+    @ColumnInfo(name = "tweet_id")
+    val tweetId: TweetId,
+    @ColumnInfo(name = "source_user_id", index = true)
+    val sourceUserId: UserId,
+)
+
+@Entity(
+    tableName = "retweeted",
+    primaryKeys = ["tweet_id", "source_user_id"],
+    foreignKeys = [
+        ForeignKey(
+            entity = TweetElementDb::class,
+            parentColumns = ["id"],
+            childColumns = ["tweet_id"]
+        ),
+        ForeignKey(
+            entity = UserEntityDb::class,
+            parentColumns = ["id"],
+            childColumns = ["source_user_id"]
+        )
+    ]
+)
+internal data class Retweeted(
+    @ColumnInfo(name = "tweet_id")
+    val tweetId: TweetId,
+    @ColumnInfo(name = "source_user_id", index = true)
+    val sourceUserId: UserId,
+    @ColumnInfo(name = "retweet_id")
+    val retweetId: TweetId,
+)
+
+@Entity(
+    tableName = "user_reply",
+    primaryKeys = ["tweet_id", "start"],
+    foreignKeys = [
+        ForeignKey(
+            entity = TweetElementDb::class,
             parentColumns = ["id"],
             childColumns = ["tweet_id"],
             deferred = true
         ),
     ],
-    indices = [
-        Index("tweet_id"),
-        Index("user_id")
-    ]
 )
 internal class UserReplyEntityDb(
     @ColumnInfo(name = "tweet_id")

@@ -24,16 +24,16 @@ import androidx.room.PrimaryKey
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 
 @Entity(
-    tableName = "structured_tweet",
+    tableName = "tweet",
     foreignKeys = [
         ForeignKey(
-            entity = TweetEntityDb::class,
+            entity = TweetElementDb::class,
             parentColumns = ["id"],
             childColumns = ["original_id"],
             deferred = true
         ),
         ForeignKey(
-            entity = TweetEntityDb::class,
+            entity = TweetElementDb::class,
             parentColumns = ["id"],
             childColumns = ["body_item_id"],
             deferred = true
@@ -43,7 +43,7 @@ import com.freshdigitable.udonroad2.model.tweet.TweetId
         Index("body_item_id")
     ]
 )
-internal class StructuredTweetEntity(
+internal class TweetEntityDb(
     @PrimaryKey
     @ColumnInfo(name = "original_id")
     val originalId: TweetId,
@@ -60,7 +60,7 @@ internal class StructuredTweetEntity(
     primaryKeys = ["original_id", "owner"],
     foreignKeys = [
         ForeignKey(
-            entity = StructuredTweetEntity::class,
+            entity = TweetEntityDb::class,
             parentColumns = ["original_id"],
             childColumns = ["original_id"],
             deferred = true

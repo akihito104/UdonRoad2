@@ -20,7 +20,7 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
-import com.freshdigitable.udonroad2.model.tweet.Tweet
+import com.freshdigitable.udonroad2.model.tweet.TweetElement
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
@@ -68,7 +68,7 @@ class TweetDetailViewModelTest {
         every { originalUser } returns mockk<TweetUserItem>().apply {
             every { id } returns UserId(3000)
         }
-        every { body } returns mockk<Tweet>().apply {
+        every { body } returns mockk<TweetElement>().apply {
             every { id } returns TweetId(1001)
             every { user } returns mockk<TweetUserItem>().apply {
                 every { id } returns UserId(3001)

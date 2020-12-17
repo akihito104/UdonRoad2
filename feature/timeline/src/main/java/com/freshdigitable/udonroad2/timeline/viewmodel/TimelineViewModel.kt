@@ -27,7 +27,7 @@ import com.freshdigitable.udonroad2.model.PageOption
 import com.freshdigitable.udonroad2.model.QueryType.TweetQueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
-import com.freshdigitable.udonroad2.model.tweet.Tweet
+import com.freshdigitable.udonroad2.model.tweet.TweetElement
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
@@ -95,7 +95,7 @@ class TimelineViewModel(
     override fun onMediaItemClicked(
         originalId: TweetId,
         quotedId: TweetId?,
-        item: Tweet,
+        item: TweetElement,
         index: Int
     ) {
         eventDispatcher.postEvent(

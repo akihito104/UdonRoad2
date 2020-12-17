@@ -25,7 +25,7 @@ import androidx.room.Transaction
 import com.freshdigitable.udonroad2.data.db.AppDatabase
 import com.freshdigitable.udonroad2.data.db.dbview.TweetListItem
 import com.freshdigitable.udonroad2.data.db.entity.MediaUrlEntity
-import com.freshdigitable.udonroad2.data.db.entity.StructuredTweetEntity
+import com.freshdigitable.udonroad2.data.db.entity.TweetElementDb
 import com.freshdigitable.udonroad2.data.db.entity.TweetEntityDb
 import com.freshdigitable.udonroad2.data.db.entity.TweetListEntity
 import com.freshdigitable.udonroad2.data.db.entity.UserReplyEntityDb
@@ -33,7 +33,7 @@ import com.freshdigitable.udonroad2.data.db.entity.VideoValiantEntity
 import com.freshdigitable.udonroad2.data.db.ext.toDbEntity
 import com.freshdigitable.udonroad2.data.db.ext.toEntity
 import com.freshdigitable.udonroad2.data.db.ext.toListEntity
-import com.freshdigitable.udonroad2.data.db.ext.toStructuredTweet
+import com.freshdigitable.udonroad2.data.db.ext.toTweetEntityDb
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import kotlinx.coroutines.flow.Flow
@@ -45,7 +45,7 @@ abstract class TweetDao(
 ) {
     companion object {
         private const val QUERY_FIND_TWEET_LIST_ITEM_BY_ID =
-            "SELECT * FROM tweet_list_item WHERE original_id = :id"
+            "SELECT * FROM view_tweet_list_item WHERE original_id = :id"
     }
 
     @Transaction
@@ -53,7 +53,7 @@ abstract class TweetDao(
         """
         SELECT v.*
         FROM tweet_list AS l
-        INNER JOIN tweet_list_item AS v ON v.original_id = l.original_id
+        INNER JOIN view_tweet_list_item AS v ON v.original_id = l.original_id
         WHERE l.owner = :owner
         ORDER BY l.`order` DESC"""
     )
@@ -78,10 +78,10 @@ abstract class TweetDao(
         addTweets(listOf(tweet), owner)
     }
 
-    @Query("UPDATE tweet SET is_favorited = :isFavorited WHERE id = :tweetId")
+    @Query("UPDATE tweet_element SET is_favorited = :isFavorited WHERE id = :tweetId")
     abstract suspend fun updateFav(tweetId: TweetId, isFavorited: Boolean)
 
-    @Query("UPDATE tweet SET is_retweeted = :isRetweeted WHERE id = :tweetId")
+    @Query("UPDATE tweet_element SET is_retweeted = :isRetweeted WHERE id = :tweetId")
     abstract suspend fun updateRetweeted(tweetId: TweetId, isRetweeted: Boolean)
 
     @Transaction
@@ -111,7 +111,7 @@ abstract class TweetDao(
                 .toList()
         )
         addTweetEntitiesInternal(tweetEntities.map(TweetEntity::toDbEntity))
-        addStructuredTweetEntities(tweet.map { it.toStructuredTweet() })
+        addTweetEntities(tweet.map { it.toTweetEntityDb() })
         if (owner != null) {
             addTweetListEntities(tweet.map { it.toListEntity(owner) })
         }
@@ -159,12 +159,10 @@ abstract class TweetDao(
     abstract suspend fun deleteTweet(id: TweetId)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    internal abstract suspend fun addTweetEntitiesInternal(tweet: List<TweetEntityDb>)
+    internal abstract suspend fun addTweetEntitiesInternal(tweet: List<TweetElementDb>)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    internal abstract suspend fun addStructuredTweetEntities(
-        listEntities: List<StructuredTweetEntity>
-    )
+    internal abstract suspend fun addTweetEntities(listEntities: List<TweetEntityDb>)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     internal abstract suspend fun addTweetListEntities(listEntities: List<TweetListEntity>)

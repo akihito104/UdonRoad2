@@ -18,11 +18,11 @@ package com.freshdigitable.udonroad2.timeline.bindingadapter
 
 import android.view.View
 import androidx.databinding.BindingAdapter
-import com.freshdigitable.udonroad2.model.tweet.Tweet
+import com.freshdigitable.udonroad2.model.tweet.TweetElement
 import com.freshdigitable.udonroad2.timeline.IconAttachedTextView
 
 @BindingAdapter("retweetIconVisibility")
-fun IconAttachedTextView.retweetIconVisibility(tweet: Tweet?) {
+fun IconAttachedTextView.retweetIconVisibility(tweet: TweetElement?) {
     if (tweet == null) {
         visibility = View.GONE
         return
@@ -32,7 +32,7 @@ fun IconAttachedTextView.retweetIconVisibility(tweet: Tweet?) {
 }
 
 @BindingAdapter("favIconVisibility")
-fun IconAttachedTextView.favIconVisibility(tweet: Tweet?) {
+fun IconAttachedTextView.favIconVisibility(tweet: TweetElement?) {
     if (tweet == null) {
         visibility = View.GONE
         return

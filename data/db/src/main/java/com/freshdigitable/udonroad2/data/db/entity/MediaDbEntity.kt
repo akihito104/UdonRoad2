@@ -38,7 +38,7 @@ import com.freshdigitable.udonroad2.model.tweet.TweetId
             childColumns = ["id"]
         ),
         ForeignKey(
-            entity = TweetEntityDb::class,
+            entity = TweetElementDb::class,
             parentColumns = ["id"],
             childColumns = ["tweet_id"]
         )

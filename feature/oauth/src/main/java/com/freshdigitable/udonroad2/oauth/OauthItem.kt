@@ -17,7 +17,7 @@
 package com.freshdigitable.udonroad2.oauth
 
 import com.freshdigitable.udonroad2.model.MediaEntity
-import com.freshdigitable.udonroad2.model.tweet.Tweet
+import com.freshdigitable.udonroad2.model.tweet.TweetElement
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
@@ -27,8 +27,8 @@ import org.threeten.bp.Instant
 data class OauthItem(
     override val originalId: TweetId,
     override val originalUser: TweetUserItem,
-    override val body: Tweet,
-    override val quoted: Tweet? = null
+    override val body: TweetElement,
+    override val quoted: TweetElement? = null
 ) : TweetListItem
 
 data class OauthUser(
@@ -40,7 +40,7 @@ data class OauthUser(
     override val isVerified: Boolean = false,
 ) : TweetUserItem
 
-data class OauthTweet(
+data class OauthTweetElement(
     override val id: TweetId,
     override val text: String,
     override val retweetCount: Int,
@@ -51,4 +51,4 @@ data class OauthTweet(
     override val media: List<MediaEntity> = emptyList(),
     override val isRetweeted: Boolean = false,
     override val isFavorited: Boolean = false
-) : Tweet
+) : TweetElement
