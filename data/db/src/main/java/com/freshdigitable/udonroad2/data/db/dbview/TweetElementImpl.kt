@@ -117,18 +117,23 @@ internal data class TweetListItem(
     private val tweetListItem: TweetListItemDbView,
     @ColumnInfo(name = "is_retweeted")
     private val isRetweeted: Boolean,
+    @ColumnInfo(name = "retweet_id_by_current_user")
+    private val retweetIdByCurrentUser: TweetId?,
     @ColumnInfo(name = "is_favorited")
     private val isFavorited: Boolean,
     @ColumnInfo(name = "qt_is_retweeted")
     private val isQuoteRetweeted: Boolean,
+    @ColumnInfo(name = "qt_retweet_id_by_current_user")
+    private val quoteRetweetIdByCurrentUser: TweetId?,
     @ColumnInfo(name = "qt_is_favorited")
     private val isQuoteFavorited: Boolean,
 ) : TweetListItem {
-    @Ignore
-    override val originalId: TweetId = tweetListItem.originalId
 
-    @Ignore
-    override val originalUser: TweetUserItem = tweetListItem.originalUser
+    override val originalId: TweetId
+        @Ignore get() = tweetListItem.originalId
+
+    override val originalUser: TweetUserItem
+        @Ignore get() = tweetListItem.originalUser
 
     @Relation(entity = TweetItemMediaDbView::class, parentColumn = "id", entityColumn = "tweet_id")
     var bodyMediaItems: List<TweetItemMediaDbView> = emptyList()
@@ -151,13 +156,20 @@ internal data class TweetListItem(
             tweetListItem.body,
             bodyMediaItems,
             isRetweeted,
-            isFavorited
+            isFavorited,
+            retweetIdByCurrentUser,
         )
 
     override val quoted: TweetElement?
         @Ignore get() = when (val q = tweetListItem.quoted) {
             null -> null
-            else -> TweetElementImpl(q, quoteMediaItems, isQuoteRetweeted, isQuoteFavorited)
+            else -> TweetElementImpl(
+                q,
+                quoteMediaItems,
+                isQuoteRetweeted,
+                isQuoteFavorited,
+                quoteRetweetIdByCurrentUser,
+            )
         }
 }
 
@@ -166,12 +178,13 @@ internal data class TweetElementImpl(
     override val media: List<TweetMediaItem> = emptyList(),
     override val isRetweeted: Boolean,
     override val isFavorited: Boolean,
+    override val retweetIdByCurrentUser: TweetId?
 ) : TweetElement {
-    override val id: TweetId = tweet.id
-    override val text: String = tweet.text
-    override val retweetCount: Int = tweet.retweetCount
-    override val favoriteCount: Int = tweet.favoriteCount
-    override val user: TweetUserItem = tweet.user
-    override val source: String = tweet.source
-    override val createdAt: Instant = tweet.createdAt
+    override val id: TweetId get() = tweet.id
+    override val text: String get() = tweet.text
+    override val retweetCount: Int get() = tweet.retweetCount
+    override val favoriteCount: Int get() = tweet.favoriteCount
+    override val user: TweetUserItem get() = tweet.user
+    override val source: String get() = tweet.source
+    override val createdAt: Instant get() = tweet.createdAt
 }

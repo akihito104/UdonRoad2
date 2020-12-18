@@ -24,6 +24,7 @@ internal class TweetEntityRest(
     override val createdAt: Instant,
     override val media: List<MediaEntity>,
     override val replyEntities: List<UserReplyEntity>,
+    override val retweetIdByCurrentUser: TweetId?,
 ) : TweetEntity
 
 internal data class UserReplyEntityRest(

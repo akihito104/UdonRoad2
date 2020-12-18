@@ -92,11 +92,6 @@ internal class TweetElementDb(
             parentColumns = ["id"],
             childColumns = ["tweet_id"]
         ),
-        ForeignKey(
-            entity = UserEntityDb::class,
-            parentColumns = ["id"],
-            childColumns = ["source_user_id"]
-        )
     ]
 )
 internal data class Favorited(
@@ -115,11 +110,6 @@ internal data class Favorited(
             parentColumns = ["id"],
             childColumns = ["tweet_id"]
         ),
-        ForeignKey(
-            entity = UserEntityDb::class,
-            parentColumns = ["id"],
-            childColumns = ["source_user_id"]
-        )
     ]
 )
 internal data class Retweeted(
@@ -128,7 +118,7 @@ internal data class Retweeted(
     @ColumnInfo(name = "source_user_id", index = true)
     val sourceUserId: UserId,
     @ColumnInfo(name = "retweet_id")
-    val retweetId: TweetId,
+    val retweetId: TweetId?,
 )
 
 @Entity(

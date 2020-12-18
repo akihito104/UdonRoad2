@@ -27,7 +27,7 @@ class TweetListDao(
         query: ListQuery<QueryType.TweetQueryType>,
         owner: ListId
     ) {
-        dao.addTweets(entities, owner)
+        dao.addTweetsToList(entities, owner)
     }
 
     override suspend fun clean(owner: ListId) {
