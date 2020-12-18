@@ -109,19 +109,14 @@ abstract class TweetDao(
 
     suspend fun updateRetweeted(
         tweetId: TweetId,
-        retweetedId: TweetId?,
+        retweetId: TweetId?,
         ownerUserId: UserId,
         isRetweeted: Boolean
     ) {
         when (isRetweeted) {
             true -> {
-                checkNotNull(retweetedId)
                 db.reactionsDao.addRetweeted(
-                    Retweeted(
-                        tweetId = tweetId,
-                        sourceUserId = ownerUserId,
-                        retweetId = retweetedId
-                    )
+                    Retweeted(tweetId = tweetId, sourceUserId = ownerUserId, retweetId = retweetId)
                 )
             }
             false -> db.reactionsDao.deleteRetweeted(tweetId, ownerUserId)
@@ -193,7 +188,7 @@ abstract class TweetDao(
             .distinctBy { it.id }
         db.reactionsDao.addRetweeteds(
             tweetsMayHaveReactions
-                .filter { it.isRetweeted }
+                .filter { it.isRetweeted && it.retweetedTweet == null }
                 .map { Retweeted(it.id, ownerUserId, it.retweetIdByCurrentUser) }
         )
         db.reactionsDao.addFavs(

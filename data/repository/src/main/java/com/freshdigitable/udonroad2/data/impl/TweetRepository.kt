@@ -51,15 +51,13 @@ class TweetRepository(
     suspend fun postRetweet(id: TweetId): TweetEntity {
         val currentUserId = checkNotNull(prefs.getCurrentUserId())
         try {
-            val retweeted = restClient.postRetweet(id)
-            dao.addTweet(retweeted, currentUserId)
-            return retweeted
+            val retweet = restClient.postRetweet(id)
+            dao.addTweet(retweet, currentUserId)
+            dao.updateRetweeted(id, retweet.id, currentUserId, true)
+            return retweet
         } catch (ex: AppTwitterException) {
             if (ex.errorType == AppTwitterException.ErrorType.ALREADY_RETWEETED) {
-                if (currentUserId == prefs.getCurrentUserId()) {
-                    val tweet = restClient.fetchTweet(id)
-                    dao.addTweet(tweet, currentUserId)
-                }
+                dao.updateRetweeted(id, null, currentUserId, true)
             }
             throw ex
         }
