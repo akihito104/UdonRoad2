@@ -37,8 +37,11 @@ import com.freshdigitable.udonroad2.data.db.ext.toEntity
 import com.freshdigitable.udonroad2.data.db.ext.toListEntity
 import com.freshdigitable.udonroad2.data.db.ext.toTweetEntityDb
 import com.freshdigitable.udonroad2.model.ListId
+import com.freshdigitable.udonroad2.model.MediaEntity
+import com.freshdigitable.udonroad2.model.MediaId
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
 import com.freshdigitable.udonroad2.model.tweet.TweetId
+import com.freshdigitable.udonroad2.model.tweet.UserReplyEntity
 import com.freshdigitable.udonroad2.model.user.UserId
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -66,8 +69,7 @@ abstract class TweetDao(
          LEFT OUTER JOIN retweeted AS q_r ON list.owner_id = q_r.source_user_id
            AND v.id = q_r.tweet_id
          LEFT OUTER JOIN favorited AS q_f ON list.owner_id = q_f.source_user_id
-           AND v.id = q_f.tweet_id
-        """
+           AND v.id = q_f.tweet_id"""
         private const val QUERY_FIND_TWEET_LIST_ITEM_BY_ID =
             "$QUERY_TWEET_LIST_ITEM_MEMBERS WHERE l.original_id = :id LIMIT 1"
     }
@@ -153,8 +155,7 @@ abstract class TweetDao(
 
         db.userDao().addUsers(
             tweetEntities.asSequence()
-                .map { it.user }
-                .filterNotNull()
+                .mapNotNull { it.user }
                 .distinctBy { it.id }
                 .map { it.toEntity() }
                 .toList()
@@ -163,42 +164,28 @@ abstract class TweetDao(
         addTweetEntities(tweet.map { it.toTweetEntityDb() })
 
         val mediaItems = tweetEntities.filter { it.media.isNotEmpty() }
-            .map { t -> t.media.map { t to it } }
-            .flatten()
+            .flatMap { t -> t.media.map { t to it } }
         db.mediaDao().addMediaEntities(mediaItems.map { it.second.toEntity() })
         db.mediaDao().addTweetMediaRelations(
             tweetEntities.filter { it.media.isNotEmpty() }
-                .map { t ->
-                    t.media.mapIndexed { i, m ->
-                        MediaUrlEntity(
-                            tweetId = t.id,
-                            id = m.id,
-                            start = m.start,
-                            end = m.end,
-                            order = i
-                        )
-                    }
+                .flatMap { t ->
+                    t.media.mapIndexed { i, m -> MediaUrlEntity.create(t.id, m, i) }
                 }
-                .flatten()
         )
-        val videoVariantEntities = mediaItems.map { it.second }
-            .filter { it.videoValiantItems.isNotEmpty() }
-            .flatMap { media -> media.videoValiantItems.map { media to it } }
-            .map { (media, video) ->
-                VideoValiantEntity(
-                    mediaId = media.id,
-                    url = video.url,
-                    bitrate = video.bitrate,
-                    contentType = video.contentType
-                )
-            }
-        db.videoValiantDao().addVideoValiantEntities(videoVariantEntities)
+        db.videoValiantDao().addVideoValiantEntities(
+            mediaItems.map { it.second }
+                .filter { it.videoValiantItems.isNotEmpty() }
+                .flatMap { media ->
+                    media.videoValiantItems.map { VideoValiantEntity.create(media.id, it) }
+                }
+        )
 
-        val replies = tweetEntities.map { it.id to it.replyEntities }
-            .map { (id, replies) ->
-                replies.map { UserReplyEntityDb(id, it.userId, it.screenName, it.start, it.end) }
-            }.flatten()
-        db.userReplyDao().addEntities(replies)
+        db.userReplyDao().addEntities(
+            tweetEntities.map { it.id to it.replyEntities }
+                .flatMap { (id, replies) ->
+                    replies.map { UserReplyEntityDb.create(id, it) }
+                }
+        )
     }
 
     private suspend fun addReactions(tweet: List<TweetEntity>, ownerUserId: UserId) {
@@ -256,3 +243,28 @@ internal interface ReactionsDao {
     @Query("DELETE FROM favorited WHERE tweet_id = :tweetId AND source_user_id = :userId")
     suspend fun deleteFav(tweetId: TweetId, userId: UserId)
 }
+
+private fun MediaUrlEntity.Companion.create(
+    tweetId: TweetId,
+    media: MediaEntity,
+    order: Int
+): MediaUrlEntity = MediaUrlEntity(
+    tweetId = tweetId,
+    id = media.id,
+    start = media.start,
+    end = media.end,
+    order = order
+)
+
+private fun VideoValiantEntity.Companion.create(
+    mediaId: MediaId,
+    video: MediaEntity.VideoValiant
+): VideoValiantEntity = VideoValiantEntity(
+    mediaId = mediaId,
+    url = video.url,
+    bitrate = video.bitrate,
+    contentType = video.contentType
+)
+
+private fun UserReplyEntityDb.Companion.create(id: TweetId, reply: UserReplyEntity) =
+    UserReplyEntityDb(id, reply.userId, reply.screenName, reply.start, reply.end)

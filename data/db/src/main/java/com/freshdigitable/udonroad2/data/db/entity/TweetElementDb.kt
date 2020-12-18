@@ -148,4 +148,6 @@ internal class UserReplyEntityDb(
 
     @ColumnInfo(name = "end")
     override val end: Int
-) : UserReplyEntity
+) : UserReplyEntity {
+    companion object
+}
