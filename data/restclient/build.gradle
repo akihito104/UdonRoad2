@@ -59,6 +59,7 @@ dependencies {
 
     implementation Libs.TWITTER4J_HTTP2_SUPPORT
     implementation Libs.THREETENBP
+    implementation Libs.TIMBER
 
     implementation Libs.DAGGER_ANDROID
     implementation Libs.DAGGER_ANDROID_SUPPORT

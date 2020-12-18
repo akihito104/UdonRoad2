@@ -22,6 +22,7 @@ import dagger.Module
 import dagger.Provides
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import timber.log.Timber
 import twitter4j.Twitter
 import twitter4j.TwitterException
 import twitter4j.TwitterFactory
@@ -63,6 +64,7 @@ class AppTwitter(
         }
 
     suspend fun <T> fetch(block: Twitter.() -> T): T = withContext(Dispatchers.IO) {
+        Timber.tag("AppTwitter").d("fetch: $block")
         try {
             block(twitter)
         } catch (ex: TwitterException) {
