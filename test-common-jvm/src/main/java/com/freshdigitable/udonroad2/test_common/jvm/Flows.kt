@@ -14,24 +14,18 @@
  * limitations under the License.
  */
 
-package com.freshdigitable.udonroad2.model
+package com.freshdigitable.udonroad2.test_common.jvm
 
-import java.io.Serializable
+import com.freshdigitable.udonroad2.model.app.AppExecutor
+import com.freshdigitable.udonroad2.model.app.mainContext
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 
-data class ListOwner<Q : QueryType>(
-    val id: ListId,
-    val query: Q
-) : Serializable {
-    constructor(id: Int, query: Q) : this(ListId(id), query)
-
-    @Deprecated("use ListOwner.id")
-    val value: String = "${id.value}"
-}
-
-data class ListId(val value: Int) : Serializable
-
-interface ListOwnerGenerator {
-    suspend fun <Q : QueryType> generate(type: Q): ListOwner<Q>
-
-    companion object
+fun <T> Flow<T>.testCollect(executor: AppExecutor): List<T> {
+    val actual = mutableListOf<T>()
+    executor.launch(executor.mainContext) {
+        collect { actual.add(it) }
+    }
+    return actual
 }

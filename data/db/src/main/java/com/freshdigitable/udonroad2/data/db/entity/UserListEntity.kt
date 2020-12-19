@@ -19,7 +19,9 @@ package com.freshdigitable.udonroad2.data.db.entity
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.ForeignKey.CASCADE
 import androidx.room.PrimaryKey
+import com.freshdigitable.udonroad2.model.ListId
 import com.freshdigitable.udonroad2.model.user.UserId
 
 @Entity(
@@ -29,17 +31,23 @@ import com.freshdigitable.udonroad2.model.user.UserId
             entity = UserEntityDb::class,
             parentColumns = ["id"],
             childColumns = ["user_id"]
-        )
+        ),
+        ForeignKey(
+            entity = ListEntityDb::class,
+            parentColumns = ["id"],
+            childColumns = ["list_id"],
+            onDelete = CASCADE
+        ),
     ]
 )
 internal data class UserListEntity(
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "id")
-    val id: Int = 0,
+    val id: Int? = null,
 
     @ColumnInfo(name = "user_id", index = true)
     val userId: UserId,
 
-    @ColumnInfo(name = "owner")
-    val owner: String
+    @ColumnInfo(name = "list_id", index = true)
+    val listId: ListId
 )

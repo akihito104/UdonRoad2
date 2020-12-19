@@ -18,6 +18,8 @@ package com.freshdigitable.udonroad2.timeline
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
+import com.freshdigitable.udonroad2.data.impl.create
+import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
@@ -45,6 +47,7 @@ import org.junit.rules.RuleChain
 import org.junit.rules.TestWatcher
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
+import java.util.concurrent.atomic.AtomicInteger
 
 @ExperimentalCoroutinesApi
 class TimelineViewStateTest {
@@ -199,7 +202,7 @@ class TimelineViewStateTest {
 class TimelineViewStatesTestRule : TestWatcher() {
     private val actionsRule: TimelineActionsTestRule = TimelineActionsTestRule()
     val tweetRepositoryMock = TweetRepositoryRule()
-    val owner = ListOwnerGenerator().create(QueryType.TweetQueryType.Timeline())
+    val owner = ListOwner(0, QueryType.TweetQueryType.Timeline())
     val activityEventDelegate: ActivityEventDelegate = mockk()
     private val coroutineTestRule = CoroutineTestRule()
     val sut = TimelineViewState(
@@ -207,7 +210,7 @@ class TimelineViewStatesTestRule : TestWatcher() {
         actionsRule.sut,
         SelectedItemRepository(),
         tweetRepositoryMock.mock,
-        ListOwnerGenerator(),
+        ListOwnerGenerator.create(AtomicInteger(1)),
         TimelineNavigationDelegate(activityEventDelegate),
         AppExecutor(dispatcher = coroutineTestRule.coroutineContextProvider)
     )

@@ -20,6 +20,9 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.SavedStateHandle
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.freshdigitable.udonroad2.data.impl.LoginUseCase
+import com.freshdigitable.udonroad2.data.impl.UserRepository
+import com.freshdigitable.udonroad2.data.impl.create
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.app.AppExecutor
@@ -88,7 +91,7 @@ class OauthViewModelTest {
         // setup
         repositoryRule.setupGetRequestTokenItem()
         repositoryRule.setupGetAccessToken("012345", UserId(100))
-        repositoryRule.setupLogin(UserId(100))
+        setupLogin(UserId(100))
         every { activityEventDelegate.dispatchNavHostNavigate(any()) } just runs
 
         sut.onLoginClicked()
@@ -123,15 +126,18 @@ class OauthViewModelTestRule : TestWatcher() {
     private val _activityEventDelegate = MockVerified.create<ActivityEventDelegate>()
     val activityEventDelegate: ActivityEventDelegate = _activityEventDelegate.mock
     private val navDelegate: OauthNavigationDelegate =
-        OauthNavigationDelegate(mockk(relaxed = true), ListOwnerGenerator(), activityEventDelegate)
+        OauthNavigationDelegate(mockk(relaxed = true), activityEventDelegate)
+    private val userRepositoryRule = MockVerified.create<UserRepository>()
 
     val sut = OauthViewModel(
         OauthDataSource(ApplicationProvider.getApplicationContext()),
         dispatcher,
         OauthViewStates(
             OauthAction(dispatcher),
+            LoginUseCase(repositoryRule.mock, userRepositoryRule.mock),
             navDelegate,
             repositoryRule.mock,
+            ListOwnerGenerator.create(),
             OauthSavedStates(SavedStateHandle(), coroutineRule.coroutineContextProvider),
             AppExecutor(dispatcher = coroutineRule.coroutineContextProvider)
         )
@@ -148,11 +154,20 @@ class OauthViewModelTestRule : TestWatcher() {
         coroutineRule.runBlockingTest { block() }
     }
 
+    fun setupLogin(id: UserId) {
+        repositoryRule.setupLogin(id)
+        userRepositoryRule.coSetupResponseWithVerify(
+            target = { userRepositoryRule.mock.addUser(any()) },
+            res = Unit
+        )
+    }
+
     override fun apply(base: Statement?, description: Description?): Statement {
         return RuleChain.outerRule(InstantTaskExecutorRule())
             .around(RxExceptionHandler())
             .around(coroutineRule)
             .around(repositoryRule)
+            .around(userRepositoryRule)
             .around(_activityEventDelegate)
             .apply(super.apply(base, description), description)
     }

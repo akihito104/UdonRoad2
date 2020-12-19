@@ -9,6 +9,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.lifecycleScope
 import androidx.viewpager.widget.ViewPager
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.databinding.ActivityUserBinding
@@ -21,6 +22,7 @@ import dagger.android.AndroidInjection
 import dagger.android.AndroidInjector
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasAndroidInjector
+import kotlinx.coroutines.flow.collect
 import javax.inject.Inject
 import kotlin.math.abs
 
@@ -38,12 +40,18 @@ class UserActivity : HasAndroidInjector, AppCompatActivity() {
             this,
             R.layout.activity_user
         )
-        val adapter = UserFragmentPagerAdapter(supportFragmentManager, viewModel)
+        val adapter = UserFragmentPagerAdapter(supportFragmentManager)
 
         binding.setup(viewModel, adapter)
         setSupportActionBar(binding.userToolbar)
         viewModel.relationshipMenuItems.observe(this) {
             invalidateOptionsMenu()
+        }
+        lifecycleScope.launchWhenCreated {
+            viewModel.pages.collect {
+                adapter.setItems(it)
+                adapter.notifyDataSetChanged()
+            }
         }
     }
 

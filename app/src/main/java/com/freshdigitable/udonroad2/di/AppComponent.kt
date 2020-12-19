@@ -22,12 +22,14 @@ import com.freshdigitable.udonroad2.AppFileProviderImpl
 import com.freshdigitable.udonroad2.AppSetup
 import com.freshdigitable.udonroad2.AppSetupModule
 import com.freshdigitable.udonroad2.data.db.DatabaseModule
+import com.freshdigitable.udonroad2.data.impl.ListOwnerRepository
 import com.freshdigitable.udonroad2.data.impl.di.RepositoryModule
 import com.freshdigitable.udonroad2.data.restclient.AppTwitterModule
 import com.freshdigitable.udonroad2.data.restclient.TwitterModule
 import com.freshdigitable.udonroad2.input.di.MediaChooserModule
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.app.AppFileProvider
+import dagger.Binds
 import dagger.BindsInstance
 import dagger.Component
 import dagger.Module
@@ -69,10 +71,10 @@ interface AppComponent {
 }
 
 @Module
-object ListOwnerGeneratorProvider {
+interface ListOwnerGeneratorProvider {
     @Singleton
-    @Provides
-    fun provideListOwnerGenerator(): ListOwnerGenerator = ListOwnerGenerator()
+    @Binds
+    fun provideListOwnerGenerator(listOwnerRepository: ListOwnerRepository): ListOwnerGenerator
 }
 
 @Module

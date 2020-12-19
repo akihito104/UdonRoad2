@@ -38,10 +38,12 @@ import com.freshdigitable.udonroad2.data.db.dbview.CustomTimelineListItemDb
 import com.freshdigitable.udonroad2.data.db.dbview.TweetItemMediaDbView
 import com.freshdigitable.udonroad2.data.db.dbview.TweetListItemDbView
 import com.freshdigitable.udonroad2.data.db.dbview.UserListDbView
-import com.freshdigitable.udonroad2.data.db.entity.CurrentUserEntityDb
 import com.freshdigitable.udonroad2.data.db.entity.CustomTimelineDb
 import com.freshdigitable.udonroad2.data.db.entity.CustomTimelineListDb
 import com.freshdigitable.udonroad2.data.db.entity.Favorited
+import com.freshdigitable.udonroad2.data.db.entity.ListDao
+import com.freshdigitable.udonroad2.data.db.entity.ListEntityDb
+import com.freshdigitable.udonroad2.data.db.entity.ListIdConverter
 import com.freshdigitable.udonroad2.data.db.entity.MediaDbEntity
 import com.freshdigitable.udonroad2.data.db.entity.MediaUrlEntity
 import com.freshdigitable.udonroad2.data.db.entity.RelationshipEntity
@@ -64,7 +66,6 @@ import com.freshdigitable.udonroad2.data.db.entity.VideoValiantEntity
         Retweeted::class,
         UserEntityDb::class,
         UserListEntity::class,
-        CurrentUserEntityDb::class,
         CustomTimelineDb::class,
         CustomTimelineListDb::class,
         RelationshipEntity::class,
@@ -73,6 +74,7 @@ import com.freshdigitable.udonroad2.data.db.entity.VideoValiantEntity
         MediaUrlEntity::class,
         VideoValiantEntity::class,
         UserReplyEntityDb::class,
+        ListEntityDb::class,
     ],
     views = [
         TweetListItemDbView::class,
@@ -89,7 +91,8 @@ import com.freshdigitable.udonroad2.data.db.entity.VideoValiantEntity
     MediaTypeConverter::class,
     TweetIdConverter::class,
     UserIdConverter::class,
-    CustomTimelineIdConverter::class
+    CustomTimelineIdConverter::class,
+    ListIdConverter::class,
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun tweetDao(): TweetDao
@@ -107,6 +110,8 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun urlDao(): UrlDao
 
     abstract fun userReplyDao(): UserReplyEntityDao
+
+    abstract fun listDao(): ListDao
 }
 
 interface AppTypeConverter<E, I> {

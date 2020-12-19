@@ -14,24 +14,23 @@
  * limitations under the License.
  */
 
-package com.freshdigitable.udonroad2.model
+package com.freshdigitable.udonroad2.data.impl
 
-import java.io.Serializable
+import com.freshdigitable.udonroad2.model.user.UserId
+import javax.inject.Inject
 
-data class ListOwner<Q : QueryType>(
-    val id: ListId,
-    val query: Q
-) : Serializable {
-    constructor(id: Int, query: Q) : this(ListId(id), query)
-
-    @Deprecated("use ListOwner.id")
-    val value: String = "${id.value}"
+class LoginUseCase @Inject constructor(
+    internal val tokenRepository: OAuthTokenRepository,
+    private val userRepository: UserRepository,
+) {
+    suspend operator fun invoke(userId: UserId? = tokenRepository.getCurrentUserId()) {
+        val user = tokenRepository.login(checkNotNull(userId))
+        userRepository.addUser(user)
+    }
 }
 
-data class ListId(val value: Int) : Serializable
-
-interface ListOwnerGenerator {
-    suspend fun <Q : QueryType> generate(type: Q): ListOwner<Q>
-
-    companion object
+suspend fun LoginUseCase.invokeIfCan() {
+    if (tokenRepository.getCurrentUserId() != null) {
+        invoke()
+    }
 }

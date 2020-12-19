@@ -16,8 +16,10 @@
 
 package com.freshdigitable.udonroad2.data.restclient
 
+import com.freshdigitable.udonroad2.data.restclient.ext.toEntity
 import com.freshdigitable.udonroad2.model.AccessTokenEntity
 import com.freshdigitable.udonroad2.model.RequestTokenItem
+import com.freshdigitable.udonroad2.model.user.UserEntity
 import com.freshdigitable.udonroad2.model.user.UserId
 import twitter4j.auth.AccessToken
 import twitter4j.auth.RequestToken
@@ -26,8 +28,9 @@ import javax.inject.Inject
 class OAuthApiClient @Inject constructor(
     private val twitter: AppTwitter
 ) {
-    fun login(oauthAccessToken: AccessTokenEntity) {
+    suspend fun login(oauthAccessToken: AccessTokenEntity): UserEntity {
         twitter.oauthToken = oauthAccessToken
+        return twitter.fetch { verifyCredentials().toEntity() }
     }
 
     fun logout() {

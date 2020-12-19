@@ -26,7 +26,7 @@ class UserListViewModel(
     ViewModel() {
 
     override val timeline: LiveData<PagedList<UserListItem>> =
-        pagedListProvider.getList(owner.query, owner.value)
+        pagedListProvider.getList(owner.query, owner.id)
 
     override val loading: LiveData<Boolean>
         get() = repository.loading
@@ -37,12 +37,12 @@ class UserListViewModel(
         } else {
             ListQuery(owner.query, PageOption.OnInit)
         }
-        repository.loadList(q, owner.value)
+        repository.loadList(q, owner.id)
     }
 
     override fun onCleared() {
         super.onCleared()
-        repository.clear(owner.value)
+        repository.clear(owner.id)
     }
 
     override fun onBodyItemClicked(item: UserListItem) {

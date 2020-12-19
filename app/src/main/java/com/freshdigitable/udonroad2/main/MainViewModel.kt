@@ -46,7 +46,7 @@ class MainViewModel(
     override fun onFabMenuSelected(item: MenuItem) {
         Timber.tag("MainViewModel").d("onFabSelected: $item")
         val selected =
-            requireNotNull(currentState?.selectedItem) { "selectedItem should not be null." }
+            requireNotNull(currentState.selectedItem) { "selectedItem should not be null." }
         eventDispatcher.postSelectedItemShortcutEvent(item, selected)
     }
 
@@ -56,7 +56,7 @@ class MainViewModel(
     }
 
     fun onBackPressed() {
-        val selectedItem = currentState?.selectedItem
+        val selectedItem = currentState.selectedItem
         val event = when {
             isTweetInputExpanded -> TweetInputEvent.Cancel
             selectedItem != null -> TimelineEvent.TweetItemSelection.Unselected(selectedItem.owner)
@@ -65,7 +65,7 @@ class MainViewModel(
         eventDispatcher.postEvent(event)
     }
 
-    val currentState: MainActivityViewState?
+    val currentState: MainActivityViewState
         get() = viewStates.current
 
     override fun onCleared() {

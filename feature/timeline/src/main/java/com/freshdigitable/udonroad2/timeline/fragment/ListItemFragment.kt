@@ -70,7 +70,7 @@ class ListItemFragment : Fragment() {
     }
 
     private val args: ListItemFragmentArgs by navArgs()
-    private val ownerId: Int get() = args.ownerId
+    private val ownerId: Int get() = args.ownerId.value
     private val listOwner: ListOwner<*> get() = ListOwner(ownerId, args.query)
 
     companion object {

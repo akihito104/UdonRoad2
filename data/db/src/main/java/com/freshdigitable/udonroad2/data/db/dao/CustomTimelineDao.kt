@@ -12,6 +12,7 @@ import com.freshdigitable.udonroad2.data.db.entity.CustomTimelineDb
 import com.freshdigitable.udonroad2.data.db.entity.CustomTimelineListDb
 import com.freshdigitable.udonroad2.data.db.ext.toEntity
 import com.freshdigitable.udonroad2.model.CustomTimelineEntity
+import com.freshdigitable.udonroad2.model.ListId
 
 @Dao
 abstract class CustomTimelineDao(
@@ -21,15 +22,15 @@ abstract class CustomTimelineDao(
         """
         SELECT v.* FROM custom_timeline_list AS l
         INNER JOIN view_custom_timeline_item AS v ON l.custom_timeline_id = v.id
-        WHERE l.owner = :owner
+        WHERE l.list_id = :owner
         ORDER BY l.`order` ASC"""
     )
-    internal abstract fun getCustomTimeline(owner: String): DataSource.Factory<Int, CustomTimelineListItemDb>
+    internal abstract fun getCustomTimeline(owner: ListId): DataSource.Factory<Int, CustomTimelineListItemDb>
 
     @Transaction
     internal open suspend fun addCustomTimeline(
         entities: List<CustomTimelineEntity>,
-        owner: String?
+        owner: ListId?
     ) {
         val users = entities.map { it.user.toEntity() }
         val customTimelines = entities.map { it.toEntity() }
@@ -38,7 +39,7 @@ abstract class CustomTimelineDao(
 
         if (owner != null) {
             val listEntity = entities.map { e ->
-                CustomTimelineListDb(customTimelineId = e.id, owner = owner)
+                CustomTimelineListDb(customTimelineId = e.id, listId = owner)
             }
             addCustomTimelineListEntities(listEntity)
         }
@@ -50,6 +51,10 @@ abstract class CustomTimelineDao(
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     internal abstract suspend fun addCustomTimelineListEntities(entities: List<CustomTimelineListDb>)
 
-    @Query("DELETE FROM custom_timeline_list WHERE owner = :owner")
-    abstract suspend fun clean(owner: String)
+    @Query("DELETE FROM custom_timeline_list WHERE list_id = :owner")
+    internal abstract suspend fun deleteByListId(owner: ListId)
+
+    suspend fun clear(owner: ListId) {
+        db.listDao().deleteList(owner)
+    }
 }

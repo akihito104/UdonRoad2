@@ -32,11 +32,11 @@ class CustomTimelineListViewModel(
         } else {
             ListQuery(owner.query, PageOption.OnInit)
         }
-        repository.loadList(q, owner.value)
+        repository.loadList(q, owner.id)
     }
 
     override val timeline: LiveData<PagedList<CustomTimelineItem>> =
-        pagedListProvider.getList(owner.query, owner.value)
+        pagedListProvider.getList(owner.query, owner.id)
 
     override fun onUserIconClicked(user: TweetUserItem) {
         eventDispatcher.postEvent(TimelineEvent.UserIconClicked(user))
@@ -48,6 +48,6 @@ class CustomTimelineListViewModel(
 
     override fun onCleared() {
         super.onCleared()
-        repository.clear(owner.value)
+        repository.clear(owner.id)
     }
 }

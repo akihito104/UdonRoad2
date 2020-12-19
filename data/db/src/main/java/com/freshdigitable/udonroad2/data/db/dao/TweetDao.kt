@@ -34,6 +34,7 @@ import com.freshdigitable.udonroad2.data.db.ext.toDbEntity
 import com.freshdigitable.udonroad2.data.db.ext.toEntity
 import com.freshdigitable.udonroad2.data.db.ext.toListEntity
 import com.freshdigitable.udonroad2.data.db.ext.toTweetEntityDb
+import com.freshdigitable.udonroad2.model.ListId
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import kotlinx.coroutines.flow.Flow
@@ -54,10 +55,10 @@ abstract class TweetDao(
         SELECT v.*
         FROM tweet_list AS l
         INNER JOIN view_tweet_list_item AS v ON v.original_id = l.original_id
-        WHERE l.owner = :owner
-        ORDER BY l.`order` DESC"""
+        WHERE l.list_id = :owner
+        ORDER BY l.original_id DESC"""
     )
-    internal abstract fun getTimeline(owner: String): DataSource.Factory<Int, TweetListItem>
+    internal abstract fun getTimeline(owner: ListId): DataSource.Factory<Int, TweetListItem>
 
     @Transaction
     @Query(QUERY_FIND_TWEET_LIST_ITEM_BY_ID)
@@ -74,7 +75,7 @@ abstract class TweetDao(
         id: TweetId
     ): com.freshdigitable.udonroad2.model.tweet.TweetListItem? = findTweetListItemById(id)
 
-    suspend fun addTweet(tweet: TweetEntity, owner: String? = null) {
+    suspend fun addTweet(tweet: TweetEntity, owner: ListId? = null) {
         addTweets(listOf(tweet), owner)
     }
 
@@ -87,7 +88,7 @@ abstract class TweetDao(
     @Transaction
     internal open suspend fun addTweets(
         tweet: List<TweetEntity>,
-        owner: String? = null
+        owner: ListId? = null
     ) {
         val tweetEntities = tweet.asSequence()
             .map {
@@ -167,6 +168,10 @@ abstract class TweetDao(
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     internal abstract suspend fun addTweetListEntities(listEntities: List<TweetListEntity>)
 
-    @Query("DELETE FROM tweet_list WHERE owner = :owner")
-    abstract suspend fun clear(owner: String)
+    @Query("DELETE FROM tweet_list WHERE list_id = :owner")
+    internal abstract suspend fun deleteByListId(owner: ListId)
+
+    suspend fun clear(owner: ListId) {
+        db.listDao().deleteList(owner)
+    }
 }

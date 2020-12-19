@@ -5,6 +5,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentStatePagerAdapter
 import com.freshdigitable.udonroad2.R
+import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.QueryType.TweetQueryType
 import com.freshdigitable.udonroad2.model.QueryType.UserQueryType
@@ -14,14 +15,19 @@ import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragment
 
 class UserFragmentPagerAdapter(
     fragmentManager: FragmentManager,
-    private val viewModel: UserViewModel
 ) : FragmentStatePagerAdapter(fragmentManager, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
+    private val items = mutableMapOf<UserPage, ListOwner<*>>()
 
     override fun getItem(position: Int): Fragment {
-        return ListItemFragment.newInstance(viewModel.getOwner(UserPage.values()[position]))
+        return ListItemFragment.newInstance(requireNotNull(items[UserPage.values()[position]]))
     }
 
-    override fun getCount(): Int = UserPage.values().size
+    override fun getCount(): Int = items.size
+
+    internal fun setItems(items: Map<UserPage, ListOwner<*>>) {
+        this.items.clear()
+        this.items.putAll(items)
+    }
 }
 
 @Keep

@@ -8,6 +8,7 @@ import com.freshdigitable.udonroad2.data.db.entity.TweetListEntity
 import com.freshdigitable.udonroad2.data.db.entity.UrlEntity
 import com.freshdigitable.udonroad2.data.db.entity.UserEntityDb
 import com.freshdigitable.udonroad2.model.CustomTimelineEntity
+import com.freshdigitable.udonroad2.model.ListId
 import com.freshdigitable.udonroad2.model.MediaEntity
 import com.freshdigitable.udonroad2.model.MediaType
 import com.freshdigitable.udonroad2.model.UrlItem
@@ -48,11 +49,10 @@ internal fun TweetEntity.toTweetEntityDb(): TweetEntityDb {
     )
 }
 
-internal fun TweetEntity.toListEntity(owner: String): TweetListEntity {
+internal fun TweetEntity.toListEntity(owner: ListId): TweetListEntity {
     return TweetListEntity(
         originalId = id,
-        order = id.value,
-        owner = owner
+        listId = owner,
     )
 }
 

@@ -28,15 +28,18 @@ import com.freshdigitable.udonroad2.input.TweetInputSharedState
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
+import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.di.ActivityScope
 import com.freshdigitable.udonroad2.model.app.ext.combineLatest
+import com.freshdigitable.udonroad2.model.app.mainContext
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.AppViewState
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.ViewState
 import com.freshdigitable.udonroad2.model.app.navigation.subscribeToUpdate
-import com.freshdigitable.udonroad2.timeline.TimelineEvent
+import com.freshdigitable.udonroad2.timeline.getTimelineEvent
 import io.reactivex.disposables.CompositeDisposable
+import kotlinx.coroutines.launch
 import java.io.Serializable
 import javax.inject.Inject
 
@@ -48,31 +51,27 @@ class MainActivityViewStates @Inject constructor(
     private val tweetInputSharedState: TweetInputSharedState,
     listOwnerGenerator: ListOwnerGenerator,
     private val navDelegate: MainActivityNavigationDelegate,
+    executor: AppExecutor,
 ) {
 
-    private val updateContainer: AppAction<out NavigationEvent> = AppAction.merge(
+    private val initContainer: AppAction<out QueryType> = AppAction.merge(
         actions.showFirstView.map {
             when {
                 tokenRepository.getCurrentUserId() != null -> {
-                    tokenRepository.login()
-                    TimelineEvent.Navigate.Timeline(
-                        listOwnerGenerator.create(QueryType.TweetQueryType.Timeline()),
-                        NavigationEvent.Type.INIT
-                    )
+                    QueryType.TweetQueryType.Timeline()
                 }
-                else -> TimelineEvent.Navigate.Timeline(
-                    listOwnerGenerator.create(QueryType.Oauth), NavigationEvent.Type.INIT
-                )
+                else -> QueryType.Oauth
             }
         },
-        actions.showAuth.map {
-            TimelineEvent.Navigate.Timeline(
-                listOwnerGenerator.create(QueryType.Oauth), NavigationEvent.Type.INIT
-            )
-        },
+        actions.showAuth.map { QueryType.Oauth },
     )
     private val disposables = CompositeDisposable(
-        updateContainer.subscribeToUpdate(navDelegate) { dispatchNavHostNavigate(it) },
+        initContainer.subscribeToUpdate(navDelegate) {
+            executor.launch(executor.mainContext) {
+                val nav = listOwnerGenerator.getTimelineEvent(it, NavigationEvent.Type.INIT)
+                dispatchNavHostNavigate(nav)
+            }
+        },
         actions.rollbackViewState.subscribeToUpdate(navDelegate) { dispatchBack() },
     )
 
@@ -123,7 +122,7 @@ class MainActivityViewStates @Inject constructor(
         }
     }
 
-    val current: MainActivityViewState?
+    val current: MainActivityViewState
         get() {
             return MainActivityViewState(
                 selectedItem = selectedItemId.value,

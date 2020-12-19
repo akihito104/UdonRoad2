@@ -24,6 +24,7 @@ import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.app.AppExecutor
+import com.freshdigitable.udonroad2.model.app.mainContext
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.AppViewState
@@ -31,6 +32,7 @@ import com.freshdigitable.udonroad2.model.app.navigation.NavigationDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.StateHolder
 import com.freshdigitable.udonroad2.model.app.navigation.subscribeToUpdate
+import com.freshdigitable.udonroad2.model.app.navigation.suspendMap
 import com.freshdigitable.udonroad2.model.app.navigation.toViewState
 import com.freshdigitable.udonroad2.shortcut.ShortcutViewStates
 import io.reactivex.disposables.CompositeDisposable
@@ -75,12 +77,12 @@ class TimelineViewState(
     val selectedItemId: AppViewState<SelectedItemId?> = _selectedItemId.map { it.value }
 
     private val updateNavHost: AppAction<out TimelineEvent.Navigate> = AppAction.merge(
-        actions.showTimeline.map {
-            TimelineEvent.Navigate.Timeline(
-                listOwnerGenerator.create(QueryType.TweetQueryType.Timeline()),
+        actions.showTimeline.suspendMap(executor.mainContext) {
+            listOwnerGenerator.getTimelineEvent(
+                QueryType.TweetQueryType.Timeline(),
                 NavigationEvent.Type.INIT
             )
-        },
+        }.map { it.value!! }, // FIXME
         actions.showTweetDetail.map { TimelineEvent.Navigate.Detail(it.tweetId) },
         actions.launchUserInfo.map { TimelineEvent.Navigate.UserInfo(it.user) },
         actions.launchMediaViewer.filter { it.selectedItemId?.owner == owner }

@@ -24,18 +24,21 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
+import com.freshdigitable.udonroad2.data.db.AppDatabase
 import com.freshdigitable.udonroad2.data.db.dbview.UserListDbView
 import com.freshdigitable.udonroad2.data.db.entity.UserEntityDb
 import com.freshdigitable.udonroad2.data.db.entity.UserListEntity
 import com.freshdigitable.udonroad2.data.db.ext.toEntity
+import com.freshdigitable.udonroad2.model.ListId
 import com.freshdigitable.udonroad2.model.user.UserEntity
 import com.freshdigitable.udonroad2.model.user.UserId
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 
 @Dao
-abstract class UserDao {
-
+abstract class UserDao(
+    private val db: AppDatabase
+) {
     open suspend fun addUsers(users: List<UserEntity>) {
         val u = users.map {
             when (it) {
@@ -62,11 +65,11 @@ abstract class UserDao {
     open fun getUserFlowById(id: UserId): Flow<UserEntity?> = getUserFlow(id).distinctUntilChanged()
 
     @Transaction
-    internal open suspend fun addUsers(entities: List<UserEntityDb>, owner: String? = null) {
+    internal open suspend fun addUsers(entities: List<UserEntityDb>, owner: ListId? = null) {
         addUsers(entities)
         if (owner != null) {
             val listEntities = entities.map {
-                UserListEntity(userId = it.id, owner = owner)
+                UserListEntity(userId = it.id, listId = owner)
             }
             addUserListEntities(listEntities)
         }
@@ -77,14 +80,18 @@ abstract class UserDao {
         SELECT i.*
         FROM user_list AS l
         INNER JOIN view_user_item AS i ON l.user_id = i.id
-        WHERE owner = :owner
+        WHERE list_id = :owner
         ORDER BY l.id"""
     )
-    internal abstract fun getUserList(owner: String): DataSource.Factory<Int, UserListDbView>
+    internal abstract fun getUserList(owner: ListId): DataSource.Factory<Int, UserListDbView>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     internal abstract suspend fun addUserListEntities(entities: List<UserListEntity>)
 
-    @Query("DELETE FROM user_list WHERE owner = :owner")
-    abstract suspend fun clear(owner: String)
+    @Query("DELETE FROM user_list WHERE list_id = :owner")
+    abstract suspend fun deleteByListId(owner: ListId)
+
+    suspend fun clear(owner: ListId) {
+        db.listDao().deleteList(owner)
+    }
 }

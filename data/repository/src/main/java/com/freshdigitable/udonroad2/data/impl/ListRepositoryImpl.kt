@@ -24,6 +24,7 @@ import com.freshdigitable.udonroad2.data.ListRepository
 import com.freshdigitable.udonroad2.data.LocalListDataSource
 import com.freshdigitable.udonroad2.data.PagedListProvider
 import com.freshdigitable.udonroad2.data.RemoteListDataSource
+import com.freshdigitable.udonroad2.model.ListId
 import com.freshdigitable.udonroad2.model.ListQuery
 import com.freshdigitable.udonroad2.model.PageOption
 import com.freshdigitable.udonroad2.model.QueryType
@@ -41,7 +42,7 @@ internal class ListRepositoryImpl<Q : QueryType, E>(
     private val _loading = MutableLiveData<Boolean>()
     override val loading: LiveData<Boolean> = _loading
 
-    override fun loadList(query: ListQuery<Q>, owner: String) {
+    override fun loadList(query: ListQuery<Q>, owner: ListId) {
         if (_loading.value == true) {
             return
         }
@@ -62,7 +63,7 @@ internal class ListRepositoryImpl<Q : QueryType, E>(
         }
     }
 
-    override fun clear(owner: String) {
+    override fun clear(owner: ListId) {
         executor.launchIO {
             localDataSource.clean(owner)
         }
@@ -85,7 +86,7 @@ internal class PagedListProviderImpl<Q : QueryType, I>(
 
     override fun getList(
         queryType: Q,
-        owner: String,
+        owner: ListId,
         onEndPageOption: (I) -> PageOption
     ): LiveData<PagedList<I>> {
         val timeline = pagedListDataSourceFactory.getDataSourceFactory(owner)

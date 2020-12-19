@@ -19,6 +19,7 @@ package com.freshdigitable.udonroad2.data.impl
 import com.freshdigitable.udonroad2.data.restclient.OAuthApiClient
 import com.freshdigitable.udonroad2.model.AccessTokenEntity
 import com.freshdigitable.udonroad2.model.RequestTokenItem
+import com.freshdigitable.udonroad2.model.user.UserEntity
 import com.freshdigitable.udonroad2.model.user.UserId
 import dagger.Module
 import dagger.Provides
@@ -28,10 +29,10 @@ class OAuthTokenRepository(
     private val apiClient: OAuthApiClient,
     private val prefs: SharedPreferenceDataSource
 ) {
-    fun login(userId: UserId = requireNotNull(getCurrentUserId())) {
+    suspend fun login(userId: UserId = requireNotNull(getCurrentUserId())): UserEntity {
         setCurrentUserId(userId)
         val oauthAccessToken = requireNotNull(getCurrentUserAccessToken())
-        apiClient.login(oauthAccessToken)
+        return apiClient.login(oauthAccessToken)
     }
 
     suspend fun getRequestTokenItem(): RequestTokenItem {

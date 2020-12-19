@@ -114,7 +114,7 @@ class CreateReplyTextUseCaseTest(private val param: Param) {
             isTargetRetweet,
             tweet(targetBodyTweetId, targetBodyTweetUserItem)
         )
-        oAuthTokenRepositoryRule.setupCurrentUserId(authenticatedUserId.value)
+        oAuthTokenRepositoryRule.setupCurrentUserId(authenticatedUserId.value, needLogin = false)
         tweetRepositoryRule.coSetupResponseWithVerify(
             target = { tweetRepositoryRule.mock.findTweetListItem(selectedTweetId) },
             res = tweet
@@ -123,7 +123,6 @@ class CreateReplyTextUseCaseTest(private val param: Param) {
             target = { replyRepositoryRule.mock.findEntitiesByTweetId(selectedTweetId) },
             res = replyEntities
         )
-        oAuthTokenRepositoryRule.mock.login(authenticatedUserId)
     }
 
     @Test

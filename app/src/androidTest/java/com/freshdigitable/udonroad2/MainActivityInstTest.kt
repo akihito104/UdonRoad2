@@ -21,6 +21,7 @@ import androidx.test.espresso.IdlingRegistry
 import androidx.test.espresso.idling.CountingIdlingResource
 import androidx.test.espresso.intent.rule.IntentsTestRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.freshdigitable.udonroad2.data.restclient.ext.toEntity
 import com.freshdigitable.udonroad2.main.MainActivity
 import com.freshdigitable.udonroad2.model.AccessTokenEntity
 import com.freshdigitable.udonroad2.model.user.UserId
@@ -33,6 +34,7 @@ import com.freshdigitable.udonroad2.test.mainList
 import com.freshdigitable.udonroad2.test.oauth
 import com.freshdigitable.udonroad2.test.onMainActivity
 import com.freshdigitable.udonroad2.user.TweetUserItemImpl
+import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -57,7 +59,6 @@ class MainActivityInstTest {
             val authedUserId = UserId(10000)
             val tweetingUser = TweetUserItemImpl(authedUserId, "user1", "user1", "")
             val user = createUser(tweetingUser.id.value, tweetingUser.name, tweetingUser.screenName)
-            twitterRobot.setupShowUser(user)
 
             val requestToken = createRequestToken(
                 authedUserId.value, "verified_token", "verified_secret_token"
@@ -71,6 +72,7 @@ class MainActivityInstTest {
                 AccessToken(requestToken.token, requestToken.tokenSecret)
             )
             twitterRobot.setupGetHomeTimeline(response = emptyList())
+            twitterRobot.setupVerifyCredential(user)
 
             intentsTestRule.launchActivity(null)
             checkActionBarTitle(R.string.title_oauth)
@@ -106,17 +108,20 @@ class MainActivityInstTest {
 
         @Before
         fun setup(): Unit = onMainActivity {
-            val sp = ApplicationProvider.getApplicationContext<TestApplicationBase>()
+            val component = ApplicationProvider.getApplicationContext<TestApplicationBase>()
                 .component
-                .sharedPreferencesDao
+            val sp = component.sharedPreferencesDao
             val userId = UserId(10000)
             sp.storeAccessToken(AccessTokenEntity.create(userId, "token", "tokensecret"))
             sp.setCurrentUserId(userId)
             val authedUser = createUser(userId.value, "user1", "User1")
-            twitterRobot.setupShowUser(authedUser)
+            component.userDao.apply {
+                runBlocking {
+                    addUsers(listOf(authedUser.toEntity()))
+                }
+            }
 
             val countingIdlingResource = CountingIdlingResource("load_timeline")
-            twitterRobot.setupSetOAuthAccessToken { any() }
             val user = createUser(2000, "user2000", "_user2000")
             twitterRobot.setupGetHomeTimeline(
                 response = (0 until 10).map {
