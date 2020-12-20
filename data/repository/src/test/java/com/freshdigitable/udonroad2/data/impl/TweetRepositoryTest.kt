@@ -58,40 +58,72 @@ class TweetRepositoryTest {
     }
 
     @Test
-    fun postUnretweet() = runBlocking {
+    fun postRetweet() = runBlocking {
         // setup
-        val target = createTweetEntity(10, retweeted = true)
-        val targetId = target.id
+        val tweetList = (0..10).map { createTweetEntity(it) }
         db.apply {
             val listId = listDao().addList(currentUser)
             TweetListDao(tweetDao()).apply {
-                putList(
-                    (0 until 10).map { createTweetEntity(it) } + target,
-                    ListQuery(QueryType.TweetQueryType.Timeline()),
-                    listId
-                )
+                putList(tweetList, ListQuery(QueryType.TweetQueryType.Timeline()), listId)
             }
         }
         restClient.apply {
+            val retweeted = tweetList[1]
+            val retweetedId = retweeted.id
             coSetupResponseWithVerify(
-                target = { mock.postUnretweet(targetId) },
-                res = createTweetEntity(10, retweeted = false)
+                target = { mock.postRetweet(retweetedId) },
+                res = createTweetEntity(11, isRetweeted = true, retweeted = retweeted)
             )
         }
 
         // exercise
-        val actual = sut.postUnretweet(targetId)
+        sut.postRetweet(TweetId(1))
 
         // verify
-        assertThat(sut).isNotNull()
-        assertThat(actual).isNotNull()
+        val retweeted = db.tweetDao().findTweetListItem(TweetId(1))
+        assertThat(retweeted?.body?.isRetweeted).isTrue()
     }
 
-    private fun createTweetEntity(idOffset: Int, retweeted: Boolean = false): TweetEntity {
-        return mockk<TweetEntity>(relaxed = true).also {
-            every { it.id } returns TweetId(1000 + idOffset.toLong())
-            every { it.isFavorited } returns false
-            every { it.isRetweeted } returns retweeted
+    @Test
+    fun postUnretweet() = runBlocking {
+        // setup
+        val tweetList = (0..10).map { createTweetEntity(it) }
+        db.apply {
+            val listId = listDao().addList(currentUser)
+            TweetListDao(tweetDao()).apply {
+                putList(tweetList, ListQuery(QueryType.TweetQueryType.Timeline()), listId)
+            }
         }
+        restClient.apply {
+            val retweeted = tweetList[1]
+            val retweetedId = retweeted.id
+            coSetupResponseWithVerify(
+                target = { mock.postRetweet(retweetedId) },
+                res = createTweetEntity(11, isRetweeted = true, retweeted = retweeted)
+            )
+            coSetupResponseWithVerify(
+                target = { mock.postUnretweet(TweetId(11)) },
+                res = createTweetEntity(retweeted.id.value.toInt())
+            )
+        }
+        sut.postRetweet(TweetId(1))
+
+        // exercise
+        sut.postUnretweet(TweetId(11))
+
+        // verify
+        val unretweeted = db.tweetDao().findTweetListItem(TweetId(1))
+        assertThat(unretweeted?.body?.isRetweeted).isFalse()
+    }
+
+    private fun createTweetEntity(
+        id: Int,
+        isRetweeted: Boolean = false,
+        retweeted: TweetEntity? = null,
+    ): TweetEntity = mockk<TweetEntity>(relaxed = true).also {
+        every { it.id } returns TweetId(id.toLong())
+        every { it.isFavorited } returns false
+        every { it.isRetweeted } returns isRetweeted
+        every { it.retweetedTweet } returns retweeted
     }
 }

@@ -52,8 +52,10 @@ class TweetRepository(
         val currentUserId = checkNotNull(prefs.getCurrentUserId())
         try {
             val retweet = restClient.postRetweet(id)
+
+            val retweetedTweetId = checkNotNull(retweet.retweetedTweet).id
+            dao.updateRetweeted(retweetedTweetId, retweet.id, currentUserId, true)
             dao.addTweet(retweet, currentUserId)
-            dao.updateRetweeted(id, retweet.id, currentUserId, true)
             return retweet
         } catch (ex: AppTwitterException) {
             if (ex.errorType == AppTwitterException.ErrorType.ALREADY_RETWEETED) {
@@ -66,9 +68,11 @@ class TweetRepository(
     // todo: already unretweeted error
     suspend fun postUnretweet(id: TweetId): TweetEntity {
         val currentUserId = checkNotNull(prefs.getCurrentUserId())
-        val unretweeted = restClient.postUnretweet(id)
+        val retweetId = dao.findRetweetIdByTweetId(id, currentUserId)
+        val unretweeted = restClient.postUnretweet(retweetId ?: id)
+
+        dao.updateRetweeted(unretweeted.id, null, currentUserId, false)
         dao.addTweet(unretweeted, currentUserId)
-        dao.updateRetweeted(id, null, currentUserId, false)
         return unretweeted
     }
 

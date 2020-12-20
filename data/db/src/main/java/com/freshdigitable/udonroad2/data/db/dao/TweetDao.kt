@@ -123,6 +123,10 @@ abstract class TweetDao(
         }
     }
 
+    suspend fun findRetweetIdByTweetId(tweetId: TweetId, currentUserId: UserId): TweetId? {
+        return db.reactionsDao.findRetweetId(tweetId, currentUserId)
+    }
+
     @Transaction
     internal open suspend fun addTweetsToList(
         tweet: List<TweetEntity>,
@@ -228,6 +232,9 @@ internal interface ReactionsDao {
 
     @Query("DELETE FROM retweeted WHERE tweet_id = :tweetId AND source_user_id = :sourceUserId")
     suspend fun deleteRetweeted(tweetId: TweetId, sourceUserId: UserId)
+
+    @Query("SELECT retweet_id FROM retweeted WHERE source_user_id = :currentUserId AND (tweet_id = :tweetId OR retweet_id = :tweetId)")
+    suspend fun findRetweetId(tweetId: TweetId, currentUserId: UserId): TweetId?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun addFav(favorited: Favorited)
