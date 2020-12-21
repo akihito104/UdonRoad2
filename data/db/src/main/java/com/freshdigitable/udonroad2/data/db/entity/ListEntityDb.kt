@@ -19,6 +19,7 @@ package com.freshdigitable.udonroad2.data.db.entity
 import androidx.room.ColumnInfo
 import androidx.room.Dao
 import androidx.room.Entity
+import androidx.room.Ignore
 import androidx.room.Insert
 import androidx.room.PrimaryKey
 import androidx.room.Query
@@ -27,24 +28,17 @@ import com.freshdigitable.udonroad2.data.db.AppTypeConverter
 import com.freshdigitable.udonroad2.model.ListId
 import com.freshdigitable.udonroad2.model.user.UserId
 
-@Entity(
-    tableName = "list",
-    // FIXME: redesign launch sequence
-//    foreignKeys = [
-//        ForeignKey(
-//            entity = UserEntityDb::class,
-//            parentColumns = ["id"],
-//            childColumns = ["owner_id"]
-//        )
-//    ]
-)
+@Entity(tableName = "list")
 data class ListEntityDb(
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "id")
-    val id: Int? = null,
+    val _id: Int = 0,
     @ColumnInfo(name = "owner_id", index = true)
     val ownerId: UserId,
-)
+) {
+    @Ignore
+    val id: ListId = ListId(_id)
+}
 
 class ListIdConverter : AppTypeConverter<ListId, Int> {
     @TypeConverter
@@ -62,9 +56,12 @@ abstract class ListDao {
     @Query("SELECT * FROM list WHERE rowid = :id")
     internal abstract suspend fun getListByRowId(id: Long): ListEntityDb
 
+    @Query("SELECT * FROM list WHERE id = :id")
+    internal abstract suspend fun getListById(id: ListId): ListEntityDb
+
     suspend fun addList(ownerId: UserId): ListId {
         val rowId = addList(ListEntityDb(ownerId = ownerId))
-        return ListId(getListByRowId(rowId).id!!)
+        return getListByRowId(rowId).id
     }
 
     @Query("DELETE FROM list WHERE id = :id")

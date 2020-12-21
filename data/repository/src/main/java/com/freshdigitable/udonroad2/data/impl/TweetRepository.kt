@@ -13,24 +13,27 @@ import kotlinx.coroutines.flow.Flow
 
 class TweetRepository(
     private val dao: TweetDao,
+    private val prefs: SharedPreferenceDataSource,
     private val restClient: TweetApiClient,
 ) {
     fun getTweetItemSource(id: TweetId): Flow<TweetListItem?> = dao.getTweetListItemSource(id)
 
     suspend fun findTweetListItem(id: TweetId): TweetListItem? {
+        val currentUserId = checkNotNull(prefs.getCurrentUserId())
         val tweet = restClient.fetchTweet(id)
-        dao.addTweet(tweet)
+        dao.addTweet(tweet, currentUserId)
         return dao.findTweetListItem(id)
     }
 
     suspend fun postLike(id: TweetId): TweetEntity {
+        val currentUserId = checkNotNull(prefs.getCurrentUserId())
         try {
             val liked = restClient.postLike(id)
-            dao.addTweet(liked)
+            dao.addTweet(liked, currentUserId)
             return liked
         } catch (ex: AppTwitterException) {
             if (ex.errorType == AppTwitterException.ErrorType.ALREADY_FAVORITED) {
-                dao.updateFav(id, true)
+                dao.updateFav(id, currentUserId, true)
             }
             throw ex
         }
@@ -38,19 +41,23 @@ class TweetRepository(
 
     // todo: already unliked error
     suspend fun postUnlike(id: TweetId): TweetEntity {
+        val currentUserId = checkNotNull(prefs.getCurrentUserId())
         val unliked = restClient.postUnlike(id)
-        dao.addTweet(unliked)
+        dao.addTweet(unliked, currentUserId)
+        dao.updateFav(id, currentUserId, false)
         return unliked
     }
 
     suspend fun postRetweet(id: TweetId): TweetEntity {
+        val currentUserId = checkNotNull(prefs.getCurrentUserId())
         try {
-            val retweeted = restClient.postRetweet(id)
-            dao.addTweet(retweeted)
-            return retweeted
+            val retweet = restClient.postRetweet(id)
+            dao.addTweet(retweet, currentUserId)
+            dao.updateRetweeted(id, retweet.id, currentUserId, true)
+            return retweet
         } catch (ex: AppTwitterException) {
             if (ex.errorType == AppTwitterException.ErrorType.ALREADY_RETWEETED) {
-                dao.updateRetweeted(id, true)
+                dao.updateRetweeted(id, null, currentUserId, true)
             }
             throw ex
         }
@@ -58,8 +65,10 @@ class TweetRepository(
 
     // todo: already unretweeted error
     suspend fun postUnretweet(id: TweetId): TweetEntity {
+        val currentUserId = checkNotNull(prefs.getCurrentUserId())
         val unretweeted = restClient.postUnretweet(id)
-        dao.addTweet(unretweeted)
+        dao.addTweet(unretweeted, currentUserId)
+        dao.updateRetweeted(id, null, currentUserId, false)
         return unretweeted
     }
 
@@ -80,8 +89,9 @@ object TweetRepositoryModule {
     @Provides
     fun provideTweetRepository(
         dao: TweetDao,
+        prefs: SharedPreferenceDataSource,
         apiClient: TweetApiClient,
     ): TweetRepository {
-        return TweetRepository(dao, apiClient)
+        return TweetRepository(dao, prefs, apiClient)
     }
 }

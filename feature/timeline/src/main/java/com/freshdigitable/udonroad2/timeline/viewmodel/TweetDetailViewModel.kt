@@ -8,6 +8,8 @@ import androidx.lifecycle.viewModelScope
 import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
 import com.freshdigitable.udonroad2.model.app.AppExecutor
+import com.freshdigitable.udonroad2.model.app.AppTwitterException
+import com.freshdigitable.udonroad2.model.app.mainContext
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
@@ -26,6 +28,8 @@ import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.TweetListItemClickListener
 import com.freshdigitable.udonroad2.timeline.UserIconClickedAction
 import io.reactivex.disposables.CompositeDisposable
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -132,6 +136,7 @@ class TweetDetailViewStates @Inject constructor(
     activityEventDelegate: ActivityEventDelegate,
     executor: AppExecutor
 ) {
+    private val coroutineScope = CoroutineScope(context = executor.mainContext)
     internal val tweetItem: StateFlow<TweetListItem?> = repository.getTweetItemSource(tweetId)
         .transformLatest {
             when {
@@ -144,13 +149,19 @@ class TweetDetailViewStates @Inject constructor(
         }
         .catch {
             when (it) {
+                is AppTwitterException -> {
+                    if (it.errorType?.statusCode == 404 && it.errorType?.errorCode == 144) {
+                        // TODO tweet resource is not found
+                        coroutineScope.cancel("tweet resource is not found...")
+                    }
+                }
                 is IOException -> {
                     // TODO
                 }
                 else -> throw it
             }
         }
-        .stateIn(scope = executor, started = SharingStarted.Eagerly, null)
+        .stateIn(scope = coroutineScope, started = SharingStarted.Eagerly, null)
     internal val menuItemState: Flow<MenuItemState> = tweetItem.scan(MenuItemState()) { _, tweet ->
         when (tweet) {
             null -> MenuItemState()
@@ -193,5 +204,6 @@ class TweetDetailViewStates @Inject constructor(
 
     fun clear() {
         compositeDisposable.clear()
+        coroutineScope.cancel()
     }
 }

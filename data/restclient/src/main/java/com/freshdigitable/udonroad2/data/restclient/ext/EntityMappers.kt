@@ -62,7 +62,8 @@ internal fun Status.toEntity(): TweetEntity {
         source = source,
         createdAt = Instant.ofEpochMilli(createdAt.time),
         media = mediaEntities.map { it.toItem() },
-        replyEntities = userMentionEntities.map { UserReplyEntity.create(it) }
+        replyEntities = userMentionEntities.map { UserReplyEntity.create(it) },
+        retweetIdByCurrentUser = if (currentUserRetweetId != -1L) TweetId(currentUserRetweetId) else null
     )
 }
 

@@ -59,7 +59,9 @@ internal data class MediaUrlEntity(
 
     @ColumnInfo(name = "order")
     val order: Int,
-)
+) {
+    companion object
+}
 
 @Entity(tableName = "media")
 internal data class MediaDbEntity(
@@ -134,7 +136,9 @@ internal data class VideoValiantEntity(
 
     @ColumnInfo(name = "content_type")
     override val contentType: String
-) : MediaEntity.VideoValiant
+) : MediaEntity.VideoValiant {
+    companion object
+}
 
 internal data class MediaEntityImpl(
     @Embedded

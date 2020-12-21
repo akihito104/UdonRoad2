@@ -28,6 +28,7 @@ import com.freshdigitable.udonroad2.data.db.converter.TweetIdConverter
 import com.freshdigitable.udonroad2.data.db.converter.UserIdConverter
 import com.freshdigitable.udonroad2.data.db.dao.CustomTimelineDao
 import com.freshdigitable.udonroad2.data.db.dao.MediaDao
+import com.freshdigitable.udonroad2.data.db.dao.ReactionsDao
 import com.freshdigitable.udonroad2.data.db.dao.RelationshipDao
 import com.freshdigitable.udonroad2.data.db.dao.TweetDao
 import com.freshdigitable.udonroad2.data.db.dao.UrlDao
@@ -96,6 +97,7 @@ import com.freshdigitable.udonroad2.data.db.entity.VideoValiantEntity
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun tweetDao(): TweetDao
+    internal abstract val reactionsDao: ReactionsDao
 
     abstract fun userDao(): UserDao
 

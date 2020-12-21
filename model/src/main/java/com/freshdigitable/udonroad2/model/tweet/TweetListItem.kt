@@ -53,6 +53,9 @@ interface TweetElement {
 
     val favoriteCount: Int
 
+    val retweetIdByCurrentUser: TweetId?
+        get() = null
+
     val user: TweetUserItem
 
     val source: String
@@ -60,6 +63,7 @@ interface TweetElement {
     val createdAt: Instant
 
     val media: List<TweetMediaItem>
+        get() = emptyList()
 }
 
 data class TweetId(val value: Long) : Serializable

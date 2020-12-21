@@ -24,10 +24,10 @@ class TweetListDao(
 
     override suspend fun putList(
         entities: List<TweetEntity>,
-        query: ListQuery<QueryType.TweetQueryType>?,
-        owner: ListId?
+        query: ListQuery<QueryType.TweetQueryType>,
+        owner: ListId
     ) {
-        dao.addTweets(entities, owner)
+        dao.addTweetsToList(entities, owner)
     }
 
     override suspend fun clean(owner: ListId) {
@@ -45,8 +45,8 @@ class UserListDao(
 
     override suspend fun putList(
         entities: List<UserEntity>,
-        query: ListQuery<QueryType.UserQueryType>?,
-        owner: ListId?
+        query: ListQuery<QueryType.UserQueryType>,
+        owner: ListId
     ) {
         dao.addUsers(entities.map { it.toEntity() }, owner)
     }
@@ -66,8 +66,8 @@ class CustomTimelineListDao(
 
     override suspend fun putList(
         entities: List<CustomTimelineEntity>,
-        query: ListQuery<QueryType.UserListMembership>?,
-        owner: ListId?
+        query: ListQuery<QueryType.UserListMembership>,
+        owner: ListId
     ) {
         dao.addCustomTimeline(entities, owner)
     }
