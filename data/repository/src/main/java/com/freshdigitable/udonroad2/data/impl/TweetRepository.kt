@@ -71,7 +71,8 @@ class TweetRepository(
         val retweetId = dao.findRetweetIdByTweetId(id, currentUserId)
         val unretweeted = restClient.postUnretweet(retweetId ?: id)
 
-        dao.updateRetweeted(unretweeted.id, null, currentUserId, false)
+        val tweetId = unretweeted.retweetedTweet?.id ?: unretweeted.id
+        dao.updateRetweeted(tweetId, null, currentUserId, false)
         dao.addTweet(unretweeted, currentUserId)
         return unretweeted
     }
