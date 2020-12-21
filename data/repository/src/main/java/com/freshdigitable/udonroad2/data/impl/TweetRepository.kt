@@ -54,8 +54,8 @@ class TweetRepository(
             val retweet = restClient.postRetweet(id)
 
             val retweetedTweetId = checkNotNull(retweet.retweetedTweet).id
+            dao.addTweet(retweet, currentUserId) // TODO: omit update reactions
             dao.updateRetweeted(retweetedTweetId, retweet.id, currentUserId, true)
-            dao.addTweet(retweet, currentUserId)
             return retweet
         } catch (ex: AppTwitterException) {
             if (ex.errorType == AppTwitterException.ErrorType.ALREADY_RETWEETED) {
@@ -72,8 +72,8 @@ class TweetRepository(
         val unretweeted = restClient.postUnretweet(retweetId ?: id)
 
         val tweetId = unretweeted.retweetedTweet?.id ?: unretweeted.id
+        dao.addTweet(unretweeted, currentUserId) // TODO: omit update reactions
         dao.updateRetweeted(tweetId, null, currentUserId, false)
-        dao.addTweet(unretweeted, currentUserId)
         return unretweeted
     }
 
