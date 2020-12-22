@@ -161,6 +161,66 @@ class TweetRepositoryTest {
             assertThat(tweetListItem(retweeted.id)?.body?.isRetweeted).isFalse()
         }
     }
+
+    @RunWith(AndroidJUnit4::class)
+    class WhenRetweetedByCurrentUserListIsLoaded {
+        companion object {
+            private val tweetList = (0..10).map { createTweetEntity(it, true) }
+            private val targetTweet = tweetList[1]
+        }
+
+        @get:Rule
+        val rule = TweetRepositoryTestRule()
+
+        @Before
+        fun setup(): Unit = rule.runs {
+            setupTimeline(tweetList = tweetList)
+        }
+
+        @Test
+        fun postUnretweet_passOriginalTweetId(): Unit = rule.runs {
+            // setup
+            setupPostUnretweet(targetTweet.id, targetTweet)
+
+            // exercise
+            sut.postUnretweet(targetTweet.id)
+
+            // verify
+            assertThat(tweetListItem(targetTweet.id)?.body?.isRetweeted).isFalse()
+        }
+    }
+
+    @RunWith(AndroidJUnit4::class)
+    class WhenRetweetListRetweetedByCurrentUserIsLoaded {
+        companion object {
+            private val tweetList = (0..10).map {
+                createTweetEntity(
+                    100 + it, retweeted = createTweetEntity(it, isRetweeted = true)
+                )
+            }
+            private val targetTweet = tweetList[1]
+        }
+
+        @get:Rule
+        val rule = TweetRepositoryTestRule()
+
+        @Before
+        fun setup(): Unit = rule.runs {
+            setupTimeline(tweetList = tweetList)
+        }
+
+        @Test
+        fun postUnretweet_passOriginalTweetId(): Unit = rule.runs {
+            // setup
+            setupPostUnretweet(targetTweet.id, targetTweet)
+
+            // exercise
+            sut.postUnretweet(targetTweet.id)
+
+            // verify
+            assertThat(tweetListItem(targetTweet.id)?.body?.isRetweeted).isFalse()
+        }
+    }
 }
 
 class TweetRepositoryTestRule : TestWatcher() {

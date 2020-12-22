@@ -69,6 +69,7 @@ class TweetRepository(
     suspend fun postUnretweet(id: TweetId): TweetEntity {
         val currentUserId = checkNotNull(prefs.getCurrentUserId())
         val retweetId = dao.findRetweetIdByTweetId(id, currentUserId)
+        println("lkacoew: $id, r>$retweetId")
         val unretweeted = restClient.postUnretweet(retweetId ?: id)
 
         val tweetId = unretweeted.retweetedTweet?.id ?: unretweeted.id
