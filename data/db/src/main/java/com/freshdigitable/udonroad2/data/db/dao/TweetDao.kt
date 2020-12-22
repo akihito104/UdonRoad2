@@ -123,6 +123,17 @@ abstract class TweetDao(
         }
     }
 
+
+    @Query(
+        """SELECT r.retweet_id
+            FROM tweet AS t
+             INNER JOIN retweeted AS r ON t.body_item_id = r.tweet_id
+            WHERE r.source_user_id = :currentUserId 
+             AND (t.original_id = :tweetId OR t.body_item_id = :tweetId OR r.retweet_id = :tweetId)
+            LIMIT 1"""
+    )
+    abstract suspend fun findRetweetIdByTweetId(tweetId: TweetId, currentUserId: UserId): TweetId?
+
     @Transaction
     internal open suspend fun addTweetsToList(
         tweet: List<TweetEntity>,
