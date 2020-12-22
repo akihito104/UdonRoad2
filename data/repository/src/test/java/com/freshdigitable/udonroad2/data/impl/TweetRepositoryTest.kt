@@ -28,6 +28,7 @@ import com.freshdigitable.udonroad2.model.ListQuery
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
 import com.freshdigitable.udonroad2.model.tweet.TweetId
+import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import com.freshdigitable.udonroad2.model.user.UserId
 import com.freshdigitable.udonroad2.test_common.MockVerified
 import com.google.common.truth.Truth.assertThat
@@ -61,12 +62,7 @@ class TweetRepositoryTest {
 
         @Before
         fun setup(): Unit = rule.runs {
-            db.apply {
-                val listId = listDao().addList(currentUser)
-                TweetListDao(tweetDao()).apply {
-                    putList(tweetList, ListQuery(QueryType.TweetQueryType.Timeline()), listId)
-                }
-            }
+            setupTimeline(tweetList = tweetList)
             setupPostRetweet(retweeted.id, retweetResponse)
         }
 
@@ -76,8 +72,7 @@ class TweetRepositoryTest {
             sut.postRetweet(retweeted.id)
 
             // verify
-            val actual = db.tweetDao().findTweetListItem(retweeted.id)
-            assertThat(actual?.body?.isRetweeted).isTrue()
+            assertThat(tweetListItem(retweeted.id)?.body?.isRetweeted).isTrue()
         }
 
         @Test
@@ -90,8 +85,7 @@ class TweetRepositoryTest {
             sut.postUnretweet(res.id)
 
             // verify
-            val actual = db.tweetDao().findTweetListItem(retweeted.id)
-            assertThat(actual?.body?.isRetweeted).isFalse()
+            assertThat(tweetListItem(retweeted.id)?.body?.isRetweeted).isFalse()
         }
 
         @Test
@@ -104,8 +98,7 @@ class TweetRepositoryTest {
             sut.postUnretweet(retweeted.id)
 
             // verify
-            val actual = db.tweetDao().findTweetListItem(retweeted.id)
-            assertThat(actual?.body?.isRetweeted).isFalse()
+            assertThat(tweetListItem(retweeted.id)?.body?.isRetweeted).isFalse()
         }
     }
 
@@ -117,12 +110,11 @@ class TweetRepositoryTest {
             }
             private val retweeted = tweetList[1]
             private val retweetedBody = checkNotNull(retweeted.retweetedTweet)
-            val retweetResponse =
-                createTweetEntity(
-                    111, isRetweeted = true, retweeted = createTweetEntity(
-                        retweetedBody.id, true
-                    )
-                )
+            private val retweetResponse = createTweetEntity(
+                111,
+                isRetweeted = true,
+                retweeted = createTweetEntity(retweetedBody.id, true)
+            )
         }
 
         @get:Rule
@@ -130,12 +122,7 @@ class TweetRepositoryTest {
 
         @Before
         fun setup(): Unit = rule.runs {
-            db.apply {
-                val listId = listDao().addList(currentUser)
-                TweetListDao(tweetDao()).apply {
-                    putList(tweetList, ListQuery(QueryType.TweetQueryType.Timeline()), listId)
-                }
-            }
+            setupTimeline(tweetList = tweetList)
             setupPostRetweet(retweeted.id, retweetResponse)
         }
 
@@ -145,8 +132,7 @@ class TweetRepositoryTest {
             sut.postRetweet(retweeted.id)
 
             // verify
-            val actual = db.tweetDao().findTweetListItem(retweeted.id)
-            assertThat(actual?.body?.isRetweeted).isTrue()
+            assertThat(tweetListItem(retweeted.id)?.body?.isRetweeted).isTrue()
         }
 
         @Test
@@ -159,8 +145,7 @@ class TweetRepositoryTest {
             sut.postUnretweet(res.id)
 
             // verify
-            val actual = db.tweetDao().findTweetListItem(retweeted.id)
-            assertThat(actual?.body?.isRetweeted).isFalse()
+            assertThat(tweetListItem(retweeted.id)?.body?.isRetweeted).isFalse()
         }
 
         @Test
@@ -173,8 +158,7 @@ class TweetRepositoryTest {
             sut.postUnretweet(retweeted.id)
 
             // verify
-            val actual = db.tweetDao().findTweetListItem(retweeted.id)
-            assertThat(actual?.body?.isRetweeted).isFalse()
+            assertThat(tweetListItem(retweeted.id)?.body?.isRetweeted).isFalse()
         }
     }
 }
@@ -184,12 +168,12 @@ class TweetRepositoryTestRule : TestWatcher() {
     private val prefs = SharedPreferenceDataSource(
         app.getSharedPreferences("test_pref", Context.MODE_PRIVATE)
     )
-    internal val db = Room.inMemoryDatabaseBuilder(app, AppDatabase::class.java)
+    private val db = Room.inMemoryDatabaseBuilder(app, AppDatabase::class.java)
         .allowMainThreadQueries()
         .build()
     private val restClient = MockVerified.create<TweetApiClient>()
 
-    internal val currentUser = UserId(100)
+    private val currentUser = UserId(100)
 
     internal val sut: TweetRepository by lazy {
         TweetRepository(db.tweetDao(), prefs, restClient.mock)
@@ -209,16 +193,25 @@ class TweetRepositoryTestRule : TestWatcher() {
         block()
     }
 
-    internal fun setupPostRetweet(targetId: TweetId, res: TweetEntity) {
-        restClient.apply {
-            coSetupResponseWithVerify(target = { mock.postRetweet(targetId) }, res = res)
-        }
+    internal suspend fun setupTimeline(
+        userId: UserId = currentUser,
+        tweetList: List<TweetEntity>
+    ) = db.apply {
+        val listId = listDao().addList(userId)
+        val tweetListDao = TweetListDao(tweetDao())
+        tweetListDao.putList(tweetList, ListQuery(QueryType.TweetQueryType.Timeline()), listId)
     }
 
-    internal fun setupPostUnretweet(targetId: TweetId, res: TweetEntity) {
-        restClient.apply {
-            coSetupResponseWithVerify(target = { mock.postUnretweet(targetId) }, res = res)
-        }
+    internal fun setupPostRetweet(targetId: TweetId, res: TweetEntity) = restClient.apply {
+        coSetupResponseWithVerify(target = { mock.postRetweet(targetId) }, res = res)
+    }
+
+    internal fun setupPostUnretweet(targetId: TweetId, res: TweetEntity) = restClient.apply {
+        coSetupResponseWithVerify(target = { mock.postUnretweet(targetId) }, res = res)
+    }
+
+    internal suspend fun tweetListItem(tweetId: TweetId): TweetListItem? {
+        return db.tweetDao().findTweetListItem(tweetId)
     }
 }
 
