@@ -44,7 +44,7 @@ object Versions {
     const val THREETENBP = "1.1.0"
     const val TIMBER = "4.7.1"
 
-    const val LEAKCANARY = "2.4"
+    const val LEAKCANARY = "2.5"
 
     // test
     const val JUNIT = "4.13.1"
