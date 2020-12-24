@@ -29,7 +29,6 @@ import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.google.common.truth.Truth.assertThat
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.verify
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -45,7 +44,7 @@ import org.junit.runners.model.Statement
 class MainViewModelTest {
     class WhenInit {
         @get:Rule
-        val rule = MainViewModelTestRule()
+        internal val rule = MainViewModelTestRule()
 
         @Test
         fun initialEvent_withNull_then_dispatchNavigateIsCalledWithOauth(): Unit = with(rule) {
@@ -56,12 +55,8 @@ class MainViewModelTest {
             sut.initialEvent(null)
 
             // verify
-            verify {
-                stateModelRule.navDelegate.dispatchNavHostNavigate(
-                    match {
-                        it is TimelineEvent.Navigate.Timeline && it.owner.query == QueryType.Oauth
-                    }
-                )
+            stateModelRule.assertThatNavigationEventOfTimeline(0) {
+                assertThat(it.owner.query).isEqualTo(QueryType.Oauth)
             }
         }
 
@@ -139,7 +134,7 @@ class MainViewModelTest {
 
     class WhenItemSelected {
         @get:Rule
-        val rule = MainViewModelTestRule()
+        internal val rule = MainViewModelTestRule()
 
         @Before
         fun setup(): Unit = with(rule) {
@@ -209,7 +204,7 @@ class MainViewModelTest {
     }
 }
 
-class MainViewModelTestRule(
+internal class MainViewModelTestRule(
     val stateModelRule: MainActivityStateModelTestRule = MainActivityStateModelTestRule()
 ) : TestWatcher() {
     val sut: MainViewModel = MainViewModel(stateModelRule.dispatcher, stateModelRule.sut)
