@@ -8,19 +8,22 @@ import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.navArgs
 import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.freshdigitable.udonroad2.model.ListOwner
-import com.freshdigitable.udonroad2.timeline.ListItemLoadable
+import com.freshdigitable.udonroad2.timeline.ListItemLoadableViewModel
+import com.freshdigitable.udonroad2.timeline.TimelineNavigationDelegate
 import com.freshdigitable.udonroad2.timeline.databinding.FragmentTimelineBinding
 import com.freshdigitable.udonroad2.timeline.di.ListItemAdapterComponent
 import com.freshdigitable.udonroad2.timeline.di.ListItemViewModelComponent
 import com.freshdigitable.udonroad2.timeline.di.viewModel
 import dagger.android.support.AndroidSupportInjection
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class ListItemFragment : Fragment() {
@@ -29,6 +32,9 @@ class ListItemFragment : Fragment() {
 
     @Inject
     lateinit var listItemAdapterFactory: ListItemAdapterComponent.Factory
+
+    @Inject
+    lateinit var eventDelegate: TimelineNavigationDelegate
 
     override fun onAttach(context: Context) {
         AndroidSupportInjection.inject(this)
@@ -46,19 +52,26 @@ class ListItemFragment : Fragment() {
         val binding = DataBindingUtil.findBinding<FragmentTimelineBinding>(view) ?: return
         binding.lifecycleOwner = viewLifecycleOwner
 
-        val viewModel: ViewModel = listItemViewModelBuilder
+        val viewModel: ListItemLoadableViewModel<*, Any> = listItemViewModelBuilder
             .owner(listOwner)
             .firstArgs(savedInstanceState)
             .viewModelStoreOwner(activity as AppCompatActivity)
             .build()
             .viewModel("_$ownerId")
-        binding.viewModel = viewModel as ListItemLoadable<*, Any>
+        binding.viewModel = viewModel
 
         val adapter = listItemAdapterFactory.create(viewModel, viewLifecycleOwner)
             .adapter as PagedListAdapter<Any, *>
         binding.mainList.setup(adapter)
         viewModel.timeline.observe(viewLifecycleOwner) {
             adapter.submitList(it)
+        }
+
+        lifecycleScope.launch {
+            viewModel.navigationEvent.collect(eventDelegate::dispatchNavHostNavigate)
+        }
+        lifecycleScope.launch {
+            viewModel.feedbackMessage.collect(eventDelegate::dispatchFeedbackMessage)
         }
     }
 

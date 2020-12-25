@@ -23,6 +23,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.paging.PagedListAdapter
 import com.freshdigitable.udonroad2.model.ListOwner
+import com.freshdigitable.udonroad2.timeline.ListItemLoadableViewModel
 
 interface ListItemViewModelComponent {
 
@@ -37,8 +38,8 @@ interface ListItemViewModelComponent {
     val viewModelProvider: ViewModelProvider
 }
 
-fun ListItemViewModelComponent.viewModel(key: String): ViewModel {
-    return viewModelProvider.get(key, viewModelClass)
+fun ListItemViewModelComponent.viewModel(key: String): ListItemLoadableViewModel<*, Any> {
+    return viewModelProvider.get(key, viewModelClass) as ListItemLoadableViewModel<*, Any>
 }
 
 interface ListItemAdapterComponent {

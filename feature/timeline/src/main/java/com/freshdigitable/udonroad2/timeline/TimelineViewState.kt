@@ -31,11 +31,10 @@ import com.freshdigitable.udonroad2.model.app.navigation.AppViewState
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.StateHolder
-import com.freshdigitable.udonroad2.model.app.navigation.subscribeToUpdate
 import com.freshdigitable.udonroad2.model.app.navigation.suspendMap
 import com.freshdigitable.udonroad2.model.app.navigation.toViewState
 import com.freshdigitable.udonroad2.shortcut.ShortcutViewStates
-import io.reactivex.disposables.CompositeDisposable
+import javax.inject.Inject
 
 class TimelineViewState(
     owner: ListOwner<*>,
@@ -43,7 +42,6 @@ class TimelineViewState(
     selectedItemRepository: SelectedItemRepository,
     tweetRepository: TweetRepository,
     listOwnerGenerator: ListOwnerGenerator,
-    private val navDelegate: TimelineNavigationDelegate,
     executor: AppExecutor,
 ) : ShortcutViewStates by ShortcutViewStates.create(actions, tweetRepository, executor) {
     private val _selectedItemId: AppViewState<StateHolder<SelectedItemId>> = AppAction.merge(
@@ -76,7 +74,7 @@ class TimelineViewState(
 
     val selectedItemId: AppViewState<SelectedItemId?> = _selectedItemId.map { it.value }
 
-    private val updateNavHost: AppAction<out TimelineEvent.Navigate> = AppAction.merge(
+    internal val updateNavHost: AppAction<out TimelineEvent.Navigate> = AppAction.merge(
         actions.showTimeline.suspendMap(executor.mainContext) {
             listOwnerGenerator.getTimelineEvent(
                 QueryType.TweetQueryType.Timeline(),
@@ -88,18 +86,8 @@ class TimelineViewState(
         actions.launchMediaViewer.filter { it.selectedItemId?.owner == owner }
             .map { TimelineEvent.Navigate.MediaViewer(it) }
     )
-
-    private val disposables = CompositeDisposable(
-        updateNavHost.subscribeToUpdate(navDelegate) { dispatchNavHostNavigate(it) },
-        updateTweet.subscribeToUpdate(navDelegate) { dispatchFeedbackMessage(it) },
-    )
-
-    fun clear() {
-        disposables.clear()
-        navDelegate.clear()
-    }
 }
 
-class TimelineNavigationDelegate(
+class TimelineNavigationDelegate @Inject constructor(
     activityEventDelegate: ActivityEventDelegate,
 ) : NavigationDelegate, ActivityEventDelegate by activityEventDelegate

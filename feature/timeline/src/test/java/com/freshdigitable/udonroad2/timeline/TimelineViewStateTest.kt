@@ -25,8 +25,8 @@ import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.AppTwitterException
-import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
+import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
 import com.freshdigitable.udonroad2.model.app.navigation.postEvents
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.shortcut.SelectedItemShortcut
@@ -35,11 +35,7 @@ import com.freshdigitable.udonroad2.test_common.jvm.CoroutineTestRule
 import com.freshdigitable.udonroad2.test_common.jvm.TweetRepositoryRule
 import com.freshdigitable.udonroad2.timeline.TimelineEvent.TweetItemSelection
 import com.google.common.truth.Truth.assertThat
-import io.mockk.every
-import io.mockk.just
-import io.mockk.mockk
-import io.mockk.runs
-import io.mockk.verify
+import io.reactivex.observers.TestObserver
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Rule
 import org.junit.Test
@@ -58,7 +54,6 @@ class TimelineViewStateTest {
     fun selectedItemId_dispatchMediaItemClickedEvent_then_selectedItemIdHasValue(): Unit =
         with(rule) {
             // setup
-            every { activityEventDelegate.dispatchNavHostNavigate(any()) } just runs
 
             // exercise
             dispatchEvents(
@@ -70,11 +65,7 @@ class TimelineViewStateTest {
 
             // verify
             assertThat(sut.selectedItemId.value?.originalId).isEqualTo(TweetId(1000L))
-            verify {
-                activityEventDelegate.dispatchNavHostNavigate(
-                    match { it is TimelineEvent.Navigate.MediaViewer }
-                )
-            }
+            navEvents.assertValueAt(0) { it is TimelineEvent.Navigate.MediaViewer }
         }
 
     @Test
@@ -103,7 +94,6 @@ class TimelineViewStateTest {
     @Test
     fun updateTweet_dispatchLikeIsSuccess_then_likeDispatched(): Unit = with(rule) {
         // setup
-        every { activityEventDelegate.dispatchFeedbackMessage(any()) } just runs
         tweetRepositoryMock.setupPostLikeForSuccess(TweetId(200))
         dispatchEvents(
             TweetItemSelection.Selected(SelectedItemId(owner, TweetId(200)))
@@ -116,17 +106,12 @@ class TimelineViewStateTest {
 
         // verify
         assertThat(sut.selectedItemId.value?.originalId).isEqualTo(TweetId(200L))
-        verify {
-            activityEventDelegate.dispatchFeedbackMessage(
-                match { it.messageRes == R.string.msg_fav_create_success }
-            )
-        }
+        messageEvents.assertValueAt(0) { it.messageRes == R.string.msg_fav_create_success }
     }
 
     @Test
     fun updateTweet_dispatchLikeIsFailure_then_likeDispatchedWithError(): Unit = with(rule) {
         // setup
-        every { activityEventDelegate.dispatchFeedbackMessage(any()) } just runs
         tweetRepositoryMock.setupPostLikeForFailure(
             TweetId(200), AppTwitterException.ErrorType.ALREADY_FAVORITED
         )
@@ -141,17 +126,12 @@ class TimelineViewStateTest {
 
         // verify
         assertThat(sut.selectedItemId.value?.originalId).isEqualTo(TweetId(200L))
-        verify {
-            activityEventDelegate.dispatchFeedbackMessage(
-                match { it.messageRes == R.string.msg_already_fav }
-            )
-        }
+        messageEvents.assertValueAt(0) { it.messageRes == R.string.msg_already_fav }
     }
 
     @Test
     fun updateTweet_dispatchRetweetEvent_then_retweetDispatched(): Unit = with(rule) {
         // setup
-        every { activityEventDelegate.dispatchFeedbackMessage(any()) } just runs
         tweetRepositoryMock.setupPostRetweetForSuccess(TweetId(200))
         dispatchEvents(
             TweetItemSelection.Selected(SelectedItemId(owner, TweetId(200)))
@@ -164,18 +144,13 @@ class TimelineViewStateTest {
 
         // verify
         assertThat(sut.selectedItemId.value?.originalId).isEqualTo(TweetId(200L))
-        verify {
-            activityEventDelegate.dispatchFeedbackMessage(
-                match { it.messageRes == R.string.msg_rt_create_success }
-            )
-        }
+        messageEvents.assertValueAt(0) { it.messageRes == R.string.msg_rt_create_success }
     }
 
     @Test
     fun updateTweet_dispatchRetweetIsFailure_then_retweetResultIsDispatchedWithException(): Unit =
         with(rule) {
             // setup
-            every { activityEventDelegate.dispatchFeedbackMessage(any()) } just runs
             tweetRepositoryMock.setupPostRetweetForFailure(
                 TweetId(200), AppTwitterException.ErrorType.ALREADY_RETWEETED
             )
@@ -190,11 +165,7 @@ class TimelineViewStateTest {
 
             // verify
             assertThat(sut.selectedItemId.value?.originalId).isEqualTo(TweetId(200L))
-            verify {
-                activityEventDelegate.dispatchFeedbackMessage(
-                    match { it.messageRes == R.string.msg_already_rt }
-                )
-            }
+            messageEvents.assertValueAt(0) { it.messageRes == R.string.msg_already_rt }
         }
 }
 
@@ -203,7 +174,6 @@ class TimelineViewStatesTestRule : TestWatcher() {
     private val actionsRule: TimelineActionsTestRule = TimelineActionsTestRule()
     val tweetRepositoryMock = TweetRepositoryRule()
     val owner = ListOwner(0, QueryType.TweetQueryType.Timeline())
-    val activityEventDelegate: ActivityEventDelegate = mockk()
     private val coroutineTestRule = CoroutineTestRule()
     val sut = TimelineViewState(
         owner,
@@ -211,9 +181,10 @@ class TimelineViewStatesTestRule : TestWatcher() {
         SelectedItemRepository(),
         tweetRepositoryMock.mock,
         ListOwnerGenerator.create(AtomicInteger(1)),
-        TimelineNavigationDelegate(activityEventDelegate),
         AppExecutor(dispatcher = coroutineTestRule.coroutineContextProvider)
     )
+    val navEvents: TestObserver<out TimelineEvent.Navigate> = sut.updateNavHost.test()
+    val messageEvents: TestObserver<FeedbackMessage> = sut.updateTweet.test()
 
     fun dispatchEvents(vararg event: AppEvent) {
         actionsRule.dispatcher.postEvents(*event)
