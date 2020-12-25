@@ -68,7 +68,6 @@ class MediaViewModelTest {
             MediaViewModelActions(eventDispatcher),
             mediaRepositoryRule.mock,
             tweetRepositoryRule.mock,
-            mockk(relaxed = true),
             AppExecutor(dispatcher = coroutineRule.coroutineContextProvider),
         )
         MediaViewModel(tweetListItem.originalId, eventDispatcher, viewStates)
