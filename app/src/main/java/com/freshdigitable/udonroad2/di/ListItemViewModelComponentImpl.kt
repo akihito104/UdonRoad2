@@ -30,10 +30,14 @@ import com.freshdigitable.udonroad2.model.app.di.ViewModelScope
 import com.freshdigitable.udonroad2.model.app.valueByAssignableClassObject
 import com.freshdigitable.udonroad2.oauth.di.OauthListAdapterModule
 import com.freshdigitable.udonroad2.oauth.di.OauthViewModelModule
+import com.freshdigitable.udonroad2.timeline.ListItemLoadableViewModel
 import com.freshdigitable.udonroad2.timeline.di.ListItemAdapterComponent
+import com.freshdigitable.udonroad2.timeline.di.ListItemFragmentEventDelegateComponent
 import com.freshdigitable.udonroad2.timeline.di.ListItemViewModelComponent
 import com.freshdigitable.udonroad2.timeline.di.TimelineAdapterModules
+import com.freshdigitable.udonroad2.timeline.di.TimelineListItemFragmentEventDelegateModule
 import com.freshdigitable.udonroad2.timeline.di.TimelineViewModelModules
+import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentEventDelegate
 import dagger.BindsInstance
 import dagger.Module
 import dagger.Provides
@@ -142,4 +146,38 @@ object ListItemAdapterProvider {
     fun ClassKeyMap<ViewModel, Provider<PagedListAdapter<out Any, *>>>.provideItemAdapter(
         viewModel: ViewModel
     ): PagedListAdapter<out Any, *> = this.valueByAssignableClassObject(viewModel).get()
+}
+
+@Subcomponent(
+    modules = [
+        TimelineListItemFragmentEventDelegateModule::class,
+        OauthViewModelModule::class,
+        ListItemFragmentEventDelegateProvider::class
+    ]
+)
+interface ListItemFragmentEventDelegateComponentImpl : ListItemFragmentEventDelegateComponent {
+    @Subcomponent.Factory
+    interface Factory : ListItemFragmentEventDelegateComponent.Factory {
+        override fun create(
+            @BindsInstance viewModel: ListItemLoadableViewModel<*, *>
+        ): ListItemFragmentEventDelegateComponentImpl
+    }
+}
+
+@Module
+object ListItemFragmentEventDelegateProvider {
+    @Provides
+    fun ClassKeyMap<ViewModel, Provider<ListItemFragmentEventDelegate>>.provideEventDelegate(
+        viewModel: ListItemLoadableViewModel<*, *>
+    ): ListItemFragmentEventDelegate = this.valueByAssignableClassObject(viewModel).get()
+}
+
+@Module(subcomponents = [ListItemFragmentEventDelegateComponentImpl::class])
+interface ListItemFragmentEventDelegateModule {
+    companion object {
+        @Provides
+        fun provideFactory(
+            factory: ListItemFragmentEventDelegateComponentImpl.Factory
+        ): ListItemFragmentEventDelegateComponent.Factory = factory
+    }
 }

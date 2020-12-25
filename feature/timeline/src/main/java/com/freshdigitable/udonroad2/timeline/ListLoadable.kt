@@ -18,6 +18,6 @@ interface ListItemLoadable<Q : QueryType, T> : ListLoadable {
 }
 
 abstract class ListItemLoadableViewModel<Q : QueryType, T> : ListItemLoadable<Q, T>, ViewModel() {
-    internal abstract val navigationEvent: Flow<NavigationEvent>
-    internal abstract val feedbackMessage: Flow<FeedbackMessage>
+    abstract val navigationEvent: Flow<NavigationEvent>
+    abstract val feedbackMessage: Flow<FeedbackMessage>
 }

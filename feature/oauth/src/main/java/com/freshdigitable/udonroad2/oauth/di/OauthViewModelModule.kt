@@ -26,7 +26,6 @@ import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
 import com.freshdigitable.udonroad2.data.impl.di.ListRepositoryComponentModule
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
-import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.di.IntoSavedStateFactory
 import com.freshdigitable.udonroad2.model.app.di.QueryTypeKey
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
@@ -40,6 +39,7 @@ import com.freshdigitable.udonroad2.oauth.OauthSavedStates
 import com.freshdigitable.udonroad2.oauth.OauthViewModel
 import com.freshdigitable.udonroad2.oauth.OauthViewStates
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragment
+import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentEventDelegate
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -58,10 +58,12 @@ interface OauthViewModelModule {
         }
 
         @Provides
+        @IntoMap
+        @ViewModelKey(OauthViewModel::class)
         fun provideOauthNavigationDelegate(
             fragment: ListItemFragment,
             activityEventDelegate: ActivityEventDelegate
-        ): OauthNavigationDelegate {
+        ): ListItemFragmentEventDelegate {
             return OauthNavigationDelegate(fragment, activityEventDelegate)
         }
 
@@ -78,21 +80,11 @@ interface OauthViewModelModule {
         fun provideOauthViewStates(
             actions: OauthAction,
             login: LoginUseCase,
-            navDelegate: OauthNavigationDelegate,
             repository: OAuthTokenRepository,
             listOwnerGenerator: ListOwnerGenerator,
             savedState: OauthSavedStates,
-            appExecutor: AppExecutor
         ): OauthViewStates {
-            return OauthViewStates(
-                actions,
-                login,
-                navDelegate,
-                repository,
-                listOwnerGenerator,
-                savedState,
-                appExecutor
-            )
+            return OauthViewStates(actions, login, repository, listOwnerGenerator, savedState)
         }
 
         @Provides

@@ -34,6 +34,7 @@ import com.freshdigitable.udonroad2.model.app.navigation.StateHolder
 import com.freshdigitable.udonroad2.model.app.navigation.suspendMap
 import com.freshdigitable.udonroad2.model.app.navigation.toViewState
 import com.freshdigitable.udonroad2.shortcut.ShortcutViewStates
+import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentEventDelegate
 import javax.inject.Inject
 
 class TimelineViewState(
@@ -90,4 +91,6 @@ class TimelineViewState(
 
 class TimelineNavigationDelegate @Inject constructor(
     activityEventDelegate: ActivityEventDelegate,
-) : NavigationDelegate, ActivityEventDelegate by activityEventDelegate
+) : NavigationDelegate,
+    ListItemFragmentEventDelegate,
+    ActivityEventDelegate by activityEventDelegate

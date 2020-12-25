@@ -15,10 +15,13 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.freshdigitable.udonroad2.model.ListOwner
+import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
+import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
+import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.timeline.ListItemLoadableViewModel
-import com.freshdigitable.udonroad2.timeline.TimelineNavigationDelegate
 import com.freshdigitable.udonroad2.timeline.databinding.FragmentTimelineBinding
 import com.freshdigitable.udonroad2.timeline.di.ListItemAdapterComponent
+import com.freshdigitable.udonroad2.timeline.di.ListItemFragmentEventDelegateComponent
 import com.freshdigitable.udonroad2.timeline.di.ListItemViewModelComponent
 import com.freshdigitable.udonroad2.timeline.di.viewModel
 import dagger.android.support.AndroidSupportInjection
@@ -34,7 +37,7 @@ class ListItemFragment : Fragment() {
     lateinit var listItemAdapterFactory: ListItemAdapterComponent.Factory
 
     @Inject
-    lateinit var eventDelegate: TimelineNavigationDelegate
+    lateinit var eventDelegate: ListItemFragmentEventDelegateComponent.Factory
 
     override fun onAttach(context: Context) {
         AndroidSupportInjection.inject(this)
@@ -67,6 +70,7 @@ class ListItemFragment : Fragment() {
             adapter.submitList(it)
         }
 
+        val eventDelegate = eventDelegate.create(viewModel).eventDelegate
         lifecycleScope.launch {
             viewModel.navigationEvent.collect(eventDelegate::dispatchNavHostNavigate)
         }
@@ -97,4 +101,9 @@ class ListItemFragment : Fragment() {
             return ListItemFragmentArgs(owner.query, owner.id, label).toBundle()
         }
     }
+}
+
+interface ListItemFragmentEventDelegate : ActivityEventDelegate {
+    override fun dispatchNavHostNavigate(event: NavigationEvent)
+    override fun dispatchFeedbackMessage(message: FeedbackMessage)
 }

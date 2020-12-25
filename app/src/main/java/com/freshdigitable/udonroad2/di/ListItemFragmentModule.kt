@@ -29,7 +29,8 @@ interface ListItemFragmentModule {
     @ContributesAndroidInjector(
         modules = [
             ListItemViewModelModule::class,
-            ListItemAdapterModule::class
+            ListItemAdapterModule::class,
+            ListItemFragmentEventDelegateModule::class,
         ]
     )
     fun contributeListItemFragment(): ListItemFragment
