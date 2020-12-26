@@ -18,24 +18,21 @@ package com.freshdigitable.udonroad2.timeline.viewmodel
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.freshdigitable.udonroad2.model.app.AppExecutor
-import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
+import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.tweet.TweetElement
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.model.user.UserId
-import com.freshdigitable.udonroad2.test_common.MockVerified
 import com.freshdigitable.udonroad2.test_common.jvm.CoroutineTestRule
 import com.freshdigitable.udonroad2.test_common.jvm.OAuthTokenRepositoryRule
 import com.freshdigitable.udonroad2.test_common.jvm.TweetRepositoryRule
+import com.freshdigitable.udonroad2.test_common.jvm.testCollect
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.google.common.truth.Truth.assertThat
 import io.mockk.every
-import io.mockk.just
 import io.mockk.mockk
-import io.mockk.runs
-import io.mockk.verify
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import org.hamcrest.CoreMatchers
@@ -52,7 +49,6 @@ class TweetDetailViewModelTest {
     private val exceptions: ExpectedException = ExpectedException.none()
     private val tweetRepositoryRule = TweetRepositoryRule()
     private val oauthRepositoryRule = OAuthTokenRepositoryRule()
-    private val activityEventDelegate = MockVerified.create<ActivityEventDelegate>()
     private val coroutineRule = CoroutineTestRule()
 
     @get:Rule
@@ -61,7 +57,6 @@ class TweetDetailViewModelTest {
         .around(coroutineRule)
         .around(tweetRepositoryRule)
         .around(oauthRepositoryRule)
-        .around(activityEventDelegate)
 
     private val tweet = mockk<TweetListItem>().apply {
         every { originalId } returns TweetId(1000)
@@ -77,11 +72,11 @@ class TweetDetailViewModelTest {
             every { isFavorited } returns false
         }
     }
+    private val executor = AppExecutor(dispatcher = coroutineRule.coroutineContextProvider)
 
     private val sut: TweetDetailViewModel by lazy {
         val eventDispatcher = EventDispatcher()
         val actions = TweetDetailActions(eventDispatcher)
-        val executor = AppExecutor(dispatcher = coroutineRule.coroutineContextProvider)
         TweetDetailViewModel(
             eventDispatcher,
             TweetDetailViewStates(
@@ -89,19 +84,20 @@ class TweetDetailViewModelTest {
                 actions,
                 tweetRepositoryRule.mock,
                 oauthRepositoryRule.mock,
-                activityEventDelegate.mock,
                 executor
             ),
             executor.dispatcher.mainContext
         )
     }
     private val tweetSource: Channel<TweetListItem?> = Channel()
+    private lateinit var navigationEvents: List<NavigationEvent>
 
     @Before
     fun setup() {
         tweetRepositoryRule.setupShowTweet(tweet.originalId, tweetSource.receiveAsFlow())
         sut.tweetItem.observeForever { }
         sut.menuItemStates.observeForever { }
+        navigationEvents = sut.navigationEvent.testCollect(executor)
     }
 
     @Test
@@ -176,7 +172,6 @@ class TweetDetailViewModelTest {
     @Test
     fun onOriginalUserClicked_navigationDelegateIsCalled() {
         // setup
-        every { activityEventDelegate.mock.dispatchNavHostNavigate(any()) } just runs
         oauthRepositoryRule.setupCurrentUserId(tweet.originalId.value + 10, false)
         coroutineRule.runBlockingTest {
             tweetSource.send(tweet)
@@ -188,17 +183,12 @@ class TweetDetailViewModelTest {
         // verify
         assertThat(sut.tweetItem.value).isEqualTo(tweet)
         val tweetingUser = tweet.originalUser
-        verify {
-            activityEventDelegate.mock.dispatchNavHostNavigate(
-                TimelineEvent.Navigate.UserInfo(tweetingUser)
-            )
-        }
+        assertThat(navigationEvents).containsExactly(TimelineEvent.Navigate.UserInfo(tweetingUser))
     }
 
     @Test
     fun onBodyUserClicked_navigationDelegateIsCalled() {
         // setup
-        every { activityEventDelegate.mock.dispatchNavHostNavigate(any()) } just runs
         oauthRepositoryRule.setupCurrentUserId(tweet.originalId.value + 10, false)
         coroutineRule.runBlockingTest {
             tweetSource.send(tweet)
@@ -210,11 +200,7 @@ class TweetDetailViewModelTest {
         // verify
         assertThat(sut.tweetItem.value).isEqualTo(tweet)
         val tweetingUser = tweet.body.user
-        verify {
-            activityEventDelegate.mock.dispatchNavHostNavigate(
-                TimelineEvent.Navigate.UserInfo(tweetingUser)
-            )
-        }
+        assertThat(navigationEvents).containsExactly(TimelineEvent.Navigate.UserInfo(tweetingUser))
     }
 
     @Test
@@ -224,7 +210,6 @@ class TweetDetailViewModelTest {
         coroutineRule.runBlockingTest {
             tweetSource.send(tweet)
         }
-        every { activityEventDelegate.mock.dispatchNavHostNavigate(any()) } just runs
         val tweetId = tweet.body.id
 
         // exercise
@@ -232,10 +217,6 @@ class TweetDetailViewModelTest {
 
         // verify
         assertThat(sut.tweetItem.value).isEqualTo(tweet)
-        verify {
-            activityEventDelegate.mock.dispatchNavHostNavigate(
-                TimelineEvent.Navigate.MediaViewer(tweetId)
-            )
-        }
+        assertThat(navigationEvents).containsExactly(TimelineEvent.Navigate.MediaViewer(tweetId))
     }
 }
