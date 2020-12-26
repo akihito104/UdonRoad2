@@ -255,7 +255,8 @@ fun createStatus(
     createdAt: Date,
     mediaEntities: Array<MediaEntity> = emptyArray(),
     userMentionEntities: Array<UserMentionEntity> = emptyArray(),
-    quotedStatus: Status? = null
+    quotedStatus: Status? = null,
+    currentUserRetweetId: Long = -1,
 ): Status {
     return object : Status {
         override fun getUser(): User = user
@@ -273,12 +274,13 @@ fun createStatus(
         override fun isRetweeted(): Boolean = false
         override fun isPossiblySensitive(): Boolean = false
         override fun getMediaEntities(): Array<MediaEntity> = mediaEntities
+        override fun getCurrentUserRetweetId(): Long = currentUserRetweetId
+        override fun getUserMentionEntities(): Array<UserMentionEntity> = userMentionEntities
 
         override fun compareTo(other: Status): Int = this.createdAt.compareTo(other.createdAt)
 
         override fun getRateLimitStatus(): RateLimitStatus = TODO("Not yet implemented")
         override fun getAccessLevel(): Int = TODO("Not yet implemented")
-        override fun getUserMentionEntities(): Array<UserMentionEntity> = userMentionEntities
         override fun getURLEntities(): Array<URLEntity> = TODO("Not yet implemented")
         override fun getHashtagEntities(): Array<HashtagEntity> = TODO("Not yet implemented")
         override fun getSymbolEntities(): Array<SymbolEntity> = TODO("Not yet implemented")
@@ -292,7 +294,6 @@ fun createStatus(
         override fun isRetweet(): Boolean = TODO("Not yet implemented")
         override fun getContributors(): LongArray = TODO("Not yet implemented")
         override fun isRetweetedByMe(): Boolean = TODO("Not yet implemented")
-        override fun getCurrentUserRetweetId(): Long = TODO("Not yet implemented")
         override fun getLang(): String = TODO("Not yet implemented")
         override fun getScopes(): Scopes = TODO("Not yet implemented")
         override fun getWithheldInCountries(): Array<String> = TODO("Not yet implemented")
