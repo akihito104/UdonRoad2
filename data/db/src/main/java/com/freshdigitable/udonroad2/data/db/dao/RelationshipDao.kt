@@ -1,6 +1,7 @@
 package com.freshdigitable.udonroad2.data.db.dao
 
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.distinctUntilChanged
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
@@ -22,7 +23,7 @@ abstract class RelationshipDao {
     }
 
     fun getRelationshipSource(targetUserId: UserId): LiveData<out Relationship?> {
-        return findRelationshipByTargetUserId(targetUserId)
+        return findRelationshipByTargetUserId(targetUserId).distinctUntilChanged()
     }
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

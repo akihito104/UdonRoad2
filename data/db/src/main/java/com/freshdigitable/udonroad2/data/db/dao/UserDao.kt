@@ -17,6 +17,7 @@
 package com.freshdigitable.udonroad2.data.db.dao
 
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.map
 import androidx.paging.DataSource
 import androidx.room.Dao
@@ -54,7 +55,8 @@ abstract class UserDao(
 
     @Query("SELECT * FROM user WHERE id = :id")
     internal abstract fun getUserSource(id: UserId): LiveData<UserEntityDb?>
-    open fun getUserSourceById(id: UserId): LiveData<UserEntity?> = getUserSource(id).map { it }
+    open fun getUserSourceById(id: UserId): LiveData<UserEntity?> =
+        getUserSource(id).distinctUntilChanged().map { it }
 
     @Query("SELECT * FROM user WHERE id = :id")
     internal abstract suspend fun getUser(id: UserId): UserEntityDb?
