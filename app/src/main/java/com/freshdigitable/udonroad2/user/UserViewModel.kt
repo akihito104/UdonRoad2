@@ -5,10 +5,12 @@ import androidx.annotation.IdRes
 import androidx.annotation.Keep
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asLiveData
+import androidx.lifecycle.viewModelScope
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.model.ListOwner
-import com.freshdigitable.udonroad2.model.app.navigation.CommonEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
+import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
 import com.freshdigitable.udonroad2.model.user.Relationship
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.model.user.UserEntity
@@ -25,12 +27,15 @@ class UserViewModel(
     private val eventDispatcher: EventDispatcher,
     private val viewState: UserActivityViewStates,
 ) : ViewModel() {
-    val user: LiveData<UserEntity?> = viewState.user
+    val user: LiveData<UserEntity?> = viewState.user.asLiveData(viewModelScope.coroutineContext)
     val relationship: LiveData<Relationship?> = viewState.relationship
+        .asLiveData(viewModelScope.coroutineContext)
     val titleAlpha: LiveData<Float> = viewState.titleAlpha
     val fabVisible: LiveData<Boolean> = viewState.fabVisible
     val relationshipMenuItems: LiveData<Set<RelationshipMenu>> = viewState.relationshipMenuItems
-    val pages: Flow<Map<UserPage, ListOwner<*>>> = viewState.pages
+        .asLiveData(viewModelScope.coroutineContext)
+    internal val pages: Flow<Map<UserPage, ListOwner<*>>> = viewState.pages
+    internal val feedbackMessage: Flow<FeedbackMessage> = viewState.feedbackMessage
 
     fun setAppBarScrollRate(rate: Float) {
         eventDispatcher.postEvent(UserActivityEvent.AppbarScrolled(rate))
@@ -47,14 +52,15 @@ class UserViewModel(
         eventDispatcher.postSelectedItemShortcutEvent(item, selected)
     }
 
-    fun onBackPressed() {
+    internal fun onBackPressed(): Boolean {
         val selectedItem = viewState.selectedItemId.value
         val event = if (selectedItem != null) {
             TimelineEvent.TweetItemSelection.Unselected(selectedItem.owner)
         } else {
-            CommonEvent.Back
+            return false
         }
         eventDispatcher.postEvent(event)
+        return true
     }
 
     fun onOptionsItemSelected(item: MenuItem): Boolean {

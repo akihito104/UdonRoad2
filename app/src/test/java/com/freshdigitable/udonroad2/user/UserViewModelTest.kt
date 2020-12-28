@@ -18,7 +18,6 @@ package com.freshdigitable.udonroad2.user
 
 import androidx.annotation.IdRes
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import androidx.lifecycle.MutableLiveData
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.data.impl.RelationshipRepository
 import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
@@ -40,6 +39,7 @@ import com.freshdigitable.udonroad2.model.user.UserId
 import com.freshdigitable.udonroad2.test_common.MatcherScopedSuspendBlock
 import com.freshdigitable.udonroad2.test_common.MockVerified
 import com.freshdigitable.udonroad2.test_common.jvm.CoroutineTestRule
+import com.freshdigitable.udonroad2.test_common.jvm.testCollect
 import com.freshdigitable.udonroad2.user.RelationshipMenu.BLOCK
 import com.freshdigitable.udonroad2.user.RelationshipMenu.FOLLOW
 import com.freshdigitable.udonroad2.user.RelationshipMenu.MUTE
@@ -52,8 +52,10 @@ import com.freshdigitable.udonroad2.user.RelationshipMenu.UNMUTE
 import com.google.common.truth.Truth.assertThat
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.sendBlocking
+import kotlinx.coroutines.flow.consumeAsFlow
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -117,7 +119,7 @@ class UserViewModelTest {
             setupRelation(targetId, relationship())
 
             // exercise
-            userSource.value = null
+            userSource.sendBlocking(null)
 
             // verify
             assertThat(sut.user.value).isNotNull()
@@ -131,11 +133,11 @@ class UserViewModelTest {
             }
 
             // exercise
-            userSource.value = null
+            userSource.sendBlocking(null)
 
             // verify
             assertThat(sut.user.value).isNull()
-            verify { navigationDelegate.dispatchFeedbackMessage(any()) }
+            assertThat(feedbackMessages).hasSize(1)
         }
     }
 
@@ -269,7 +271,8 @@ class UserViewModelTest {
             sut.onOptionsItemSelected(menuItem(param.menuId))
 
             // verify
-            verify { navigationDelegate.dispatchFeedbackMessage(param.expectedMessage) }
+            assertThat(feedbackMessages).hasSize(1)
+            assertThat(feedbackMessages[0]).isEqualTo(param.expectedMessage)
         }
     }
 
@@ -342,7 +345,7 @@ class UserViewModelTest {
             setupRelation(targetId, param.givenRelationship)
 
             // exercise
-            userSource.value = user
+            userSource.sendBlocking(user)
 
             // verify
             assertThat(sut.relationshipMenuItems.value).containsExactlyElementsIn(param.menuSet)
@@ -365,7 +368,6 @@ class UserViewModelTestRule : TestWatcher() {
     val relationshipRepository: RelationshipRepository = relationshipRepositoryMock.mock
     val selectedItemRepository = SelectedItemRepository()
     val coroutineRule = CoroutineTestRule()
-    val navigationDelegate = mockk<UserActivityNavigationDelegate>(relaxed = true)
     private val executor = AppExecutor(dispatcher = coroutineRule.coroutineContextProvider)
 
     val sut: UserViewModel by lazy {
@@ -377,11 +379,11 @@ class UserViewModelTestRule : TestWatcher() {
             relationshipRepository,
             selectedItemRepository,
             ListOwnerGenerator.create(),
-            navigationDelegate,
             executor
         )
         UserViewModel(targetUser, eventDispatcher, viewStates)
     }
+    lateinit var feedbackMessages: List<FeedbackMessage>
 
     override fun starting(description: Description?) {
         super.starting(description)
@@ -396,6 +398,8 @@ class UserViewModelTestRule : TestWatcher() {
             sut.titleAlpha,
             sut.relationshipMenuItems,
         ).forEach { it.observeForever {} }
+        sut.pages.testCollect(executor)
+        feedbackMessages = sut.feedbackMessage.testCollect(executor)
     }
 
     override fun apply(base: Statement?, description: Description?): Statement {
@@ -406,20 +410,18 @@ class UserViewModelTestRule : TestWatcher() {
             .apply(super.apply(base, description), description)
     }
 
-    val userSource = MutableLiveData<UserEntity>()
+    val userSource = Channel<UserEntity?>()
 
-    private fun setupUserSource(targetId: UserId) {
-        with(userRepositoryMock) {
-            setupResponseWithVerify({ mock.getUserSource(targetId) }, userSource)
-        }
+    private fun setupUserSource(targetId: UserId) = with(userRepositoryMock) {
+        setupResponseWithVerify({ mock.getUserFlow(targetId) }, userSource.consumeAsFlow())
     }
 
-    private val relationshipSource = MutableLiveData<Relationship>()
+    private val relationshipSource = Channel<Relationship?>()
 
     fun setupRelation(targetId: UserId, response: Relationship? = null) {
-        relationshipSource.value = response
         relationshipRepositoryMock.setupResponseWithVerify(
-            { relationshipRepository.getRelationshipSource(targetId) }, relationshipSource
+            { relationshipRepository.getRelationshipSource(targetId) },
+            relationshipSource.consumeAsFlow()
         )
         relationshipRepositoryMock.coSetupResponseWithVerify(
             { relationshipRepository.findRelationship(targetId) }, response
