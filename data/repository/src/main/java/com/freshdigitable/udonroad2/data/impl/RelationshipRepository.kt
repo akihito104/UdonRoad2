@@ -1,7 +1,5 @@
 package com.freshdigitable.udonroad2.data.impl
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.map
 import com.freshdigitable.udonroad2.data.db.DaoModule
 import com.freshdigitable.udonroad2.data.db.dao.RelationshipDao
 import com.freshdigitable.udonroad2.data.restclient.FriendshipRestClient
@@ -11,13 +9,14 @@ import com.freshdigitable.udonroad2.model.user.UserEntity
 import com.freshdigitable.udonroad2.model.user.UserId
 import dagger.Module
 import dagger.Provides
+import kotlinx.coroutines.flow.Flow
 
 class RelationshipRepository(
     private val dao: RelationshipDao,
     private val restClient: FriendshipRestClient,
 ) {
-    fun getRelationshipSource(targetUserId: UserId): LiveData<Relationship?> {
-        return dao.getRelationshipSource(targetUserId).map { it }
+    fun getRelationshipSource(targetUserId: UserId): Flow<Relationship?> {
+        return dao.getRelationshipSource(targetUserId)
     }
 
     suspend fun findRelationship(targetUserId: UserId): Relationship {

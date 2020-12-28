@@ -1,7 +1,5 @@
 package com.freshdigitable.udonroad2.data.db.dao
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.distinctUntilChanged
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
@@ -10,6 +8,8 @@ import androidx.room.Transaction
 import com.freshdigitable.udonroad2.data.db.entity.RelationshipEntity
 import com.freshdigitable.udonroad2.model.user.Relationship
 import com.freshdigitable.udonroad2.model.user.UserId
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 @Dao
 abstract class RelationshipDao {
@@ -22,7 +22,7 @@ abstract class RelationshipDao {
         insertRelationship(r)
     }
 
-    fun getRelationshipSource(targetUserId: UserId): LiveData<out Relationship?> {
+    fun getRelationshipSource(targetUserId: UserId): Flow<Relationship?> {
         return findRelationshipByTargetUserId(targetUserId).distinctUntilChanged()
     }
 
@@ -52,7 +52,7 @@ abstract class RelationshipDao {
     @Query("SELECT * FROM relationship WHERE user_id = :userId")
     internal abstract fun findRelationshipByTargetUserId(
         userId: UserId
-    ): LiveData<RelationshipEntity?>
+    ): Flow<RelationshipEntity?>
 
     private fun Relationship.toEntity(): RelationshipEntity {
         return RelationshipEntity(
