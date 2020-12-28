@@ -28,7 +28,6 @@ import com.freshdigitable.udonroad2.model.app.mainContext
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.AppViewState
-import com.freshdigitable.udonroad2.model.app.navigation.NavigationDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.StateHolder
 import com.freshdigitable.udonroad2.model.app.navigation.suspendMap
@@ -91,6 +90,5 @@ class TimelineViewState(
 
 class TimelineNavigationDelegate @Inject constructor(
     activityEventDelegate: ActivityEventDelegate,
-) : NavigationDelegate,
-    ListItemFragmentEventDelegate,
+) : ListItemFragmentEventDelegate,
     ActivityEventDelegate by activityEventDelegate

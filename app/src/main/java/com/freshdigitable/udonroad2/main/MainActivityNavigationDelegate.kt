@@ -22,7 +22,6 @@ import com.freshdigitable.udonroad2.model.app.di.ActivityScope
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessageDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.FragmentContainerState
-import com.freshdigitable.udonroad2.model.app.navigation.NavigationDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.SnackbarFeedbackMessageDelegate
 import com.freshdigitable.udonroad2.model.app.weakRef
@@ -40,8 +39,7 @@ import javax.inject.Inject
 internal class MainActivityNavigationDelegate @Inject constructor(
     mainActivity: MainActivity,
     private val state: MainActivityNavState,
-) : NavigationDelegate,
-    ActivityEventDelegate,
+) : ActivityEventDelegate,
     FeedbackMessageDelegate by SnackbarFeedbackMessageDelegate(
         weakRef(mainActivity) { it.findViewById(R.id.main_container) }
     ),
@@ -125,13 +123,10 @@ internal class MainActivityNavigationDelegate @Inject constructor(
 
     fun onSupportNavigateUp(): Boolean = navController.navigateUp(drawerLayout)
 
-    override fun clear() {
-        navController.removeOnDestinationChangedListener(onDestinationChanged)
-    }
-
     override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
         when (event) {
-            Lifecycle.Event.ON_DESTROY -> clear()
+            Lifecycle.Event.ON_DESTROY ->
+                navController.removeOnDestinationChangedListener(onDestinationChanged)
             else -> Unit
         }
     }

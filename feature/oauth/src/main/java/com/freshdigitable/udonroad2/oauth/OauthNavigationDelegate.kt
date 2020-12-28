@@ -21,7 +21,6 @@ import android.net.Uri
 import androidx.fragment.app.FragmentActivity
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
-import com.freshdigitable.udonroad2.model.app.navigation.NavigationDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.weakRef
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragment
@@ -30,7 +29,7 @@ import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentEventDeleg
 internal class OauthNavigationDelegate(
     listItemFragment: ListItemFragment,
     private val activityEventDelegate: ActivityEventDelegate,
-) : NavigationDelegate, ListItemFragmentEventDelegate {
+) : ListItemFragmentEventDelegate {
     private val activity: FragmentActivity by weakRef(listItemFragment) { it.requireActivity() }
 
     override fun dispatchNavHostNavigate(event: NavigationEvent) {
