@@ -79,7 +79,7 @@ class TweetDetailFragment : Fragment() {
         }
 
         val eventDelegate = component.activityEventDelegate
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             viewModel.navigationEvent.collect(eventDelegate::dispatchNavHostNavigate)
         }
     }
