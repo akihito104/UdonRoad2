@@ -65,7 +65,7 @@ object Versions {
 
     // ktlint
     const val KTLINT_PLUGIN = "9.4.1"
-    const val KTLINT = "0.39.0"
+    const val KTLINT = "0.40.0"
 
     // build libs
     const val ANDROID_GRADLE_TOOL = "4.1.1"

@@ -56,4 +56,3 @@ internal data class TweetItemMediaDbView(
     @ColumnInfo(name = "order")
     override val order: Int,
 ) : TweetMediaItem
-

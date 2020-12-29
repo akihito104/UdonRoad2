@@ -49,9 +49,12 @@ class OAuthTokenRepositoryRule(
     }
 
     fun setupLogin(userId: UserId) {
-        mockVerified.coSetupResponseWithVerify({ mock.login(userId) }, mockk<UserEntity>().apply {
-            every { id } returns userId
-        })
+        mockVerified.coSetupResponseWithVerify(
+            { mock.login(userId) },
+            mockk<UserEntity>().apply {
+                every { id } returns userId
+            }
+        )
     }
 
     fun setupGetRequestTokenItem(token: RequestTokenItem = requestTokenItem) {

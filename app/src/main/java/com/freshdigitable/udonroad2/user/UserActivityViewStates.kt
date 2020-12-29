@@ -71,8 +71,10 @@ class UserActivityViewStates @Inject constructor(
     private val _user: Flow<Result<UserEntity>> = userRepository.getUserFlow(tweetUserItem.id)
         .map { user ->
             when (user) {
-                null -> kotlin.runCatching { userRepository.getUser(tweetUserItem.id) }
-                    .onFailure { if (it is RuntimeException) throw it }
+                null -> {
+                    kotlin.runCatching { userRepository.getUser(tweetUserItem.id) }
+                        .onFailure { if (it is RuntimeException) throw it }
+                }
                 else -> Result.success(user)
             }
         }
@@ -93,7 +95,8 @@ class UserActivityViewStates @Inject constructor(
         _relationship.filter { it.isSuccess }.map { it.getOrThrow() },
         _relationship.filter { it.isSuccess }.flatMapLatest {
             relationshipRepository.getRelationshipSource(tweetUserItem.id)
-        })
+        }
+    )
         .shareIn(scope, SharingStarted.Lazily)
     internal val relationshipMenuItems: Flow<Set<RelationshipMenu>> = relationship.map {
         RelationshipMenu.availableItems(it)

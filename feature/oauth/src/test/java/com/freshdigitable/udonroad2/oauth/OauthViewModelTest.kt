@@ -126,8 +126,9 @@ class OauthViewModelTestRule : TestWatcher() {
         )
     )
     val dispatcherObserver: TestObserver<AppEvent> = dispatcher.emitter.test()
-    val navEvents =
-        sut.navigationEvent.testCollect(AppExecutor(dispatcher = coroutineRule.coroutineContextProvider))
+    val navEvents = sut.navigationEvent.testCollect(
+        AppExecutor(dispatcher = coroutineRule.coroutineContextProvider)
+    )
 
     override fun starting(description: Description?) {
         super.starting(description)

@@ -124,7 +124,6 @@ abstract class TweetDao(
         }
     }
 
-
     @Query(
         """SELECT r.retweet_id
             FROM tweet AS t
