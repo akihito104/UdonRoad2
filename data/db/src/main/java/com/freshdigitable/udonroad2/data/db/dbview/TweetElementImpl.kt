@@ -21,6 +21,8 @@ import androidx.room.DatabaseView
 import androidx.room.Embedded
 import androidx.room.Ignore
 import androidx.room.Relation
+import com.freshdigitable.udonroad2.data.db.dbview.TweetListItemDbView.TweetElementDbView
+import com.freshdigitable.udonroad2.data.db.entity.UserReplyEntityDb
 import com.freshdigitable.udonroad2.model.TweetMediaItem
 import com.freshdigitable.udonroad2.model.tweet.TweetElement
 import com.freshdigitable.udonroad2.model.tweet.TweetId
@@ -83,12 +85,12 @@ internal data class TweetListItemDbView(
     val originalUser: TweetUserItemDb,
 
     @Embedded
-    val body: TweetElementDb,
+    val body: TweetElementDbView,
 
     @Embedded(prefix = "qt_")
-    val quoted: TweetElementDb?,
+    val quoted: TweetElementDbView?,
 ) {
-    internal data class TweetElementDb(
+    internal data class TweetElementDbView(
         @ColumnInfo(name = "id")
         val id: TweetId,
 
@@ -112,7 +114,7 @@ internal data class TweetListItemDbView(
     )
 }
 
-internal data class TweetListItem(
+internal data class TweetListItemImpl(
     @Embedded
     private val tweetListItem: TweetListItemDbView,
     @ColumnInfo(name = "is_retweeted")
@@ -174,7 +176,7 @@ internal data class TweetListItem(
 }
 
 internal data class TweetElementImpl(
-    private val tweet: TweetListItemDbView.TweetElementDb,
+    private val tweet: TweetElementDbView,
     override val media: List<TweetMediaItem> = emptyList(),
     override val isRetweeted: Boolean,
     override val isFavorited: Boolean,

@@ -23,7 +23,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import com.freshdigitable.udonroad2.data.db.AppDatabase
-import com.freshdigitable.udonroad2.data.db.dbview.TweetListItem
+import com.freshdigitable.udonroad2.data.db.dbview.TweetListItemImpl
 import com.freshdigitable.udonroad2.data.db.entity.Favorited
 import com.freshdigitable.udonroad2.data.db.entity.MediaUrlEntity
 import com.freshdigitable.udonroad2.data.db.entity.Retweeted
@@ -76,11 +76,11 @@ abstract class TweetDao(
 
     @Transaction
     @Query("$QUERY_TWEET_LIST_ITEM_MEMBERS WHERE l.list_id = :owner ORDER BY l.original_id DESC")
-    internal abstract fun getTimeline(owner: ListId): DataSource.Factory<Int, TweetListItem>
+    internal abstract fun getTimeline(owner: ListId): DataSource.Factory<Int, TweetListItemImpl>
 
     @Transaction
     @Query(QUERY_FIND_TWEET_LIST_ITEM_BY_ID)
-    internal abstract fun getTweetListItemSourceById(id: TweetId): Flow<TweetListItem?>
+    internal abstract fun getTweetListItemSourceById(id: TweetId): Flow<TweetListItemImpl?>
     open fun getTweetListItemSource(
         id: TweetId
     ): Flow<com.freshdigitable.udonroad2.model.tweet.TweetListItem?> =
@@ -88,7 +88,7 @@ abstract class TweetDao(
 
     @Transaction
     @Query(QUERY_FIND_TWEET_LIST_ITEM_BY_ID)
-    internal abstract suspend fun findTweetListItemById(id: TweetId): TweetListItem?
+    internal abstract suspend fun findTweetListItemById(id: TweetId): TweetListItemImpl?
     open suspend fun findTweetListItem(
         id: TweetId
     ): com.freshdigitable.udonroad2.model.tweet.TweetListItem? = findTweetListItemById(id)
