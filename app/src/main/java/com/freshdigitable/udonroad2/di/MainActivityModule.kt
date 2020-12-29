@@ -38,7 +38,7 @@ import dagger.multibindings.IntoMap
         TweetInputFragmentModule::class,
     ]
 )
-interface MainActivityModule {
+internal interface MainActivityModule {
     @Binds
     fun bindAppCompatActivity(activity: MainActivity): AppCompatActivity
 

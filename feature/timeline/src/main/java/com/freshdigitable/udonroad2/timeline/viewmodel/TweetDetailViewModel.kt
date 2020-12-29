@@ -10,11 +10,10 @@ import com.freshdigitable.udonroad2.data.impl.TweetRepository
 import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.AppTwitterException
 import com.freshdigitable.udonroad2.model.app.mainContext
-import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
-import com.freshdigitable.udonroad2.model.app.navigation.subscribeToUpdate
+import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.suspendMap
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
 import com.freshdigitable.udonroad2.model.tweet.TweetElement
@@ -35,9 +34,12 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.scan
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transformLatest
+import kotlinx.coroutines.rx2.asFlow
 import timber.log.Timber
 import java.io.IOException
 import javax.inject.Inject
@@ -55,6 +57,7 @@ class TweetDetailViewModel(
         .asLiveData(this.coroutineContext)
     val menuItemStates: LiveData<TweetDetailViewStates.MenuItemState> = viewStates.menuItemState
         .asLiveData(this.coroutineContext)
+    internal val navigationEvent: Flow<NavigationEvent> = viewStates.navigateEvent
 
     fun onOriginalUserClicked() {
         val user = tweetItem.value?.originalUser ?: return
@@ -133,7 +136,6 @@ class TweetDetailViewStates @Inject constructor(
     actions: TweetDetailActions,
     repository: TweetRepository,
     oAuthTokenRepository: OAuthTokenRepository,
-    activityEventDelegate: ActivityEventDelegate,
     executor: AppExecutor
 ) {
     private val coroutineScope = CoroutineScope(context = executor.mainContext)
@@ -174,6 +176,14 @@ class TweetDetailViewStates @Inject constructor(
         }
     }.distinctUntilChanged()
 
+    internal val navigateEvent: Flow<NavigationEvent> = merge(
+        actions.launchUserInfo.asFlow().mapLatest { TimelineEvent.Navigate.UserInfo(it.user) },
+        actions.launchOriginalTweetUserInfo.asFlow().mapLatest {
+            TimelineEvent.Navigate.UserInfo(it.user)
+        },
+        actions.launchMediaViewer.asFlow().mapLatest { TimelineEvent.Navigate.MediaViewer(it) }
+    )
+
     data class MenuItemState(
         val isMainGroupEnabled: Boolean = false,
         val isRetweetChecked: Boolean = false,
@@ -182,15 +192,6 @@ class TweetDetailViewStates @Inject constructor(
     )
 
     private val compositeDisposable = CompositeDisposable(
-        actions.launchUserInfo.subscribeToUpdate(activityEventDelegate) {
-            dispatchNavHostNavigate(TimelineEvent.Navigate.UserInfo(it.user))
-        },
-        actions.launchOriginalTweetUserInfo.subscribeToUpdate(activityEventDelegate) {
-            dispatchNavHostNavigate(TimelineEvent.Navigate.UserInfo(it.user))
-        },
-        actions.launchMediaViewer.subscribeToUpdate(activityEventDelegate) {
-            dispatchNavHostNavigate(TimelineEvent.Navigate.MediaViewer(it))
-        },
         actions.unlikeTweet.suspendMap {
             repository.postUnlike(it.tweetId)
         }.subscribe(),

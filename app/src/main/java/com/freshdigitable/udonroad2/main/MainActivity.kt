@@ -30,6 +30,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.add
 import androidx.fragment.app.commit
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.databinding.ActivityMainBinding
 import com.freshdigitable.udonroad2.input.TweetInputFragment
@@ -40,11 +41,14 @@ import dagger.android.AndroidInjection
 import dagger.android.AndroidInjector
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasAndroidInjector
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 class MainActivity : AppCompatActivity(), HasAndroidInjector {
     @Inject
-    lateinit var navigation: MainActivityNavigationDelegate
+    internal lateinit var navigation: MainActivityNavigationDelegate
 
     @Inject
     lateinit var viewModelProviderFactory: ViewModelProvider.Factory
@@ -61,7 +65,13 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
         binding.viewModel = viewModel
         setSupportActionBar(binding.mainToolbar)
 
-        viewModel.initialEvent(savedInstanceState?.savedViewState)
+        lifecycle.addObserver(navigation)
+        lifecycleScope.launch {
+            viewModel.navigationEvent.collect {
+                Timber.tag("MainActivity").d("navigationEvent: $it")
+                navigation.dispatchNavHostNavigate(it)
+            }
+        }
 
         supportActionBar?.apply {
             setDisplayHomeAsUpEnabled(true)
@@ -96,6 +106,7 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
             }
             return@setNavigationItemSelectedListener event != null
         }
+        viewModel.initialEvent(savedInstanceState?.savedViewState)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -116,7 +127,7 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
     }
 
     override fun onBackPressed() {
-        viewModel.onBackPressed()
+        if (!viewModel.onBackPressed()) super.onBackPressed()
     }
 
     override fun onSupportNavigateUp(): Boolean {

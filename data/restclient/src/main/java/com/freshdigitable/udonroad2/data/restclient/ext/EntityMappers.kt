@@ -47,6 +47,7 @@ import twitter4j.UserList
 import twitter4j.UserMentionEntity
 
 internal fun Status.toEntity(): TweetEntity {
+    val retweetId = if (currentUserRetweetId != -1L) TweetId(currentUserRetweetId) else null
     return TweetEntityRest(
         id = TweetId(id),
         text = text,
@@ -63,7 +64,7 @@ internal fun Status.toEntity(): TweetEntity {
         createdAt = Instant.ofEpochMilli(createdAt.time),
         media = mediaEntities.map { it.toItem() },
         replyEntities = userMentionEntities.map { UserReplyEntity.create(it) },
-        retweetIdByCurrentUser = if (currentUserRetweetId != -1L) TweetId(currentUserRetweetId) else null
+        retweetIdByCurrentUser = retweetId
     )
 }
 

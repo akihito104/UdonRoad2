@@ -20,14 +20,15 @@ import android.view.MenuItem
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import com.freshdigitable.udonroad2.input.TweetInputEvent
-import com.freshdigitable.udonroad2.model.app.navigation.CommonEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
+import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.shortcut.ShortcutViewModel
 import com.freshdigitable.udonroad2.shortcut.postSelectedItemShortcutEvent
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
+import kotlinx.coroutines.flow.Flow
 import timber.log.Timber
 
-class MainViewModel(
+internal class MainViewModel(
     private val eventDispatcher: EventDispatcher,
     private val viewStates: MainActivityViewStates,
 ) : ViewModel(), ShortcutViewModel {
@@ -38,6 +39,7 @@ class MainViewModel(
         get() = viewStates.isTweetInputExpanded
     val isTweetInputMenuVisible: LiveData<Boolean> = viewStates.isTweetInputMenuVisible
     override val isFabVisible: LiveData<Boolean> = viewStates.isFabVisible
+    internal val navigationEvent: Flow<NavigationEvent> = viewStates.initContainer
 
     internal fun initialEvent(savedState: MainActivityViewState?) {
         eventDispatcher.postEvent(TimelineEvent.Setup(savedState))
@@ -55,21 +57,17 @@ class MainViewModel(
         eventDispatcher.postEvent(TweetInputEvent.Cancel)
     }
 
-    fun onBackPressed() {
+    fun onBackPressed(): Boolean {
         val selectedItem = currentState.selectedItem
         val event = when {
             isTweetInputExpanded -> TweetInputEvent.Cancel
             selectedItem != null -> TimelineEvent.TweetItemSelection.Unselected(selectedItem.owner)
-            else -> CommonEvent.Back
+            else -> return false
         }
         eventDispatcher.postEvent(event)
+        return true
     }
 
     val currentState: MainActivityViewState
         get() = viewStates.current
-
-    override fun onCleared() {
-        super.onCleared()
-        viewStates.clear()
-    }
 }

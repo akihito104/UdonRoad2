@@ -9,8 +9,11 @@ import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.LinearLayout
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.databinding.BindingAdapter
+import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelStoreOwner
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.navArgs
 import com.freshdigitable.udonroad2.shortcut.TweetDetailContextMenuView
 import com.freshdigitable.udonroad2.timeline.R
@@ -19,17 +22,15 @@ import com.freshdigitable.udonroad2.timeline.di.TweetDetailViewModelComponent
 import com.freshdigitable.udonroad2.timeline.viewmodel.TweetDetailViewModel
 import com.freshdigitable.udonroad2.timeline.viewmodel.TweetDetailViewStates
 import dagger.android.support.AndroidSupportInjection
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class TweetDetailFragment : Fragment() {
     private val args: TweetDetailFragmentArgs by navArgs()
-    private lateinit var binding: FragmentDetailBinding
 
     @Inject
     lateinit var viewModelComponentFactory: TweetDetailViewModelComponent.Factory
-    private val viewModel: TweetDetailViewModel by viewModels {
-        viewModelComponentFactory.create(args.tweetId).viewModelProviderFactory
-    }
 
     override fun onAttach(context: Context) {
         AndroidSupportInjection.inject(this)
@@ -40,14 +41,15 @@ class TweetDetailFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View {
-        binding = FragmentDetailBinding.inflate(inflater, container, false)
-        return binding.root
-    }
+    ): View = FragmentDetailBinding.inflate(inflater, container, false).root
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        val binding = DataBindingUtil.findBinding<FragmentDetailBinding>(view) ?: return
         binding.lifecycleOwner = viewLifecycleOwner
+
+        val component = viewModelComponentFactory.create(args.tweetId)
+        val viewModel = component.viewModel(this)
         binding.viewModel = viewModel
 
         viewModel.tweetItem.observe(viewLifecycleOwner) { item ->
@@ -74,6 +76,20 @@ class TweetDetailFragment : Fragment() {
                     LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
                 )
             }
+        }
+
+        val eventDelegate = component.activityEventDelegate
+        lifecycleScope.launch {
+            viewModel.navigationEvent.collect(eventDelegate::dispatchNavHostNavigate)
+        }
+    }
+
+    companion object {
+        private fun TweetDetailViewModelComponent.viewModel(
+            owner: ViewModelStoreOwner
+        ): TweetDetailViewModel {
+            val viewModelProvider = ViewModelProvider(owner, viewModelProviderFactory)
+            return viewModelProvider[TweetDetailViewModel::class.java]
         }
     }
 }

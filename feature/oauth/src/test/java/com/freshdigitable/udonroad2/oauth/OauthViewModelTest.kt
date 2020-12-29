@@ -26,7 +26,6 @@ import com.freshdigitable.udonroad2.data.impl.create
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.app.AppExecutor
-import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.user.UserId
@@ -34,13 +33,9 @@ import com.freshdigitable.udonroad2.test_common.MockVerified
 import com.freshdigitable.udonroad2.test_common.RxExceptionHandler
 import com.freshdigitable.udonroad2.test_common.jvm.CoroutineTestRule
 import com.freshdigitable.udonroad2.test_common.jvm.OAuthTokenRepositoryRule
+import com.freshdigitable.udonroad2.test_common.jvm.testCollect
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.google.common.truth.Truth.assertThat
-import io.mockk.every
-import io.mockk.just
-import io.mockk.mockk
-import io.mockk.runs
-import io.mockk.verify
 import io.reactivex.observers.TestObserver
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Rule
@@ -92,7 +87,6 @@ class OauthViewModelTest {
         repositoryRule.setupGetRequestTokenItem()
         repositoryRule.setupGetAccessToken("012345", UserId(100))
         setupLogin(UserId(100))
-        every { activityEventDelegate.dispatchNavHostNavigate(any()) } just runs
 
         sut.onLoginClicked()
         sut.onAfterPinTextChanged("012345")
@@ -106,14 +100,9 @@ class OauthViewModelTest {
             .assertValueAt(0) { actual -> actual is OauthEvent.LoginClicked }
             .assertValueAt(1) { actual -> actual is OauthEvent.PinTextChanged }
             .assertValueAt(2) { actual -> actual is OauthEvent.SendPinClicked }
-        verify {
-            activityEventDelegate.dispatchNavHostNavigate(
-                match {
-                    it is TimelineEvent.Navigate.Timeline &&
-                        it.owner.query is QueryType.TweetQueryType.Timeline
-                }
-            )
-        }
+        assertThat(navEvents[1]).isInstanceOf(TimelineEvent.Navigate.Timeline::class.java)
+        assertThat((navEvents[1] as TimelineEvent.Navigate.Timeline).owner.query)
+            .isInstanceOf(QueryType.TweetQueryType.Timeline::class.java)
         assertThat(sut.sendPinButtonEnabled.value).isFalse()
     }
 }
@@ -123,10 +112,6 @@ class OauthViewModelTestRule : TestWatcher() {
     private val coroutineRule = CoroutineTestRule()
     val repositoryRule = OAuthTokenRepositoryRule()
     private val dispatcher = EventDispatcher()
-    private val _activityEventDelegate = MockVerified.create<ActivityEventDelegate>()
-    val activityEventDelegate: ActivityEventDelegate = _activityEventDelegate.mock
-    private val navDelegate: OauthNavigationDelegate =
-        OauthNavigationDelegate(mockk(relaxed = true), activityEventDelegate)
     private val userRepositoryRule = MockVerified.create<UserRepository>()
 
     val sut = OauthViewModel(
@@ -135,14 +120,15 @@ class OauthViewModelTestRule : TestWatcher() {
         OauthViewStates(
             OauthAction(dispatcher),
             LoginUseCase(repositoryRule.mock, userRepositoryRule.mock),
-            navDelegate,
             repositoryRule.mock,
             ListOwnerGenerator.create(),
             OauthSavedStates(SavedStateHandle(), coroutineRule.coroutineContextProvider),
-            AppExecutor(dispatcher = coroutineRule.coroutineContextProvider)
         )
     )
     val dispatcherObserver: TestObserver<AppEvent> = dispatcher.emitter.test()
+    val navEvents = sut.navigationEvent.testCollect(
+        AppExecutor(dispatcher = coroutineRule.coroutineContextProvider)
+    )
 
     override fun starting(description: Description?) {
         super.starting(description)
@@ -168,7 +154,6 @@ class OauthViewModelTestRule : TestWatcher() {
             .around(coroutineRule)
             .around(repositoryRule)
             .around(userRepositoryRule)
-            .around(_activityEventDelegate)
             .apply(super.apply(base, description), description)
     }
 }

@@ -19,7 +19,6 @@ package com.freshdigitable.udonroad2.user
 import androidx.annotation.Keep
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.asLiveData
-import androidx.lifecycle.liveData
 import androidx.lifecycle.map
 import androidx.lifecycle.switchMap
 import com.freshdigitable.udonroad2.R
@@ -30,23 +29,29 @@ import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.mainContext
-import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.AppViewState
 import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
-import com.freshdigitable.udonroad2.model.app.navigation.onNull
-import com.freshdigitable.udonroad2.model.app.navigation.subscribeToUpdate
-import com.freshdigitable.udonroad2.model.app.navigation.suspendMap
 import com.freshdigitable.udonroad2.model.app.navigation.toViewState
 import com.freshdigitable.udonroad2.model.user.Relationship
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.model.user.UserEntity
-import io.reactivex.disposables.CompositeDisposable
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combineTransform
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.rx2.asFlow
 import javax.inject.Inject
@@ -59,46 +64,54 @@ class UserActivityViewStates @Inject constructor(
     relationshipRepository: RelationshipRepository,
     selectedItemRepository: SelectedItemRepository,
     ownerGenerator: ListOwnerGenerator,
-    private val navigationDelegate: UserActivityNavigationDelegate,
     executor: AppExecutor,
 ) {
-    val user: AppViewState<UserEntity?> = userRepository.getUserSource(tweetUserItem.id).onNull(
-        executor = executor,
-        onNull = { userRepository.getUser(tweetUserItem.id) },
-        onError = {
-            navigationDelegate.dispatchFeedbackMessage(UserResourceFeedbackMessage.FAILED_FETCH)
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+
+    private val _user: Flow<Result<UserEntity>> = userRepository.getUserFlow(tweetUserItem.id)
+        .map { user ->
+            when (user) {
+                null -> {
+                    kotlin.runCatching { userRepository.getUser(tweetUserItem.id) }
+                        .onFailure { if (it is RuntimeException) throw it }
+                }
+                else -> Result.success(user)
+            }
+        }
+        .shareIn(scope, SharingStarted.Eagerly)
+    internal val user: Flow<UserEntity> = _user.filter { it.isSuccess }
+        .map { it.getOrThrow() }
+        .shareIn(scope, SharingStarted.Lazily)
+
+    private val _relationship: Flow<Result<Relationship?>> = user.map { it.id }
+        .filter { it == tweetUserItem.id }
+        .distinctUntilChanged()
+        .map {
+            kotlin.runCatching {
+                relationshipRepository.findRelationship(tweetUserItem.id)
+            }.onFailure { if (it is RuntimeException) throw it }
+        }.shareIn(scope, SharingStarted.Eagerly)
+    internal val relationship: Flow<Relationship?> = merge(
+        _relationship.filter { it.isSuccess }.map { it.getOrThrow() },
+        _relationship.filter { it.isSuccess }.flatMapLatest {
+            relationshipRepository.getRelationshipSource(tweetUserItem.id)
         }
     )
-    val relationship: AppViewState<Relationship?> = user.switchMap {
-        liveData(executor.mainContext) {
-            if (it == null) {
-                return@liveData
-            }
-            emitSource(relationshipRepository.getRelationshipSource(it.id))
-            try {
-                emit(relationshipRepository.findRelationship(it.id))
-            } catch (t: Throwable) {
-                navigationDelegate.dispatchFeedbackMessage(RelationshipFeedbackMessage.FETCH_FAILED)
-                if (t is RuntimeException) {
-                    throw t
-                }
-            }
-        }
-    }
-    val relationshipMenuItems: AppViewState<Set<RelationshipMenu>> = relationship.map {
+        .shareIn(scope, SharingStarted.Lazily)
+    internal val relationshipMenuItems: Flow<Set<RelationshipMenu>> = relationship.map {
         RelationshipMenu.availableItems(it)
     }
 
     // TODO: save to state handle
     val pages: StateFlow<Map<UserPage, ListOwner<*>>> = flowOf(UserPage.values()).map {
         it.map { p -> p to ownerGenerator.generate(p.createQuery(tweetUserItem)) }.toMap()
-    }.stateIn(executor, SharingStarted.Eagerly, emptyMap())
+    }.stateIn(scope, SharingStarted.Eagerly, emptyMap())
 
     val selectedItemId = combineTransform(
         pages,
         actions.currentPageChanged.asFlow()
             .map { it.page }
-            .stateIn(executor, SharingStarted.Eagerly, UserPage.TWEET)
+            .stateIn(scope, SharingStarted.Eagerly, UserPage.TWEET)
     ) { p, current ->
         if (p.isNotEmpty()) {
             emit(p[current])
@@ -120,87 +133,85 @@ class UserActivityViewStates @Inject constructor(
         .toViewState()
 
     @ExperimentalCoroutinesApi
-    private val feedbackMessage: AppAction<FeedbackMessage> = AppAction.merge(
-        listOf(
-            actions.changeFollowingStatus.suspendMap(executor.mainContext) {
-                relationshipRepository.updateFollowingStatus(it.targetUserId, it.wantsFollow)
-            }.map {
-                if (it.event.wantsFollow) {
-                    when {
-                        it.isSuccess -> RelationshipFeedbackMessage.FOLLOW_CREATE_SUCCESS
-                        else -> RelationshipFeedbackMessage.FOLLOW_CREATE_FAILURE
-                    }
-                } else {
-                    when {
-                        it.isSuccess -> RelationshipFeedbackMessage.FOLLOW_DESTROY_SUCCESS
-                        else -> RelationshipFeedbackMessage.FOLLOW_DESTROY_FAILURE
-                    }
-                }
-            },
-            actions.changeBlockingStatus.suspendMap(executor.mainContext) {
-                relationshipRepository.updateBlockingStatus(it.targetUserId, it.wantsBlock)
-            }.map {
-                if (it.event.wantsBlock) {
-                    when {
-                        it.isSuccess -> RelationshipFeedbackMessage.BLOCK_CREATE_SUCCESS
-                        else -> RelationshipFeedbackMessage.BLOCK_CREATE_FAILURE
-                    }
-                } else {
-                    when {
-                        it.isSuccess -> RelationshipFeedbackMessage.BLOCK_DESTROY_SUCCESS
-                        else -> RelationshipFeedbackMessage.BLOCK_DESTROY_FAILURE
-                    }
-                }
-            },
-            actions.changeMutingStatus.suspendMap(executor.mainContext) {
-                relationshipRepository.updateMutingStatus(it.targetUserId, it.wantsMute)
-            }.map {
-                if (it.event.wantsMute) {
-                    when {
-                        it.isSuccess -> RelationshipFeedbackMessage.MUTE_CREATE_SUCCESS
-                        else -> RelationshipFeedbackMessage.MUTE_CREATE_FAILURE
-                    }
-                } else {
-                    when {
-                        it.isSuccess -> RelationshipFeedbackMessage.MUTE_DESTROY_SUCCESS
-                        else -> RelationshipFeedbackMessage.MUTE_DESTROY_FAILURE
-                    }
-                }
-            },
-            actions.changeRetweetBlockingStatus.suspendMap(executor.mainContext) {
-                relationshipRepository.updateWantRetweetStatus(it.targetUserId, it.wantsRetweet)
-            }.map {
-                if (it.event.wantsRetweet) {
-                    when (it.isSuccess) {
-                        it.isSuccess -> RelationshipFeedbackMessage.WANT_RETWEET_CREATE_SUCCESS
-                        else -> RelationshipFeedbackMessage.WANT_RETWEET_CREATE_FAILURE
-                    }
-                } else {
-                    when {
-                        it.isSuccess -> RelationshipFeedbackMessage.WANT_RETWEET_DESTROY_SUCCESS
-                        else -> RelationshipFeedbackMessage.WANT_RETWEET_DESTROY_FAILURE
-                    }
-                }
-            },
-            actions.reportSpam.suspendMap(executor.mainContext) {
-                relationshipRepository.reportSpam(it.targetUserId)
-            }.map {
-                when {
-                    it.isSuccess -> RelationshipFeedbackMessage.REPORT_SPAM_SUCCESS
-                    else -> RelationshipFeedbackMessage.REPORT_SPAM_FAILURE
-                }
-            }
-        )
-    )
-
-    private val disposables = CompositeDisposable(
-        feedbackMessage.subscribeToUpdate(navigationDelegate) { dispatchFeedbackMessage(it) },
-        actions.rollbackViewState.subscribeToUpdate(navigationDelegate) { dispatchBack() },
+    internal val feedbackMessage: Flow<FeedbackMessage> = merge(
+        _user.filter { it.isFailure }.map { UserResourceFeedbackMessage.FAILED_FETCH },
+        _relationship.filter { it.isFailure }.map { UserResourceFeedbackMessage.FAILED_FETCH },
+        actions.changeRelationships.asFlow().mapLatest { event ->
+            kotlin.runCatching { relationshipRepository.updateStatus(event) }.fold(
+                onSuccess = { findSuccessFeedbackMessage(event) },
+                onFailure = { findFailureFeedbackMessage(event) }
+            )
+        }
     )
 
     fun clear() {
-        disposables.clear()
-        navigationDelegate.clear()
+        scope.cancel()
+    }
+
+    companion object {
+        private suspend fun RelationshipRepository.updateStatus(
+            event: UserActivityEvent.Relationships
+        ): Any = when (event) {
+            is UserActivityEvent.Relationships.Following -> updateFollowingStatus(
+                event.targetUserId, event.wantsFollow
+            )
+            is UserActivityEvent.Relationships.Blocking -> updateBlockingStatus(
+                event.targetUserId, event.wantsBlock
+            )
+            is UserActivityEvent.Relationships.WantsRetweet -> updateWantRetweetStatus(
+                event.targetUserId, event.wantsRetweet
+            )
+            is UserActivityEvent.Relationships.Muting -> updateMutingStatus(
+                event.targetUserId, event.wantsMute
+            )
+            is UserActivityEvent.Relationships.ReportSpam -> reportSpam(event.targetUserId)
+        }
+
+        private fun findSuccessFeedbackMessage(
+            event: UserActivityEvent.Relationships
+        ): RelationshipFeedbackMessage = when (event) {
+            is UserActivityEvent.Relationships.Following -> {
+                if (event.wantsFollow) RelationshipFeedbackMessage.FOLLOW_CREATE_SUCCESS
+                else RelationshipFeedbackMessage.FOLLOW_DESTROY_SUCCESS
+            }
+            is UserActivityEvent.Relationships.Blocking -> {
+                if (event.wantsBlock) RelationshipFeedbackMessage.BLOCK_CREATE_SUCCESS
+                else RelationshipFeedbackMessage.BLOCK_DESTROY_SUCCESS
+            }
+            is UserActivityEvent.Relationships.WantsRetweet -> {
+                if (event.wantsRetweet) RelationshipFeedbackMessage.WANT_RETWEET_CREATE_SUCCESS
+                else RelationshipFeedbackMessage.WANT_RETWEET_DESTROY_SUCCESS
+            }
+            is UserActivityEvent.Relationships.Muting -> {
+                if (event.wantsMute) RelationshipFeedbackMessage.MUTE_CREATE_SUCCESS
+                else RelationshipFeedbackMessage.MUTE_DESTROY_SUCCESS
+            }
+            is UserActivityEvent.Relationships.ReportSpam ->
+                RelationshipFeedbackMessage.REPORT_SPAM_SUCCESS
+        }
+
+        private fun findFailureFeedbackMessage(
+            event: UserActivityEvent.Relationships
+        ): RelationshipFeedbackMessage = when (event) {
+            is UserActivityEvent.Relationships.Following -> {
+                if (event.wantsFollow) RelationshipFeedbackMessage.FOLLOW_CREATE_FAILURE
+                else RelationshipFeedbackMessage.FOLLOW_DESTROY_FAILURE
+            }
+            is UserActivityEvent.Relationships.Blocking -> {
+                if (event.wantsBlock) RelationshipFeedbackMessage.BLOCK_CREATE_FAILURE
+                else RelationshipFeedbackMessage.BLOCK_DESTROY_FAILURE
+            }
+            is UserActivityEvent.Relationships.WantsRetweet -> {
+                if (event.wantsRetweet) RelationshipFeedbackMessage.WANT_RETWEET_CREATE_FAILURE
+                else RelationshipFeedbackMessage.WANT_RETWEET_DESTROY_FAILURE
+            }
+            is UserActivityEvent.Relationships.Muting -> {
+                if (event.wantsMute) RelationshipFeedbackMessage.MUTE_CREATE_FAILURE
+                else RelationshipFeedbackMessage.MUTE_DESTROY_FAILURE
+            }
+            is UserActivityEvent.Relationships.ReportSpam ->
+                RelationshipFeedbackMessage.REPORT_SPAM_FAILURE
+        }
     }
 }
 

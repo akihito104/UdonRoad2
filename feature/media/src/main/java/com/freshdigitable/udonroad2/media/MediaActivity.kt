@@ -24,6 +24,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.ViewPager2
 import com.freshdigitable.udonroad2.media.databinding.ActivityMediaBinding
 import com.freshdigitable.udonroad2.media.di.MediaViewModelComponent
@@ -31,12 +32,17 @@ import dagger.android.AndroidInjection
 import dagger.android.AndroidInjector
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasAndroidInjector
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class MediaActivity : AppCompatActivity(), HasAndroidInjector {
 
     @Inject
     lateinit var viewModelComponentFactory: MediaViewModelComponent.Factory
+
+    @Inject
+    internal lateinit var activityEventDelegate: MediaActivityEventDelegate
     private val viewModel: MediaViewModel by viewModels {
         viewModelComponentFactory.create(args.id, args.index).viewModelProviderFactory
     }
@@ -62,7 +68,9 @@ class MediaActivity : AppCompatActivity(), HasAndroidInjector {
                 SystemUiVisibility.HIDE -> supportActionBar?.hide()
             }
         }
-
+        lifecycleScope.launch {
+            viewModel.messageEvent.collect(activityEventDelegate::dispatchFeedbackMessage)
+        }
         binding.mediaPager.setupPager(viewModel)
     }
 

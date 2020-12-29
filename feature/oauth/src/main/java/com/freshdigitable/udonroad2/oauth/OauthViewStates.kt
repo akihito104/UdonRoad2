@@ -21,41 +21,32 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import com.freshdigitable.udonroad2.data.impl.LoginUseCase
 import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
-import com.freshdigitable.udonroad2.model.AccessTokenEntity
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.RequestTokenItem
-import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.DispatcherProvider
 import com.freshdigitable.udonroad2.model.app.ext.combineLatest
-import com.freshdigitable.udonroad2.model.app.mainContext
-import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.AppViewState
-import com.freshdigitable.udonroad2.model.app.navigation.EventResult
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
-import com.freshdigitable.udonroad2.model.app.navigation.subscribeToUpdate
-import com.freshdigitable.udonroad2.model.app.navigation.suspendMap
 import com.freshdigitable.udonroad2.model.app.navigation.toViewState
 import com.freshdigitable.udonroad2.timeline.getTimelineEvent
-import io.reactivex.disposables.CompositeDisposable
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.rx2.asFlow
 import kotlinx.coroutines.withContext
 
 class OauthViewStates(
     actions: OauthAction,
     login: LoginUseCase,
-    private val navDelegate: OauthNavigationDelegate,
     repository: OAuthTokenRepository,
     listOwnerGenerator: ListOwnerGenerator,
     savedState: OauthSavedStates,
-    appExecutor: AppExecutor,
 ) {
-    private val _requestToken: AppAction<EventResult<OauthEvent.LoginClicked, RequestTokenItem>> =
-        actions.authApp.suspendMap(appExecutor.mainContext) {
-            val token = repository.getRequestTokenItem()
-            savedState.setToken(token)
-            token
-        }
+    internal val launchTwitterOauth: Flow<NavigationEvent> = actions.authApp.asFlow().mapLatest {
+        val token = repository.getRequestTokenItem()
+        savedState.setToken(token)
+        OauthEvent.Navigation.LaunchTwitter(token.authorizationUrl)
+    }
     private val requestToken: LiveData<RequestTokenItem?> = savedState.requestTokenItem
 
     internal val pinText: LiveData<CharSequence> = actions.inputPin.map {
@@ -67,41 +58,15 @@ class OauthViewStates(
             t != null && p?.isNotEmpty() == true
         }
 
-    private val completeAuthProcess: AppAction<EventResult<OauthEvent.SendPinClicked, AccessTokenEntity>> =
-        actions.sendPin.suspendMap(appExecutor.mainContext) {
-            val token = requireNotNull(requestToken.value)
-            val verifier = pinText.value.toString()
-            val t = repository.getAccessToken(token, verifier)
-            savedState.setToken(null)
-            login(t.userId)
-            t
-        }
-
-    private val disposables = CompositeDisposable(
-        _requestToken.subscribeToUpdate(navDelegate) {
-            when {
-                it.isSuccess ->
-                    launchTwitterOauth(requireNotNull(it.value).authorizationUrl)
-                else -> it.rethrow() // FIXME: send feedback
-            }
-        },
-        completeAuthProcess.subscribeToUpdate(navDelegate) {
-            if (it.isFailure) {
-                it.rethrow() // FIXME: send feedback
-            }
-            appExecutor.launch(appExecutor.mainContext) {
-                val nav = listOwnerGenerator.getTimelineEvent(
-                    QueryType.TweetQueryType.Timeline(),
-                    NavigationEvent.Type.INIT
-                )
-                dispatchNavHostNavigate(nav)
-            }
-        },
-    )
-
-    fun clear() {
-        disposables.clear()
-        navDelegate.clear()
+    internal val completeAuthProcess: Flow<NavigationEvent> = actions.sendPin.asFlow().mapLatest {
+        val token = requireNotNull(requestToken.value)
+        val verifier = pinText.value.toString()
+        val t = repository.getAccessToken(token, verifier)
+        savedState.setToken(null)
+        login(t.userId)
+        listOwnerGenerator.getTimelineEvent(
+            QueryType.TweetQueryType.Timeline(), NavigationEvent.Type.INIT
+        )
     }
 }
 

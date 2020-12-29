@@ -16,10 +16,6 @@
 
 package com.freshdigitable.udonroad2.model.app.navigation
 
-interface NavigationDelegate {
-    fun clear() {}
-}
-
 interface ActivityEventDelegate : FeedbackMessageDelegate {
     fun dispatchNavHostNavigate(event: NavigationEvent) {}
 }

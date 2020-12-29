@@ -44,7 +44,7 @@ object Versions {
     const val THREETENBP = "1.1.0"
     const val TIMBER = "4.7.1"
 
-    const val LEAKCANARY = "2.4"
+    const val LEAKCANARY = "2.5"
 
     // test
     const val JUNIT = "4.13.1"
@@ -65,7 +65,7 @@ object Versions {
 
     // ktlint
     const val KTLINT_PLUGIN = "9.4.1"
-    const val KTLINT = "0.39.0"
+    const val KTLINT = "0.40.0"
 
     // build libs
     const val ANDROID_GRADLE_TOOL = "4.1.1"

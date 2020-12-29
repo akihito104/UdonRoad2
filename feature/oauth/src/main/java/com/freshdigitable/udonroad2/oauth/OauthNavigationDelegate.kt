@@ -20,17 +20,30 @@ import android.content.Intent
 import android.net.Uri
 import androidx.fragment.app.FragmentActivity
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
-import com.freshdigitable.udonroad2.model.app.navigation.NavigationDelegate
+import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
+import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.weakRef
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragment
+import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentEventDelegate
 
-class OauthNavigationDelegate(
+internal class OauthNavigationDelegate(
     listItemFragment: ListItemFragment,
-    activityEventDelegate: ActivityEventDelegate,
-) : NavigationDelegate, ActivityEventDelegate by activityEventDelegate {
+    private val activityEventDelegate: ActivityEventDelegate,
+) : ListItemFragmentEventDelegate {
     private val activity: FragmentActivity by weakRef(listItemFragment) { it.requireActivity() }
 
-    internal fun launchTwitterOauth(authUrl: String) {
+    override fun dispatchNavHostNavigate(event: NavigationEvent) {
+        when (event) {
+            is OauthEvent.Navigation.LaunchTwitter -> launchTwitterOauth(event.url)
+            else -> activityEventDelegate.dispatchNavHostNavigate(event)
+        }
+    }
+
+    override fun dispatchFeedbackMessage(message: FeedbackMessage) {
+        activityEventDelegate.dispatchFeedbackMessage(message)
+    }
+
+    private fun launchTwitterOauth(authUrl: String) {
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(authUrl))
         activity.startActivity(intent)
     }

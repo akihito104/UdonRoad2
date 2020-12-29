@@ -25,16 +25,17 @@ import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
-import com.freshdigitable.udonroad2.model.app.navigation.CommonEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
+import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.postEvents
 import com.freshdigitable.udonroad2.test_common.MockVerified
 import com.freshdigitable.udonroad2.test_common.RxExceptionHandler
 import com.freshdigitable.udonroad2.test_common.jvm.CoroutineTestRule
 import com.freshdigitable.udonroad2.test_common.jvm.OAuthTokenRepositoryRule
+import com.freshdigitable.udonroad2.test_common.jvm.testCollect
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
+import com.google.common.truth.Truth.assertThat
 import io.mockk.every
-import io.mockk.verify
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
@@ -45,7 +46,7 @@ import org.junit.runners.model.Statement
 
 class MainActivityViewStatesTest {
     @get:Rule
-    val rule = MainActivityStateModelTestRule()
+    internal val rule = MainActivityStateModelTestRule()
 
     @Test
     fun updateContainer_dispatchSetupEvent_then_flowInitOauthEvent(): Unit = with(rule) {
@@ -56,10 +57,8 @@ class MainActivityViewStatesTest {
         dispatcher.postEvent(TimelineEvent.Setup())
 
         // verify
-        verify {
-            navDelegate.dispatchNavHostNavigate(
-                match { it is TimelineEvent.Navigate.Timeline && it.owner.query is QueryType.Oauth }
-            )
+        assertThatNavigationEventOfTimeline(0) {
+            assertThat(it.owner.query).isEqualTo(QueryType.Oauth)
         }
     }
 
@@ -72,13 +71,8 @@ class MainActivityViewStatesTest {
         dispatcher.postEvent(TimelineEvent.Setup())
 
         // verify
-        verify {
-            navDelegate.dispatchNavHostNavigate(
-                match {
-                    it is TimelineEvent.Navigate.Timeline &&
-                        it.owner.query is QueryType.TweetQueryType.Timeline
-                }
-            )
+        assertThatNavigationEventOfTimeline(0) {
+            assertThat(it.owner.query).isInstanceOf(QueryType.TweetQueryType.Timeline::class.java)
         }
     }
 
@@ -91,50 +85,31 @@ class MainActivityViewStatesTest {
         dispatchEvents(TimelineEvent.Setup())
 
         // verify
-        verify {
-            navDelegate.dispatchNavHostNavigate(
-                match { it is TimelineEvent.Navigate.Timeline && it.owner.query == QueryType.Oauth }
-            )
+        assertThatNavigationEventOfTimeline(0) {
+            assertThat(it.owner.query).isEqualTo(QueryType.Oauth)
         }
-    }
-
-    @Test
-    fun backEventDispatched_then_dispatchBackCalled(): Unit = with(rule) {
-        // exercise
-        dispatchEvents(CommonEvent.Back)
-
-        // verify
-        verify { navDelegate.dispatchBack() }
     }
 }
 
-class MainActivityNavigationDelegateRule(
-    private val _mock: MockVerified<MainActivityNavigationDelegate> = MockVerified.create(true)
+internal class MainActivityNavigationDelegateRule(
+    private val _mock: MockVerified<MainActivityNavigationDelegate> = MockVerified.create(true),
+    val state: MainActivityNavState = MainActivityNavState()
 ) : TestRule by _mock {
-    val mock: MainActivityNavigationDelegate = _mock.mock
-    private val containerStateSource = MutableLiveData<MainNavHostState>()
-    private val isInTopLevelDestSource = MutableLiveData<Boolean>()
-
-    init {
-        _mock.setupResponseWithVerify({ mock.containerState }, containerStateSource)
-        _mock.setupResponseWithVerify({ mock.isInTopLevelDest }, isInTopLevelDestSource)
-    }
 
     fun setupContainerState(state: MainNavHostState) {
-        containerStateSource.value = state
+        this.state.setContainerState(state)
     }
 
     fun setIsInTopLevelDestination(isInTop: Boolean) {
-        isInTopLevelDestSource.value = isInTop
+        this.state.setIsInTopLevelDest(isInTop)
     }
 }
 
-class MainActivityStateModelTestRule : TestWatcher() {
+internal class MainActivityStateModelTestRule : TestWatcher() {
     val dispatcher = EventDispatcher()
     val oauthTokenRepositoryMock = OAuthTokenRepositoryRule()
     val selectedItemRepository = SelectedItemRepository()
     val navDelegateRule = MainActivityNavigationDelegateRule()
-    val navDelegate: MainActivityNavigationDelegate = navDelegateRule.mock
     private val coroutineRule = CoroutineTestRule()
 
     val isExpandedSource = MutableLiveData<Boolean>()
@@ -148,9 +123,9 @@ class MainActivityStateModelTestRule : TestWatcher() {
         oauthTokenRepositoryMock.mock,
         tweetInputSharedState.mock,
         ListOwnerGenerator.create(),
-        navDelegateRule.mock,
-        AppExecutor(dispatcher = coroutineRule.coroutineContextProvider),
+        navDelegateRule.state,
     )
+    lateinit var navigationEventActual: List<NavigationEvent>
 
     fun dispatchEvents(vararg events: AppEvent) {
         dispatcher.postEvents(*events)
@@ -161,6 +136,9 @@ class MainActivityStateModelTestRule : TestWatcher() {
         listOf(
             sut.isFabVisible, sut.appBarTitle, sut.navIconType
         ).forEach { it.observeForever {} }
+        navigationEventActual = sut.initContainer.testCollect(
+            AppExecutor(dispatcher = coroutineRule.coroutineContextProvider)
+        )
     }
 
     override fun apply(base: Statement?, description: Description?): Statement {
@@ -169,5 +147,15 @@ class MainActivityStateModelTestRule : TestWatcher() {
             .around(navDelegateRule)
             .around(RxExceptionHandler())
             .apply(super.apply(base, description), description)
+    }
+
+    fun assertThatNavigationEventOfTimeline(
+        index: Int,
+        matcher: (TimelineEvent.Navigate.Timeline) -> Unit
+    ) {
+        with(navigationEventActual[index]) {
+            assertThat(this).isInstanceOf(TimelineEvent.Navigate.Timeline::class.java)
+            matcher(this as TimelineEvent.Navigate.Timeline)
+        }
     }
 }

@@ -18,24 +18,31 @@ package com.freshdigitable.udonroad2.oauth
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import androidx.paging.DataSource
 import androidx.paging.PagedList
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
-import com.freshdigitable.udonroad2.timeline.ListItemLoadable
+import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
+import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
+import com.freshdigitable.udonroad2.timeline.ListItemLoadableViewModel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.merge
 
 class OauthViewModel(
     dataSource: DataSource<Int, OauthItem>,
     private val eventDispatcher: EventDispatcher,
-    private val viewStates: OauthViewStates,
-) : ViewModel(), ListItemLoadable<QueryType.Oauth, OauthItem> {
+    viewStates: OauthViewStates,
+) : ListItemLoadableViewModel<QueryType.Oauth, OauthItem>() {
 
     override val loading: LiveData<Boolean> = MutableLiveData(false)
     override val timeline: LiveData<PagedList<OauthItem>>
     val pin: LiveData<CharSequence> = viewStates.pinText
     val sendPinButtonEnabled: LiveData<Boolean> = viewStates.sendPinEnabled
+    override val navigationEvent: Flow<NavigationEvent> =
+        merge(viewStates.launchTwitterOauth, viewStates.completeAuthProcess)
+    override val feedbackMessage: Flow<FeedbackMessage> = emptyFlow()
 
     init {
         val config = PagedList.Config.Builder()
@@ -66,11 +73,6 @@ class OauthViewModel(
     fun onSendPinClicked() {
         eventDispatcher.postEvent(OauthEvent.SendPinClicked)
     }
-
-    override fun onCleared() {
-        super.onCleared()
-        viewStates.clear()
-    }
 }
 
 sealed class OauthEvent : AppEvent {
@@ -78,5 +80,8 @@ sealed class OauthEvent : AppEvent {
     object LoginClicked : OauthEvent()
     data class PinTextChanged(val text: CharSequence) : OauthEvent()
     object SendPinClicked : OauthEvent()
-    object OauthSucceeded : OauthEvent()
+
+    sealed class Navigation : NavigationEvent {
+        data class LaunchTwitter(val url: String) : Navigation()
+    }
 }

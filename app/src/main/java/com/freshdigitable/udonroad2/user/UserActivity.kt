@@ -14,6 +14,7 @@ import androidx.viewpager.widget.ViewPager
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.databinding.ActivityUserBinding
 import com.freshdigitable.udonroad2.di.UserViewModelComponent
+import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.model.user.UserEntity
 import com.google.android.material.appbar.AppBarLayout
@@ -23,6 +24,7 @@ import dagger.android.AndroidInjector
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasAndroidInjector
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.math.abs
 
@@ -32,6 +34,9 @@ class UserActivity : HasAndroidInjector, AppCompatActivity() {
     private val viewModel: UserViewModel by viewModels {
         userViewModelComponentFactory.create(user).viewModelProviderFactory
     }
+
+    @Inject
+    lateinit var eventDelegate: ActivityEventDelegate
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
@@ -52,6 +57,9 @@ class UserActivity : HasAndroidInjector, AppCompatActivity() {
                 adapter.setItems(it)
                 adapter.notifyDataSetChanged()
             }
+        }
+        lifecycleScope.launch {
+            viewModel.feedbackMessage.collect(eventDelegate::dispatchFeedbackMessage)
         }
     }
 
@@ -104,7 +112,7 @@ class UserActivity : HasAndroidInjector, AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        viewModel.onBackPressed()
+        if (!viewModel.onBackPressed()) super.onBackPressed()
     }
 
     private val args: UserActivityArgs by lazy {

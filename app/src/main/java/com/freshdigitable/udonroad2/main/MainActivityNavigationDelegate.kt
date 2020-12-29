@@ -4,6 +4,9 @@ import android.content.Context
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.navigation.NavController
@@ -19,7 +22,6 @@ import com.freshdigitable.udonroad2.model.app.di.ActivityScope
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessageDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.FragmentContainerState
-import com.freshdigitable.udonroad2.model.app.navigation.NavigationDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.SnackbarFeedbackMessageDelegate
 import com.freshdigitable.udonroad2.model.app.weakRef
@@ -34,13 +36,14 @@ import java.io.Serializable
 import javax.inject.Inject
 
 @ActivityScope
-class MainActivityNavigationDelegate @Inject constructor(
+internal class MainActivityNavigationDelegate @Inject constructor(
     mainActivity: MainActivity,
-) : NavigationDelegate,
-    ActivityEventDelegate,
+    private val state: MainActivityNavState,
+) : ActivityEventDelegate,
     FeedbackMessageDelegate by SnackbarFeedbackMessageDelegate(
         weakRef(mainActivity) { it.findViewById(R.id.main_container) }
-    ) {
+    ),
+    LifecycleEventObserver {
     private val activity: MainActivity by weakRef(mainActivity)
     private val drawerLayout: DrawerLayout by weakRef(mainActivity) {
         it.findViewById<DrawerLayout>(R.id.main_drawer)
@@ -50,11 +53,9 @@ class MainActivityNavigationDelegate @Inject constructor(
             val containerState = requireNotNull(
                 MainNavHostState.create(destination, arguments)
             )
-            _containerState.value = containerState
-            _isInTopLevelDest.value = destination.isTopLevelDestination(nc)
+            state.setContainerState(containerState)
+            state.setIsInTopLevelDest(destination.isTopLevelDestination(nc))
         }
-    private val _isInTopLevelDest = MutableLiveData<Boolean>()
-    val isInTopLevelDest: LiveData<Boolean> = _isInTopLevelDest
 
     private fun NavDestination.isTopLevelDestination(nc: NavController): Boolean {
         val topLevelDestinations = AppBarConfiguration(nc.graph).topLevelDestinations
@@ -73,9 +74,6 @@ class MainActivityNavigationDelegate @Inject constructor(
             it.addOnDestinationChangedListener(onDestinationChanged)
         }
     }
-
-    private val _containerState = MutableLiveData<MainNavHostState>()
-    val containerState: LiveData<MainNavHostState> = _containerState
 
     override fun dispatchNavHostNavigate(event: NavigationEvent) {
         when (event) {
@@ -98,7 +96,7 @@ class MainActivityNavigationDelegate @Inject constructor(
     }
 
     private fun AppCompatActivity.navigateTo(nextState: NavigationEvent) {
-        if (containerState.value?.isDestinationEqualTo(nextState) == true) {
+        if (state.containerState.value?.isDestinationEqualTo(nextState) == true) {
             return
         }
         when (nextState) {
@@ -123,14 +121,14 @@ class MainActivityNavigationDelegate @Inject constructor(
         }
     }
 
-    fun dispatchBack() {
-        activity.onBackPressedDispatcher.onBackPressed()
-    }
-
     fun onSupportNavigateUp(): Boolean = navController.navigateUp(drawerLayout)
 
-    override fun clear() {
-        navController.removeOnDestinationChangedListener(onDestinationChanged)
+    override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
+        when (event) {
+            Lifecycle.Event.ON_DESTROY ->
+                navController.removeOnDestinationChangedListener(onDestinationChanged)
+            else -> Unit
+        }
     }
 }
 
@@ -198,3 +196,19 @@ private fun MainNavHostState.Companion.create(
 }
 
 enum class NavigationIconType { MENU, UP, CLOSE }
+
+@ActivityScope
+internal class MainActivityNavState @Inject constructor() {
+    private val _isInTopLevelDest = MutableLiveData<Boolean>()
+    val isInTopLevelDest: LiveData<Boolean> = _isInTopLevelDest
+
+    fun setIsInTopLevelDest(isInTop: Boolean) {
+        _isInTopLevelDest.value = isInTop
+    }
+
+    private val _containerState = MutableLiveData<MainNavHostState>()
+    val containerState: LiveData<MainNavHostState> = _containerState
+    fun setContainerState(navHostState: MainNavHostState) {
+        _containerState.value = navHostState
+    }
+}

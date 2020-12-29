@@ -44,6 +44,7 @@ import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.tweet.UserReplyEntity
 import com.freshdigitable.udonroad2.model.user.UserId
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 
 @Dao
@@ -84,7 +85,7 @@ abstract class TweetDao(
     open fun getTweetListItemSource(
         id: TweetId
     ): Flow<com.freshdigitable.udonroad2.model.tweet.TweetListItem?> =
-        getTweetListItemSourceById(id).map { it }
+        getTweetListItemSourceById(id).map { it }.distinctUntilChanged()
 
     @Transaction
     @Query(QUERY_FIND_TWEET_LIST_ITEM_BY_ID)
@@ -122,7 +123,6 @@ abstract class TweetDao(
             false -> db.reactionsDao.deleteRetweeted(tweetId, ownerUserId)
         }
     }
-
 
     @Query(
         """SELECT r.retweet_id

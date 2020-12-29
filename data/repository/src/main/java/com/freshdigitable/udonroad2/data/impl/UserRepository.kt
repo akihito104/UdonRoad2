@@ -1,6 +1,5 @@
 package com.freshdigitable.udonroad2.data.impl
 
-import androidx.lifecycle.LiveData
 import com.freshdigitable.udonroad2.data.db.DaoModule
 import com.freshdigitable.udonroad2.data.db.dao.UserDao
 import com.freshdigitable.udonroad2.data.restclient.UserRestClient
@@ -14,7 +13,6 @@ class UserRepository(
     private val dao: UserDao,
     private val restClient: UserRestClient,
 ) {
-    fun getUserSource(id: UserId): LiveData<UserEntity?> = dao.getUserSourceById(id)
     fun getUserFlow(id: UserId): Flow<UserEntity?> = dao.getUserFlowById(id)
 
     suspend fun getUser(id: UserId): UserEntity {

@@ -36,7 +36,8 @@ class FollowerListDataSource @Inject constructor(
 ) : RemoteListDataSource<UserQueryType.Follower, UserEntity> by PagedListDataSource(
     twitter,
     { query, nextCursor ->
-        getFollowersList(query.type.userId.value, nextCursor).toPagedResponseList(User::toEntity)
+        getFollowersList(query.type.userId.value, nextCursor)
+            .toPagedResponseList(User::toEntity)
     }
 )
 

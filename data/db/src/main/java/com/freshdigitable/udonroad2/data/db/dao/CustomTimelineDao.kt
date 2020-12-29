@@ -25,7 +25,9 @@ abstract class CustomTimelineDao(
         WHERE l.list_id = :owner
         ORDER BY l.`order` ASC"""
     )
-    internal abstract fun getCustomTimeline(owner: ListId): DataSource.Factory<Int, CustomTimelineListItemDb>
+    internal abstract fun getCustomTimeline(
+        owner: ListId
+    ): DataSource.Factory<Int, CustomTimelineListItemDb>
 
     @Transaction
     internal open suspend fun addCustomTimeline(
@@ -49,7 +51,9 @@ abstract class CustomTimelineDao(
     internal abstract suspend fun addCustomTimelineEntities(entities: List<CustomTimelineDb>)
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    internal abstract suspend fun addCustomTimelineListEntities(entities: List<CustomTimelineListDb>)
+    internal abstract suspend fun addCustomTimelineListEntities(
+        entities: List<CustomTimelineListDb>
+    )
 
     @Query("DELETE FROM custom_timeline_list WHERE list_id = :owner")
     internal abstract suspend fun deleteByListId(owner: ListId)

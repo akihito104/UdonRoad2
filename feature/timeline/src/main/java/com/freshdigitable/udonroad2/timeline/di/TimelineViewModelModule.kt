@@ -33,12 +33,10 @@ import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.di.IntoFactory
 import com.freshdigitable.udonroad2.model.app.di.QueryTypeKey
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
-import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import com.freshdigitable.udonroad2.model.user.UserListItem
 import com.freshdigitable.udonroad2.timeline.TimelineActions
-import com.freshdigitable.udonroad2.timeline.TimelineNavigationDelegate
 import com.freshdigitable.udonroad2.timeline.TimelineViewState
 import com.freshdigitable.udonroad2.timeline.viewmodel.CustomTimelineListViewModel
 import com.freshdigitable.udonroad2.timeline.viewmodel.TimelineViewModel
@@ -89,7 +87,6 @@ internal interface TimelineViewModelModule {
             selectedItemRepository: SelectedItemRepository,
             tweetRepository: TweetRepository,
             listOwnerGenerator: ListOwnerGenerator,
-            navDelegate: TimelineNavigationDelegate,
             executor: AppExecutor,
         ): TimelineViewState {
             return TimelineViewState(
@@ -98,16 +95,8 @@ internal interface TimelineViewModelModule {
                 selectedItemRepository,
                 tweetRepository,
                 listOwnerGenerator,
-                navDelegate,
                 executor,
             )
-        }
-
-        @Provides
-        fun provideTimelineNavigationDelegate(
-            activityEventDelegate: ActivityEventDelegate
-        ): TimelineNavigationDelegate {
-            return TimelineNavigationDelegate(activityEventDelegate)
         }
 
         @Provides
