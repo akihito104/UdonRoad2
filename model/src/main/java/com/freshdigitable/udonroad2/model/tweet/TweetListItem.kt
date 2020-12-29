@@ -67,3 +67,7 @@ interface TweetElement {
 }
 
 data class TweetId(val value: Long) : Serializable
+
+operator fun TweetId.plus(adder: Long): TweetId = TweetId(
+    this.value + adder
+)

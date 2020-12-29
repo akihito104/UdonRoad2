@@ -45,7 +45,6 @@ import com.freshdigitable.udonroad2.model.tweet.UserReplyEntity
 import com.freshdigitable.udonroad2.model.user.UserId
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.map
 
 @Dao
 abstract class TweetDao(
@@ -68,9 +67,9 @@ abstract class TweetDao(
          LEFT OUTER JOIN favorited AS b_f ON list.owner_id = b_f.source_user_id
            AND v.id = b_f.tweet_id
          LEFT OUTER JOIN retweeted AS q_r ON list.owner_id = q_r.source_user_id
-           AND v.id = q_r.tweet_id
+           AND v.qt_id = q_r.tweet_id
          LEFT OUTER JOIN favorited AS q_f ON list.owner_id = q_f.source_user_id
-           AND v.id = q_f.tweet_id"""
+           AND v.qt_id = q_f.tweet_id"""
         private const val QUERY_FIND_TWEET_LIST_ITEM_BY_ID =
             "$QUERY_TWEET_LIST_ITEM_MEMBERS WHERE l.original_id = :id LIMIT 1"
     }
@@ -85,7 +84,7 @@ abstract class TweetDao(
     open fun getTweetListItemSource(
         id: TweetId
     ): Flow<com.freshdigitable.udonroad2.model.tweet.TweetListItem?> =
-        getTweetListItemSourceById(id).map { it }.distinctUntilChanged()
+        getTweetListItemSourceById(id).distinctUntilChanged()
 
     @Transaction
     @Query(QUERY_FIND_TWEET_LIST_ITEM_BY_ID)
@@ -167,7 +166,7 @@ abstract class TweetDao(
                 .toList()
         )
         addTweetEntitiesInternal(tweetEntities.map(TweetEntity::toDbEntity))
-        addTweetEntities(tweet.map { it.toTweetEntityDb() })
+        addTweetEntities(tweetEntities.map { it.toTweetEntityDb() })
 
         val mediaItems = tweetEntities.filter { it.media.isNotEmpty() }
             .flatMap { t -> t.media.map { t to it } }
