@@ -71,10 +71,10 @@ class ListItemFragment : Fragment() {
         }
 
         val eventDelegate = eventDelegate.create(viewModel).eventDelegate
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             viewModel.navigationEvent.collect(eventDelegate::dispatchNavHostNavigate)
         }
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             viewModel.feedbackMessage.collect(eventDelegate::dispatchFeedbackMessage)
         }
     }
