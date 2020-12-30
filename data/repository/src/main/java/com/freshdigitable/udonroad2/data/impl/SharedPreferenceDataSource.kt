@@ -126,3 +126,5 @@ class SharedPreferenceDataSource @Inject constructor(
         private const val TWITTER_API_CONFIG_DATE = "twitterAPIConfigDate"
     }
 }
+
+fun SharedPreferenceDataSource.requireCurrentUserId(): UserId = requireNotNull(getCurrentUserId())

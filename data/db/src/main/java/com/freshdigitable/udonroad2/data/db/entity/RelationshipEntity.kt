@@ -3,24 +3,28 @@ package com.freshdigitable.udonroad2.data.db.entity
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
-import androidx.room.PrimaryKey
 import com.freshdigitable.udonroad2.model.user.Relationship
 import com.freshdigitable.udonroad2.model.user.UserId
 
 @Entity(
     tableName = "relationship",
+    primaryKeys = ["user_id", "source_user_id"],
     foreignKeys = [
         ForeignKey(
             entity = UserEntityDb::class,
             parentColumns = ["id"],
-            childColumns = ["user_id"]
+            childColumns = ["user_id"],
+        ),
+        ForeignKey(
+            entity = UserEntityDb::class,
+            parentColumns = ["id"],
+            childColumns = ["source_user_id"],
         )
     ]
 )
 internal data class RelationshipEntity(
-    @PrimaryKey
     @ColumnInfo(name = "user_id", index = true)
-    override val userId: UserId,
+    override val targetUserId: UserId,
 
     @ColumnInfo(name = "following")
     override val following: Boolean,
@@ -35,5 +39,8 @@ internal data class RelationshipEntity(
     override val wantRetweets: Boolean,
 
     @ColumnInfo(name = "notifications_enabled")
-    override val notificationsEnabled: Boolean
+    override val notificationsEnabled: Boolean,
+
+    @ColumnInfo(name = "source_user_id", index = true)
+    override val sourceUserId: UserId,
 ) : Relationship

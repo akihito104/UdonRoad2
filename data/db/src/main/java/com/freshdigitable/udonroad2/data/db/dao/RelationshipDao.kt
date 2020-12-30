@@ -22,46 +22,76 @@ abstract class RelationshipDao {
         insertRelationship(r)
     }
 
-    fun getRelationshipSource(targetUserId: UserId): Flow<Relationship?> {
-        return findRelationshipByTargetUserId(targetUserId).distinctUntilChanged()
+    fun getRelationshipSource(targetUserId: UserId, sourceUserId: UserId): Flow<Relationship?> {
+        return findRelationshipByTargetUserId(targetUserId, sourceUserId).distinctUntilChanged()
     }
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     internal abstract suspend fun insertRelationship(relationship: RelationshipEntity)
 
-    @Query("UPDATE relationship SET following = :isFollowing WHERE user_id = :userId")
-    abstract suspend fun updateFollowingStatus(userId: UserId, isFollowing: Boolean)
+    @Query(
+        """UPDATE relationship SET following = :isFollowing 
+        WHERE user_id = :targetUserId AND source_user_id = :sourceUserId"""
+    )
+    abstract suspend fun updateFollowingStatus(
+        targetUserId: UserId,
+        sourceUserId: UserId,
+        isFollowing: Boolean
+    )
 
-    @Query("UPDATE relationship SET muting = :isMuting WHERE user_id = :userId")
-    abstract suspend fun updateMutingStatus(userId: UserId, isMuting: Boolean)
+    @Query(
+        """UPDATE relationship SET muting = :isMuting 
+        WHERE user_id = :userId AND source_user_id = :sourceUserId"""
+    )
+    abstract suspend fun updateMutingStatus(userId: UserId, sourceUserId: UserId, isMuting: Boolean)
 
     @Transaction
-    open suspend fun updateBlockingStatusTransaction(userId: UserId, isBlocking: Boolean) {
-        updateBlockingStatus(userId, isBlocking)
+    open suspend fun updateBlockingStatusTransaction(
+        userId: UserId,
+        sourceUserId: UserId,
+        isBlocking: Boolean
+    ) {
+        updateBlockingStatus(userId, sourceUserId, isBlocking)
         if (isBlocking) {
-            updateFollowingStatus(userId, false)
+            updateFollowingStatus(userId, sourceUserId, false)
         }
     }
 
-    @Query("UPDATE relationship SET blocking = :isBlocking WHERE user_id = :userId")
-    internal abstract suspend fun updateBlockingStatus(userId: UserId, isBlocking: Boolean)
+    @Query(
+        """UPDATE relationship SET blocking = :isBlocking 
+        WHERE user_id = :userId AND source_user_id = :sourceUserId"""
+    )
+    internal abstract suspend fun updateBlockingStatus(
+        userId: UserId,
+        sourceUserId: UserId,
+        isBlocking: Boolean
+    )
 
-    @Query("UPDATE relationship SET want_retweets = :wantRetweets WHERE user_id = :userId")
-    abstract suspend fun updateWantRetweetsStatus(userId: UserId, wantRetweets: Boolean)
+    @Query(
+        """UPDATE relationship SET want_retweets = :wantRetweets 
+        WHERE user_id = :userId AND source_user_id = :sourceUserId"""
+    )
+    abstract suspend fun updateWantRetweetsStatus(
+        userId: UserId,
+        sourceUserId: UserId,
+        wantRetweets: Boolean
+    )
 
-    @Query("SELECT * FROM relationship WHERE user_id = :userId")
+    @Query("SELECT * FROM relationship WHERE user_id = :userId AND source_user_id = :sourceUserId")
     internal abstract fun findRelationshipByTargetUserId(
-        userId: UserId
+        userId: UserId,
+        sourceUserId: UserId,
     ): Flow<RelationshipEntity?>
 
     private fun Relationship.toEntity(): RelationshipEntity {
         return RelationshipEntity(
-            userId,
+            targetUserId,
             following,
             blocking,
             muting,
             wantRetweets,
-            notificationsEnabled
+            notificationsEnabled,
+            sourceUserId,
         )
     }
 }

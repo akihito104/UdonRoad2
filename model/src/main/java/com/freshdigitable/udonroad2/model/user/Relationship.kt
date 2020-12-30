@@ -17,10 +17,13 @@
 package com.freshdigitable.udonroad2.model.user
 
 interface Relationship {
-    val userId: UserId
+    val targetUserId: UserId
     val following: Boolean
     val blocking: Boolean
     val muting: Boolean
     val wantRetweets: Boolean
     val notificationsEnabled: Boolean
+    val sourceUserId: UserId
+
+    companion object
 }
