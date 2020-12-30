@@ -35,6 +35,7 @@ import com.freshdigitable.udonroad2.test_common.MockVerified
 import com.google.common.truth.Truth.assertThat
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Rule
@@ -195,6 +196,32 @@ class TweetRepositoryTest {
             // verify
             assertThat(tweetListItem(target.id)?.quoted?.isFavorited).isTrue()
         }
+
+        @Test
+        fun findTweetListItem_forQuotedTweet() = rule.runs {
+            // setup
+            val targetQuotedTweet = checkNotNull(target.quotedTweet)
+            val targetQuotedTweetId = targetQuotedTweet.id
+            setupFetchTweet(targetQuotedTweetId, targetQuotedTweet)
+
+            // exercise
+            val actual = sut.findTweetListItem(targetQuotedTweetId)
+
+            // verify
+            assertThat(actual?.originalId).isEqualTo(targetQuotedTweetId)
+        }
+
+        @Test
+        fun getTweetItemSource_forQuotedTweet() = rule.runs {
+            // setup
+            val targetQuotedTweetId = checkNotNull(target.quotedTweet).id
+
+            // exercise
+            val actual = sut.getTweetItemSource(targetQuotedTweetId).first()
+
+            // verify
+            assertThat(actual?.originalId).isEqualTo(targetQuotedTweetId)
+        }
     }
 
     @RunWith(AndroidJUnit4::class)
@@ -335,7 +362,6 @@ class TweetRepositoryTestRule : TestWatcher() {
     }
 
     override fun starting(description: Description?) {
-        println("start::: $description")
         super.starting(description)
         prefs.setCurrentUserId(currentUser)
     }
@@ -343,6 +369,11 @@ class TweetRepositoryTestRule : TestWatcher() {
     override fun apply(base: Statement?, description: Description?): Statement {
         return RuleChain.outerRule(restClient)
             .apply(super.apply(base, description), description)
+    }
+
+    override fun finished(description: Description?) {
+        super.finished(description)
+        db.close()
     }
 
     internal fun runs(block: suspend TweetRepositoryTestRule.() -> Unit): Unit = runBlocking {
@@ -370,8 +401,12 @@ class TweetRepositoryTestRule : TestWatcher() {
         coSetupResponseWithVerify(target = { mock.postLike(targetId) }, res)
     }
 
+    internal fun setupFetchTweet(targetId: TweetId, res: TweetEntity) = restClient.apply {
+        coSetupResponseWithVerify(target = { mock.fetchTweet(targetId) }, res)
+    }
+
     internal suspend fun tweetListItem(tweetId: TweetId): TweetListItem? {
-        return db.tweetDao().findTweetListItem(tweetId)
+        return db.tweetDao().findDetailTweetListItem(tweetId, currentUser)
     }
 }
 

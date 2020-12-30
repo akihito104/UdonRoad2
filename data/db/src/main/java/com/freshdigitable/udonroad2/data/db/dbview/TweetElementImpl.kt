@@ -24,9 +24,12 @@ import androidx.room.Relation
 import com.freshdigitable.udonroad2.data.db.dbview.TweetListItemDbView.TweetElementDbView
 import com.freshdigitable.udonroad2.data.db.entity.UserReplyEntityDb
 import com.freshdigitable.udonroad2.model.TweetMediaItem
+import com.freshdigitable.udonroad2.model.tweet.DetailTweetElement
+import com.freshdigitable.udonroad2.model.tweet.DetailTweetListItem
 import com.freshdigitable.udonroad2.model.tweet.TweetElement
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
+import com.freshdigitable.udonroad2.model.tweet.UserReplyEntity
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import org.threeten.bp.Instant
 
@@ -163,10 +166,9 @@ internal data class TweetListItemImpl(
         )
 
     override val quoted: TweetElement?
-        @Ignore get() = when (val q = tweetListItem.quoted) {
-            null -> null
-            else -> TweetElementImpl(
-                q,
+        @Ignore get() = tweetListItem.quoted?.let {
+            TweetElementImpl(
+                it,
                 quoteMediaItems,
                 isQuoteRetweeted,
                 isQuoteFavorited,
@@ -189,4 +191,32 @@ internal data class TweetElementImpl(
     override val user: TweetUserItem get() = tweet.user
     override val source: String get() = tweet.source
     override val createdAt: Instant get() = tweet.createdAt
+}
+
+internal data class DetailTweetListItemImpl(
+    @Embedded
+    private val tweetListItem: TweetListItemImpl,
+) : DetailTweetListItem {
+    @Relation(entity = UserReplyEntityDb::class, parentColumn = "id", entityColumn = "tweet_id")
+    var bodyReplyEntities: List<UserReplyEntityDb> = emptyList()
+
+    @Relation(entity = UserReplyEntityDb::class, parentColumn = "qt_id", entityColumn = "tweet_id")
+    var quotedReplyEntity: List<UserReplyEntityDb> = emptyList()
+
+    override val body: DetailTweetElement
+        @Ignore get() = object : DetailTweetElement, TweetElement by tweetListItem.body {
+            override val replyEntities: List<UserReplyEntity>
+                get() = bodyReplyEntities
+        }
+    override val quoted: DetailTweetElement?
+        @Ignore get() = tweetListItem.quoted?.let {
+            val rep = quotedReplyEntity
+            object : DetailTweetElement, TweetElement by it {
+                override val replyEntities: List<UserReplyEntity> = rep
+            }
+        }
+    override val originalId: TweetId
+        @Ignore get() = tweetListItem.originalId
+    override val originalUser: TweetUserItem
+        @Ignore get() = tweetListItem.originalUser
 }

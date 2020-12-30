@@ -23,6 +23,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import com.freshdigitable.udonroad2.data.db.AppDatabase
+import com.freshdigitable.udonroad2.data.db.dbview.DetailTweetListItemImpl
 import com.freshdigitable.udonroad2.data.db.dbview.TweetListItemImpl
 import com.freshdigitable.udonroad2.data.db.entity.Favorited
 import com.freshdigitable.udonroad2.data.db.entity.MediaUrlEntity
@@ -39,19 +40,41 @@ import com.freshdigitable.udonroad2.data.db.ext.toTweetEntityDb
 import com.freshdigitable.udonroad2.model.ListId
 import com.freshdigitable.udonroad2.model.MediaEntity
 import com.freshdigitable.udonroad2.model.MediaId
+import com.freshdigitable.udonroad2.model.tweet.DetailTweetListItem
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.tweet.UserReplyEntity
 import com.freshdigitable.udonroad2.model.user.UserId
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.distinctUntilChanged
 
 @Dao
 abstract class TweetDao(
     private val db: AppDatabase
 ) {
     companion object {
-        private const val QUERY_TWEET_LIST_ITEM_MEMBERS = """
+        private const val QUERY_FIND_DETAIL_TWEET_ITEM_BY_ID = """
+        SELECT v.*, 
+         b_r.tweet_id NOT NULL AS is_retweeted, 
+         b_r.retweet_id AS retweet_id_by_current_user,
+         b_f.tweet_id NOT NULL AS is_favorited,
+         q_r.tweet_id NOT NULL AS qt_is_retweeted, 
+         q_r.retweet_id AS qt_retweet_id_by_current_user,
+         q_f.tweet_id NOT NULL AS qt_is_favorited
+        FROM view_tweet_list_item AS v
+         LEFT OUTER JOIN retweeted AS b_r ON :currentUserId = b_r.source_user_id
+           AND v.id = b_r.tweet_id
+         LEFT OUTER JOIN favorited AS b_f ON :currentUserId = b_f.source_user_id
+           AND v.id = b_f.tweet_id
+         LEFT OUTER JOIN retweeted AS q_r ON :currentUserId = q_r.source_user_id
+           AND v.qt_id = q_r.tweet_id
+         LEFT OUTER JOIN favorited AS q_f ON :currentUserId = q_f.source_user_id
+           AND v.qt_id = q_f.tweet_id
+        WHERE v.original_id = :tweetId"""
+    }
+
+    @Transaction
+    @Query(
+        """
         SELECT v.*, 
          b_r.tweet_id NOT NULL AS is_retweeted, 
          b_r.retweet_id AS retweet_id_by_current_user,
@@ -69,29 +92,35 @@ abstract class TweetDao(
          LEFT OUTER JOIN retweeted AS q_r ON list.owner_id = q_r.source_user_id
            AND v.qt_id = q_r.tweet_id
          LEFT OUTER JOIN favorited AS q_f ON list.owner_id = q_f.source_user_id
-           AND v.qt_id = q_f.tweet_id"""
-        private const val QUERY_FIND_TWEET_LIST_ITEM_BY_ID =
-            "$QUERY_TWEET_LIST_ITEM_MEMBERS WHERE l.original_id = :id LIMIT 1"
-    }
-
-    @Transaction
-    @Query("$QUERY_TWEET_LIST_ITEM_MEMBERS WHERE l.list_id = :owner ORDER BY l.original_id DESC")
+           AND v.qt_id = q_f.tweet_id
+        WHERE l.list_id = :owner
+        ORDER BY l.original_id DESC"""
+    )
     internal abstract fun getTimeline(owner: ListId): DataSource.Factory<Int, TweetListItemImpl>
 
     @Transaction
-    @Query(QUERY_FIND_TWEET_LIST_ITEM_BY_ID)
-    internal abstract fun getTweetListItemSourceById(id: TweetId): Flow<TweetListItemImpl?>
-    open fun getTweetListItemSource(
-        id: TweetId
-    ): Flow<com.freshdigitable.udonroad2.model.tweet.TweetListItem?> =
-        getTweetListItemSourceById(id).distinctUntilChanged()
+    @Query(QUERY_FIND_DETAIL_TWEET_ITEM_BY_ID)
+    internal abstract suspend fun findDetailTweetListItemById(
+        tweetId: TweetId,
+        currentUserId: UserId,
+    ): DetailTweetListItemImpl?
+
+    suspend fun findDetailTweetListItem(
+        tweetId: TweetId,
+        currentUserId: UserId
+    ): DetailTweetListItem? = findDetailTweetListItemById(tweetId, currentUserId)
 
     @Transaction
-    @Query(QUERY_FIND_TWEET_LIST_ITEM_BY_ID)
-    internal abstract suspend fun findTweetListItemById(id: TweetId): TweetListItemImpl?
-    open suspend fun findTweetListItem(
-        id: TweetId
-    ): com.freshdigitable.udonroad2.model.tweet.TweetListItem? = findTweetListItemById(id)
+    @Query(QUERY_FIND_DETAIL_TWEET_ITEM_BY_ID)
+    internal abstract fun getDetailTweetListItemSourceById(
+        tweetId: TweetId,
+        currentUserId: UserId,
+    ): Flow<DetailTweetListItemImpl?>
+
+    fun getDetailTweetListItemSource(
+        tweetId: TweetId,
+        currentUserId: UserId
+    ): Flow<DetailTweetListItem?> = getDetailTweetListItemSourceById(tweetId, currentUserId)
 
     @Transaction
     open suspend fun addTweet(tweet: TweetEntity, ownerUserId: UserId) {

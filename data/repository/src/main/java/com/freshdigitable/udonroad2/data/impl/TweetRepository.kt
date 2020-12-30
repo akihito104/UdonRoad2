@@ -16,13 +16,14 @@ class TweetRepository(
     private val prefs: SharedPreferenceDataSource,
     private val restClient: TweetApiClient,
 ) {
-    fun getTweetItemSource(id: TweetId): Flow<TweetListItem?> = dao.getTweetListItemSource(id)
+    fun getTweetItemSource(id: TweetId): Flow<TweetListItem?> =
+        dao.getDetailTweetListItemSource(id, checkNotNull(prefs.getCurrentUserId()))
 
     suspend fun findTweetListItem(id: TweetId): TweetListItem? {
         val currentUserId = checkNotNull(prefs.getCurrentUserId())
         val tweet = restClient.fetchTweet(id)
         dao.addTweet(tweet, currentUserId)
-        return dao.findTweetListItem(id)
+        return dao.findDetailTweetListItem(id, currentUserId)
     }
 
     suspend fun postLike(id: TweetId): TweetEntity {
