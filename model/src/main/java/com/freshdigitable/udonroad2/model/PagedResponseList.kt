@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020. Matsuda, Akihit (akihito104)
+ * Copyright (c) 2021. Matsuda, Akihit (akihito104)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,12 @@
  * limitations under the License.
  */
 
-package com.freshdigitable.udonroad2.data.restclient.data
+package com.freshdigitable.udonroad2.model
 
-internal class PagedResponseList<E>(
+class PagedResponseList<E>(
     val list: List<E>,
-    val nextCursor: Long
-) : List<E> by list
+    val nextCursor: Long? = null,
+    val prevCursor: Long? = null,
+) : List<E> by list {
+    companion object
+}
