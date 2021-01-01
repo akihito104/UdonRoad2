@@ -19,25 +19,23 @@ package com.freshdigitable.udonroad2.data
 import androidx.lifecycle.LiveData
 import androidx.paging.DataSource
 import androidx.paging.PagedList
+import com.freshdigitable.udonroad2.model.ListEntity
 import com.freshdigitable.udonroad2.model.ListId
 import com.freshdigitable.udonroad2.model.ListQuery
-import com.freshdigitable.udonroad2.model.PageOption
 import com.freshdigitable.udonroad2.model.PagedResponseList
 import com.freshdigitable.udonroad2.model.QueryType
 
 interface ListRepository<Q : QueryType> {
     val loading: LiveData<Boolean>
 
-    fun loadList(query: ListQuery<Q>, owner: ListId)
-    fun clear(owner: ListId)
+    suspend fun prependList(query: Q, owner: ListId)
+    suspend fun appendList(query: Q, owner: ListId)
+    suspend fun clear(owner: ListId)
 }
 
 interface PagedListProvider<Q : QueryType, I : Any> {
-    fun getList(
-        queryType: Q,
-        owner: ListId,
-        onEndPageOption: (I) -> PageOption = { _ -> PageOption.OnTail() }
-    ): LiveData<PagedList<I>>
+    fun getList(queryType: Q, owner: ListId): LiveData<PagedList<I>>
+    fun clear()
 
     interface DataSourceFactory<I> {
         fun getDataSourceFactory(owner: ListId): DataSource.Factory<Int, I>
@@ -45,6 +43,8 @@ interface PagedListProvider<Q : QueryType, I : Any> {
 }
 
 interface LocalListDataSource<Q : QueryType, E : Any> {
+    suspend fun findListEntity(id: ListId): ListEntity?
+    suspend fun getListItemCount(id: ListId): Int
     suspend fun putList(entities: PagedResponseList<E>, query: ListQuery<Q>, owner: ListId)
     suspend fun clean(owner: ListId)
 }

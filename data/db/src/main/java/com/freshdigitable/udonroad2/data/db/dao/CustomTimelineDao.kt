@@ -10,9 +10,11 @@ import com.freshdigitable.udonroad2.data.db.AppDatabase
 import com.freshdigitable.udonroad2.data.db.dbview.CustomTimelineListItemDb
 import com.freshdigitable.udonroad2.data.db.entity.CustomTimelineDb
 import com.freshdigitable.udonroad2.data.db.entity.CustomTimelineListDb
+import com.freshdigitable.udonroad2.data.db.entity.updateCursorById
 import com.freshdigitable.udonroad2.data.db.ext.toEntity
 import com.freshdigitable.udonroad2.model.CustomTimelineEntity
 import com.freshdigitable.udonroad2.model.ListId
+import com.freshdigitable.udonroad2.model.PagedResponseList
 
 @Dao
 abstract class CustomTimelineDao(
@@ -31,7 +33,7 @@ abstract class CustomTimelineDao(
 
     @Transaction
     internal open suspend fun addCustomTimeline(
-        entities: List<CustomTimelineEntity>,
+        entities: PagedResponseList<CustomTimelineEntity>,
         owner: ListId?
     ) {
         val users = entities.map { it.user.toEntity() }
@@ -40,6 +42,7 @@ abstract class CustomTimelineDao(
         addCustomTimelineEntities(customTimelines)
 
         if (owner != null) {
+            db.listDao().updateCursorById(entities, owner)
             val listEntity = entities.map { e ->
                 CustomTimelineListDb(customTimelineId = e.id, listId = owner)
             }
@@ -57,6 +60,9 @@ abstract class CustomTimelineDao(
 
     @Query("DELETE FROM custom_timeline_list WHERE list_id = :owner")
     internal abstract suspend fun deleteByListId(owner: ListId)
+
+    @Query("SELECT COUNT() FROM custom_timeline_list WHERE list_id = :id")
+    abstract suspend fun getItemCountByListId(id: ListId): Int
 
     suspend fun clear(owner: ListId) {
         db.listDao().deleteList(owner)

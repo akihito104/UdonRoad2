@@ -72,6 +72,14 @@ operator fun TweetId.plus(adder: Long): TweetId = TweetId(
     this.value + adder
 )
 
+operator fun TweetId.plus(adder: Int): TweetId = TweetId(
+    this.value + adder.toLong()
+)
+
+operator fun TweetId.minus(adder: Int): TweetId = TweetId(
+    this.value - adder.toLong()
+)
+
 interface DetailTweetElement : TweetElement {
     val replyEntities: List<UserReplyEntity>
 }

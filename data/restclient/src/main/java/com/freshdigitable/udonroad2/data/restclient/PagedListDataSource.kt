@@ -16,19 +16,11 @@ import javax.inject.Inject
 
 private class PagedListDataSource<Q : QueryType, E : Any>(
     private val twitter: AppTwitter,
-    private val fetchBlock: Twitter.(ListQuery<Q>, Long) -> PagedResponseList<E>
+    private val fetchBlock: Twitter.(ListQuery<Q>) -> PagedResponseList<E>
 ) : RemoteListDataSource<Q, E> {
 
-    @Deprecated("to be deleted")
-    var nextCursor: Long = -1
-
-    override suspend fun getList(query: ListQuery<Q>): PagedResponseList<E> {
-        return when (nextCursor) {
-            0L -> PagedResponseList(emptyList())
-            else -> twitter.fetch {
-                fetchBlock(query, nextCursor).also { nextCursor = it.nextCursor ?: 0 }
-            }
-        }
+    override suspend fun getList(query: ListQuery<Q>): PagedResponseList<E> = twitter.fetch {
+        fetchBlock(query)
     }
 }
 
@@ -36,8 +28,8 @@ class FollowerListDataSource @Inject constructor(
     twitter: AppTwitter
 ) : RemoteListDataSource<UserQueryType.Follower, UserEntity> by PagedListDataSource(
     twitter,
-    { query, nextCursor ->
-        getFollowersList(query.type.userId.value, nextCursor)
+    { query ->
+        getFollowersList(query.type.userId.value, query.pageOption.maxId ?: -1)
             .toPagedResponseList(User::toEntity)
     }
 )
@@ -46,8 +38,9 @@ class FollowingListDataSource @Inject constructor(
     twitter: AppTwitter
 ) : RemoteListDataSource<UserQueryType.Following, UserEntity> by PagedListDataSource(
     twitter,
-    { query, nextCursor ->
-        getFriendsList(query.type.userId.value, nextCursor).toPagedResponseList(User::toEntity)
+    { query ->
+        getFriendsList(query.type.userId.value, query.pageOption.maxId ?: -1)
+            .toPagedResponseList(User::toEntity)
     }
 )
 
@@ -55,9 +48,9 @@ class ListMembershipListDataSource @Inject constructor(
     twitter: AppTwitter
 ) : RemoteListDataSource<QueryType.UserListMembership, CustomTimelineEntity> by PagedListDataSource(
     twitter,
-    { query, nextCursor ->
+    { query ->
         getUserListMemberships(
-            query.type.userId.value, query.pageOption.count, nextCursor
+            query.type.userId.value, query.pageOption.count, query.pageOption.maxId ?: -1
         ).toPagedResponseList(UserList::toEntity)
     }
 )

@@ -17,12 +17,11 @@
 package com.freshdigitable.udonroad2.timeline.viewmodel
 
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.viewModelScope
 import androidx.paging.PagedList
 import com.freshdigitable.udonroad2.data.ListRepository
 import com.freshdigitable.udonroad2.data.PagedListProvider
 import com.freshdigitable.udonroad2.model.ListOwner
-import com.freshdigitable.udonroad2.model.ListQuery
-import com.freshdigitable.udonroad2.model.PageOption
 import com.freshdigitable.udonroad2.model.QueryType.TweetQueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
@@ -38,6 +37,7 @@ import com.freshdigitable.udonroad2.timeline.TimelineViewState
 import com.freshdigitable.udonroad2.timeline.TweetListEventListener
 import com.freshdigitable.udonroad2.timeline.TweetListItemClickListener
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx2.asFlow
 import timber.log.Timber
 
@@ -46,34 +46,31 @@ class TimelineViewModel(
     private val eventDispatcher: EventDispatcher,
     viewStates: TimelineViewState,
     private val homeRepository: ListRepository<TweetQueryType>,
-    pagedListProvider: PagedListProvider<TweetQueryType, TweetListItem>
+    private val pagedListProvider: PagedListProvider<TweetQueryType, TweetListItem>
 ) : ListItemLoadableViewModel<TweetQueryType, TweetListItem>(),
     TweetListItemClickListener,
     TweetListEventListener {
 
     override val timeline: LiveData<PagedList<TweetListItem>> =
-        pagedListProvider.getList(owner.query, owner.id) { i ->
-            PageOption.OnTail(i.originalId.value - 1)
-        }
+        pagedListProvider.getList(owner.query, owner.id)
 
     override val loading: LiveData<Boolean> = homeRepository.loading
     override val navigationEvent: Flow<NavigationEvent> = viewStates.updateNavHost.asFlow()
     override val feedbackMessage: Flow<FeedbackMessage> = viewStates.updateTweet.asFlow()
 
     override fun onRefresh() {
-        val items = timeline.value
-        val query = if (items?.isNotEmpty() == true) {
-            ListQuery(owner.query, PageOption.OnHead(items.first().originalId.value + 1))
-        } else {
-            ListQuery(owner.query, PageOption.OnInit)
+        viewModelScope.launch {
+            homeRepository.prependList(owner.query, owner.id)
         }
-        homeRepository.loadList(query, owner.id)
     }
 
     override fun onCleared() {
         Timber.tag("TimelineViewModel").d("onCleared: $owner")
         super.onCleared()
-        homeRepository.clear(owner.id)
+        pagedListProvider.clear()
+        viewModelScope.launch {
+            homeRepository.clear(owner.id)
+        }
     }
 
     override val selectedItemId: LiveData<SelectedItemId?> = viewStates.selectedItemId

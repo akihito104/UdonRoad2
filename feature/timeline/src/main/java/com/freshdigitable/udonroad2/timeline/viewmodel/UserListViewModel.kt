@@ -1,12 +1,11 @@
 package com.freshdigitable.udonroad2.timeline.viewmodel
 
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.viewModelScope
 import androidx.paging.PagedList
 import com.freshdigitable.udonroad2.data.ListRepository
 import com.freshdigitable.udonroad2.data.PagedListProvider
 import com.freshdigitable.udonroad2.model.ListOwner
-import com.freshdigitable.udonroad2.model.ListQuery
-import com.freshdigitable.udonroad2.model.PageOption
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
@@ -18,13 +17,14 @@ import com.freshdigitable.udonroad2.timeline.ListItemLoadableViewModel
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.launch
 import timber.log.Timber
 
 class UserListViewModel(
     private val owner: ListOwner<QueryType.UserQueryType>,
     private val eventDispatcher: EventDispatcher,
     private val repository: ListRepository<QueryType.UserQueryType>,
-    pagedListProvider: PagedListProvider<QueryType.UserQueryType, UserListItem>
+    private val pagedListProvider: PagedListProvider<QueryType.UserQueryType, UserListItem>
 ) : ListItemLoadableViewModel<QueryType.UserQueryType, UserListItem>(),
     ListItemClickListener<UserListItem> {
 
@@ -35,17 +35,17 @@ class UserListViewModel(
         get() = repository.loading
 
     override fun onRefresh() {
-        val q = if (timeline.value?.isNotEmpty() == true) {
-            ListQuery(owner.query, PageOption.OnHead())
-        } else {
-            ListQuery(owner.query, PageOption.OnInit)
+        viewModelScope.launch {
+            repository.prependList(owner.query, owner.id)
         }
-        repository.loadList(q, owner.id)
     }
 
     override fun onCleared() {
         super.onCleared()
-        repository.clear(owner.id)
+        pagedListProvider.clear()
+        viewModelScope.launch {
+            repository.clear(owner.id)
+        }
     }
 
     override fun onBodyItemClicked(item: UserListItem) {

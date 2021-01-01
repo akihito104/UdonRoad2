@@ -33,6 +33,7 @@ import com.freshdigitable.udonroad2.data.db.entity.TweetEntityDb
 import com.freshdigitable.udonroad2.data.db.entity.TweetListEntity
 import com.freshdigitable.udonroad2.data.db.entity.UserReplyEntityDb
 import com.freshdigitable.udonroad2.data.db.entity.VideoValiantEntity
+import com.freshdigitable.udonroad2.data.db.entity.updateCursorById
 import com.freshdigitable.udonroad2.data.db.ext.toDbEntity
 import com.freshdigitable.udonroad2.data.db.ext.toEntity
 import com.freshdigitable.udonroad2.data.db.ext.toListEntity
@@ -40,6 +41,7 @@ import com.freshdigitable.udonroad2.data.db.ext.toTweetEntityDb
 import com.freshdigitable.udonroad2.model.ListId
 import com.freshdigitable.udonroad2.model.MediaEntity
 import com.freshdigitable.udonroad2.model.MediaId
+import com.freshdigitable.udonroad2.model.PagedResponseList
 import com.freshdigitable.udonroad2.model.tweet.DetailTweetListItem
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
 import com.freshdigitable.udonroad2.model.tweet.TweetId
@@ -164,7 +166,7 @@ abstract class TweetDao(
 
     @Transaction
     internal open suspend fun addTweetsToList(
-        tweet: List<TweetEntity>,
+        tweet: PagedResponseList<TweetEntity>,
         owner: ListId
     ) {
         addTweets(tweet)
@@ -172,6 +174,8 @@ abstract class TweetDao(
 
         val listOwner = db.listDao().getListById(owner)
         addReactions(tweet, listOwner.ownerId)
+
+        db.listDao().updateCursorById(tweet, owner)
     }
 
     private suspend fun addTweets(tweet: List<TweetEntity>) {
@@ -251,6 +255,9 @@ abstract class TweetDao(
 
     @Query("DELETE FROM tweet_list WHERE list_id = :owner")
     internal abstract suspend fun deleteByListId(owner: ListId)
+
+    @Query("SELECT COUNT() FROM tweet_list WHERE list_id = :id")
+    abstract suspend fun getItemCountByListId(id: ListId): Int
 
     suspend fun clear(owner: ListId) {
         db.listDao().deleteList(owner)

@@ -18,8 +18,8 @@ package com.freshdigitable.udonroad2.model
 
 class PagedResponseList<E>(
     val list: List<E>,
-    val nextCursor: Long? = null,
-    val prevCursor: Long? = null,
+    val prependCursor: Long? = null,
+    val appendCursor: Long? = null,
 ) : List<E> by list {
     companion object
 }

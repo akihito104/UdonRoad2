@@ -29,8 +29,10 @@ import com.freshdigitable.udonroad2.data.db.AppDatabase
 import com.freshdigitable.udonroad2.data.db.dbview.UserListDbView
 import com.freshdigitable.udonroad2.data.db.entity.UserEntityDb
 import com.freshdigitable.udonroad2.data.db.entity.UserListEntity
+import com.freshdigitable.udonroad2.data.db.entity.updateCursorById
 import com.freshdigitable.udonroad2.data.db.ext.toEntity
 import com.freshdigitable.udonroad2.model.ListId
+import com.freshdigitable.udonroad2.model.PagedResponseList
 import com.freshdigitable.udonroad2.model.user.UserEntity
 import com.freshdigitable.udonroad2.model.user.UserId
 import kotlinx.coroutines.flow.Flow
@@ -67,13 +69,17 @@ abstract class UserDao(
     open fun getUserFlowById(id: UserId): Flow<UserEntity?> = getUserFlow(id).distinctUntilChanged()
 
     @Transaction
-    internal open suspend fun addUsers(entities: List<UserEntityDb>, owner: ListId? = null) {
-        addUsers(entities)
+    internal open suspend fun addUsers(
+        entities: PagedResponseList<UserEntity>,
+        owner: ListId? = null
+    ) {
+        addUsers(entities.map { it.toEntity() })
         if (owner != null) {
             val listEntities = entities.map {
                 UserListEntity(userId = it.id, listId = owner)
             }
             addUserListEntities(listEntities)
+            db.listDao().updateCursorById(entities, owner)
         }
     }
 
@@ -92,6 +98,9 @@ abstract class UserDao(
 
     @Query("DELETE FROM user_list WHERE list_id = :owner")
     abstract suspend fun deleteByListId(owner: ListId)
+
+    @Query("SELECT COUNT() FROM user_list WHERE list_id = :id")
+    abstract suspend fun getItemCountByListId(id: ListId): Int
 
     suspend fun clear(owner: ListId) {
         db.listDao().deleteList(owner)

@@ -23,6 +23,8 @@ import com.freshdigitable.udonroad2.model.PageOption
 import com.freshdigitable.udonroad2.model.PagedResponseList
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
+import com.freshdigitable.udonroad2.model.tweet.minus
+import com.freshdigitable.udonroad2.model.tweet.plus
 import twitter4j.Paging
 import twitter4j.Query
 import twitter4j.Status
@@ -81,7 +83,7 @@ class MediaTimelineDataSource @Inject constructor(
             resultType = Query.ResultType.recent
         }
         val res = search(q).tweets
-        PagedResponseList.create(res, query)
+        PagedResponseList.create(res, query) // fixme: use search result to avoid redundancy request
     }
 }
 
@@ -92,21 +94,23 @@ fun PageOption.toPaging(): Paging {
     return paging
 }
 
+// fixme
 internal fun PagedResponseList.Companion.create(
-    list: List<Status>,
+    statuses: List<Status>,
     query: ListQuery<out QueryType.TweetQueryType>
 ): PagedResponseList<TweetEntity> {
-    val nextCursor = when (query.pageOption) {
-        PageOption.OnInit, is PageOption.OnHead -> list[0].id + 1
+    val list = statuses.map(Status::toEntity)
+    val prependCursor = when (query.pageOption) {
+        PageOption.OnInit, is PageOption.OnHead -> list.firstOrNull()?.let { it.id + 1 }
         is PageOption.OnTail -> null
     }
-    val prevCursor = when (query.pageOption) {
-        PageOption.OnInit, is PageOption.OnTail -> list[list.size - 1].id - 1
+    val appendCursor = when (query.pageOption) {
+        PageOption.OnInit, is PageOption.OnTail -> list.lastOrNull()?.let { it.id - 1 }
         is PageOption.OnHead -> null
     }
     return PagedResponseList(
-        list = list.map(Status::toEntity),
-        nextCursor = nextCursor,
-        prevCursor = prevCursor,
+        list = list,
+        prependCursor = prependCursor?.value,
+        appendCursor = appendCursor?.value,
     )
 }

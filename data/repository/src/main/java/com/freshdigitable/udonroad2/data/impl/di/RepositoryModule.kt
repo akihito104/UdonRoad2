@@ -79,7 +79,6 @@ fun <Q : QueryType> ListRepositoryComponent.listRepository(): ListRepository<Q> 
     return ListRepositoryImpl<Q, Any>(
         localListDataSourceProvider.get(query as Q),
         remoteListDataSourceProvider.get(query as Q),
-        appExecutor
     )
 }
 

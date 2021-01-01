@@ -3,9 +3,10 @@ package com.freshdigitable.udonroad2.data.db.dao
 import androidx.paging.DataSource
 import com.freshdigitable.udonroad2.data.LocalListDataSource
 import com.freshdigitable.udonroad2.data.PagedListProvider
-import com.freshdigitable.udonroad2.data.db.ext.toEntity
+import com.freshdigitable.udonroad2.data.db.entity.ListDao
 import com.freshdigitable.udonroad2.model.CustomTimelineEntity
 import com.freshdigitable.udonroad2.model.CustomTimelineItem
+import com.freshdigitable.udonroad2.model.ListEntity
 import com.freshdigitable.udonroad2.model.ListId
 import com.freshdigitable.udonroad2.model.ListQuery
 import com.freshdigitable.udonroad2.model.PagedResponseList
@@ -16,7 +17,8 @@ import com.freshdigitable.udonroad2.model.user.UserEntity
 import com.freshdigitable.udonroad2.model.user.UserListItem
 
 class TweetListDao(
-    private val dao: TweetDao
+    private val dao: TweetDao,
+    private val listDao: ListDao,
 ) : LocalListDataSource<QueryType.TweetQueryType, TweetEntity>,
     PagedListProvider.DataSourceFactory<TweetListItem> {
     override fun getDataSourceFactory(owner: ListId): DataSource.Factory<Int, TweetListItem> {
@@ -31,13 +33,17 @@ class TweetListDao(
         dao.addTweetsToList(entities, owner)
     }
 
+    override suspend fun findListEntity(id: ListId): ListEntity? = listDao.findListEntityById(id)
+    override suspend fun getListItemCount(id: ListId): Int = dao.getItemCountByListId(id)
+
     override suspend fun clean(owner: ListId) {
         dao.clear(owner)
     }
 }
 
 class UserListDao(
-    private val dao: UserDao
+    private val dao: UserDao,
+    private val listDao: ListDao,
 ) : LocalListDataSource<QueryType.UserQueryType, UserEntity>,
     PagedListProvider.DataSourceFactory<UserListItem> {
     override fun getDataSourceFactory(owner: ListId): DataSource.Factory<Int, UserListItem> {
@@ -49,8 +55,11 @@ class UserListDao(
         query: ListQuery<QueryType.UserQueryType>,
         owner: ListId
     ) {
-        dao.addUsers(entities.map { it.toEntity() }, owner)
+        dao.addUsers(entities, owner)
     }
+
+    override suspend fun findListEntity(id: ListId): ListEntity? = listDao.findListEntityById(id)
+    override suspend fun getListItemCount(id: ListId): Int = dao.getItemCountByListId(id)
 
     override suspend fun clean(owner: ListId) {
         dao.clear(owner)
@@ -58,7 +67,8 @@ class UserListDao(
 }
 
 class CustomTimelineListDao(
-    private val dao: CustomTimelineDao
+    private val dao: CustomTimelineDao,
+    private val listDao: ListDao,
 ) : LocalListDataSource<QueryType.UserListMembership, CustomTimelineEntity>,
     PagedListProvider.DataSourceFactory<CustomTimelineItem> {
     override fun getDataSourceFactory(owner: ListId): DataSource.Factory<Int, CustomTimelineItem> {
@@ -72,6 +82,9 @@ class CustomTimelineListDao(
     ) {
         dao.addCustomTimeline(entities, owner)
     }
+
+    override suspend fun findListEntity(id: ListId): ListEntity? = listDao.findListEntityById(id)
+    override suspend fun getListItemCount(id: ListId): Int = dao.getItemCountByListId(id)
 
     override suspend fun clean(owner: ListId) {
         dao.clear(owner)

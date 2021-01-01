@@ -28,6 +28,20 @@ data class ListOwner<Q : QueryType>(
     val value: String = "${id.value}"
 }
 
+interface ListEntity {
+    val id: ListId
+
+    /**
+     * to get list items that will be loaded upper side of current list.
+     */
+    val prependCursor: Long?
+
+    /**
+     * to get list items that will be loaded bottom side of current list.
+     */
+    val appendCursor: Long?
+}
+
 data class ListId(val value: Int) : Serializable
 
 interface ListOwnerGenerator {

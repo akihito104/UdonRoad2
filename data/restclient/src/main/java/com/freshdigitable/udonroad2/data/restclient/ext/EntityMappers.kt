@@ -106,11 +106,13 @@ internal fun UserList.toEntity(): CustomTimelineEntity {
     )
 }
 
+// fixme
 internal fun <I : TwitterResponse, O> PagableResponseList<I>.toPagedResponseList(
     mapper: (I) -> O
 ): PagedResponseList<O> = PagedResponseList(
     list = this.map(mapper),
-    nextCursor = if (this.hasNext()) this.nextCursor else null
+    appendCursor = if (this.hasNext()) this.nextCursor else null,
+    prependCursor = if (this.hasPrevious()) this.previousCursor else null,
 )
 
 internal fun twitter4j.MediaEntity.toItem(): MediaEntityRest {
