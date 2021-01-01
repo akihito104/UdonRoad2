@@ -22,6 +22,7 @@ import androidx.paging.PagedList
 import com.freshdigitable.udonroad2.model.ListId
 import com.freshdigitable.udonroad2.model.ListQuery
 import com.freshdigitable.udonroad2.model.PageOption
+import com.freshdigitable.udonroad2.model.PagedResponseList
 import com.freshdigitable.udonroad2.model.QueryType
 
 interface ListRepository<Q : QueryType> {
@@ -31,7 +32,7 @@ interface ListRepository<Q : QueryType> {
     fun clear(owner: ListId)
 }
 
-interface PagedListProvider<Q : QueryType, I> {
+interface PagedListProvider<Q : QueryType, I : Any> {
     fun getList(
         queryType: Q,
         owner: ListId,
@@ -43,11 +44,11 @@ interface PagedListProvider<Q : QueryType, I> {
     }
 }
 
-interface LocalListDataSource<Q : QueryType, E> {
-    suspend fun putList(entities: List<E>, query: ListQuery<Q>, owner: ListId)
+interface LocalListDataSource<Q : QueryType, E : Any> {
+    suspend fun putList(entities: PagedResponseList<E>, query: ListQuery<Q>, owner: ListId)
     suspend fun clean(owner: ListId)
 }
 
-interface RemoteListDataSource<Q : QueryType, E> {
-    suspend fun getList(query: ListQuery<Q>): List<E>
+interface RemoteListDataSource<Q : QueryType, E : Any> {
+    suspend fun getList(query: ListQuery<Q>): PagedResponseList<E>
 }

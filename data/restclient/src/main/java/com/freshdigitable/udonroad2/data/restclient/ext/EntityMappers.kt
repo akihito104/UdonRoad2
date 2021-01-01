@@ -19,7 +19,6 @@ package com.freshdigitable.udonroad2.data.restclient.ext
 import android.graphics.Color
 import com.freshdigitable.udonroad2.data.restclient.data.CustomTimelineEntityImpl
 import com.freshdigitable.udonroad2.data.restclient.data.MediaEntityRest
-import com.freshdigitable.udonroad2.data.restclient.data.PagedResponseList
 import com.freshdigitable.udonroad2.data.restclient.data.SizeRest
 import com.freshdigitable.udonroad2.data.restclient.data.TweetEntityRest
 import com.freshdigitable.udonroad2.data.restclient.data.UserEntityRest
@@ -30,6 +29,7 @@ import com.freshdigitable.udonroad2.model.CustomTimelineId
 import com.freshdigitable.udonroad2.model.MediaEntity
 import com.freshdigitable.udonroad2.model.MediaId
 import com.freshdigitable.udonroad2.model.MediaType
+import com.freshdigitable.udonroad2.model.PagedResponseList
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.tweet.UserReplyEntity
@@ -110,7 +110,7 @@ internal fun <I : TwitterResponse, O> PagableResponseList<I>.toPagedResponseList
     mapper: (I) -> O
 ): PagedResponseList<O> = PagedResponseList(
     list = this.map(mapper),
-    nextCursor = if (this.hasNext()) this.nextCursor else 0
+    nextCursor = if (this.hasNext()) this.nextCursor else null
 )
 
 internal fun twitter4j.MediaEntity.toItem(): MediaEntityRest {

@@ -25,6 +25,7 @@ import com.freshdigitable.udonroad2.data.db.AppDatabase
 import com.freshdigitable.udonroad2.data.db.dao.TweetListDao
 import com.freshdigitable.udonroad2.data.restclient.TweetApiClient
 import com.freshdigitable.udonroad2.model.ListQuery
+import com.freshdigitable.udonroad2.model.PagedResponseList
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
 import com.freshdigitable.udonroad2.model.tweet.TweetId
@@ -386,7 +387,11 @@ class TweetRepositoryTestRule : TestWatcher() {
     ) = db.apply {
         val listId = listDao().addList(userId)
         val tweetListDao = TweetListDao(tweetDao())
-        tweetListDao.putList(tweetList, ListQuery(QueryType.TweetQueryType.Timeline()), listId)
+        tweetListDao.putList(
+            PagedResponseList(tweetList),
+            ListQuery(QueryType.TweetQueryType.Timeline()),
+            listId
+        )
     }
 
     internal fun setupPostRetweet(targetId: TweetId, res: TweetEntity) = restClient.apply {

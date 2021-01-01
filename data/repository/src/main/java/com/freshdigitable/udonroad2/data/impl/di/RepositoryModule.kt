@@ -83,7 +83,7 @@ fun <Q : QueryType> ListRepositoryComponent.listRepository(): ListRepository<Q> 
     )
 }
 
-fun <Q : QueryType, I> ListRepositoryComponent.pagedListProvider(
+fun <Q : QueryType, I : Any> ListRepositoryComponent.pagedListProvider(
     repository: ListRepository<Q>
 ): PagedListProvider<Q, I> {
     return PagedListProviderImpl(

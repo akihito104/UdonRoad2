@@ -33,7 +33,7 @@ import com.freshdigitable.udonroad2.model.app.AppTwitterException
 import timber.log.Timber
 import java.io.IOException
 
-internal class ListRepositoryImpl<Q : QueryType, E>(
+internal class ListRepositoryImpl<Q : QueryType, E : Any>(
     private val localDataSource: LocalListDataSource<Q, E>,
     private val remoteDataSource: RemoteListDataSource<Q, E>,
     private val executor: AppExecutor
@@ -70,7 +70,7 @@ internal class ListRepositoryImpl<Q : QueryType, E>(
     }
 }
 
-internal class PagedListProviderImpl<Q : QueryType, I>(
+internal class PagedListProviderImpl<Q : QueryType, I : Any>(
     private val pagedListDataSourceFactory: PagedListProvider.DataSourceFactory<I>,
     private val repository: ListRepository<Q>,
     private val executor: AppExecutor

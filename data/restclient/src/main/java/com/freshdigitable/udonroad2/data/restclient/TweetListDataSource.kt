@@ -20,6 +20,7 @@ import com.freshdigitable.udonroad2.data.RemoteListDataSource
 import com.freshdigitable.udonroad2.data.restclient.ext.toEntity
 import com.freshdigitable.udonroad2.model.ListQuery
 import com.freshdigitable.udonroad2.model.PageOption
+import com.freshdigitable.udonroad2.model.PagedResponseList
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
 import twitter4j.Paging
@@ -33,18 +34,17 @@ class HomeTimelineDataSource @Inject constructor(
 
     override suspend fun getList(
         query: ListQuery<QueryType.TweetQueryType.Timeline>
-    ): List<TweetEntity> = twitter.fetch {
-        (
-            query.type.userId?.value?.let { id ->
-                when (query.pageOption) {
-                    PageOption.OnInit -> getUserTimeline(id)
-                    else -> getUserTimeline(id, query.pageOption.toPaging())
-                }
-            } ?: when (query.pageOption) {
-                PageOption.OnInit -> homeTimeline
-                else -> getHomeTimeline(query.pageOption.toPaging())
+    ): PagedResponseList<TweetEntity> = twitter.fetch {
+        val list = query.type.userId?.value?.let { id ->
+            when (query.pageOption) {
+                PageOption.OnInit -> getUserTimeline(id)
+                else -> getUserTimeline(id, query.pageOption.toPaging())
             }
-            ).map(Status::toEntity)
+        } ?: when (query.pageOption) {
+            PageOption.OnInit -> homeTimeline
+            else -> getHomeTimeline(query.pageOption.toPaging())
+        }
+        PagedResponseList.create(list, query)
     }
 }
 
@@ -54,18 +54,17 @@ class FavTimelineDataSource @Inject constructor(
 
     override suspend fun getList(
         query: ListQuery<QueryType.TweetQueryType.Fav>
-    ): List<TweetEntity> = twitter.fetch {
-        (
-            query.type.userId?.value?.let { id ->
-                when (query.pageOption) {
-                    PageOption.OnInit -> getFavorites(id)
-                    else -> getFavorites(id, query.pageOption.toPaging())
-                }
-            } ?: when (query.pageOption) {
-                PageOption.OnInit -> favorites
-                else -> getFavorites(query.pageOption.toPaging())
+    ): PagedResponseList<TweetEntity> = twitter.fetch {
+        val list = query.type.userId?.value?.let { id ->
+            when (query.pageOption) {
+                PageOption.OnInit -> getFavorites(id)
+                else -> getFavorites(id, query.pageOption.toPaging())
             }
-            ).map(Status::toEntity)
+        } ?: when (query.pageOption) {
+            PageOption.OnInit -> favorites
+            else -> getFavorites(query.pageOption.toPaging())
+        }
+        PagedResponseList.create(list, query)
     }
 }
 
@@ -74,14 +73,15 @@ class MediaTimelineDataSource @Inject constructor(
 ) : RemoteListDataSource<QueryType.TweetQueryType.Media, TweetEntity> {
     override suspend fun getList(
         query: ListQuery<QueryType.TweetQueryType.Media>
-    ): List<TweetEntity> = twitter.fetch {
+    ): PagedResponseList<TweetEntity> = twitter.fetch {
         val q = Query(query.type.query).apply {
             maxId = query.pageOption.maxId ?: -1
             sinceId = query.pageOption.sinceId ?: -1
             count = query.pageOption.count
             resultType = Query.ResultType.recent
         }
-        search(q).tweets.map(Status::toEntity)
+        val res = search(q).tweets
+        PagedResponseList.create(res, query)
     }
 }
 
@@ -90,4 +90,23 @@ fun PageOption.toPaging(): Paging {
     sinceId?.let { paging.sinceId = it }
     maxId?.let { paging.maxId = it }
     return paging
+}
+
+internal fun PagedResponseList.Companion.create(
+    list: List<Status>,
+    query: ListQuery<out QueryType.TweetQueryType>
+): PagedResponseList<TweetEntity> {
+    val nextCursor = when (query.pageOption) {
+        PageOption.OnInit, is PageOption.OnHead -> list[0].id + 1
+        is PageOption.OnTail -> null
+    }
+    val prevCursor = when (query.pageOption) {
+        PageOption.OnInit, is PageOption.OnTail -> list[list.size - 1].id - 1
+        is PageOption.OnHead -> null
+    }
+    return PagedResponseList(
+        list = list.map(Status::toEntity),
+        nextCursor = nextCursor,
+        prevCursor = prevCursor,
+    )
 }

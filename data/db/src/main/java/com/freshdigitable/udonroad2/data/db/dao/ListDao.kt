@@ -8,6 +8,7 @@ import com.freshdigitable.udonroad2.model.CustomTimelineEntity
 import com.freshdigitable.udonroad2.model.CustomTimelineItem
 import com.freshdigitable.udonroad2.model.ListId
 import com.freshdigitable.udonroad2.model.ListQuery
+import com.freshdigitable.udonroad2.model.PagedResponseList
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
@@ -23,7 +24,7 @@ class TweetListDao(
     }
 
     override suspend fun putList(
-        entities: List<TweetEntity>,
+        entities: PagedResponseList<TweetEntity>,
         query: ListQuery<QueryType.TweetQueryType>,
         owner: ListId
     ) {
@@ -44,7 +45,7 @@ class UserListDao(
     }
 
     override suspend fun putList(
-        entities: List<UserEntity>,
+        entities: PagedResponseList<UserEntity>,
         query: ListQuery<QueryType.UserQueryType>,
         owner: ListId
     ) {
@@ -65,7 +66,7 @@ class CustomTimelineListDao(
     }
 
     override suspend fun putList(
-        entities: List<CustomTimelineEntity>,
+        entities: PagedResponseList<CustomTimelineEntity>,
         query: ListQuery<QueryType.UserListMembership>,
         owner: ListId
     ) {

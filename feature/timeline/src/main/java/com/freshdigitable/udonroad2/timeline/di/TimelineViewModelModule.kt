@@ -157,7 +157,7 @@ internal interface CustomTimelineListViewModelModule {
     }
 }
 
-private inline fun <Q : QueryType, I> provideViewModel(
+private inline fun <Q : QueryType, I : Any> provideViewModel(
     owner: ListOwner<*>,
     listRepositoryFactory: ListRepositoryComponent.Factory,
     block: (ListOwner<Q>, ListRepository<Q>, PagedListProvider<Q, I>) -> ViewModel

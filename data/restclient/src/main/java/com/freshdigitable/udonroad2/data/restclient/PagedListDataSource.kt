@@ -1,11 +1,11 @@
 package com.freshdigitable.udonroad2.data.restclient
 
 import com.freshdigitable.udonroad2.data.RemoteListDataSource
-import com.freshdigitable.udonroad2.data.restclient.data.PagedResponseList
 import com.freshdigitable.udonroad2.data.restclient.ext.toEntity
 import com.freshdigitable.udonroad2.data.restclient.ext.toPagedResponseList
 import com.freshdigitable.udonroad2.model.CustomTimelineEntity
 import com.freshdigitable.udonroad2.model.ListQuery
+import com.freshdigitable.udonroad2.model.PagedResponseList
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.QueryType.UserQueryType
 import com.freshdigitable.udonroad2.model.user.UserEntity
@@ -14,18 +14,19 @@ import twitter4j.User
 import twitter4j.UserList
 import javax.inject.Inject
 
-private class PagedListDataSource<Q : QueryType, E>(
+private class PagedListDataSource<Q : QueryType, E : Any>(
     private val twitter: AppTwitter,
     private val fetchBlock: Twitter.(ListQuery<Q>, Long) -> PagedResponseList<E>
 ) : RemoteListDataSource<Q, E> {
 
+    @Deprecated("to be deleted")
     var nextCursor: Long = -1
 
-    override suspend fun getList(query: ListQuery<Q>): List<E> {
+    override suspend fun getList(query: ListQuery<Q>): PagedResponseList<E> {
         return when (nextCursor) {
-            0L -> emptyList()
+            0L -> PagedResponseList(emptyList())
             else -> twitter.fetch {
-                fetchBlock(query, nextCursor).also { nextCursor = it.nextCursor }
+                fetchBlock(query, nextCursor).also { nextCursor = it.nextCursor ?: 0 }
             }
         }
     }
