@@ -35,6 +35,8 @@ interface TweetEntity : TweetElement {
     val replyEntities: List<UserReplyEntity>
 
     override val media: List<MediaEntity>
+
+    companion object
 }
 
 interface UserReplyEntity {

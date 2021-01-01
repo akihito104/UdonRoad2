@@ -67,3 +67,16 @@ interface TweetElement {
 }
 
 data class TweetId(val value: Long) : Serializable
+
+operator fun TweetId.plus(adder: Long): TweetId = TweetId(
+    this.value + adder
+)
+
+interface DetailTweetElement : TweetElement {
+    val replyEntities: List<UserReplyEntity>
+}
+
+interface DetailTweetListItem : TweetListItem {
+    override val body: DetailTweetElement
+    override val quoted: DetailTweetElement?
+}

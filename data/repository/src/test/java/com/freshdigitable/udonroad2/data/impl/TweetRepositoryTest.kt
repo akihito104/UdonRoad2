@@ -29,11 +29,13 @@ import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
 import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
+import com.freshdigitable.udonroad2.model.tweet.plus
 import com.freshdigitable.udonroad2.model.user.UserId
 import com.freshdigitable.udonroad2.test_common.MockVerified
 import com.google.common.truth.Truth.assertThat
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Rule
@@ -51,10 +53,10 @@ class TweetRepositoryTest {
     @RunWith(AndroidJUnit4::class)
     class WhenPlainTweetListLoaded {
         companion object {
-            private val tweetList = (0..10).map { createTweetEntity(it) }
+            private val tweetList = (0..10).map { TweetEntity.create(it) }
             private val retweeted = tweetList[1]
             private val retweetResponse =
-                createTweetEntity(11, retweeted = createTweetEntity(retweeted.id, true))
+                TweetEntity.create(11, retweeted = TweetEntity.create(retweeted.id, true))
         }
 
         @get:Rule
@@ -78,7 +80,7 @@ class TweetRepositoryTest {
         @Test
         fun postUnretweet_passTweetIdOfRetweetResponse(): Unit = rule.runs {
             // setup
-            setupPostUnretweet(retweetResponse.id, createTweetEntity(retweeted.id))
+            setupPostUnretweet(retweetResponse.id, TweetEntity.create(retweeted.id))
             val res = sut.postRetweet(retweeted.id)
 
             // exercise
@@ -91,7 +93,7 @@ class TweetRepositoryTest {
         @Test
         fun postUnretweet_passTweetIdOfOriginal(): Unit = rule.runs {
             // setup
-            setupPostUnretweet(retweetResponse.id, createTweetEntity(retweeted.id))
+            setupPostUnretweet(retweetResponse.id, TweetEntity.create(retweeted.id))
             sut.postRetweet(retweeted.id)
 
             // exercise
@@ -103,17 +105,137 @@ class TweetRepositoryTest {
     }
 
     @RunWith(AndroidJUnit4::class)
+    class WhenQuotingTweetListLoaded {
+        companion object {
+            private val tweetList = (0..10).map {
+                TweetEntity.create(100 + it, quoted = TweetEntity.create(it))
+            }
+            private val target = tweetList[1]
+            private val retweetResponse = TweetEntity.create(
+                tweetList.last().id + 1L,
+                retweeted = TweetEntity.create(target.id, true)
+            )
+        }
+
+        @get:Rule
+        val rule = TweetRepositoryTestRule()
+
+        @Before
+        fun setup(): Unit = rule.runs {
+            setupTimeline(tweetList = tweetList)
+        }
+
+        @Test
+        fun postRetweet(): Unit = rule.runs {
+            // setup
+            setupPostRetweet(target.id, retweetResponse)
+
+            // exercise
+            sut.postRetweet(target.id)
+
+            // verify
+            assertThat(tweetListItem(target.id)?.body?.isRetweeted).isTrue()
+        }
+
+        @Test
+        fun postRetweet_forQuotedTweet(): Unit = rule.runs {
+            // setup
+            val targetId = checkNotNull(target.quotedTweet?.id)
+            setupPostRetweet(
+                targetId,
+                TweetEntity.create(
+                    tweetList.last().id + 1,
+                    retweeted = TweetEntity.create(targetId, isRetweeted = true)
+                )
+            )
+
+            // exercise
+            sut.postRetweet(targetId)
+
+            // verify
+            assertThat(tweetListItem(target.id)?.quoted?.isRetweeted).isTrue()
+        }
+
+        @Test
+        fun postUnretweet_passTweetIdOfRetweetResponse(): Unit = rule.runs {
+            // setup
+            setupPostRetweet(target.id, retweetResponse)
+            setupPostUnretweet(retweetResponse.id, TweetEntity.create(target.id))
+            val res = sut.postRetweet(target.id)
+
+            // exercise
+            sut.postUnretweet(res.id)
+
+            // verify
+            assertThat(tweetListItem(target.id)?.body?.isRetweeted).isFalse()
+        }
+
+        @Test
+        fun postUnretweet_passTweetIdOfOriginal(): Unit = rule.runs {
+            // setup
+            setupPostRetweet(target.id, retweetResponse)
+            setupPostUnretweet(retweetResponse.id, TweetEntity.create(target.id))
+            sut.postRetweet(target.id)
+
+            // exercise
+            sut.postUnretweet(target.id)
+
+            // verify
+            assertThat(tweetListItem(target.id)?.body?.isRetweeted).isFalse()
+        }
+
+        @Test
+        fun postLike_forQuotedTweet() = rule.runs {
+            // setup
+            val targetId = checkNotNull(target.quotedTweet?.id)
+            setupPostLike(targetId, TweetEntity.create(targetId, isFavorited = true))
+
+            // exercise
+            sut.postLike(targetId)
+
+            // verify
+            assertThat(tweetListItem(target.id)?.quoted?.isFavorited).isTrue()
+        }
+
+        @Test
+        fun findTweetListItem_forQuotedTweet() = rule.runs {
+            // setup
+            val targetQuotedTweet = checkNotNull(target.quotedTweet)
+            val targetQuotedTweetId = targetQuotedTweet.id
+            setupFetchTweet(targetQuotedTweetId, targetQuotedTweet)
+
+            // exercise
+            val actual = sut.findTweetListItem(targetQuotedTweetId)
+
+            // verify
+            assertThat(actual?.originalId).isEqualTo(targetQuotedTweetId)
+        }
+
+        @Test
+        fun getTweetItemSource_forQuotedTweet() = rule.runs {
+            // setup
+            val targetQuotedTweetId = checkNotNull(target.quotedTweet).id
+
+            // exercise
+            val actual = sut.getTweetItemSource(targetQuotedTweetId).first()
+
+            // verify
+            assertThat(actual?.originalId).isEqualTo(targetQuotedTweetId)
+        }
+    }
+
+    @RunWith(AndroidJUnit4::class)
     class WhenRetweetListLoaded {
         companion object {
             private val tweetList = (0..10).map {
-                createTweetEntity(100 + it, retweeted = createTweetEntity(it))
+                TweetEntity.create(100 + it, retweeted = TweetEntity.create(it))
             }
             private val retweeted = tweetList[1]
             private val retweetedBody = checkNotNull(retweeted.retweetedTweet)
-            private val retweetResponse = createTweetEntity(
+            private val retweetResponse = TweetEntity.create(
                 111,
                 isRetweeted = true,
-                retweeted = createTweetEntity(retweetedBody.id, true)
+                retweeted = TweetEntity.create(retweetedBody.id, true)
             )
         }
 
@@ -138,7 +260,7 @@ class TweetRepositoryTest {
         @Test
         fun postUnretweet_passTweetIdOfRetweetResponse(): Unit = rule.runs {
             // setup
-            setupPostUnretweet(retweetResponse.id, createTweetEntity(retweetedBody.id))
+            setupPostUnretweet(retweetResponse.id, TweetEntity.create(retweetedBody.id))
             val res = sut.postRetweet(retweeted.id)
 
             // exercise
@@ -151,7 +273,7 @@ class TweetRepositoryTest {
         @Test
         fun postUnretweet_passTweetIdOfOriginal(): Unit = rule.runs {
             // setup
-            setupPostUnretweet(retweetResponse.id, createTweetEntity(retweetedBody.id))
+            setupPostUnretweet(retweetResponse.id, TweetEntity.create(retweetedBody.id))
             sut.postRetweet(retweeted.id)
 
             // exercise
@@ -165,7 +287,7 @@ class TweetRepositoryTest {
     @RunWith(AndroidJUnit4::class)
     class WhenRetweetedByCurrentUserListIsLoaded {
         companion object {
-            private val tweetList = (0..10).map { createTweetEntity(it, true) }
+            private val tweetList = (0..10).map { TweetEntity.create(it, true) }
             private val targetTweet = tweetList[1]
         }
 
@@ -194,8 +316,8 @@ class TweetRepositoryTest {
     class WhenRetweetListRetweetedByCurrentUserIsLoaded {
         companion object {
             private val tweetList = (0..10).map {
-                createTweetEntity(
-                    100 + it, retweeted = createTweetEntity(it, isRetweeted = true)
+                TweetEntity.create(
+                    100 + it, retweeted = TweetEntity.create(it, isRetweeted = true)
                 )
             }
             private val targetTweet = tweetList[1]
@@ -249,6 +371,11 @@ class TweetRepositoryTestRule : TestWatcher() {
             .apply(super.apply(base, description), description)
     }
 
+    override fun finished(description: Description?) {
+        super.finished(description)
+        db.close()
+    }
+
     internal fun runs(block: suspend TweetRepositoryTestRule.() -> Unit): Unit = runBlocking {
         block()
     }
@@ -270,25 +397,38 @@ class TweetRepositoryTestRule : TestWatcher() {
         coSetupResponseWithVerify(target = { mock.postUnretweet(targetId) }, res = res)
     }
 
+    internal fun setupPostLike(targetId: TweetId, res: TweetEntity) = restClient.apply {
+        coSetupResponseWithVerify(target = { mock.postLike(targetId) }, res)
+    }
+
+    internal fun setupFetchTweet(targetId: TweetId, res: TweetEntity) = restClient.apply {
+        coSetupResponseWithVerify(target = { mock.fetchTweet(targetId) }, res)
+    }
+
     internal suspend fun tweetListItem(tweetId: TweetId): TweetListItem? {
-        return db.tweetDao().findTweetListItem(tweetId)
+        return db.tweetDao().findDetailTweetListItem(tweetId, currentUser)
     }
 }
 
-internal fun createTweetEntity(
+internal fun TweetEntity.Companion.create(
     id: Int,
     isRetweeted: Boolean = false,
+    isFavorited: Boolean = false,
     retweeted: TweetEntity? = null,
-): TweetEntity = createTweetEntity(TweetId(id.toLong()), isRetweeted, retweeted)
+    quoted: TweetEntity? = null,
+): TweetEntity = create(TweetId(id.toLong()), isRetweeted, isFavorited, retweeted, quoted)
 
-internal fun createTweetEntity(
+internal fun TweetEntity.Companion.create(
     id: TweetId,
     isRetweeted: Boolean = false,
+    isFavorited: Boolean = false,
     retweeted: TweetEntity? = null,
+    quoted: TweetEntity? = null,
 ): TweetEntity = mockk<TweetEntity>(relaxed = true).also {
     every { it.id } returns id
-    every { it.isFavorited } returns false
+    every { it.isFavorited } returns isFavorited
     every { it.isRetweeted } returns isRetweeted
     every { it.retweetedTweet } returns retweeted
     every { it.retweetIdByCurrentUser } returns null
+    every { it.quotedTweet } returns quoted
 }
