@@ -26,13 +26,13 @@ import com.freshdigitable.udonroad2.main.MainActivity
 import com.freshdigitable.udonroad2.model.AccessTokenEntity
 import com.freshdigitable.udonroad2.model.user.UserId
 import com.freshdigitable.udonroad2.test.TwitterRobot
-import com.freshdigitable.udonroad2.test.createRequestToken
-import com.freshdigitable.udonroad2.test.createStatus
-import com.freshdigitable.udonroad2.test.createUser
 import com.freshdigitable.udonroad2.test.intendingToAuthorizationUrl
 import com.freshdigitable.udonroad2.test.mainList
 import com.freshdigitable.udonroad2.test.oauth
 import com.freshdigitable.udonroad2.test.onMainActivity
+import com.freshdigitable.udonroad2.test_common.createRequestToken
+import com.freshdigitable.udonroad2.test_common.createStatus
+import com.freshdigitable.udonroad2.test_common.createUser
 import com.freshdigitable.udonroad2.user.TweetUserItemImpl
 import kotlinx.coroutines.runBlocking
 import org.junit.Before

@@ -34,7 +34,9 @@ android {
 
 dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
+    implementation project(":model")
     implementation Libs.KOTLIN_STDLIB_JDK
     implementation Libs.JUNIT
     implementation Libs.MOCKK_ANDROID
+    api Libs.TWITTER4J
 }

@@ -28,11 +28,11 @@ import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.model.user.UserId
 import com.freshdigitable.udonroad2.test.TwitterRobot
-import com.freshdigitable.udonroad2.test.createStatus
-import com.freshdigitable.udonroad2.test.createUser
 import com.freshdigitable.udonroad2.test.intendedWithExtras
 import com.freshdigitable.udonroad2.test.intendingWithExtras
 import com.freshdigitable.udonroad2.test.mainList
+import com.freshdigitable.udonroad2.test_common.createStatus
+import com.freshdigitable.udonroad2.test_common.createUser
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
