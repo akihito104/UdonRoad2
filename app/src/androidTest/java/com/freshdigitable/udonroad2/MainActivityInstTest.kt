@@ -135,7 +135,6 @@ class MainActivityInstTest {
             ) {
                 countingIdlingResource.decrement()
             }
-            twitterRobot.setupGetHomeTimeline({ any() }, emptyList())
             countingIdlingResource.increment()
             IdlingRegistry.getInstance().register(countingIdlingResource)
             intentsTestRule.launchActivity(null)

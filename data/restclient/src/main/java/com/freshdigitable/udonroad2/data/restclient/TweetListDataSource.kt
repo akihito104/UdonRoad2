@@ -24,8 +24,6 @@ import com.freshdigitable.udonroad2.model.PageOption
 import com.freshdigitable.udonroad2.model.PagedResponseList
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
-import com.freshdigitable.udonroad2.model.tweet.minus
-import com.freshdigitable.udonroad2.model.tweet.plus
 import twitter4j.Paging
 import twitter4j.Query
 import twitter4j.Status
@@ -38,16 +36,10 @@ class HomeTimelineDataSource @Inject constructor(
     override suspend fun getList(
         query: ListQuery<QueryType.TweetQueryType.Timeline>
     ): PagedResponseList<TweetEntity> = twitter.fetch {
-        val list = query.type.userId?.value?.let { id ->
-            when (query.pageOption) {
-                PageOption.OnInit -> getUserTimeline(id)
-                else -> getUserTimeline(id, query.pageOption.toPaging())
-            }
-        } ?: when (query.pageOption) {
-            PageOption.OnInit -> homeTimeline
-            else -> getHomeTimeline(query.pageOption.toPaging())
-        }
-        PagedResponseList.create(list)
+        val paging = query.pageOption.toPaging()
+        val list = query.type.userId?.let { id -> getUserTimeline(id.value, paging) }
+            ?: getHomeTimeline(paging)
+        PagedResponseList.create(list, query.pageOption.count)
     }
 }
 
@@ -58,16 +50,10 @@ class FavTimelineDataSource @Inject constructor(
     override suspend fun getList(
         query: ListQuery<QueryType.TweetQueryType.Fav>
     ): PagedResponseList<TweetEntity> = twitter.fetch {
-        val list = query.type.userId?.value?.let { id ->
-            when (query.pageOption) {
-                PageOption.OnInit -> getFavorites(id)
-                else -> getFavorites(id, query.pageOption.toPaging())
-            }
-        } ?: when (query.pageOption) {
-            PageOption.OnInit -> favorites
-            else -> getFavorites(query.pageOption.toPaging())
-        }
-        PagedResponseList.create(list)
+        val paging = query.pageOption.toPaging()
+        val list = query.type.userId?.let { id -> getFavorites(id.value, paging) }
+            ?: getFavorites(paging)
+        PagedResponseList.create(list, query.pageOption.count)
     }
 }
 
@@ -83,8 +69,12 @@ class MediaTimelineDataSource @Inject constructor(
             count = query.pageOption.count
             resultType = Query.ResultType.recent
         }
-        val res = search(q).tweets
-        PagedResponseList.create(res) // fixme: use search result to avoid redundancy request
+        val res = search(q)
+        PagedResponseList(
+            list = res.tweets.map(Status::toEntity),
+            prependCursor = res.nextQuery()?.sinceId,
+            appendCursor = res.nextQuery()?.maxId,
+        )
     }
 }
 
@@ -101,12 +91,13 @@ private fun PageOption.toPaging(): Paging {
 
 internal fun PagedResponseList.Companion.create(
     statuses: List<Status>,
+    queryCount: Int,
 ): PagedResponseList<TweetEntity> {
     val list = statuses.map(Status::toEntity)
     return PagedResponseList(
         list = list,
-        prependCursor = list.firstOrNull()?.let { it.id + 1 }?.value,
-        appendCursor = list.lastOrNull()
-            ?.let { it.id - 1 }?.value, // todo: may be null if list.size < query.count
+        prependCursor = list.firstOrNull()?.let { it.id.value + 1 },
+        appendCursor = if (list.size >= queryCount) list.lastOrNull()
+            ?.let { it.id.value - 1 } else null,
     )
 }

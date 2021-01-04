@@ -78,63 +78,54 @@ abstract class TwitterRobotBase : TestWatcher() {
     }
 
     fun setupGetHomeTimeline(
-        pagingBlock: MatcherScopedBlock<Paging>? = null,
+        pagingBlock: MatcherScopedBlock<Paging> = { any() },
         response: List<Status>,
         onAnswer: AnswerScopedBlock<ResponseList<Status>, ResponseList<Status>> = {}
     ) {
         val res = createResponseListMock(response)
-        if (pagingBlock == null) {
-            setupResponseWithVerify({ twitter.homeTimeline }, res, onAnswer)
-        } else {
-            setupResponseWithVerify({ twitter.getHomeTimeline(pagingBlock()) }, res, onAnswer)
-        }
+        setupResponseWithVerify({ twitter.getHomeTimeline(pagingBlock()) }, res, onAnswer)
     }
 
     fun setupGetFavorites(
         userId: UserId? = null,
-        pagingBlock: MatcherScopedBlock<Paging>? = null,
+        pagingBlock: MatcherScopedBlock<Paging> = { any() },
         response: List<Status>,
         onAnswer: AnswerScopedBlock<ResponseList<Status>, ResponseList<Status>> = {}
     ) {
         val res = createResponseListMock(response)
-        if (pagingBlock == null) {
-            if (userId == null) {
-                setupResponseWithVerify({ twitter.favorites }, res, onAnswer)
-            } else {
-                setupResponseWithVerify({ twitter.getFavorites(userId.value) }, res, onAnswer)
-            }
-        } else {
+        if (userId == null) {
             setupResponseWithVerify({ twitter.getFavorites(pagingBlock()) }, res, onAnswer)
+        } else {
+            setupResponseWithVerify(
+                { twitter.getFavorites(userId.value, pagingBlock()) }, res, onAnswer
+            )
         }
     }
 
     fun setupGetSearchList(
         pagingBlock: MatcherScopedBlock<Query> = { any() },
         response: List<Status>,
+        nextQuery: Query? = null,
         onAnswer: AnswerScopedBlock<QueryResult, QueryResult> = {}
     ) {
         val res = mockk<QueryResult>().apply {
             every { tweets } returns response
+            every { nextQuery() } returns nextQuery
         }
         setupResponseWithVerify({ twitter.search(pagingBlock()) }, res, onAnswer)
     }
 
     fun setupGetUserTimeline(
         userId: UserId,
-        pagingBlock: MatcherScopedBlock<Paging>? = null,
+        pagingBlock: MatcherScopedBlock<Paging> = { any() },
         response: List<Status>,
         onAnswer: AnswerScopedBlock<ResponseList<Status>, ResponseList<Status>> = {}
     ) {
-        val res = createResponseListMock(response)
-        if (pagingBlock == null) {
-            setupResponseWithVerify({ twitter.getUserTimeline(userId.value) }, res, onAnswer)
-        } else {
-            setupResponseWithVerify(
-                { twitter.getUserTimeline(userId.value, pagingBlock()) },
-                res,
-                onAnswer
-            )
-        }
+        setupResponseWithVerify(
+            { twitter.getUserTimeline(userId.value, pagingBlock()) },
+            createResponseListMock(response),
+            onAnswer
+        )
     }
 
     fun setupGetUserListMemberships(

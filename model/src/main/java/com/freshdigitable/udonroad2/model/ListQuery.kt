@@ -67,5 +67,5 @@ sealed class PageOption(
     data class OnTail(
         val cursor: Long? = null,
         override val count: Int = FETCH_COUNT
-    ) : PageOption(page = 1, count = count, sinceId = 1, maxId = cursor)
+    ) : PageOption(page = 1, count = count, maxId = cursor)
 }
