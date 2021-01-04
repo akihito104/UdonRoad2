@@ -16,10 +16,10 @@
 
 package com.freshdigitable.udonroad2.model.tweet
 
+import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.TweetMediaItem
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import org.threeten.bp.Instant
-import java.io.Serializable
 
 interface TweetListItem {
 
@@ -65,8 +65,6 @@ interface TweetElement {
     val media: List<TweetMediaItem>
         get() = emptyList()
 }
-
-data class TweetId(val value: Long) : Serializable
 
 operator fun TweetId.plus(adder: Long): TweetId = TweetId(
     this.value + adder

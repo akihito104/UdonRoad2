@@ -16,6 +16,8 @@
 
 package com.freshdigitable.udonroad2.model.user
 
+import com.freshdigitable.udonroad2.model.UserId
+
 interface Relationship {
     val targetUserId: UserId
     val following: Boolean

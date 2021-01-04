@@ -5,7 +5,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 import com.freshdigitable.udonroad2.model.CustomTimelineId
-import com.freshdigitable.udonroad2.model.user.UserId
+import com.freshdigitable.udonroad2.model.UserId
 
 @Entity(
     tableName = "custom_timeline",

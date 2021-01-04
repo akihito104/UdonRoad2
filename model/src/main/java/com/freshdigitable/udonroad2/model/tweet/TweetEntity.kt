@@ -17,8 +17,9 @@
 package com.freshdigitable.udonroad2.model.tweet
 
 import com.freshdigitable.udonroad2.model.MediaEntity
+import com.freshdigitable.udonroad2.model.TweetId
+import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.user.UserEntity
-import com.freshdigitable.udonroad2.model.user.UserId
 
 interface TweetEntity : TweetElement {
 

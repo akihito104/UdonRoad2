@@ -18,7 +18,7 @@ package com.freshdigitable.udonroad2.data.impl
 
 import com.freshdigitable.udonroad2.data.db.dao.MediaDao
 import com.freshdigitable.udonroad2.model.MediaEntity
-import com.freshdigitable.udonroad2.model.tweet.TweetId
+import com.freshdigitable.udonroad2.model.TweetId
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 

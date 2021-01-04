@@ -16,7 +16,6 @@
 
 package com.freshdigitable.udonroad2.model
 
-import com.freshdigitable.udonroad2.model.user.UserId
 import java.io.Serializable
 
 interface RequestTokenItem : Serializable {

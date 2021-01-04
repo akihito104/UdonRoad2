@@ -24,9 +24,9 @@ import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.TestApplicationBase
 import com.freshdigitable.udonroad2.data.restclient.ext.toEntity
 import com.freshdigitable.udonroad2.media.MediaActivityArgs
-import com.freshdigitable.udonroad2.model.tweet.TweetId
+import com.freshdigitable.udonroad2.model.TweetId
+import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
-import com.freshdigitable.udonroad2.model.user.UserId
 import com.freshdigitable.udonroad2.test.TwitterRobot
 import com.freshdigitable.udonroad2.test.intendedWithExtras
 import com.freshdigitable.udonroad2.test.intendingWithExtras

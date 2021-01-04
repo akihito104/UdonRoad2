@@ -16,7 +16,7 @@
 
 package com.freshdigitable.udonroad2.data.impl
 
-import com.freshdigitable.udonroad2.model.user.UserId
+import com.freshdigitable.udonroad2.model.UserId
 import javax.inject.Inject
 
 class LoginUseCase @Inject constructor(

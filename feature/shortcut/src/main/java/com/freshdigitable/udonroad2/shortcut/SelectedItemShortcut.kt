@@ -18,10 +18,10 @@ package com.freshdigitable.udonroad2.shortcut
 
 import android.view.MenuItem
 import com.freshdigitable.udonroad2.model.SelectedItemId
+import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.postEvents
-import com.freshdigitable.udonroad2.model.tweet.TweetId
 
 sealed class SelectedItemShortcut : TweetContextMenuEvent {
     data class TweetDetail(override val tweetId: TweetId) : SelectedItemShortcut()

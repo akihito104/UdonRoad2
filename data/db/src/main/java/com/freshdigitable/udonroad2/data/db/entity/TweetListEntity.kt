@@ -23,7 +23,7 @@ import androidx.room.ForeignKey.CASCADE
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.freshdigitable.udonroad2.model.ListId
-import com.freshdigitable.udonroad2.model.tweet.TweetId
+import com.freshdigitable.udonroad2.model.TweetId
 
 @Entity(
     tableName = "tweet",

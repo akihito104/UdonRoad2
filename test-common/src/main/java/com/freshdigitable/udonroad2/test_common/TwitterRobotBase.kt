@@ -16,7 +16,7 @@
 
 package com.freshdigitable.udonroad2.test_common
 
-import com.freshdigitable.udonroad2.model.user.UserId
+import com.freshdigitable.udonroad2.model.UserId
 import io.mockk.confirmVerified
 import io.mockk.every
 import io.mockk.just

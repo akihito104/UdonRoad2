@@ -28,7 +28,7 @@ import com.freshdigitable.udonroad2.data.db.AppTypeConverter
 import com.freshdigitable.udonroad2.model.ListEntity
 import com.freshdigitable.udonroad2.model.ListId
 import com.freshdigitable.udonroad2.model.PagedResponseList
-import com.freshdigitable.udonroad2.model.user.UserId
+import com.freshdigitable.udonroad2.model.UserId
 
 @Entity(tableName = "list")
 data class ListEntityDb(

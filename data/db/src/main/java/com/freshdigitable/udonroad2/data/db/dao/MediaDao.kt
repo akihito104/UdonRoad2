@@ -26,7 +26,7 @@ import com.freshdigitable.udonroad2.data.db.entity.MediaEntityImpl
 import com.freshdigitable.udonroad2.data.db.entity.MediaUrlEntity
 import com.freshdigitable.udonroad2.data.db.entity.VideoValiantEntity
 import com.freshdigitable.udonroad2.model.MediaEntity
-import com.freshdigitable.udonroad2.model.tweet.TweetId
+import com.freshdigitable.udonroad2.model.TweetId
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
