@@ -26,6 +26,7 @@ import com.freshdigitable.udonroad2.data.restclient.data.UserReplyEntityRest
 import com.freshdigitable.udonroad2.data.restclient.data.VideoValiantRest
 import com.freshdigitable.udonroad2.model.CustomTimelineEntity
 import com.freshdigitable.udonroad2.model.CustomTimelineId
+import com.freshdigitable.udonroad2.model.ListEntity
 import com.freshdigitable.udonroad2.model.MediaEntity
 import com.freshdigitable.udonroad2.model.MediaId
 import com.freshdigitable.udonroad2.model.MediaType
@@ -106,13 +107,12 @@ internal fun UserList.toEntity(): CustomTimelineEntity {
     )
 }
 
-// fixme
 internal fun <I : TwitterResponse, O> PagableResponseList<I>.toPagedResponseList(
     mapper: (I) -> O
 ): PagedResponseList<O> = PagedResponseList(
     list = this.map(mapper),
-    appendCursor = if (this.hasNext()) this.nextCursor else null,
-    prependCursor = if (this.hasPrevious()) this.previousCursor else null,
+    appendCursor = if (this.hasNext()) this.nextCursor else ListEntity.CURSOR_REACH_TO_END,
+    prependCursor = if (this.hasPrevious()) this.previousCursor else ListEntity.CURSOR_REACH_TO_END,
 )
 
 internal fun twitter4j.MediaEntity.toItem(): MediaEntityRest {
