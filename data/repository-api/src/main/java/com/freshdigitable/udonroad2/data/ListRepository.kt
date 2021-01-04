@@ -45,7 +45,6 @@ interface PagedListProvider<Q : QueryType, I : Any> {
 
 interface LocalListDataSource<Q : QueryType, E : Any> {
     suspend fun findListEntity(id: ListId): ListEntity?
-    suspend fun getListItemCount(id: ListId): Int
     suspend fun putList(entities: PagedResponseList<E>, query: ListQuery<Q>, owner: ListId)
     suspend fun clean(owner: ListId)
 }

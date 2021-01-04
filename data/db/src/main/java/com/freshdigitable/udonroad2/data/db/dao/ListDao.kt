@@ -57,7 +57,6 @@ class TweetListDao(
     }
 
     override suspend fun findListEntity(id: ListId): ListEntity? = listDao.findListEntityById(id)
-    override suspend fun getListItemCount(id: ListId): Int = dao.getItemCountByListId(id)
 
     override suspend fun clean(owner: ListId) {
         listDao.deleteList(owner)
@@ -92,7 +91,6 @@ class UserListDao(
     }
 
     override suspend fun findListEntity(id: ListId): ListEntity? = listDao.findListEntityById(id)
-    override suspend fun getListItemCount(id: ListId): Int = dao.getItemCountByListId(id)
 
     override suspend fun clean(owner: ListId) {
         listDao.deleteList(owner)
@@ -131,7 +129,6 @@ class CustomTimelineListDao(
     }
 
     override suspend fun findListEntity(id: ListId): ListEntity? = listDao.findListEntityById(id)
-    override suspend fun getListItemCount(id: ListId): Int = dao.getItemCountByListId(id)
 
     override suspend fun clean(owner: ListId) {
         listDao.deleteList(owner)

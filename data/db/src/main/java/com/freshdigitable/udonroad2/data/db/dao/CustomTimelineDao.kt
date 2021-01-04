@@ -33,7 +33,4 @@ abstract class CustomTimelineDao {
 
     @Query("DELETE FROM custom_timeline_list WHERE list_id = :owner")
     internal abstract suspend fun deleteByListId(owner: ListId)
-
-    @Query("SELECT COUNT() FROM custom_timeline_list WHERE list_id = :id")
-    internal abstract suspend fun getItemCountByListId(id: ListId): Int
 }

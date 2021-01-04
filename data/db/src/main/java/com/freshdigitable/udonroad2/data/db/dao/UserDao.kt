@@ -24,7 +24,6 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import com.freshdigitable.udonroad2.data.db.AppDatabase
 import com.freshdigitable.udonroad2.data.db.dbview.UserListDbView
 import com.freshdigitable.udonroad2.data.db.entity.UserEntityDb
 import com.freshdigitable.udonroad2.data.db.entity.UserListEntity
@@ -36,9 +35,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 
 @Dao
-abstract class UserDao(
-    private val db: AppDatabase
-) {
+abstract class UserDao {
     open suspend fun addUsers(users: List<UserEntity>) {
         val u = users.map {
             when (it) {
@@ -80,7 +77,4 @@ abstract class UserDao(
 
     @Query("DELETE FROM user_list WHERE list_id = :owner")
     abstract suspend fun deleteByListId(owner: ListId)
-
-    @Query("SELECT COUNT() FROM user_list WHERE list_id = :id")
-    abstract suspend fun getItemCountByListId(id: ListId): Int
 }

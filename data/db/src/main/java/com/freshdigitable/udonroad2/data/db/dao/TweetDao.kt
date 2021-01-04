@@ -238,9 +238,6 @@ abstract class TweetDao(
 
     @Query("DELETE FROM tweet_list WHERE list_id = :owner")
     internal abstract suspend fun deleteByListId(owner: ListId)
-
-    @Query("SELECT COUNT() FROM tweet_list WHERE list_id = :id")
-    abstract suspend fun getItemCountByListId(id: ListId): Int
 }
 
 @Dao
