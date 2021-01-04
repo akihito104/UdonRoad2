@@ -13,6 +13,7 @@ import twitter4j.Twitter
 import twitter4j.User
 import twitter4j.UserList
 import javax.inject.Inject
+import javax.inject.Singleton
 
 private class PagedListDataSource<Q : QueryType, E : Any>(
     private val twitter: AppTwitter,
@@ -24,6 +25,7 @@ private class PagedListDataSource<Q : QueryType, E : Any>(
     }
 }
 
+@Singleton
 class FollowerListDataSource @Inject constructor(
     twitter: AppTwitter
 ) : RemoteListDataSource<UserQueryType.Follower, UserEntity> by PagedListDataSource(
@@ -34,6 +36,7 @@ class FollowerListDataSource @Inject constructor(
     }
 )
 
+@Singleton
 class FollowingListDataSource @Inject constructor(
     twitter: AppTwitter
 ) : RemoteListDataSource<UserQueryType.Following, UserEntity> by PagedListDataSource(
@@ -44,6 +47,7 @@ class FollowingListDataSource @Inject constructor(
     }
 )
 
+@Singleton
 class ListMembershipListDataSource @Inject constructor(
     twitter: AppTwitter
 ) : RemoteListDataSource<QueryType.UserListMembership, CustomTimelineEntity> by PagedListDataSource(

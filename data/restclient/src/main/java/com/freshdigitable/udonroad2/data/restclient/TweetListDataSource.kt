@@ -28,7 +28,9 @@ import twitter4j.Paging
 import twitter4j.Query
 import twitter4j.Status
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class HomeTimelineDataSource @Inject constructor(
     private val twitter: AppTwitter
 ) : RemoteListDataSource<QueryType.TweetQueryType.Timeline, TweetEntity> {
@@ -43,6 +45,7 @@ class HomeTimelineDataSource @Inject constructor(
     }
 }
 
+@Singleton
 class FavTimelineDataSource @Inject constructor(
     private val twitter: AppTwitter
 ) : RemoteListDataSource<QueryType.TweetQueryType.Fav, TweetEntity> {
@@ -57,6 +60,7 @@ class FavTimelineDataSource @Inject constructor(
     }
 }
 
+@Singleton
 class MediaTimelineDataSource @Inject constructor(
     private val twitter: AppTwitter
 ) : RemoteListDataSource<QueryType.TweetQueryType.Media, TweetEntity> {
