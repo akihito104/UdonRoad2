@@ -38,9 +38,9 @@ data class ListEntityDb(
     @ColumnInfo(name = "owner_id", index = true)
     val ownerId: UserId,
     @ColumnInfo(name = "prepend_cursor")
-    override val prependCursor: Long? = null,
+    override val prependCursor: Long = ListEntity.CURSOR_INIT,
     @ColumnInfo(name = "append_cursor")
-    override val appendCursor: Long? = null,
+    override val appendCursor: Long? = ListEntity.CURSOR_INIT,
 ) : ListEntity {
     @Ignore
     override val id: ListId = ListId(_id)

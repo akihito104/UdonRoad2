@@ -29,12 +29,22 @@ data class ListOwner<Q : QueryType>(
 }
 
 interface ListEntity {
+    companion object {
+        const val CURSOR_INIT: Long = -1
+        val CURSOR_REACH_TO_END: Long? = null
+
+        val ListEntity.hasNotFetchedYet: Boolean
+            get() = prependCursor == CURSOR_INIT && appendCursor == CURSOR_INIT
+        val ListEntity.isReachedToEnd: Boolean
+            get() = appendCursor == CURSOR_REACH_TO_END
+    }
+
     val id: ListId
 
     /**
      * to get list items that will be loaded upper side of current list.
      */
-    val prependCursor: Long?
+    val prependCursor: Long
 
     /**
      * to get list items that will be loaded bottom side of current list.
