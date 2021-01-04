@@ -52,20 +52,22 @@ class FriendshipRestClient @Inject constructor(
 
 private fun twitter4j.Relationship.toEntity(): Relationship {
     return RelationshipEntity(
-        userId = UserId(this.targetUserId),
+        targetUserId = UserId(this.targetUserId),
         following = this.isSourceFollowingTarget,
         blocking = this.isSourceBlockingTarget,
         muting = this.isSourceMutingTarget,
         wantRetweets = this.isSourceWantRetweets,
-        notificationsEnabled = this.isSourceNotificationsEnabled
+        notificationsEnabled = this.isSourceNotificationsEnabled,
+        sourceUserId = UserId(this.sourceUserId),
     )
 }
 
 private data class RelationshipEntity(
-    override val userId: UserId,
+    override val targetUserId: UserId,
     override val following: Boolean,
     override val blocking: Boolean,
     override val muting: Boolean,
     override val wantRetweets: Boolean,
-    override val notificationsEnabled: Boolean
+    override val notificationsEnabled: Boolean,
+    override val sourceUserId: UserId,
 ) : Relationship
