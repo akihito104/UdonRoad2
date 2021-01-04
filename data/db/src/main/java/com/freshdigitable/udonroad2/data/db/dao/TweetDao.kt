@@ -33,7 +33,6 @@ import com.freshdigitable.udonroad2.data.db.entity.TweetEntityDb
 import com.freshdigitable.udonroad2.data.db.entity.TweetListEntity
 import com.freshdigitable.udonroad2.data.db.entity.UserReplyEntityDb
 import com.freshdigitable.udonroad2.data.db.entity.VideoValiantEntity
-import com.freshdigitable.udonroad2.data.db.entity.updateCursorById
 import com.freshdigitable.udonroad2.data.db.ext.toDbEntity
 import com.freshdigitable.udonroad2.data.db.ext.toEntity
 import com.freshdigitable.udonroad2.data.db.ext.toListEntity
@@ -174,8 +173,6 @@ abstract class TweetDao(
 
         val listOwner = db.listDao().getListById(owner)
         addReactions(tweet, listOwner.ownerId)
-
-        db.listDao().updateCursorById(tweet, owner)
     }
 
     private suspend fun addTweets(tweet: List<TweetEntity>) {

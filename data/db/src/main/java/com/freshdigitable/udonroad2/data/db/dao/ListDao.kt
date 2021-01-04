@@ -9,6 +9,7 @@ import com.freshdigitable.udonroad2.model.CustomTimelineItem
 import com.freshdigitable.udonroad2.model.ListEntity
 import com.freshdigitable.udonroad2.model.ListId
 import com.freshdigitable.udonroad2.model.ListQuery
+import com.freshdigitable.udonroad2.model.PageOption
 import com.freshdigitable.udonroad2.model.PagedResponseList
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
@@ -25,12 +26,21 @@ class TweetListDao(
         return dao.getTimeline(owner).map { it as TweetListItem }
     }
 
+    // fixme: transaction
     override suspend fun putList(
         entities: PagedResponseList<TweetEntity>,
         query: ListQuery<QueryType.TweetQueryType>,
         owner: ListId
     ) {
         dao.addTweetsToList(entities, owner)
+        if (query.pageOption is PageOption.OnInit || query.pageOption is PageOption.OnHead) {
+            entities.prependCursor?.let {
+                listDao.updatePrependCursorById(owner, it)
+            }
+        }
+        if (query.pageOption is PageOption.OnInit || query.pageOption is PageOption.OnTail) {
+            listDao.updateAppendCursorById(owner, entities.appendCursor)
+        }
     }
 
     override suspend fun findListEntity(id: ListId): ListEntity? = listDao.findListEntityById(id)

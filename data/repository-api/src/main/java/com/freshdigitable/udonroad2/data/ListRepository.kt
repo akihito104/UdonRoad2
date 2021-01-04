@@ -28,6 +28,7 @@ import com.freshdigitable.udonroad2.model.QueryType
 interface ListRepository<Q : QueryType> {
     val loading: LiveData<Boolean>
 
+    suspend fun loadAtFirst(query: Q, owner: ListId)
     suspend fun prependList(query: Q, owner: ListId)
     suspend fun appendList(query: Q, owner: ListId)
     suspend fun clear(owner: ListId)

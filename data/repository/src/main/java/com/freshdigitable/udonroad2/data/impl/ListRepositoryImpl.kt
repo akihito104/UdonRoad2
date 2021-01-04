@@ -25,6 +25,7 @@ import com.freshdigitable.udonroad2.data.LocalListDataSource
 import com.freshdigitable.udonroad2.data.PagedListProvider
 import com.freshdigitable.udonroad2.data.RemoteListDataSource
 import com.freshdigitable.udonroad2.model.ListEntity
+import com.freshdigitable.udonroad2.model.ListEntity.Companion.hasNotFetchedYet
 import com.freshdigitable.udonroad2.model.ListId
 import com.freshdigitable.udonroad2.model.ListQuery
 import com.freshdigitable.udonroad2.model.PageOption
@@ -47,43 +48,50 @@ internal class ListRepositoryImpl<Q : QueryType, E : Any>(
     private val _loading = MutableLiveData<Boolean>()
     override val loading: LiveData<Boolean> = _loading
 
+    override suspend fun loadAtFirst(query: Q, owner: ListId) {
+        loadList(query, owner) {
+            if (it.hasNotFetchedYet) PageOption.OnInit else null
+        }
+    }
+
     override suspend fun prependList(query: Q, owner: ListId) {
         loadList(query, owner) { listEntity ->
-            val cursor = requireNotNull(listEntity.prependCursor)
-            PageOption.OnHead(cursor)
+            when (val cursor = listEntity.prependCursor) {
+                ListEntity.CURSOR_INIT -> PageOption.OnInit
+                else -> PageOption.OnHead(cursor)
+            }
         }
     }
 
     override suspend fun appendList(query: Q, owner: ListId) {
         loadList(query, owner) { listEntity ->
-            val cursor = requireNotNull(listEntity.appendCursor)
-            PageOption.OnTail(cursor)
+            val cursor = listEntity.appendCursor
+            cursor?.let { PageOption.OnTail(it) }
         }
     }
 
     private suspend fun loadList(
         queryType: Q,
         owner: ListId,
-        option: (ListEntity) -> PageOption
+        option: (ListEntity) -> PageOption?
     ) {
         if (_loading.value == true) {
             return
         }
         _loading.postValue(true)
-        val listItemCount = localDataSource.getListItemCount(owner)
-        Timber.tag("ListRepositoryImpl").d("loadList: listItemCount>$listItemCount")
-        val pageOption = if (listItemCount == 0) {
+
+        val listEntity = requireNotNull(localDataSource.findListEntity(owner))
+        val pageOption = if (listEntity.hasNotFetchedYet) {
             PageOption.OnInit
         } else {
-            val listEntity = requireNotNull(localDataSource.findListEntity(owner))
-            if (listEntity.appendCursor == null && listEntity.prependCursor == null) {
-                // reach to the end of list
-                _loading.postValue(false)
-                return
-            }
             option(listEntity)
         }
+        if (pageOption == null) { // cannot load items any more
+            _loading.postValue(false)
+            return
+        }
         val q = ListQuery(queryType, pageOption)
+
         try {
             val timeline = remoteDataSource.getList(q)
             localDataSource.putList(timeline, q, owner)
@@ -130,7 +138,7 @@ internal class PagedListProviderImpl<Q : QueryType, I : Any>(
                 override fun onZeroItemsLoaded() {
                     super.onZeroItemsLoaded()
                     coroutineScope.launch {
-                        repository.prependList(queryType, owner)
+                        repository.loadAtFirst(queryType, owner)
                     }
                 }
 

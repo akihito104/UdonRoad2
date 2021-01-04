@@ -47,7 +47,7 @@ class HomeTimelineDataSource @Inject constructor(
             PageOption.OnInit -> homeTimeline
             else -> getHomeTimeline(query.pageOption.toPaging())
         }
-        PagedResponseList.create(list, query)
+        PagedResponseList.create(list)
     }
 }
 
@@ -67,7 +67,7 @@ class FavTimelineDataSource @Inject constructor(
             PageOption.OnInit -> favorites
             else -> getFavorites(query.pageOption.toPaging())
         }
-        PagedResponseList.create(list, query)
+        PagedResponseList.create(list)
     }
 }
 
@@ -84,34 +84,29 @@ class MediaTimelineDataSource @Inject constructor(
             resultType = Query.ResultType.recent
         }
         val res = search(q).tweets
-        PagedResponseList.create(res, query) // fixme: use search result to avoid redundancy request
+        PagedResponseList.create(res) // fixme: use search result to avoid redundancy request
     }
 }
 
-fun PageOption.toPaging(): Paging {
+private fun PageOption.toPaging(): Paging {
     val paging = Paging(page, count)
-    sinceId?.let { paging.sinceId = it }
-    maxId?.let { paging.maxId = it }
+    if (sinceId != ListEntity.CURSOR_INIT) {
+        sinceId?.let { paging.sinceId = it }
+    }
+    if (maxId != ListEntity.CURSOR_INIT) {
+        maxId?.let { paging.maxId = it }
+    }
     return paging
 }
 
-// fixme
 internal fun PagedResponseList.Companion.create(
     statuses: List<Status>,
-    query: ListQuery<out QueryType.TweetQueryType>
 ): PagedResponseList<TweetEntity> {
     val list = statuses.map(Status::toEntity)
-    val prependCursor = when (query.pageOption) {
-        PageOption.OnInit, is PageOption.OnHead -> list.firstOrNull()?.let { it.id + 1 }
-        is PageOption.OnTail -> null
-    }
-    val appendCursor = when (query.pageOption) {
-        PageOption.OnInit, is PageOption.OnTail -> list.lastOrNull()?.let { it.id - 1 }
-        is PageOption.OnHead -> null
-    }
     return PagedResponseList(
         list = list,
-        prependCursor = prependCursor?.value,
-        appendCursor = appendCursor?.value,
+        prependCursor = list.firstOrNull()?.let { it.id + 1 }?.value,
+        appendCursor = list.lastOrNull()
+            ?.let { it.id - 1 }?.value, // todo: may be null if list.size < query.count
     )
 }
