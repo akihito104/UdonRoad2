@@ -386,7 +386,7 @@ class TweetRepositoryTestRule : TestWatcher() {
         tweetList: List<TweetEntity>
     ) = db.apply {
         val listId = listDao().addList(userId)
-        val tweetListDao = TweetListDao(tweetDao(), listDao())
+        val tweetListDao = TweetListDao(db)
         tweetListDao.putList(
             PagedResponseList(tweetList),
             ListQuery(QueryType.TweetQueryType.Timeline()),

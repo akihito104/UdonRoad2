@@ -24,15 +24,12 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import androidx.room.Transaction
 import com.freshdigitable.udonroad2.data.db.AppDatabase
 import com.freshdigitable.udonroad2.data.db.dbview.UserListDbView
 import com.freshdigitable.udonroad2.data.db.entity.UserEntityDb
 import com.freshdigitable.udonroad2.data.db.entity.UserListEntity
-import com.freshdigitable.udonroad2.data.db.entity.updateCursorById
 import com.freshdigitable.udonroad2.data.db.ext.toEntity
 import com.freshdigitable.udonroad2.model.ListId
-import com.freshdigitable.udonroad2.model.PagedResponseList
 import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.user.UserEntity
 import kotlinx.coroutines.flow.Flow
@@ -62,26 +59,11 @@ abstract class UserDao(
 
     @Query("SELECT * FROM user WHERE id = :id")
     internal abstract suspend fun getUser(id: UserId): UserEntityDb?
-    open suspend fun getUserById(id: UserId): UserEntity? = getUser(id)
+    suspend fun getUserById(id: UserId): UserEntity? = getUser(id)
 
     @Query("SELECT * FROM user WHERE id = :id")
     internal abstract fun getUserFlow(id: UserId): Flow<UserEntityDb?>
-    open fun getUserFlowById(id: UserId): Flow<UserEntity?> = getUserFlow(id).distinctUntilChanged()
-
-    @Transaction
-    internal open suspend fun addUsers(
-        entities: PagedResponseList<UserEntity>,
-        owner: ListId? = null
-    ) {
-        addUsers(entities.map { it.toEntity() })
-        if (owner != null) {
-            val listEntities = entities.map {
-                UserListEntity(userId = it.id, listId = owner)
-            }
-            addUserListEntities(listEntities)
-            db.listDao().updateCursorById(entities, owner)
-        }
-    }
+    fun getUserFlowById(id: UserId): Flow<UserEntity?> = getUserFlow(id).distinctUntilChanged()
 
     @Query(
         """
@@ -101,8 +83,4 @@ abstract class UserDao(
 
     @Query("SELECT COUNT() FROM user_list WHERE list_id = :id")
     abstract suspend fun getItemCountByListId(id: ListId): Int
-
-    suspend fun clear(owner: ListId) {
-        db.listDao().deleteList(owner)
-    }
 }

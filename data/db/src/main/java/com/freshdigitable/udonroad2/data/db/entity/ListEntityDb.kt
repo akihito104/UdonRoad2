@@ -27,6 +27,8 @@ import androidx.room.TypeConverter
 import com.freshdigitable.udonroad2.data.db.AppTypeConverter
 import com.freshdigitable.udonroad2.model.ListEntity
 import com.freshdigitable.udonroad2.model.ListId
+import com.freshdigitable.udonroad2.model.ListQuery
+import com.freshdigitable.udonroad2.model.PageOption
 import com.freshdigitable.udonroad2.model.PagedResponseList
 import com.freshdigitable.udonroad2.model.UserId
 
@@ -83,15 +85,17 @@ abstract class ListDao {
     abstract suspend fun updateAppendCursorById(id: ListId, cursor: Long?)
 }
 
-internal suspend fun ListDao.updateCursorById(entities: PagedResponseList<*>, owner: ListId) {
-    if (entities.prependCursor != null) {
-        updatePrependCursorById(owner, entities.prependCursor)
+internal suspend fun ListDao.updateCursorById(
+    entities: PagedResponseList<*>,
+    query: ListQuery<*>,
+    owner: ListId
+) {
+    if (query.pageOption is PageOption.OnInit || query.pageOption is PageOption.OnHead) {
+        entities.prependCursor?.let {
+            updatePrependCursorById(owner, it)
+        }
     }
-    if (entities.appendCursor != null) {
+    if (query.pageOption is PageOption.OnInit || query.pageOption is PageOption.OnTail) {
         updateAppendCursorById(owner, entities.appendCursor)
-    }
-    if (entities.prependCursor == null && entities.appendCursor == null) {
-        updatePrependCursorById(owner, null)
-        updateAppendCursorById(owner, null)
     }
 }
