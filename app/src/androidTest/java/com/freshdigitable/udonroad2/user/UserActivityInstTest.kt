@@ -52,12 +52,14 @@ class UserActivityInstTest {
     @get:Rule
     val twitterRobot = TwitterRobot()
 
+    private val authenticatedUserId = UserId(3000)
+
     @Before
     fun setup() {
         val tweetingUser = TweetUserItemImpl(UserId(1000), "user1", "user1", "")
         val user = createUser(tweetingUser.id.value, tweetingUser.name, tweetingUser.screenName)
         twitterRobot.setupShowUser(user)
-        twitterRobot.setupRelationships(UserId(100), tweetingUser.id)
+        twitterRobot.setupRelationships(authenticatedUserId, tweetingUser.id)
         twitterRobot.setupGetUserTimeline(
             tweetingUser.id,
             response = (0 until 10).map {
@@ -81,7 +83,6 @@ class UserActivityInstTest {
 
         val context = ApplicationProvider.getApplicationContext<TestApplicationBase>()
         context.component.apply {
-            val authenticatedUserId = UserId(3000)
             sharedPreferencesDao.apply {
                 setCurrentUserId(authenticatedUserId)
             }
