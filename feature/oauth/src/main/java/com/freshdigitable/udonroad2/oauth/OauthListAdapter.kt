@@ -20,7 +20,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.databinding.ViewDataBinding
 import androidx.lifecycle.LifecycleOwner
-import androidx.paging.PagedListAdapter
+import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.freshdigitable.udonroad2.oauth.databinding.ViewOauthInputBinding
@@ -29,11 +29,7 @@ import com.freshdigitable.udonroad2.timeline.databinding.ViewTweetListItemBindin
 internal class OauthListAdapter internal constructor(
     private val viewModel: OauthViewModel,
     private val viewLifecycleOwner: LifecycleOwner
-) : PagedListAdapter<OauthItem, OauthViewHolder>(diffUtil) {
-
-    override fun getItemId(position: Int): Long {
-        return requireNotNull(getItem(position)?.originalId?.value)
-    }
+) : PagingDataAdapter<OauthItem, OauthViewHolder>(diffUtil) {
 
     override fun getItemViewType(position: Int): Int {
         val item = getItem(position)

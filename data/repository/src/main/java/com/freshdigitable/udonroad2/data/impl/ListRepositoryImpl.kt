@@ -18,8 +18,13 @@ package com.freshdigitable.udonroad2.data.impl
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.paging.LivePagedListBuilder
-import androidx.paging.PagedList
+import androidx.paging.ExperimentalPagingApi
+import androidx.paging.LoadType
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.PagingState
+import androidx.paging.RemoteMediator
 import com.freshdigitable.udonroad2.data.ListRepository
 import com.freshdigitable.udonroad2.data.LocalListDataSource
 import com.freshdigitable.udonroad2.data.PagedListProvider
@@ -36,7 +41,7 @@ import com.freshdigitable.udonroad2.model.app.ioContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.Flow
 import timber.log.Timber
 import java.io.IOException
 
@@ -114,42 +119,42 @@ internal class ListRepositoryImpl<Q : QueryType, E : Any>(
 internal class PagedListProviderImpl<Q : QueryType, I : Any>(
     private val pagedListDataSourceFactory: PagedListProvider.DataSourceFactory<I>,
     private val repository: ListRepository<Q>,
-    executor: AppExecutor,
+    private val executor: AppExecutor,
 ) : PagedListProvider<Q, I> {
 
     companion object {
-        private val config = PagedList.Config.Builder()
-            .setEnablePlaceholders(false)
-            .setPageSize(20)
-            .setInitialLoadSizeHint(100)
-            .build()
+        private val config = PagingConfig(
+            enablePlaceholders = false,
+            pageSize = 20,
+//            initialLoadSize = 100
+        )
     }
 
     private val coroutineScope = CoroutineScope(SupervisorJob() + executor.ioContext)
 
-    override fun getList(
-        queryType: Q,
-        owner: ListId,
-    ): LiveData<PagedList<I>> {
+    @ExperimentalPagingApi
+    override fun getList(queryType: Q, owner: ListId): Flow<PagingData<I>> {
         val timeline = pagedListDataSourceFactory.getDataSourceFactory(owner)
-        return LivePagedListBuilder(timeline, config)
-            .setFetchExecutor { coroutineScope.launch { it.run() } }
-            .setBoundaryCallback(object : PagedList.BoundaryCallback<I>() {
-                override fun onZeroItemsLoaded() {
-                    super.onZeroItemsLoaded()
-                    coroutineScope.launch {
-                        repository.loadAtFirst(queryType, owner)
+            .asPagingSourceFactory(executor.dispatcher.ioDispatcher)
+        return Pager(
+            config = config,
+            pagingSourceFactory = timeline,
+            remoteMediator = object : RemoteMediator<Int, I>() {
+                override suspend fun load(
+                    loadType: LoadType,
+                    state: PagingState<Int, I>
+                ): MediatorResult {
+                    Timber.tag("PagedListProvider")
+                        .d("getList: type>$loadType, state>$state")
+                    when (loadType) {
+                        LoadType.REFRESH -> repository.loadAtFirst(queryType, owner)
+                        LoadType.APPEND -> repository.appendList(queryType, owner)
+                        LoadType.PREPEND -> repository.appendList(queryType, owner)
                     }
+                    return MediatorResult.Success(endOfPaginationReached = true) // FIXME
                 }
-
-                override fun onItemAtEndLoaded(itemAtEnd: I) {
-                    super.onItemAtEndLoaded(itemAtEnd)
-                    coroutineScope.launch {
-                        repository.appendList(queryType, owner)
-                    }
-                }
-            })
-            .build()
+            }
+        ).flow
     }
 
     override fun clear() {

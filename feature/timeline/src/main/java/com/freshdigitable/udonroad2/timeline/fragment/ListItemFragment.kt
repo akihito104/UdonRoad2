@@ -10,7 +10,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.navArgs
-import androidx.paging.PagedListAdapter
+import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -64,10 +64,10 @@ class ListItemFragment : Fragment() {
         binding.viewModel = viewModel
 
         val adapter = listItemAdapterFactory.create(viewModel, viewLifecycleOwner)
-            .adapter as PagedListAdapter<Any, *>
+            .adapter as PagingDataAdapter<Any, *>
         binding.mainList.setup(adapter)
-        viewModel.timeline.observe(viewLifecycleOwner) {
-            adapter.submitList(it)
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.timeline.collect(adapter::submitData)
         }
 
         val eventDelegate = eventDelegate.create(viewModel).eventDelegate
@@ -79,7 +79,7 @@ class ListItemFragment : Fragment() {
         }
     }
 
-    private fun RecyclerView.setup(adapter: PagedListAdapter<*, *>) {
+    private fun RecyclerView.setup(adapter: PagingDataAdapter<*, *>) {
         val linearLayoutManager = LinearLayoutManager(context)
         this.layoutManager = linearLayoutManager
         this.addItemDecoration(DividerItemDecoration(context, linearLayoutManager.orientation))

@@ -19,7 +19,7 @@ package com.freshdigitable.udonroad2.oauth.di
 import android.app.Application
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import androidx.paging.DataSource
+import androidx.paging.PagingSource
 import androidx.savedstate.SavedStateRegistryOwner
 import com.freshdigitable.udonroad2.data.impl.LoginUseCase
 import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
@@ -68,7 +68,7 @@ interface OauthViewModelModule {
         }
 
         @Provides
-        fun provideOauthDataSource(context: Application): DataSource<Int, OauthItem> {
+        fun provideOauthDataSource(context: Application): PagingSource<Int, OauthItem> {
             return OauthDataSource(context)
         }
 
@@ -92,7 +92,7 @@ interface OauthViewModelModule {
         @ViewModelKey(OauthViewModel::class)
         @IntoSavedStateFactory
         fun provideOauthViewModel(
-            dataSource: DataSource<Int, OauthItem>,
+            dataSource: PagingSource<Int, OauthItem>,
             eventDispatcher: EventDispatcher,
             viewStates: OauthViewStates,
         ): ViewModel {

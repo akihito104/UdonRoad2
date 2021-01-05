@@ -21,7 +21,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
-import androidx.paging.PagedListAdapter
+import androidx.paging.PagingDataAdapter
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.app.ClassKeyMap
@@ -143,9 +143,9 @@ interface ListItemAdapterComponentImpl : ListItemAdapterComponent {
 @Module
 object ListItemAdapterProvider {
     @Provides
-    fun ClassKeyMap<ViewModel, Provider<PagedListAdapter<out Any, *>>>.provideItemAdapter(
+    fun ClassKeyMap<ViewModel, Provider<PagingDataAdapter<out Any, *>>>.provideItemAdapter(
         viewModel: ViewModel
-    ): PagedListAdapter<out Any, *> = this.valueByAssignableClassObject(viewModel).get()
+    ): PagingDataAdapter<out Any, *> = this.valueByAssignableClassObject(viewModel).get()
 }
 
 @Subcomponent(

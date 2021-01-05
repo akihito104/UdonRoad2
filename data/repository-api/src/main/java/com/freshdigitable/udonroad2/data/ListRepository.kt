@@ -18,12 +18,13 @@ package com.freshdigitable.udonroad2.data
 
 import androidx.lifecycle.LiveData
 import androidx.paging.DataSource
-import androidx.paging.PagedList
+import androidx.paging.PagingData
 import com.freshdigitable.udonroad2.model.ListEntity
 import com.freshdigitable.udonroad2.model.ListId
 import com.freshdigitable.udonroad2.model.ListQuery
 import com.freshdigitable.udonroad2.model.PagedResponseList
 import com.freshdigitable.udonroad2.model.QueryType
+import kotlinx.coroutines.flow.Flow
 
 interface ListRepository<Q : QueryType> {
     val loading: LiveData<Boolean>
@@ -35,10 +36,10 @@ interface ListRepository<Q : QueryType> {
 }
 
 interface PagedListProvider<Q : QueryType, I : Any> {
-    fun getList(queryType: Q, owner: ListId): LiveData<PagedList<I>>
+    fun getList(queryType: Q, owner: ListId): Flow<PagingData<I>>
     fun clear()
 
-    interface DataSourceFactory<I> {
+    interface DataSourceFactory<I : Any> {
         fun getDataSourceFactory(owner: ListId): DataSource.Factory<Int, I>
     }
 }

@@ -5,7 +5,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.lifecycle.LifecycleOwner
-import androidx.paging.PagedListAdapter
+import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
@@ -19,11 +19,7 @@ class TimelineAdapter(
     private val clickListener: TweetListItemClickListener,
     private val eventListener: TweetListEventListener,
     private val lifecycleOwner: LifecycleOwner
-) : PagedListAdapter<TweetListItem, TimelineAdapter.ViewHolder>(diffUtil) {
-
-    init {
-        setHasStableIds(true)
-    }
+) : PagingDataAdapter<TweetListItem, TimelineAdapter.ViewHolder>(diffUtil) {
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
@@ -80,8 +76,6 @@ class TimelineAdapter(
 
     override fun getItemViewType(position: Int): Int =
         R.layout.view_tweet_list_item
-
-    override fun getItemId(position: Int): Long = getItem(position)?.originalId?.value ?: -1
 
     private fun ensureQuotedView(holder: ViewHolder): ViewTweetListQuotedItemBinding {
         return holder.quotedView
