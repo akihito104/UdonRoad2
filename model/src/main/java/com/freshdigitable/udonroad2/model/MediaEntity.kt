@@ -69,8 +69,6 @@ interface MediaEntity : UrlItem, TweetMediaItem {
     }
 }
 
-data class MediaId(val value: Long)
-
 enum class MediaType(val value: String) {
     PHOTO("photo"),
     VIDEO("video"),

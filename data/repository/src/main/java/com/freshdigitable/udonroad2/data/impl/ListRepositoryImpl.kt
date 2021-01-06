@@ -24,56 +24,97 @@ import com.freshdigitable.udonroad2.data.ListRepository
 import com.freshdigitable.udonroad2.data.LocalListDataSource
 import com.freshdigitable.udonroad2.data.PagedListProvider
 import com.freshdigitable.udonroad2.data.RemoteListDataSource
+import com.freshdigitable.udonroad2.model.ListEntity
+import com.freshdigitable.udonroad2.model.ListEntity.Companion.hasNotFetchedYet
 import com.freshdigitable.udonroad2.model.ListId
 import com.freshdigitable.udonroad2.model.ListQuery
 import com.freshdigitable.udonroad2.model.PageOption
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.AppTwitterException
+import com.freshdigitable.udonroad2.model.app.ioContext
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.io.IOException
 
-internal class ListRepositoryImpl<Q : QueryType, E>(
+internal class ListRepositoryImpl<Q : QueryType, E : Any>(
     private val localDataSource: LocalListDataSource<Q, E>,
     private val remoteDataSource: RemoteListDataSource<Q, E>,
-    private val executor: AppExecutor
 ) : ListRepository<Q> {
 
     private val _loading = MutableLiveData<Boolean>()
     override val loading: LiveData<Boolean> = _loading
 
-    override fun loadList(query: ListQuery<Q>, owner: ListId) {
-        if (_loading.value == true) {
-            return
+    override suspend fun loadAtFirst(query: Q, owner: ListId) {
+        loadList(query, owner) {
+            if (it.hasNotFetchedYet) PageOption.OnInit else null
         }
-        _loading.postValue(true)
-        executor.launchIO {
-            try {
-                val timeline = remoteDataSource.getList(query)
-                localDataSource.putList(timeline, query, owner)
-            } catch (e: IOException) {
-                // TODO: recover or notifying
-                Timber.tag("ListRepository").e(e, "loadList: ${e.message}")
-            } catch (e: AppTwitterException) {
-                // TODO: recover or notifying
-                Timber.tag("ListRepository").e(e, "loadList: ${e.message}")
-            } finally {
-                _loading.postValue(false)
+    }
+
+    override suspend fun prependList(query: Q, owner: ListId) {
+        loadList(query, owner) { listEntity ->
+            when (val cursor = listEntity.prependCursor) {
+                ListEntity.CURSOR_INIT -> PageOption.OnInit
+                else -> PageOption.OnHead(cursor)
             }
         }
     }
 
-    override fun clear(owner: ListId) {
-        executor.launchIO {
-            localDataSource.clean(owner)
+    override suspend fun appendList(query: Q, owner: ListId) {
+        loadList(query, owner) { listEntity ->
+            val cursor = listEntity.appendCursor
+            cursor?.let { PageOption.OnTail(it) }
         }
+    }
+
+    private suspend fun loadList(
+        queryType: Q,
+        owner: ListId,
+        option: (ListEntity) -> PageOption?
+    ) {
+        if (_loading.value == true) {
+            return
+        }
+        _loading.postValue(true)
+
+        val listEntity = requireNotNull(localDataSource.findListEntity(owner))
+        val pageOption = if (listEntity.hasNotFetchedYet) {
+            PageOption.OnInit
+        } else {
+            option(listEntity)
+        }
+        if (pageOption == null) { // cannot load items any more
+            _loading.postValue(false)
+            return
+        }
+        val q = ListQuery(queryType, pageOption)
+
+        try {
+            val timeline = remoteDataSource.getList(q)
+            localDataSource.putList(timeline, q, owner)
+        } catch (e: IOException) {
+            // TODO: recover or notifying
+            Timber.tag("ListRepository").e(e, "loadList: ${e.message}")
+        } catch (e: AppTwitterException) {
+            // TODO: recover or notifying
+            Timber.tag("ListRepository").e(e, "loadList: ${e.message}")
+        } finally {
+            _loading.postValue(false)
+        }
+    }
+
+    override suspend fun clear(owner: ListId) {
+        localDataSource.clean(owner)
     }
 }
 
-internal class PagedListProviderImpl<Q : QueryType, I>(
+internal class PagedListProviderImpl<Q : QueryType, I : Any>(
     private val pagedListDataSourceFactory: PagedListProvider.DataSourceFactory<I>,
     private val repository: ListRepository<Q>,
-    private val executor: AppExecutor
+    executor: AppExecutor,
 ) : PagedListProvider<Q, I> {
 
     companion object {
@@ -84,25 +125,34 @@ internal class PagedListProviderImpl<Q : QueryType, I>(
             .build()
     }
 
+    private val coroutineScope = CoroutineScope(SupervisorJob() + executor.ioContext)
+
     override fun getList(
         queryType: Q,
         owner: ListId,
-        onEndPageOption: (I) -> PageOption
     ): LiveData<PagedList<I>> {
         val timeline = pagedListDataSourceFactory.getDataSourceFactory(owner)
         return LivePagedListBuilder(timeline, config)
-            .setFetchExecutor(executor.io)
+            .setFetchExecutor { coroutineScope.launch { it.run() } }
             .setBoundaryCallback(object : PagedList.BoundaryCallback<I>() {
                 override fun onZeroItemsLoaded() {
                     super.onZeroItemsLoaded()
-                    repository.loadList(ListQuery(queryType), owner)
+                    coroutineScope.launch {
+                        repository.loadAtFirst(queryType, owner)
+                    }
                 }
 
                 override fun onItemAtEndLoaded(itemAtEnd: I) {
                     super.onItemAtEndLoaded(itemAtEnd)
-                    repository.loadList(ListQuery(queryType, onEndPageOption(itemAtEnd)), owner)
+                    coroutineScope.launch {
+                        repository.appendList(queryType, owner)
+                    }
                 }
             })
             .build()
+    }
+
+    override fun clear() {
+        coroutineScope.cancel()
     }
 }

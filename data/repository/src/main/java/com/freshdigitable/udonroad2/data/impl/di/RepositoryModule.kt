@@ -79,11 +79,10 @@ fun <Q : QueryType> ListRepositoryComponent.listRepository(): ListRepository<Q> 
     return ListRepositoryImpl<Q, Any>(
         localListDataSourceProvider.get(query as Q),
         remoteListDataSourceProvider.get(query as Q),
-        appExecutor
     )
 }
 
-fun <Q : QueryType, I> ListRepositoryComponent.pagedListProvider(
+fun <Q : QueryType, I : Any> ListRepositoryComponent.pagedListProvider(
     repository: ListRepository<Q>
 ): PagedListProvider<Q, I> {
     return PagedListProviderImpl(

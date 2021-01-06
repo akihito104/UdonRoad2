@@ -49,20 +49,20 @@ object DaoModule {
     fun providesTweetDao(db: AppDatabase): TweetDao = db.tweetDao()
 
     @Provides
-    fun provideTweetListDao(dao: TweetDao): TweetListDao = TweetListDao(dao)
+    fun provideTweetListDao(db: AppDatabase): TweetListDao = TweetListDao(db)
 
     @Provides
     fun providesUserDao(db: AppDatabase): UserDao = db.userDao()
 
     @Provides
-    fun provideUserListDao(dao: UserDao): UserListDao = UserListDao(dao)
+    fun provideUserListDao(db: AppDatabase): UserListDao = UserListDao(db)
 
     @Provides
     fun provideCustomTimelineDao(db: AppDatabase): CustomTimelineDao = db.customTimelineDao()
 
     @Provides
-    fun provideCustomTimelineListDao(dao: CustomTimelineDao): CustomTimelineListDao =
-        CustomTimelineListDao(dao)
+    fun provideCustomTimelineListDao(db: AppDatabase): CustomTimelineListDao =
+        CustomTimelineListDao(db)
 
     @Provides
     fun provideRelationshipDao(db: AppDatabase): RelationshipDao = db.relationshipDao()

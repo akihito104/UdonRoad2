@@ -18,11 +18,11 @@ package com.freshdigitable.udonroad2.timeline.di
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
 import com.freshdigitable.udonroad2.model.app.di.ViewModelScope
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
-import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.timeline.viewmodel.TweetDetailViewModel
 import com.freshdigitable.udonroad2.timeline.viewmodel.TweetDetailViewStates
 import dagger.BindsInstance

@@ -18,6 +18,7 @@ import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.media.MediaActivityArgs
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.QueryType
+import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.app.di.ActivityScope
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessageDelegate
@@ -25,7 +26,6 @@ import com.freshdigitable.udonroad2.model.app.navigation.FragmentContainerState
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.SnackbarFeedbackMessageDelegate
 import com.freshdigitable.udonroad2.model.app.weakRef
-import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragment
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentArgs

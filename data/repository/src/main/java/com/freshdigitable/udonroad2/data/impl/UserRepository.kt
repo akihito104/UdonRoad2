@@ -3,8 +3,8 @@ package com.freshdigitable.udonroad2.data.impl
 import com.freshdigitable.udonroad2.data.db.DaoModule
 import com.freshdigitable.udonroad2.data.db.dao.UserDao
 import com.freshdigitable.udonroad2.data.restclient.UserRestClient
+import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.user.UserEntity
-import com.freshdigitable.udonroad2.model.user.UserId
 import dagger.Module
 import dagger.Provides
 import kotlinx.coroutines.flow.Flow

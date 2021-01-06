@@ -16,6 +16,7 @@
 
 package com.freshdigitable.udonroad2.model.user
 
+import com.freshdigitable.udonroad2.model.UserId
 import java.io.Serializable
 
 interface TweetUserItem : Serializable {
@@ -53,12 +54,4 @@ interface UserEntity : UserListItem {
     val profileLinkColor: Int
     val location: String
     val url: String?
-}
-
-data class UserId(val value: Long) : Serializable {
-    val isValid: Boolean = value >= 0
-
-    companion object {
-        fun create(value: Long?): UserId? = value?.let { UserId(it) }
-    }
 }

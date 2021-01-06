@@ -1,13 +1,12 @@
 package com.freshdigitable.udonroad2.timeline.viewmodel
 
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.viewModelScope
 import androidx.paging.PagedList
 import com.freshdigitable.udonroad2.data.ListRepository
 import com.freshdigitable.udonroad2.data.PagedListProvider
 import com.freshdigitable.udonroad2.model.CustomTimelineItem
 import com.freshdigitable.udonroad2.model.ListOwner
-import com.freshdigitable.udonroad2.model.ListQuery
-import com.freshdigitable.udonroad2.model.PageOption
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
@@ -18,24 +17,21 @@ import com.freshdigitable.udonroad2.timeline.ListItemLoadableViewModel
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.launch
 
 class CustomTimelineListViewModel(
     private val owner: ListOwner<QueryType.UserListMembership>,
     private val repository: ListRepository<QueryType.UserListMembership>,
     private val eventDispatcher: EventDispatcher,
-    pagedListProvider: PagedListProvider<QueryType.UserListMembership, CustomTimelineItem>
+    private val pagedListProvider: PagedListProvider<QueryType.UserListMembership, CustomTimelineItem>
 ) : ListItemLoadableViewModel<QueryType.UserListMembership, CustomTimelineItem>(),
     ListItemClickListener<CustomTimelineItem> {
-    override val loading: LiveData<Boolean>
-        get() = repository.loading
+    override val loading: LiveData<Boolean> = repository.loading
 
     override fun onRefresh() {
-        val q = if (timeline.value?.isNotEmpty() == true) {
-            ListQuery(owner.query, PageOption.OnHead())
-        } else {
-            ListQuery(owner.query, PageOption.OnInit)
+        viewModelScope.launch {
+            repository.prependList(owner.query, owner.id)
         }
-        repository.loadList(q, owner.id)
     }
 
     override val timeline: LiveData<PagedList<CustomTimelineItem>> =
@@ -51,7 +47,10 @@ class CustomTimelineListViewModel(
 
     override fun onCleared() {
         super.onCleared()
-        repository.clear(owner.id)
+        pagedListProvider.clear()
+        viewModelScope.launch {
+            repository.clear(owner.id)
+        }
     }
 
     override val navigationEvent: Flow<NavigationEvent> = emptyFlow()

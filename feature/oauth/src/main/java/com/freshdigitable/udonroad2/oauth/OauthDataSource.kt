@@ -18,8 +18,8 @@ package com.freshdigitable.udonroad2.oauth
 
 import android.content.Context
 import androidx.paging.PositionalDataSource
-import com.freshdigitable.udonroad2.model.tweet.TweetId
-import com.freshdigitable.udonroad2.model.user.UserId
+import com.freshdigitable.udonroad2.model.TweetId
+import com.freshdigitable.udonroad2.model.UserId
 
 internal class OauthDataSource(context: Context) : PositionalDataSource<OauthItem>() {
 

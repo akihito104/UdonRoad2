@@ -16,7 +16,7 @@
 
 package com.freshdigitable.udonroad2.data
 
-import com.freshdigitable.udonroad2.model.tweet.TweetId
+import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.tweet.UserReplyEntity
 
 interface ReplyRepository {

@@ -3,8 +3,8 @@ package com.freshdigitable.udonroad2.data.db.entity
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.user.Relationship
-import com.freshdigitable.udonroad2.model.user.UserId
 
 @Entity(
     tableName = "relationship",

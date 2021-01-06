@@ -25,10 +25,10 @@ import com.freshdigitable.udonroad2.data.impl.UserRepository
 import com.freshdigitable.udonroad2.data.impl.create
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
+import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
-import com.freshdigitable.udonroad2.model.user.UserId
 import com.freshdigitable.udonroad2.test_common.MockVerified
 import com.freshdigitable.udonroad2.test_common.RxExceptionHandler
 import com.freshdigitable.udonroad2.test_common.jvm.CoroutineTestRule

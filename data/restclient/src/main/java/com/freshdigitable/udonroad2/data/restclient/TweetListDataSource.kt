@@ -18,76 +18,90 @@ package com.freshdigitable.udonroad2.data.restclient
 
 import com.freshdigitable.udonroad2.data.RemoteListDataSource
 import com.freshdigitable.udonroad2.data.restclient.ext.toEntity
+import com.freshdigitable.udonroad2.model.ListEntity
 import com.freshdigitable.udonroad2.model.ListQuery
 import com.freshdigitable.udonroad2.model.PageOption
+import com.freshdigitable.udonroad2.model.PagedResponseList
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
 import twitter4j.Paging
 import twitter4j.Query
 import twitter4j.Status
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class HomeTimelineDataSource @Inject constructor(
     private val twitter: AppTwitter
 ) : RemoteListDataSource<QueryType.TweetQueryType.Timeline, TweetEntity> {
 
     override suspend fun getList(
         query: ListQuery<QueryType.TweetQueryType.Timeline>
-    ): List<TweetEntity> = twitter.fetch {
-        (
-            query.type.userId?.value?.let { id ->
-                when (query.pageOption) {
-                    PageOption.OnInit -> getUserTimeline(id)
-                    else -> getUserTimeline(id, query.pageOption.toPaging())
-                }
-            } ?: when (query.pageOption) {
-                PageOption.OnInit -> homeTimeline
-                else -> getHomeTimeline(query.pageOption.toPaging())
-            }
-            ).map(Status::toEntity)
+    ): PagedResponseList<TweetEntity> = twitter.fetch {
+        val paging = query.pageOption.toPaging()
+        val list = query.type.userId?.let { id -> getUserTimeline(id.value, paging) }
+            ?: getHomeTimeline(paging)
+        PagedResponseList.create(list, query.pageOption.count)
     }
 }
 
+@Singleton
 class FavTimelineDataSource @Inject constructor(
     private val twitter: AppTwitter
 ) : RemoteListDataSource<QueryType.TweetQueryType.Fav, TweetEntity> {
 
     override suspend fun getList(
         query: ListQuery<QueryType.TweetQueryType.Fav>
-    ): List<TweetEntity> = twitter.fetch {
-        (
-            query.type.userId?.value?.let { id ->
-                when (query.pageOption) {
-                    PageOption.OnInit -> getFavorites(id)
-                    else -> getFavorites(id, query.pageOption.toPaging())
-                }
-            } ?: when (query.pageOption) {
-                PageOption.OnInit -> favorites
-                else -> getFavorites(query.pageOption.toPaging())
-            }
-            ).map(Status::toEntity)
+    ): PagedResponseList<TweetEntity> = twitter.fetch {
+        val paging = query.pageOption.toPaging()
+        val list = query.type.userId?.let { id -> getFavorites(id.value, paging) }
+            ?: getFavorites(paging)
+        PagedResponseList.create(list, query.pageOption.count)
     }
 }
 
+@Singleton
 class MediaTimelineDataSource @Inject constructor(
     private val twitter: AppTwitter
 ) : RemoteListDataSource<QueryType.TweetQueryType.Media, TweetEntity> {
     override suspend fun getList(
         query: ListQuery<QueryType.TweetQueryType.Media>
-    ): List<TweetEntity> = twitter.fetch {
+    ): PagedResponseList<TweetEntity> = twitter.fetch {
         val q = Query(query.type.query).apply {
             maxId = query.pageOption.maxId ?: -1
             sinceId = query.pageOption.sinceId ?: -1
             count = query.pageOption.count
             resultType = Query.ResultType.recent
         }
-        search(q).tweets.map(Status::toEntity)
+        val res = search(q)
+        PagedResponseList(
+            list = res.tweets.map(Status::toEntity),
+            prependCursor = res.nextQuery()?.sinceId,
+            appendCursor = res.nextQuery()?.maxId,
+        )
     }
 }
 
-fun PageOption.toPaging(): Paging {
+private fun PageOption.toPaging(): Paging {
     val paging = Paging(page, count)
-    sinceId?.let { paging.sinceId = it }
-    maxId?.let { paging.maxId = it }
+    if (sinceId != ListEntity.CURSOR_INIT) {
+        sinceId?.let { paging.sinceId = it }
+    }
+    if (maxId != ListEntity.CURSOR_INIT) {
+        maxId?.let { paging.maxId = it }
+    }
     return paging
+}
+
+internal fun PagedResponseList.Companion.create(
+    statuses: List<Status>,
+    queryCount: Int,
+): PagedResponseList<TweetEntity> {
+    val list = statuses.map(Status::toEntity)
+    return PagedResponseList(
+        list = list,
+        prependCursor = list.firstOrNull()?.let { it.id.value + 1 },
+        appendCursor = if (list.size >= queryCount) list.lastOrNull()
+            ?.let { it.id.value - 1 } else null,
+    )
 }

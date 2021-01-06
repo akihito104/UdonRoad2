@@ -17,8 +17,8 @@
 package com.freshdigitable.udonroad2.data.restclient
 
 import com.freshdigitable.udonroad2.data.restclient.ext.toEntity
+import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.user.UserEntity
-import com.freshdigitable.udonroad2.model.user.UserId
 import javax.inject.Inject
 
 class UserRestClient @Inject constructor(

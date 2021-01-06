@@ -19,7 +19,7 @@ package com.freshdigitable.udonroad2.data.impl
 import android.content.SharedPreferences
 import androidx.core.content.edit
 import com.freshdigitable.udonroad2.model.AccessTokenEntity
-import com.freshdigitable.udonroad2.model.user.UserId
+import com.freshdigitable.udonroad2.model.UserId
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.channels.sendBlocking
 import kotlinx.coroutines.flow.Flow

@@ -17,7 +17,7 @@
 package com.freshdigitable.udonroad2.data.db.converter
 
 import androidx.room.TypeConverter
-import com.freshdigitable.udonroad2.model.user.UserId
+import com.freshdigitable.udonroad2.model.UserId
 
 internal class UserIdConverter {
     @TypeConverter

@@ -3,9 +3,9 @@ package com.freshdigitable.udonroad2.data.impl
 import com.freshdigitable.udonroad2.data.db.DaoModule
 import com.freshdigitable.udonroad2.data.db.dao.TweetDao
 import com.freshdigitable.udonroad2.data.restclient.TweetApiClient
+import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.app.AppTwitterException
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
-import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import dagger.Module
 import dagger.Provides

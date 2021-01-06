@@ -1,11 +1,11 @@
 package com.freshdigitable.udonroad2.data.restclient.data
 
 import com.freshdigitable.udonroad2.model.MediaEntity
+import com.freshdigitable.udonroad2.model.TweetId
+import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
-import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.tweet.UserReplyEntity
 import com.freshdigitable.udonroad2.model.user.UserEntity
-import com.freshdigitable.udonroad2.model.user.UserId
 import org.threeten.bp.Instant
 
 internal class TweetEntityRest(

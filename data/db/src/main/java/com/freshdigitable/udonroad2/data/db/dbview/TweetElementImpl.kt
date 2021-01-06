@@ -23,11 +23,11 @@ import androidx.room.Ignore
 import androidx.room.Relation
 import com.freshdigitable.udonroad2.data.db.dbview.TweetListItemDbView.TweetElementDbView
 import com.freshdigitable.udonroad2.data.db.entity.UserReplyEntityDb
+import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.TweetMediaItem
 import com.freshdigitable.udonroad2.model.tweet.DetailTweetElement
 import com.freshdigitable.udonroad2.model.tweet.DetailTweetListItem
 import com.freshdigitable.udonroad2.model.tweet.TweetElement
-import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import com.freshdigitable.udonroad2.model.tweet.UserReplyEntity
 import com.freshdigitable.udonroad2.model.user.TweetUserItem

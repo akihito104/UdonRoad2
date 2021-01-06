@@ -25,8 +25,12 @@ import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.TypeConverter
 import com.freshdigitable.udonroad2.data.db.AppTypeConverter
+import com.freshdigitable.udonroad2.model.ListEntity
 import com.freshdigitable.udonroad2.model.ListId
-import com.freshdigitable.udonroad2.model.user.UserId
+import com.freshdigitable.udonroad2.model.ListQuery
+import com.freshdigitable.udonroad2.model.PageOption
+import com.freshdigitable.udonroad2.model.PagedResponseList
+import com.freshdigitable.udonroad2.model.UserId
 
 @Entity(tableName = "list")
 data class ListEntityDb(
@@ -35,9 +39,13 @@ data class ListEntityDb(
     val _id: Int = 0,
     @ColumnInfo(name = "owner_id", index = true)
     val ownerId: UserId,
-) {
+    @ColumnInfo(name = "prepend_cursor")
+    override val prependCursor: Long = ListEntity.CURSOR_INIT,
+    @ColumnInfo(name = "append_cursor")
+    override val appendCursor: Long? = ListEntity.CURSOR_INIT,
+) : ListEntity {
     @Ignore
-    val id: ListId = ListId(_id)
+    override val id: ListId = ListId(_id)
 }
 
 class ListIdConverter : AppTypeConverter<ListId, Int> {
@@ -66,4 +74,28 @@ abstract class ListDao {
 
     @Query("DELETE FROM list WHERE id = :id")
     abstract suspend fun deleteList(id: ListId)
+
+    @Query("SELECT * FROM list WHERE id = :id")
+    abstract suspend fun findListEntityById(id: ListId): ListEntityDb?
+
+    @Query("UPDATE list SET prepend_cursor = :cursor WHERE id = :id")
+    abstract suspend fun updatePrependCursorById(id: ListId, cursor: Long?)
+
+    @Query("UPDATE list SET append_cursor = :cursor WHERE id = :id")
+    abstract suspend fun updateAppendCursorById(id: ListId, cursor: Long?)
+}
+
+internal suspend fun ListDao.updateCursorById(
+    entities: PagedResponseList<*>,
+    query: ListQuery<*>,
+    owner: ListId
+) {
+    if (query.pageOption is PageOption.OnInit || query.pageOption is PageOption.OnHead) {
+        entities.prependCursor?.let {
+            updatePrependCursorById(owner, it)
+        }
+    }
+    if (query.pageOption is PageOption.OnInit || query.pageOption is PageOption.OnTail) {
+        updateAppendCursorById(owner, entities.appendCursor)
+    }
 }

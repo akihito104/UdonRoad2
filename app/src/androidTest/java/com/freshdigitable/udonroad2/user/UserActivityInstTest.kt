@@ -24,15 +24,15 @@ import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.TestApplicationBase
 import com.freshdigitable.udonroad2.data.restclient.ext.toEntity
 import com.freshdigitable.udonroad2.media.MediaActivityArgs
-import com.freshdigitable.udonroad2.model.tweet.TweetId
+import com.freshdigitable.udonroad2.model.TweetId
+import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
-import com.freshdigitable.udonroad2.model.user.UserId
 import com.freshdigitable.udonroad2.test.TwitterRobot
-import com.freshdigitable.udonroad2.test.createStatus
-import com.freshdigitable.udonroad2.test.createUser
 import com.freshdigitable.udonroad2.test.intendedWithExtras
 import com.freshdigitable.udonroad2.test.intendingWithExtras
 import com.freshdigitable.udonroad2.test.mainList
+import com.freshdigitable.udonroad2.test_common.createStatus
+import com.freshdigitable.udonroad2.test_common.createUser
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
@@ -52,12 +52,14 @@ class UserActivityInstTest {
     @get:Rule
     val twitterRobot = TwitterRobot()
 
+    private val authenticatedUserId = UserId(3000)
+
     @Before
     fun setup() {
         val tweetingUser = TweetUserItemImpl(UserId(1000), "user1", "user1", "")
         val user = createUser(tweetingUser.id.value, tweetingUser.name, tweetingUser.screenName)
         twitterRobot.setupShowUser(user)
-        twitterRobot.setupRelationships(UserId(100), tweetingUser.id)
+        twitterRobot.setupRelationships(authenticatedUserId, tweetingUser.id)
         twitterRobot.setupGetUserTimeline(
             tweetingUser.id,
             response = (0 until 10).map {
@@ -76,12 +78,10 @@ class UserActivityInstTest {
                 )
             }
         )
-        twitterRobot.setupGetUserTimeline(tweetingUser.id, { any() }, emptyList())
         twitterRobot.setupGetFollowersList(tweetingUser.id, emptyList())
 
         val context = ApplicationProvider.getApplicationContext<TestApplicationBase>()
         context.component.apply {
-            val authenticatedUserId = UserId(3000)
             sharedPreferencesDao.apply {
                 setCurrentUserId(authenticatedUserId)
             }

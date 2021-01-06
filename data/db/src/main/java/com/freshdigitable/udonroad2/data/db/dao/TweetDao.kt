@@ -35,16 +35,15 @@ import com.freshdigitable.udonroad2.data.db.entity.UserReplyEntityDb
 import com.freshdigitable.udonroad2.data.db.entity.VideoValiantEntity
 import com.freshdigitable.udonroad2.data.db.ext.toDbEntity
 import com.freshdigitable.udonroad2.data.db.ext.toEntity
-import com.freshdigitable.udonroad2.data.db.ext.toListEntity
 import com.freshdigitable.udonroad2.data.db.ext.toTweetEntityDb
 import com.freshdigitable.udonroad2.model.ListId
 import com.freshdigitable.udonroad2.model.MediaEntity
 import com.freshdigitable.udonroad2.model.MediaId
+import com.freshdigitable.udonroad2.model.TweetId
+import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.tweet.DetailTweetListItem
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
-import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.tweet.UserReplyEntity
-import com.freshdigitable.udonroad2.model.user.UserId
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -162,19 +161,7 @@ abstract class TweetDao(
     )
     abstract suspend fun findRetweetIdByTweetId(tweetId: TweetId, currentUserId: UserId): TweetId?
 
-    @Transaction
-    internal open suspend fun addTweetsToList(
-        tweet: List<TweetEntity>,
-        owner: ListId
-    ) {
-        addTweets(tweet)
-        addTweetListEntities(tweet.map { it.toListEntity(owner) })
-
-        val listOwner = db.listDao().getListById(owner)
-        addReactions(tweet, listOwner.ownerId)
-    }
-
-    private suspend fun addTweets(tweet: List<TweetEntity>) {
+    internal suspend fun addTweets(tweet: List<TweetEntity>) {
         val tweetEntities = tweet.asSequence()
             .flatMap {
                 listOfNotNull(
@@ -222,7 +209,7 @@ abstract class TweetDao(
         )
     }
 
-    private suspend fun addReactions(tweet: List<TweetEntity>, ownerUserId: UserId) {
+    internal suspend fun addReactions(tweet: List<TweetEntity>, ownerUserId: UserId) {
         val tweetsMayHaveReactions = tweet.flatMap { listOfNotNull(it, it.retweetedTweet) }
             .distinctBy { it.id }
         db.reactionsDao.addRetweeteds(
@@ -251,10 +238,6 @@ abstract class TweetDao(
 
     @Query("DELETE FROM tweet_list WHERE list_id = :owner")
     internal abstract suspend fun deleteByListId(owner: ListId)
-
-    suspend fun clear(owner: ListId) {
-        db.listDao().deleteList(owner)
-    }
 }
 
 @Dao

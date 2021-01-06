@@ -1,6 +1,5 @@
 package com.freshdigitable.udonroad2.model
 
-import com.freshdigitable.udonroad2.model.user.UserId
 import java.io.Serializable
 
 data class ListQuery<T : QueryType>(
@@ -61,12 +60,12 @@ sealed class PageOption(
     object OnInit : PageOption()
 
     data class OnHead(
-        override val sinceId: Long? = null,
+        val cursor: Long? = null,
         override val count: Int = FETCH_COUNT
-    ) : PageOption(page = 1, count = count, sinceId = sinceId)
+    ) : PageOption(page = 1, count = count, sinceId = cursor)
 
     data class OnTail(
-        override val maxId: Long? = null,
+        val cursor: Long? = null,
         override val count: Int = FETCH_COUNT
-    ) : PageOption(page = 1, count = count, sinceId = 1, maxId = maxId)
+    ) : PageOption(page = 1, count = count, maxId = cursor)
 }

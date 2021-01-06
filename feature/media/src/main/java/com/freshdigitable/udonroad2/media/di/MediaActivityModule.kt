@@ -21,9 +21,9 @@ import androidx.lifecycle.ViewModelProvider
 import com.freshdigitable.udonroad2.media.MediaViewModel
 import com.freshdigitable.udonroad2.media.MovieMediaFragment
 import com.freshdigitable.udonroad2.media.PhotoMediaFragment
+import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.app.di.FragmentScope
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
-import com.freshdigitable.udonroad2.model.tweet.TweetId
 import dagger.Binds
 import dagger.BindsInstance
 import dagger.Module

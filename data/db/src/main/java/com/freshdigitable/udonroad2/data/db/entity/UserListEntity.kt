@@ -22,7 +22,7 @@ import androidx.room.ForeignKey
 import androidx.room.ForeignKey.CASCADE
 import androidx.room.PrimaryKey
 import com.freshdigitable.udonroad2.model.ListId
-import com.freshdigitable.udonroad2.model.user.UserId
+import com.freshdigitable.udonroad2.model.UserId
 
 @Entity(
     tableName = "user_list",

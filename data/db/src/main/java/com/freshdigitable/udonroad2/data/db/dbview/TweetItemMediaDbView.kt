@@ -20,8 +20,8 @@ import androidx.room.ColumnInfo
 import androidx.room.DatabaseView
 import com.freshdigitable.udonroad2.model.MediaId
 import com.freshdigitable.udonroad2.model.MediaType
+import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.TweetMediaItem
-import com.freshdigitable.udonroad2.model.tweet.TweetId
 
 @DatabaseView(
     """

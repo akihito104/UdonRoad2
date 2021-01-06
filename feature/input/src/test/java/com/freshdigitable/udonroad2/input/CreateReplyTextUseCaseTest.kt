@@ -18,12 +18,12 @@ package com.freshdigitable.udonroad2.input
 
 import com.freshdigitable.udonroad2.data.ReplyRepository
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
+import com.freshdigitable.udonroad2.model.TweetId
+import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.tweet.TweetElement
-import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import com.freshdigitable.udonroad2.model.tweet.UserReplyEntity
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
-import com.freshdigitable.udonroad2.model.user.UserId
 import com.freshdigitable.udonroad2.test_common.MockVerified
 import com.freshdigitable.udonroad2.test_common.jvm.OAuthTokenRepositoryRule
 import com.google.common.truth.Truth.assertThat

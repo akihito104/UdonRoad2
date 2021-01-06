@@ -21,9 +21,9 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
-import com.freshdigitable.udonroad2.model.tweet.TweetId
+import com.freshdigitable.udonroad2.model.TweetId
+import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.tweet.UserReplyEntity
-import com.freshdigitable.udonroad2.model.user.UserId
 import org.threeten.bp.Instant
 
 @Entity(

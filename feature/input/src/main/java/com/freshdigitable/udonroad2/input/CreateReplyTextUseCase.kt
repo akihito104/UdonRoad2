@@ -19,7 +19,7 @@ package com.freshdigitable.udonroad2.input
 import com.freshdigitable.udonroad2.data.ReplyRepository
 import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
-import com.freshdigitable.udonroad2.model.tweet.TweetId
+import com.freshdigitable.udonroad2.model.TweetId
 import javax.inject.Inject
 
 class CreateReplyTextUseCase @Inject constructor(

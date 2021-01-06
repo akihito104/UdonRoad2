@@ -16,8 +16,8 @@
 
 package com.freshdigitable.udonroad2.user
 
+import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
-import com.freshdigitable.udonroad2.model.user.UserId
 
 sealed class UserActivityEvent : AppEvent {
     data class PageChanged(val page: UserPage) : UserActivityEvent()

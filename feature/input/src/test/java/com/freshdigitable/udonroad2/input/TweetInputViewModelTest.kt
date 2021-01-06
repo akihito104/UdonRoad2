@@ -23,13 +23,13 @@ import com.freshdigitable.udonroad2.data.impl.TweetInputRepository
 import com.freshdigitable.udonroad2.data.impl.UserRepository
 import com.freshdigitable.udonroad2.input.MediaChooserResultContract.MediaChooserResult
 import com.freshdigitable.udonroad2.model.MediaId
+import com.freshdigitable.udonroad2.model.TweetId
+import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.AppFilePath
 import com.freshdigitable.udonroad2.model.app.AppTwitterException
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
-import com.freshdigitable.udonroad2.model.tweet.TweetId
 import com.freshdigitable.udonroad2.model.user.UserEntity
-import com.freshdigitable.udonroad2.model.user.UserId
 import com.freshdigitable.udonroad2.shortcut.SelectedItemShortcut
 import com.freshdigitable.udonroad2.test_common.MatcherScopedBlock
 import com.freshdigitable.udonroad2.test_common.MockVerified

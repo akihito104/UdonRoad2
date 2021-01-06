@@ -24,22 +24,18 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import androidx.room.Transaction
-import com.freshdigitable.udonroad2.data.db.AppDatabase
 import com.freshdigitable.udonroad2.data.db.dbview.UserListDbView
 import com.freshdigitable.udonroad2.data.db.entity.UserEntityDb
 import com.freshdigitable.udonroad2.data.db.entity.UserListEntity
 import com.freshdigitable.udonroad2.data.db.ext.toEntity
 import com.freshdigitable.udonroad2.model.ListId
+import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.user.UserEntity
-import com.freshdigitable.udonroad2.model.user.UserId
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 
 @Dao
-abstract class UserDao(
-    private val db: AppDatabase
-) {
+abstract class UserDao {
     open suspend fun addUsers(users: List<UserEntity>) {
         val u = users.map {
             when (it) {
@@ -60,22 +56,11 @@ abstract class UserDao(
 
     @Query("SELECT * FROM user WHERE id = :id")
     internal abstract suspend fun getUser(id: UserId): UserEntityDb?
-    open suspend fun getUserById(id: UserId): UserEntity? = getUser(id)
+    suspend fun getUserById(id: UserId): UserEntity? = getUser(id)
 
     @Query("SELECT * FROM user WHERE id = :id")
     internal abstract fun getUserFlow(id: UserId): Flow<UserEntityDb?>
-    open fun getUserFlowById(id: UserId): Flow<UserEntity?> = getUserFlow(id).distinctUntilChanged()
-
-    @Transaction
-    internal open suspend fun addUsers(entities: List<UserEntityDb>, owner: ListId? = null) {
-        addUsers(entities)
-        if (owner != null) {
-            val listEntities = entities.map {
-                UserListEntity(userId = it.id, listId = owner)
-            }
-            addUserListEntities(listEntities)
-        }
-    }
+    fun getUserFlowById(id: UserId): Flow<UserEntity?> = getUserFlow(id).distinctUntilChanged()
 
     @Query(
         """
@@ -92,8 +77,4 @@ abstract class UserDao(
 
     @Query("DELETE FROM user_list WHERE list_id = :owner")
     abstract suspend fun deleteByListId(owner: ListId)
-
-    suspend fun clear(owner: ListId) {
-        db.listDao().deleteList(owner)
-    }
 }

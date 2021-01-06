@@ -16,7 +16,6 @@
 
 package com.freshdigitable.udonroad2.model
 
-import com.freshdigitable.udonroad2.model.tweet.TweetId
 import java.io.Serializable
 
 data class SelectedItemId(
