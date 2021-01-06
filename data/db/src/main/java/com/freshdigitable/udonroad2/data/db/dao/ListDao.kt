@@ -31,7 +31,7 @@ class TweetListDao(
     private val listDao: ListDao = db.listDao()
 
     override fun getDataSourceFactory(owner: ListId): DataSource.Factory<Int, TweetListItem> {
-        return dao.getTimeline(owner).map { it as TweetListItem }
+        return dao.getTimeline(owner).map { it }
     }
 
     override suspend fun putList(
@@ -71,7 +71,7 @@ class UserListDao(
     private val listDao: ListDao = db.listDao()
 
     override fun getDataSourceFactory(owner: ListId): DataSource.Factory<Int, UserListItem> {
-        return dao.getUserList(owner).map { it as UserListItem }
+        return dao.getUserList(owner).map { it }
     }
 
     override suspend fun putList(
@@ -105,7 +105,7 @@ class CustomTimelineListDao(
     private val listDao: ListDao = db.listDao()
 
     override fun getDataSourceFactory(owner: ListId): DataSource.Factory<Int, CustomTimelineItem> {
-        return dao.getCustomTimeline(owner).map { it as CustomTimelineItem }
+        return dao.getCustomTimeline(owner).map { it }
     }
 
     override suspend fun putList(
