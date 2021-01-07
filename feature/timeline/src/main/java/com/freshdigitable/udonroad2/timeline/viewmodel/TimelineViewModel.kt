@@ -67,7 +67,6 @@ class TimelineViewModel(
     override fun onCleared() {
         Timber.tag("TimelineViewModel").d("onCleared: $owner")
         super.onCleared()
-        pagedListProvider.clear()
         viewModelScope.launch {
             homeRepository.clear(owner.id)
         }

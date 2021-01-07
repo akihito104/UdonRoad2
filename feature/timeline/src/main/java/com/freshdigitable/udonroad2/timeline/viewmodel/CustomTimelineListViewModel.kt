@@ -47,7 +47,6 @@ class CustomTimelineListViewModel(
 
     override fun onCleared() {
         super.onCleared()
-        pagedListProvider.clear()
         viewModelScope.launch {
             repository.clear(owner.id)
         }

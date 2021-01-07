@@ -26,6 +26,7 @@ import com.freshdigitable.udonroad2.timeline.di.ListItemViewModelComponent
 import com.freshdigitable.udonroad2.timeline.di.viewModel
 import dagger.android.support.AndroidSupportInjection
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -67,7 +68,7 @@ class ListItemFragment : Fragment() {
             .adapter as PagingDataAdapter<Any, *>
         binding.mainList.setup(adapter)
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.timeline.collect(adapter::submitData)
+            viewModel.timeline.collectLatest(adapter::submitData)
         }
 
         val eventDelegate = eventDelegate.create(viewModel).eventDelegate

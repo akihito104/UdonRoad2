@@ -42,7 +42,6 @@ class UserListViewModel(
 
     override fun onCleared() {
         super.onCleared()
-        pagedListProvider.clear()
         viewModelScope.launch {
             repository.clear(owner.id)
         }

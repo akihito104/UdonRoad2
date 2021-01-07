@@ -35,12 +35,7 @@ import com.freshdigitable.udonroad2.model.ListId
 import com.freshdigitable.udonroad2.model.ListQuery
 import com.freshdigitable.udonroad2.model.PageOption
 import com.freshdigitable.udonroad2.model.QueryType
-import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.AppTwitterException
-import com.freshdigitable.udonroad2.model.app.ioContext
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import timber.log.Timber
 import java.io.IOException
@@ -119,18 +114,16 @@ internal class ListRepositoryImpl<Q : QueryType, E : Any>(
 internal class PagedListProviderImpl<Q : QueryType, I : Any>(
     private val pagedListDataSourceFactory: PagedListProvider.DataSourceFactory<I>,
     private val repository: ListRepository<Q>,
-    private val executor: AppExecutor,
 ) : PagedListProvider<Q, I> {
 
     companion object {
         private val config = PagingConfig(
             enablePlaceholders = false,
-            pageSize = 20,
-//            initialLoadSize = 100
+            pageSize = 50,
+            initialLoadSize = 50,
+            prefetchDistance = 10,
         )
     }
-
-    private val coroutineScope = CoroutineScope(SupervisorJob() + executor.ioContext)
 
     @ExperimentalPagingApi
     override fun getList(queryType: Q, owner: ListId): Flow<PagingData<I>> {
@@ -156,9 +149,5 @@ internal class PagedListProviderImpl<Q : QueryType, I : Any>(
                 }
             }
         ).flow
-    }
-
-    override fun clear() {
-        coroutineScope.cancel()
     }
 }

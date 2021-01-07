@@ -37,7 +37,6 @@ interface ListRepository<Q : QueryType> {
 
 interface PagedListProvider<Q : QueryType, I : Any> {
     fun getList(queryType: Q, owner: ListId): Flow<PagingData<I>>
-    fun clear()
 
     interface DataSourceFactory<I : Any> {
         fun getDataSourceFactory(owner: ListId): PagingSource<Int, I>
