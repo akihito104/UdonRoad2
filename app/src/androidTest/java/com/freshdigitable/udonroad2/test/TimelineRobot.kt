@@ -16,6 +16,7 @@
 
 package com.freshdigitable.udonroad2.test
 
+import android.app.Activity
 import android.view.View
 import androidx.annotation.IdRes
 import androidx.recyclerview.widget.RecyclerView
@@ -41,7 +42,7 @@ fun mainList(block: TimelineRobot.() -> Unit = {}): TimelineRobot {
 }
 
 class TimelineRobot(
-    @IdRes private val listId: Int
+    @IdRes val listId: Int
 ) {
     fun clickListItemOf(adapterPosition: Int): ViewInteraction {
         return onListItemOf(adapterPosition).perform(object : ViewAction {
@@ -83,6 +84,16 @@ class TimelineRobot(
         )
     }
 
+    inline fun <reified T : Activity> waitForItems(noinline afterTask: () -> Unit) {
+        waitForActivity<T>(
+            name = "waitForItems",
+            onActivity = { a ->
+                a.findViewById<RecyclerView>(listId).childCount > 0
+            },
+            afterTask = afterTask
+        )
+    }
+
     infix fun verify(block: Verify.() -> Unit) {
         Verify(this).apply(block)
     }
@@ -104,7 +115,7 @@ private class RecyclerViewItemAdapterPositionMatcher(
     override fun matchesSafely(item: View): Boolean {
         val recyclerView = item.parent as? RecyclerView ?: return false
         val vh = recyclerView.findContainingViewHolder(item)
-        return vh?.adapterPosition == adapterPosition
+        return vh?.absoluteAdapterPosition == adapterPosition
     }
 
     override fun describeTo(description: Description?) {

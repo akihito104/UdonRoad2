@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.freshdigitable.udonroad2.user
+package com.freshdigitable.udonroad2.test
 
 import android.app.Activity
 import androidx.test.espresso.IdlingRegistry

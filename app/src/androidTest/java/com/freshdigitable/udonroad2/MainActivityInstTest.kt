@@ -17,8 +17,6 @@
 package com.freshdigitable.udonroad2
 
 import androidx.test.core.app.ApplicationProvider
-import androidx.test.espresso.IdlingRegistry
-import androidx.test.espresso.idling.CountingIdlingResource
 import androidx.test.espresso.intent.rule.IntentsTestRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.freshdigitable.udonroad2.data.restclient.ext.toEntity
@@ -121,7 +119,6 @@ class MainActivityInstTest {
                 }
             }
 
-            val countingIdlingResource = CountingIdlingResource("load_timeline")
             val user = createUser(2000, "user2000", "_user2000")
             twitterRobot.setupGetHomeTimeline(
                 response = (0 until 10).map {
@@ -132,11 +129,7 @@ class MainActivityInstTest {
                         Date(100000L + it)
                     )
                 }
-            ) {
-                countingIdlingResource.decrement()
-            }
-            countingIdlingResource.increment()
-            IdlingRegistry.getInstance().register(countingIdlingResource)
+            )
             intentsTestRule.launchActivity(null)
             checkActionBarTitle(R.string.title_home)
         }
@@ -145,7 +138,9 @@ class MainActivityInstTest {
         fun swipeFabAndThenMoveToDetailOfSelectedTweet(): Unit = onMainActivity {
             // exercise
             mainList {
-                clickListItemOf(0)
+                waitForItems<MainActivity> {
+                    clickListItemOf(0)
+                }
             } verify {
                 checkFabIsDisplayed()
                 stateIsSelectedOnItemOf(0)
