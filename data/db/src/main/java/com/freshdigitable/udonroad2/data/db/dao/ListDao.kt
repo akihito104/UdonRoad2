@@ -1,6 +1,6 @@
 package com.freshdigitable.udonroad2.data.db.dao
 
-import androidx.paging.DataSource
+import androidx.paging.PagingSource
 import androidx.room.withTransaction
 import com.freshdigitable.udonroad2.data.LocalListDataSource
 import com.freshdigitable.udonroad2.data.PagedListProvider
@@ -30,8 +30,8 @@ class TweetListDao(
     private val dao: TweetDao = db.tweetDao()
     private val listDao: ListDao = db.listDao()
 
-    override fun getDataSourceFactory(owner: ListId): DataSource.Factory<Int, TweetListItem> {
-        return dao.getTimeline(owner).map { it }
+    override fun getDataSourceFactory(owner: ListId): PagingSource<Int, TweetListItem> {
+        return dao.getTimeline(owner) as PagingSource<Int, TweetListItem>
     }
 
     override suspend fun putList(
@@ -70,8 +70,8 @@ class UserListDao(
     private val dao: UserDao = db.userDao()
     private val listDao: ListDao = db.listDao()
 
-    override fun getDataSourceFactory(owner: ListId): DataSource.Factory<Int, UserListItem> {
-        return dao.getUserList(owner).map { it }
+    override fun getDataSourceFactory(owner: ListId): PagingSource<Int, UserListItem> {
+        return dao.getUserList(owner) as PagingSource<Int, UserListItem>
     }
 
     override suspend fun putList(
@@ -104,8 +104,8 @@ class CustomTimelineListDao(
     private val dao: CustomTimelineDao = db.customTimelineDao()
     private val listDao: ListDao = db.listDao()
 
-    override fun getDataSourceFactory(owner: ListId): DataSource.Factory<Int, CustomTimelineItem> {
-        return dao.getCustomTimeline(owner).map { it }
+    override fun getDataSourceFactory(owner: ListId): PagingSource<Int, CustomTimelineItem> {
+        return dao.getCustomTimeline(owner) as PagingSource<Int, CustomTimelineItem>
     }
 
     override suspend fun putList(

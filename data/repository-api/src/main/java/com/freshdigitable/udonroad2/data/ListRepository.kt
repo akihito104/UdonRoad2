@@ -17,8 +17,8 @@
 package com.freshdigitable.udonroad2.data
 
 import androidx.lifecycle.LiveData
-import androidx.paging.DataSource
 import androidx.paging.PagingData
+import androidx.paging.PagingSource
 import com.freshdigitable.udonroad2.model.ListEntity
 import com.freshdigitable.udonroad2.model.ListId
 import com.freshdigitable.udonroad2.model.ListQuery
@@ -40,7 +40,7 @@ interface PagedListProvider<Q : QueryType, I : Any> {
     fun clear()
 
     interface DataSourceFactory<I : Any> {
-        fun getDataSourceFactory(owner: ListId): DataSource.Factory<Int, I>
+        fun getDataSourceFactory(owner: ListId): PagingSource<Int, I>
     }
 }
 

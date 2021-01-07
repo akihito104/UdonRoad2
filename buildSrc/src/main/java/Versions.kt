@@ -25,7 +25,7 @@ object Versions {
     const val ANDROIDX_CORE = "1.3.1"
     const val ANDROIDX_LIFECYCLE = "2.2.0"
     const val ANDROIDX_PAGING = "3.0.0-alpha11"
-    const val ANDROIDX_ROOM = "2.2.5"
+    const val ANDROIDX_ROOM = "2.3.0-alpha03"
     const val ANDROIDX_NAVIGATION = "2.3.0"
 
     const val MATERIAL_DESIGN = "1.3.0-alpha04"

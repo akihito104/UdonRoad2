@@ -134,11 +134,12 @@ internal class PagedListProviderImpl<Q : QueryType, I : Any>(
 
     @ExperimentalPagingApi
     override fun getList(queryType: Q, owner: ListId): Flow<PagingData<I>> {
-        val timeline = pagedListDataSourceFactory.getDataSourceFactory(owner)
-            .asPagingSourceFactory(executor.dispatcher.ioDispatcher)
         return Pager(
             config = config,
-            pagingSourceFactory = timeline,
+            pagingSourceFactory = {
+                Timber.tag("PagedListProvider").d("source loaded")
+                pagedListDataSourceFactory.getDataSourceFactory(owner)
+            },
             remoteMediator = object : RemoteMediator<Int, I>() {
                 override suspend fun load(
                     loadType: LoadType,
@@ -149,7 +150,7 @@ internal class PagedListProviderImpl<Q : QueryType, I : Any>(
                     when (loadType) {
                         LoadType.REFRESH -> repository.loadAtFirst(queryType, owner)
                         LoadType.APPEND -> repository.appendList(queryType, owner)
-                        LoadType.PREPEND -> repository.appendList(queryType, owner)
+                        LoadType.PREPEND -> repository.prependList(queryType, owner)
                     }
                     return MediatorResult.Success(endOfPaginationReached = true) // FIXME
                 }

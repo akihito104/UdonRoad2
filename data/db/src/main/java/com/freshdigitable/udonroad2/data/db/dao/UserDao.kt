@@ -19,7 +19,7 @@ package com.freshdigitable.udonroad2.data.db.dao
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.map
-import androidx.paging.DataSource
+import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
@@ -70,7 +70,7 @@ abstract class UserDao {
         WHERE list_id = :owner
         ORDER BY l.id"""
     )
-    internal abstract fun getUserList(owner: ListId): DataSource.Factory<Int, UserListDbView>
+    internal abstract fun getUserList(owner: ListId): PagingSource<Int, UserListDbView>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     internal abstract suspend fun addUserListEntities(entities: List<UserListEntity>)
