@@ -1,6 +1,5 @@
 package com.freshdigitable.udonroad2.timeline
 
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.paging.PagingData
 import com.freshdigitable.udonroad2.model.QueryType
@@ -9,7 +8,6 @@ import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import kotlinx.coroutines.flow.Flow
 
 interface ListLoadable {
-    val loading: LiveData<Boolean>
     fun onRefresh()
 }
 

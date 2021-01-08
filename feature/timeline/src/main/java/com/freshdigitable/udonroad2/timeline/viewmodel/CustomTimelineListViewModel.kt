@@ -1,6 +1,5 @@
 package com.freshdigitable.udonroad2.timeline.viewmodel
 
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import com.freshdigitable.udonroad2.data.ListRepository
@@ -23,10 +22,9 @@ class CustomTimelineListViewModel(
     private val owner: ListOwner<QueryType.UserListMembership>,
     private val repository: ListRepository<QueryType.UserListMembership>,
     private val eventDispatcher: EventDispatcher,
-    private val pagedListProvider: PagedListProvider<QueryType.UserListMembership, CustomTimelineItem>
+    pagedListProvider: PagedListProvider<QueryType.UserListMembership, CustomTimelineItem>
 ) : ListItemLoadableViewModel<QueryType.UserListMembership, CustomTimelineItem>(),
     ListItemClickListener<CustomTimelineItem> {
-    override val loading: LiveData<Boolean> = repository.loading
 
     override fun onRefresh() {
         viewModelScope.launch {

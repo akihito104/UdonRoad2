@@ -16,7 +16,6 @@
 
 package com.freshdigitable.udonroad2.data
 
-import androidx.lifecycle.LiveData
 import androidx.paging.PagingData
 import androidx.paging.PagingSource
 import com.freshdigitable.udonroad2.model.ListEntity
@@ -27,8 +26,6 @@ import com.freshdigitable.udonroad2.model.QueryType
 import kotlinx.coroutines.flow.Flow
 
 interface ListRepository<Q : QueryType> {
-    val loading: LiveData<Boolean>
-
     suspend fun loadAtFirst(query: Q, owner: ListId)
     suspend fun prependList(query: Q, owner: ListId)
     suspend fun appendList(query: Q, owner: ListId)

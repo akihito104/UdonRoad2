@@ -46,7 +46,7 @@ class TimelineViewModel(
     private val eventDispatcher: EventDispatcher,
     viewStates: TimelineViewState,
     private val homeRepository: ListRepository<TweetQueryType>,
-    private val pagedListProvider: PagedListProvider<TweetQueryType, TweetListItem>
+    pagedListProvider: PagedListProvider<TweetQueryType, TweetListItem>
 ) : ListItemLoadableViewModel<TweetQueryType, TweetListItem>(),
     TweetListItemClickListener,
     TweetListEventListener {
@@ -54,7 +54,6 @@ class TimelineViewModel(
     override val timeline: Flow<PagingData<TweetListItem>> =
         pagedListProvider.getList(owner.query, owner.id)
 
-    override val loading: LiveData<Boolean> = homeRepository.loading
     override val navigationEvent: Flow<NavigationEvent> = viewStates.updateNavHost.asFlow()
     override val feedbackMessage: Flow<FeedbackMessage> = viewStates.updateTweet.asFlow()
 

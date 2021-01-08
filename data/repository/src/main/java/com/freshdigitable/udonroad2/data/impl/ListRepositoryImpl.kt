@@ -16,8 +16,6 @@
 
 package com.freshdigitable.udonroad2.data.impl
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.paging.ExperimentalPagingApi
 import androidx.paging.LoadType
 import androidx.paging.Pager
@@ -44,9 +42,6 @@ internal class ListRepositoryImpl<Q : QueryType, E : Any>(
     private val localDataSource: LocalListDataSource<Q, E>,
     private val remoteDataSource: RemoteListDataSource<Q, E>,
 ) : ListRepository<Q> {
-
-    private val _loading = MutableLiveData<Boolean>()
-    override val loading: LiveData<Boolean> = _loading
 
     override suspend fun loadAtFirst(query: Q, owner: ListId) {
         loadList(query, owner) {
@@ -75,11 +70,6 @@ internal class ListRepositoryImpl<Q : QueryType, E : Any>(
         owner: ListId,
         option: (ListEntity) -> PageOption?
     ) {
-        if (_loading.value == true) {
-            return
-        }
-        _loading.postValue(true)
-
         val listEntity = requireNotNull(localDataSource.findListEntity(owner))
         val pageOption = if (listEntity.hasNotFetchedYet) {
             PageOption.OnInit
@@ -87,7 +77,6 @@ internal class ListRepositoryImpl<Q : QueryType, E : Any>(
             option(listEntity)
         }
         if (pageOption == null) { // cannot load items any more
-            _loading.postValue(false)
             return
         }
         val q = ListQuery(queryType, pageOption)
@@ -101,8 +90,6 @@ internal class ListRepositoryImpl<Q : QueryType, E : Any>(
         } catch (e: AppTwitterException) {
             // TODO: recover or notifying
             Timber.tag("ListRepository").e(e, "loadList: ${e.message}")
-        } finally {
-            _loading.postValue(false)
         }
     }
 

@@ -17,7 +17,6 @@
 package com.freshdigitable.udonroad2.oauth
 
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
@@ -38,7 +37,6 @@ class OauthViewModel(
     viewStates: OauthViewStates,
 ) : ListItemLoadableViewModel<QueryType.Oauth, OauthItem>() {
 
-    override val loading: LiveData<Boolean> = MutableLiveData(false)
     override val timeline: Flow<PagingData<OauthItem>> = Pager(
         config = PagingConfig(
             maxSize = 100,
