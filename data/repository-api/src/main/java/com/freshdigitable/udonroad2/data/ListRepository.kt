@@ -29,6 +29,7 @@ interface ListRepository<Q : QueryType> {
     suspend fun loadAtFirst(query: Q, owner: ListId)
     suspend fun prependList(query: Q, owner: ListId)
     suspend fun appendList(query: Q, owner: ListId)
+    suspend fun findListEntity(owner: ListId): ListEntity?
     suspend fun clear(owner: ListId)
 }
 

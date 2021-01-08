@@ -33,10 +33,8 @@ import com.freshdigitable.udonroad2.model.ListId
 import com.freshdigitable.udonroad2.model.ListQuery
 import com.freshdigitable.udonroad2.model.PageOption
 import com.freshdigitable.udonroad2.model.QueryType
-import com.freshdigitable.udonroad2.model.app.AppTwitterException
 import kotlinx.coroutines.flow.Flow
 import timber.log.Timber
-import java.io.IOException
 
 internal class ListRepositoryImpl<Q : QueryType, E : Any>(
     private val localDataSource: LocalListDataSource<Q, E>,
@@ -70,28 +68,21 @@ internal class ListRepositoryImpl<Q : QueryType, E : Any>(
         owner: ListId,
         option: (ListEntity) -> PageOption?
     ) {
-        val listEntity = requireNotNull(localDataSource.findListEntity(owner))
-        val pageOption = if (listEntity.hasNotFetchedYet) {
-            PageOption.OnInit
-        } else {
-            option(listEntity)
+        val listEntity = requireNotNull(findListEntity(owner)) {
+            "ListEntity(owner: $owner) should be registered."
         }
-        if (pageOption == null) { // cannot load items any more
-            return
+        val pageOption = when {
+            listEntity.hasNotFetchedYet -> PageOption.OnInit
+            else -> option(listEntity) ?: return
         }
         val q = ListQuery(queryType, pageOption)
 
-        try {
-            val timeline = remoteDataSource.getList(q)
-            localDataSource.putList(timeline, q, owner)
-        } catch (e: IOException) {
-            // TODO: recover or notifying
-            Timber.tag("ListRepository").e(e, "loadList: ${e.message}")
-        } catch (e: AppTwitterException) {
-            // TODO: recover or notifying
-            Timber.tag("ListRepository").e(e, "loadList: ${e.message}")
-        }
+        val timeline = remoteDataSource.getList(q)
+        localDataSource.putList(timeline, q, owner)
     }
+
+    override suspend fun findListEntity(owner: ListId): ListEntity? =
+        localDataSource.findListEntity(owner)
 
     override suspend fun clear(owner: ListId) {
         localDataSource.clean(owner)
@@ -116,25 +107,29 @@ internal class PagedListProviderImpl<Q : QueryType, I : Any>(
     override fun getList(queryType: Q, owner: ListId): Flow<PagingData<I>> {
         return Pager(
             config = config,
-            pagingSourceFactory = {
-                Timber.tag("PagedListProvider").d("source loaded")
-                pagedListDataSourceFactory.getDataSourceFactory(owner)
-            },
-            remoteMediator = object : RemoteMediator<Int, I>() {
-                override suspend fun load(
-                    loadType: LoadType,
-                    state: PagingState<Int, I>
-                ): MediatorResult {
-                    Timber.tag("PagedListProvider")
-                        .d("getList: type>$loadType, state>$state")
-                    when (loadType) {
-                        LoadType.REFRESH -> repository.loadAtFirst(queryType, owner)
-                        LoadType.APPEND -> repository.appendList(queryType, owner)
-                        LoadType.PREPEND -> repository.prependList(queryType, owner)
-                    }
-                    return MediatorResult.Success(endOfPaginationReached = true) // FIXME
-                }
-            }
+            pagingSourceFactory = { pagedListDataSourceFactory.getDataSourceFactory(owner) },
+            remoteMediator = getRemoteMediator(queryType, owner)
         ).flow
+    }
+
+    @ExperimentalPagingApi
+    private fun getRemoteMediator(
+        queryType: Q,
+        owner: ListId
+    ): RemoteMediator<Int, I> = object : RemoteMediator<Int, I>() {
+        override suspend fun load(loadType: LoadType, state: PagingState<Int, I>): MediatorResult {
+            Timber.tag("PagedListProvider").d("getList: type>$loadType")
+            return try {
+                when (loadType) {
+                    LoadType.REFRESH -> repository.loadAtFirst(queryType, owner)
+                    LoadType.APPEND -> repository.appendList(queryType, owner)
+                    LoadType.PREPEND -> repository.prependList(queryType, owner)
+                }
+                val listEntity = checkNotNull(repository.findListEntity(owner))
+                MediatorResult.Success(endOfPaginationReached = listEntity.appendCursor == null)
+            } catch (t: Exception) { // throw Error or RuntimeException
+                MediatorResult.Error(t)
+            }
+        }
     }
 }
