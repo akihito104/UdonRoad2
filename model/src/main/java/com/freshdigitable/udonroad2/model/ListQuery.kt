@@ -28,6 +28,10 @@ sealed class QueryType(
             val query: String
                 get() = "from:$screenName filter:media exclude:retweets"
         }
+
+        data class Conversation(
+            val tweetId: TweetId
+        ) : TweetQueryType(null)
     }
 
     sealed class UserQueryType(
