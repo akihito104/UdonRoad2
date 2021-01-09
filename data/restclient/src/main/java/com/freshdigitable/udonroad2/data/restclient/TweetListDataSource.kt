@@ -23,6 +23,7 @@ import com.freshdigitable.udonroad2.model.ListQuery
 import com.freshdigitable.udonroad2.model.PageOption
 import com.freshdigitable.udonroad2.model.PagedResponseList
 import com.freshdigitable.udonroad2.model.QueryType
+import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
 import twitter4j.Paging
 import twitter4j.Query
@@ -78,6 +79,28 @@ class MediaTimelineDataSource @Inject constructor(
             list = res.tweets.map(Status::toEntity),
             prependCursor = res.nextQuery()?.sinceId,
             appendCursor = res.nextQuery()?.maxId,
+        )
+    }
+}
+
+@Singleton
+class ConversationListDataSource(
+    private val tweetApi: TweetApiClient
+) : RemoteListDataSource<QueryType.TweetQueryType.Conversation, TweetEntity> {
+    override suspend fun getList(
+        query: ListQuery<QueryType.TweetQueryType.Conversation>
+    ): PagedResponseList<TweetEntity> {
+        val res = mutableListOf<TweetEntity>()
+        var tweetId: TweetId? = query.type.tweetId
+        while (tweetId != null && res.size <= query.pageOption.count) {
+            val element = tweetApi.fetchTweet(tweetId)
+            res.add(element)
+            tweetId = element.inReplyToTweetId
+        }
+        return PagedResponseList(
+            res,
+            prependCursor = null,
+            appendCursor = res.last().inReplyToTweetId?.value
         )
     }
 }
