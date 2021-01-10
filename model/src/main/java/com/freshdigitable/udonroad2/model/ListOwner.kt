@@ -41,6 +41,8 @@ interface ListEntity {
 
     val id: ListId
 
+    val ownerId: UserId
+
     /**
      * to get list items that will be loaded upper side of current list.
      */
