@@ -17,6 +17,7 @@
 package com.freshdigitable.udonroad2.data.impl.di
 
 import com.freshdigitable.udonroad2.data.ListRepository
+import com.freshdigitable.udonroad2.data.LocalListDataSource
 import com.freshdigitable.udonroad2.data.PagedListProvider
 import com.freshdigitable.udonroad2.data.db.LocalListDataSourceModule
 import com.freshdigitable.udonroad2.data.db.LocalListDataSourceProvider
@@ -76,8 +77,8 @@ interface ListRepositoryComponent {
 }
 
 fun <Q : QueryType> ListRepositoryComponent.listRepository(): ListRepository<Q> {
-    return ListRepositoryImpl<Q, Any>(
-        localListDataSourceProvider.get(query as Q),
+    return ListRepositoryImpl(
+        localListDataSourceProvider.get<Q, LocalListDataSource<Q, Any>>(query as Q),
         remoteListDataSourceProvider.get(query as Q),
     )
 }
