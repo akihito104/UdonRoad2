@@ -84,7 +84,7 @@ class MediaTimelineDataSource @Inject constructor(
 }
 
 @Singleton
-class ConversationListDataSource(
+class ConversationListDataSource @Inject constructor(
     private val tweetApi: TweetApiClient
 ) : RemoteListDataSource<QueryType.TweetQueryType.Conversation, TweetEntity> {
     override suspend fun getList(
