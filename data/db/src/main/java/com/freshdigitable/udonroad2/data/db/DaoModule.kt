@@ -19,6 +19,7 @@ package com.freshdigitable.udonroad2.data.db
 import android.app.Application
 import androidx.room.Room
 import com.freshdigitable.udonroad2.data.ReplyRepository
+import com.freshdigitable.udonroad2.data.db.dao.ConversationListDao
 import com.freshdigitable.udonroad2.data.db.dao.CustomTimelineDao
 import com.freshdigitable.udonroad2.data.db.dao.CustomTimelineListDao
 import com.freshdigitable.udonroad2.data.db.dao.MediaDao
@@ -50,6 +51,9 @@ object DaoModule {
 
     @Provides
     fun provideTweetListDao(db: AppDatabase): TweetListDao = TweetListDao(db)
+
+    @Provides
+    fun provideConversationListDao(db: AppDatabase): ConversationListDao = ConversationListDao(db)
 
     @Provides
     fun providesUserDao(db: AppDatabase): UserDao = db.userDao()

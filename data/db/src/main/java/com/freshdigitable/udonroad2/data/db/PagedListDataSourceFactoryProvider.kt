@@ -17,6 +17,7 @@
 package com.freshdigitable.udonroad2.data.db
 
 import com.freshdigitable.udonroad2.data.PagedListProvider
+import com.freshdigitable.udonroad2.data.db.dao.ConversationListDao
 import com.freshdigitable.udonroad2.data.db.dao.CustomTimelineListDao
 import com.freshdigitable.udonroad2.data.db.dao.TweetListDao
 import com.freshdigitable.udonroad2.data.db.dao.UserListDao
@@ -51,6 +52,11 @@ interface PagedListDataSourceFactoryModule {
     @IntoMap
     @PagedListDataSourceFactoryProviderKey(QueryType.TweetQueryType::class)
     fun bindTweetListDao(dao: TweetListDao): PagedListProvider.DataSourceFactory<*>
+
+    @Binds
+    @IntoMap
+    @PagedListDataSourceFactoryProviderKey(QueryType.TweetQueryType.Conversation::class)
+    fun bindConversationListDao(dao: ConversationListDao): PagedListProvider.DataSourceFactory<*>
 
     @Binds
     @IntoMap
