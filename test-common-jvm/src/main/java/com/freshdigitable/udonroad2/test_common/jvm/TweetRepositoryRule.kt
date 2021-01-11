@@ -17,11 +17,14 @@
 package com.freshdigitable.udonroad2.test_common.jvm
 
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
+import com.freshdigitable.udonroad2.model.MediaEntity
 import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.app.AppTwitterException
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
+import com.freshdigitable.udonroad2.model.tweet.UserReplyEntity
 import com.freshdigitable.udonroad2.test_common.MockVerified
+import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.flow.Flow
 import org.junit.rules.TestRule
@@ -64,4 +67,45 @@ class TweetRepositoryRule(
     private fun createException(exceptionType: AppTwitterException.ErrorType): AppTwitterException {
         return AppTwitterException(exceptionType.statusCode, exceptionType.errorCode)
     }
+}
+
+fun TweetEntity.Companion.createMock(
+    id: Int,
+    isRetweeted: Boolean = false,
+    isFavorited: Boolean = false,
+    replyTo: TweetId? = null,
+    retweeted: TweetEntity? = null,
+    quoted: TweetEntity? = null,
+    replyEntity: List<UserReplyEntity> = emptyList(),
+    media: List<MediaEntity> = emptyList(),
+): TweetEntity = createMock(
+    TweetId(id.toLong()),
+    isRetweeted,
+    isFavorited,
+    replyTo,
+    retweeted,
+    quoted,
+    replyEntity,
+    media
+)
+
+fun TweetEntity.Companion.createMock(
+    id: TweetId,
+    isRetweeted: Boolean = false,
+    isFavorited: Boolean = false,
+    replyTo: TweetId? = null,
+    retweeted: TweetEntity? = null,
+    quoted: TweetEntity? = null,
+    replyEntity: List<UserReplyEntity> = emptyList(),
+    media: List<MediaEntity> = emptyList(),
+): TweetEntity = mockk<TweetEntity>(relaxed = true).also {
+    every { it.id } returns id
+    every { it.isFavorited } returns isFavorited
+    every { it.isRetweeted } returns isRetweeted
+    every { it.retweetedTweet } returns retweeted
+    every { it.retweetIdByCurrentUser } returns null
+    every { it.quotedTweet } returns quoted
+    every { it.replyEntities } returns replyEntity
+    every { it.media } returns media
+    every { it.inReplyToTweetId } returns replyTo
 }
