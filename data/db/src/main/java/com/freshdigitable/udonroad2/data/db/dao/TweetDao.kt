@@ -228,16 +228,20 @@ abstract class TweetDao(
     internal suspend fun addReactions(tweet: List<TweetEntity>, ownerUserId: UserId) {
         val tweetsMayHaveReactions = tweet.flatMap { listOfNotNull(it, it.retweetedTweet) }
             .distinctBy { it.id }
-        db.reactionsDao.addRetweeteds(
-            tweetsMayHaveReactions
-                .filter { it.isRetweeted && it.retweetedTweet == null }
-                .map { Retweeted(it.id, ownerUserId, it.retweetIdByCurrentUser) }
-        )
-        db.reactionsDao.addFavs(
-            tweetsMayHaveReactions
-                .filter { it.isFavorited }
-                .map { Favorited(it.id, ownerUserId) }
-        )
+
+        val retweeteds = tweetsMayHaveReactions
+            .filter { it.isRetweeted && it.retweetedTweet == null }
+            .map { Retweeted(it.id, ownerUserId, it.retweetIdByCurrentUser) }
+        if (retweeteds.isNotEmpty()) {
+            db.reactionsDao.addRetweeteds(retweeteds)
+        }
+
+        val favorited = tweetsMayHaveReactions
+            .filter { it.isFavorited }
+            .map { Favorited(it.id, ownerUserId) }
+        if (favorited.isNotEmpty()) {
+            db.reactionsDao.addFavs(favorited)
+        }
     }
 
     @Query("DELETE FROM tweet_list WHERE original_id = :id")
