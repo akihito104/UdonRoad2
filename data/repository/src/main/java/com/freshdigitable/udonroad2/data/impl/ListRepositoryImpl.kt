@@ -42,6 +42,7 @@ internal class ListRepositoryImpl<Q : QueryType, E : Any>(
 ) : ListRepository<Q> {
 
     override suspend fun loadAtFirst(query: Q, owner: ListId) {
+        localDataSource.prepareList(query, owner)
         loadList(query, owner) {
             if (it.hasNotFetchedYet) PageOption.OnInit else null
         }
