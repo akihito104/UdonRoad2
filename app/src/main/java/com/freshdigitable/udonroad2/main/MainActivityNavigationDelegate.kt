@@ -31,6 +31,7 @@ import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragment
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentArgs
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentDirections
 import com.freshdigitable.udonroad2.timeline.fragment.TweetDetailFragmentArgs
+import com.freshdigitable.udonroad2.timeline.fragment.TweetDetailFragmentDirections
 import com.freshdigitable.udonroad2.user.UserActivityDirections
 import java.io.Serializable
 import javax.inject.Inject
@@ -118,13 +119,24 @@ internal class MainActivityNavigationDelegate @Inject constructor(
                 )
             }
             NavigationEvent.Type.NAVIGATE -> {
-                navController.navigate(
-                    ListItemFragmentDirections.actionTimelineToTimeline(
-                        nextState.owner.query,
-                        nextState.owner.id,
-                        getString(nextState.label)
-                    )
-                )
+                val dir = when (val container = state.containerState.value) {
+                    is MainNavHostState.Timeline -> {
+                        ListItemFragmentDirections.actionTimelineToTimeline(
+                            nextState.owner.query,
+                            nextState.owner.id,
+                            getString(nextState.label)
+                        )
+                    }
+                    is MainNavHostState.TweetDetail -> {
+                        TweetDetailFragmentDirections.actionDetailToTimeline(
+                            nextState.owner.query,
+                            nextState.owner.id,
+                            getString(nextState.label)
+                        )
+                    }
+                    else -> throw AssertionError("undefined navigation at $container")
+                }
+                navController.navigate(dir)
             }
         }
     }

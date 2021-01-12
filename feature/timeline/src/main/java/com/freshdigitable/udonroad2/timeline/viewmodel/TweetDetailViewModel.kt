@@ -7,6 +7,8 @@ import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
+import com.freshdigitable.udonroad2.model.ListOwnerGenerator
+import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.AppTwitterException
@@ -20,12 +22,15 @@ import com.freshdigitable.udonroad2.model.app.navigation.toAction
 import com.freshdigitable.udonroad2.model.tweet.TweetElement
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import com.freshdigitable.udonroad2.shortcut.SelectedItemShortcut
+import com.freshdigitable.udonroad2.shortcut.ShortcutActions
+import com.freshdigitable.udonroad2.shortcut.ShortcutViewStates
 import com.freshdigitable.udonroad2.shortcut.TweetContextMenuEvent
 import com.freshdigitable.udonroad2.timeline.LaunchMediaViewerAction
 import com.freshdigitable.udonroad2.timeline.R
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.TweetListItemClickListener
 import com.freshdigitable.udonroad2.timeline.UserIconClickedAction
+import com.freshdigitable.udonroad2.timeline.getTimelineEvent
 import io.reactivex.disposables.CompositeDisposable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancel
@@ -102,7 +107,7 @@ class TweetDetailViewModel(
             R.id.detail_main_reply -> SelectedItemShortcut.Reply(tweetId)
             R.id.detail_main_quote -> SelectedItemShortcut.Quote(tweetId)
             R.id.detail_more_delete -> DetailMenuEvent.DeleteTweet(tweetId)
-            R.id.detail_main_conv -> return // todo
+            R.id.detail_main_conv -> SelectedItemShortcut.Conversation(tweetId)
             else -> throw NotImplementedError("detail menu: $itemId is not implemented yet...")
         }
         eventDispatcher.postEvent(event)
@@ -123,7 +128,8 @@ sealed class DetailMenuEvent : TweetContextMenuEvent {
 class TweetDetailActions @Inject constructor(
     eventDispatcher: EventDispatcher
 ) : UserIconClickedAction by UserIconClickedAction.create(eventDispatcher),
-    LaunchMediaViewerAction by LaunchMediaViewerAction.create(eventDispatcher) {
+    LaunchMediaViewerAction by LaunchMediaViewerAction.create(eventDispatcher),
+    ShortcutActions by ShortcutActions.create(eventDispatcher) {
     val launchOriginalTweetUserInfo: AppAction<TimelineEvent.RetweetUserClicked> =
         eventDispatcher.toAction()
     val unlikeTweet: AppAction<DetailMenuEvent.Unlike> = eventDispatcher.toAction()
@@ -136,8 +142,9 @@ class TweetDetailViewStates @Inject constructor(
     actions: TweetDetailActions,
     repository: TweetRepository,
     oAuthTokenRepository: OAuthTokenRepository,
+    listOwnerGenerator: ListOwnerGenerator,
     executor: AppExecutor
-) {
+) : ShortcutViewStates by ShortcutViewStates.create(actions, repository, executor) {
     private val coroutineScope = CoroutineScope(context = executor.mainContext)
     internal val tweetItem: StateFlow<TweetListItem?> = repository.getTweetItemSource(tweetId)
         .transformLatest {
@@ -181,7 +188,13 @@ class TweetDetailViewStates @Inject constructor(
         actions.launchOriginalTweetUserInfo.asFlow().mapLatest {
             TimelineEvent.Navigate.UserInfo(it.user)
         },
-        actions.launchMediaViewer.asFlow().mapLatest { TimelineEvent.Navigate.MediaViewer(it) }
+        actions.launchMediaViewer.asFlow().mapLatest { TimelineEvent.Navigate.MediaViewer(it) },
+        actions.showConversation.asFlow().mapLatest {
+            listOwnerGenerator.getTimelineEvent(
+                QueryType.TweetQueryType.Conversation(it.tweetId),
+                NavigationEvent.Type.NAVIGATE
+            )
+        }
     )
 
     data class MenuItemState(
@@ -200,7 +213,8 @@ class TweetDetailViewStates @Inject constructor(
         }.subscribe(),
         actions.deleteTweet.suspendMap {
             repository.deleteTweet(it.tweetId)
-        }.subscribe()
+        }.subscribe(),
+        updateTweet.subscribe()
     )
 
     fun clear() {

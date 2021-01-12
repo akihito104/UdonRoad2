@@ -61,6 +61,11 @@
             android:name="tweet_id"
             app:argType="com.freshdigitable.udonroad2.model.TweetId"
             />
+
+        <action
+            android:id="@+id/action_detail_to_timeline"
+            app:destination="@id/fragment_timeline"
+            />
     </fragment>
 
 </navigation>
