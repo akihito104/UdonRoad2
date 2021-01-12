@@ -2,7 +2,7 @@ package com.freshdigitable.udonroad2.timeline.listadapter
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.paging.PagedListAdapter
+import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.freshdigitable.udonroad2.model.CustomTimelineItem
@@ -12,11 +12,7 @@ import com.freshdigitable.udonroad2.timeline.viewmodel.CustomTimelineListViewMod
 
 class CustomTimelineListAdapter(
     private val viewModel: CustomTimelineListViewModel
-) : PagedListAdapter<CustomTimelineItem, CustomTimelineViewHolder>(diffUtil) {
-
-    init {
-        setHasStableIds(true)
-    }
+) : PagingDataAdapter<CustomTimelineItem, CustomTimelineViewHolder>(diffUtil) {
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
@@ -47,8 +43,6 @@ class CustomTimelineListAdapter(
 
     override fun getItemViewType(position: Int): Int =
         R.layout.view_tweet_list_item
-
-    override fun getItemId(position: Int): Long = getItem(position)?.id?.value ?: -1
 }
 
 private val diffUtil = object : DiffUtil.ItemCallback<CustomTimelineItem>() {

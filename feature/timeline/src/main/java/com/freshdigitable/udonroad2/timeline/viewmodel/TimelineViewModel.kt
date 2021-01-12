@@ -18,7 +18,7 @@ package com.freshdigitable.udonroad2.timeline.viewmodel
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.viewModelScope
-import androidx.paging.PagedList
+import androidx.paging.PagingData
 import com.freshdigitable.udonroad2.data.ListRepository
 import com.freshdigitable.udonroad2.data.PagedListProvider
 import com.freshdigitable.udonroad2.model.ListOwner
@@ -46,15 +46,14 @@ class TimelineViewModel(
     private val eventDispatcher: EventDispatcher,
     viewStates: TimelineViewState,
     private val homeRepository: ListRepository<TweetQueryType>,
-    private val pagedListProvider: PagedListProvider<TweetQueryType, TweetListItem>
+    pagedListProvider: PagedListProvider<TweetQueryType, TweetListItem>
 ) : ListItemLoadableViewModel<TweetQueryType, TweetListItem>(),
     TweetListItemClickListener,
     TweetListEventListener {
 
-    override val timeline: LiveData<PagedList<TweetListItem>> =
+    override val timeline: Flow<PagingData<TweetListItem>> =
         pagedListProvider.getList(owner.query, owner.id)
 
-    override val loading: LiveData<Boolean> = homeRepository.loading
     override val navigationEvent: Flow<NavigationEvent> = viewStates.updateNavHost.asFlow()
     override val feedbackMessage: Flow<FeedbackMessage> = viewStates.updateTweet.asFlow()
 
@@ -67,7 +66,6 @@ class TimelineViewModel(
     override fun onCleared() {
         Timber.tag("TimelineViewModel").d("onCleared: $owner")
         super.onCleared()
-        pagedListProvider.clear()
         viewModelScope.launch {
             homeRepository.clear(owner.id)
         }

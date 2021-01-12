@@ -1,8 +1,7 @@
 package com.freshdigitable.udonroad2.timeline.viewmodel
 
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.viewModelScope
-import androidx.paging.PagedList
+import androidx.paging.PagingData
 import com.freshdigitable.udonroad2.data.ListRepository
 import com.freshdigitable.udonroad2.data.PagedListProvider
 import com.freshdigitable.udonroad2.model.CustomTimelineItem
@@ -23,10 +22,9 @@ class CustomTimelineListViewModel(
     private val owner: ListOwner<QueryType.UserListMembership>,
     private val repository: ListRepository<QueryType.UserListMembership>,
     private val eventDispatcher: EventDispatcher,
-    private val pagedListProvider: PagedListProvider<QueryType.UserListMembership, CustomTimelineItem>
+    pagedListProvider: PagedListProvider<QueryType.UserListMembership, CustomTimelineItem>
 ) : ListItemLoadableViewModel<QueryType.UserListMembership, CustomTimelineItem>(),
     ListItemClickListener<CustomTimelineItem> {
-    override val loading: LiveData<Boolean> = repository.loading
 
     override fun onRefresh() {
         viewModelScope.launch {
@@ -34,7 +32,7 @@ class CustomTimelineListViewModel(
         }
     }
 
-    override val timeline: LiveData<PagedList<CustomTimelineItem>> =
+    override val timeline: Flow<PagingData<CustomTimelineItem>> =
         pagedListProvider.getList(owner.query, owner.id)
 
     override fun onUserIconClicked(user: TweetUserItem) {
@@ -47,7 +45,6 @@ class CustomTimelineListViewModel(
 
     override fun onCleared() {
         super.onCleared()
-        pagedListProvider.clear()
         viewModelScope.launch {
             repository.clear(owner.id)
         }

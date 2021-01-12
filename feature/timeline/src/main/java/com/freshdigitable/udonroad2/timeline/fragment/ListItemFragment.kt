@@ -10,7 +10,8 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.navArgs
-import androidx.paging.PagedListAdapter
+import androidx.paging.LoadState
+import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -26,6 +27,7 @@ import com.freshdigitable.udonroad2.timeline.di.ListItemViewModelComponent
 import com.freshdigitable.udonroad2.timeline.di.viewModel
 import dagger.android.support.AndroidSupportInjection
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -64,10 +66,18 @@ class ListItemFragment : Fragment() {
         binding.viewModel = viewModel
 
         val adapter = listItemAdapterFactory.create(viewModel, viewLifecycleOwner)
-            .adapter as PagedListAdapter<Any, *>
+            .adapter as PagingDataAdapter<Any, *>
         binding.mainList.setup(adapter)
-        viewModel.timeline.observe(viewLifecycleOwner) {
-            adapter.submitList(it)
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.timeline.collectLatest(adapter::submitData)
+        }
+        val swipeRefresh = binding.mainSwipeRefresh
+        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
+            adapter.loadStateFlow.collectLatest {
+                swipeRefresh.isRefreshing = it.refresh is LoadState.Loading ||
+                    it.append is LoadState.Loading ||
+                    it.prepend is LoadState.Loading
+            }
         }
 
         val eventDelegate = eventDelegate.create(viewModel).eventDelegate
@@ -79,7 +89,7 @@ class ListItemFragment : Fragment() {
         }
     }
 
-    private fun RecyclerView.setup(adapter: PagedListAdapter<*, *>) {
+    private fun RecyclerView.setup(adapter: PagingDataAdapter<*, *>) {
         val linearLayoutManager = LinearLayoutManager(context)
         this.layoutManager = linearLayoutManager
         this.addItemDecoration(DividerItemDecoration(context, linearLayoutManager.orientation))

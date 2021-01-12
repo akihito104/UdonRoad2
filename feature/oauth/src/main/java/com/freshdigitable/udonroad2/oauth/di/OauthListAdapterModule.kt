@@ -18,7 +18,7 @@ package com.freshdigitable.udonroad2.oauth.di
 
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
-import androidx.paging.PagedListAdapter
+import androidx.paging.PagingDataAdapter
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
 import com.freshdigitable.udonroad2.oauth.OauthListAdapter
 import com.freshdigitable.udonroad2.oauth.OauthViewModel
@@ -34,7 +34,7 @@ object OauthListAdapterModule {
     fun provideOauthAdapter(
         viewModel: ViewModel,
         lifecycleOwner: LifecycleOwner
-    ): PagedListAdapter<out Any, *> {
+    ): PagingDataAdapter<out Any, *> {
         return OauthListAdapter(viewModel as OauthViewModel, lifecycleOwner)
     }
 }

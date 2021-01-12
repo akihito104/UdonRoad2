@@ -54,7 +54,6 @@ class ListRepositoryImplTest {
     fun init() = rule.runs {
         // verify
         assertThat(sut).isNotNull()
-        assertThat(sut.loading.value).isNotEqualTo(true)
     }
 
     @Ignore("because of the test makes the test process stopping")
@@ -63,16 +62,17 @@ class ListRepositoryImplTest {
         // setup
         val listId = db.listDao().addList(UserId(1000))
         val user = createUser(400, "user400", "user400")
-        twitterRule.setupGetHomeTimeline(response = (0L until 10L).map {
-            createStatus(it, "text: $it", user, Date(100000 + it))
-        })
+        twitterRule.setupGetHomeTimeline(
+            response = (0L until 10L).map {
+                createStatus(it, "text: $it", user, Date(100000 + it))
+            }
+        )
 
         // exercise
         sut.prependList(QueryType.TweetQueryType.Timeline(), listId)
 
         // verify
         assertThat(sut).isNotNull()
-        assertThat(sut.loading.value).isFalse()
     }
 }
 
@@ -103,11 +103,6 @@ internal class ListRepositoryImplTestRule : TestWatcher() {
             local,
             remote as RemoteListDataSource<QueryType.TweetQueryType, TweetEntity>
         )
-    }
-
-    override fun starting(description: Description?) {
-        super.starting(description)
-        sut.loading.observeForever { }
     }
 
     override fun apply(base: Statement?, description: Description?): Statement {

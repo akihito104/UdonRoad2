@@ -31,6 +31,7 @@ import com.freshdigitable.udonroad2.test.TwitterRobot
 import com.freshdigitable.udonroad2.test.intendedWithExtras
 import com.freshdigitable.udonroad2.test.intendingWithExtras
 import com.freshdigitable.udonroad2.test.mainList
+import com.freshdigitable.udonroad2.test.waitForActivity
 import com.freshdigitable.udonroad2.test_common.createStatus
 import com.freshdigitable.udonroad2.test_common.createUser
 import io.mockk.every

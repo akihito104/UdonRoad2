@@ -1,6 +1,6 @@
 package com.freshdigitable.udonroad2.data.db.dao
 
-import androidx.paging.DataSource
+import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
@@ -21,7 +21,7 @@ abstract class CustomTimelineDao {
     )
     internal abstract fun getCustomTimeline(
         owner: ListId
-    ): DataSource.Factory<Int, CustomTimelineListItemDb>
+    ): PagingSource<Int, CustomTimelineListItemDb>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     internal abstract suspend fun addCustomTimelineEntities(entities: List<CustomTimelineDb>)

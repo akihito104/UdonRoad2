@@ -21,7 +21,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
-import androidx.paging.PagedListAdapter
+import androidx.paging.PagingDataAdapter
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.timeline.ListItemLoadableViewModel
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentEventDelegate
@@ -51,7 +51,7 @@ interface ListItemAdapterComponent {
         ): ListItemAdapterComponent
     }
 
-    val adapter: PagedListAdapter<out Any, *>
+    val adapter: PagingDataAdapter<out Any, *>
 }
 
 interface ListItemFragmentEventDelegateComponent {

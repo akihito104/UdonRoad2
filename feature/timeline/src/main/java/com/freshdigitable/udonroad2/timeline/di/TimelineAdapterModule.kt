@@ -18,7 +18,7 @@ package com.freshdigitable.udonroad2.timeline.di
 
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
-import androidx.paging.PagedListAdapter
+import androidx.paging.PagingDataAdapter
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
 import com.freshdigitable.udonroad2.timeline.listadapter.CustomTimelineListAdapter
 import com.freshdigitable.udonroad2.timeline.listadapter.TimelineAdapter
@@ -47,7 +47,7 @@ internal object TimelineAdapterModule {
     fun provideTimelineAdapter(
         viewModel: ViewModel,
         lifecycleOwner: LifecycleOwner
-    ): PagedListAdapter<out Any, *> {
+    ): PagingDataAdapter<out Any, *> {
         val vm = viewModel as TimelineViewModel
         return TimelineAdapter(vm, vm, lifecycleOwner)
     }
@@ -58,7 +58,7 @@ internal object UserListAdapterModule {
     @Provides
     @IntoMap
     @ViewModelKey(UserListViewModel::class)
-    fun provideTimelineAdapter(viewModel: ViewModel): PagedListAdapter<out Any, *> {
+    fun provideTimelineAdapter(viewModel: ViewModel): PagingDataAdapter<out Any, *> {
         val vm = viewModel as UserListViewModel
         return UserListAdapter(vm)
     }
@@ -69,7 +69,7 @@ internal object CustomTimelineListAdapterModule {
     @Provides
     @IntoMap
     @ViewModelKey(CustomTimelineListViewModel::class)
-    fun provideTimelineAdapter(viewModel: ViewModel): PagedListAdapter<out Any, *> {
+    fun provideTimelineAdapter(viewModel: ViewModel): PagingDataAdapter<out Any, *> {
         val vm = viewModel as CustomTimelineListViewModel
         return CustomTimelineListAdapter(vm)
     }

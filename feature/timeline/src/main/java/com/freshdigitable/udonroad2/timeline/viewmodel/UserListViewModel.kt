@@ -1,8 +1,7 @@
 package com.freshdigitable.udonroad2.timeline.viewmodel
 
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.viewModelScope
-import androidx.paging.PagedList
+import androidx.paging.PagingData
 import com.freshdigitable.udonroad2.data.ListRepository
 import com.freshdigitable.udonroad2.data.PagedListProvider
 import com.freshdigitable.udonroad2.model.ListOwner
@@ -24,15 +23,12 @@ class UserListViewModel(
     private val owner: ListOwner<QueryType.UserQueryType>,
     private val eventDispatcher: EventDispatcher,
     private val repository: ListRepository<QueryType.UserQueryType>,
-    private val pagedListProvider: PagedListProvider<QueryType.UserQueryType, UserListItem>
+    pagedListProvider: PagedListProvider<QueryType.UserQueryType, UserListItem>
 ) : ListItemLoadableViewModel<QueryType.UserQueryType, UserListItem>(),
     ListItemClickListener<UserListItem> {
 
-    override val timeline: LiveData<PagedList<UserListItem>> =
+    override val timeline: Flow<PagingData<UserListItem>> =
         pagedListProvider.getList(owner.query, owner.id)
-
-    override val loading: LiveData<Boolean>
-        get() = repository.loading
 
     override fun onRefresh() {
         viewModelScope.launch {
@@ -42,7 +38,6 @@ class UserListViewModel(
 
     override fun onCleared() {
         super.onCleared()
-        pagedListProvider.clear()
         viewModelScope.launch {
             repository.clear(owner.id)
         }

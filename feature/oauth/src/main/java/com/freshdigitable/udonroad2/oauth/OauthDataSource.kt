@@ -17,11 +17,11 @@
 package com.freshdigitable.udonroad2.oauth
 
 import android.content.Context
-import androidx.paging.PositionalDataSource
+import androidx.paging.PagingSource
 import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.UserId
 
-internal class OauthDataSource(context: Context) : PositionalDataSource<OauthItem>() {
+internal class OauthDataSource(context: Context) : PagingSource<Int, OauthItem>() {
 
     private val user = OauthUser(
         id = UserId(1),
@@ -56,17 +56,7 @@ internal class OauthDataSource(context: Context) : PositionalDataSource<OauthIte
         )
     )
 
-    override fun loadRange(
-        params: LoadRangeParams,
-        callback: LoadRangeCallback<OauthItem>
-    ) {
-        callback.onResult(items)
-    }
-
-    override fun loadInitial(
-        params: LoadInitialParams,
-        callback: LoadInitialCallback<OauthItem>
-    ) {
-        callback.onResult(items, 0)
+    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, OauthItem> {
+        return LoadResult.Page(items, null, null)
     }
 }

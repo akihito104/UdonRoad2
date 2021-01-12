@@ -88,7 +88,6 @@ fun <Q : QueryType, I : Any> ListRepositoryComponent.pagedListProvider(
     return PagedListProviderImpl(
         pagedListDataSourceFactoryProvider.get(query as Q),
         repository,
-        appExecutor
     )
 }
 

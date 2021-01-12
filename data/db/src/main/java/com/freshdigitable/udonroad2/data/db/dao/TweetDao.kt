@@ -16,7 +16,7 @@
 
 package com.freshdigitable.udonroad2.data.db.dao
 
-import androidx.paging.DataSource
+import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
@@ -95,7 +95,7 @@ abstract class TweetDao(
         WHERE l.list_id = :owner
         ORDER BY l.original_id DESC"""
     )
-    internal abstract fun getTimeline(owner: ListId): DataSource.Factory<Int, TweetListItemImpl>
+    internal abstract fun getTimeline(owner: ListId): PagingSource<Int, TweetListItemImpl>
 
     @Transaction
     @Query(QUERY_FIND_DETAIL_TWEET_ITEM_BY_ID)

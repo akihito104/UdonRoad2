@@ -17,9 +17,10 @@
 package com.freshdigitable.udonroad2.oauth
 
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.paging.DataSource
-import androidx.paging.PagedList
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.PagingSource
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
@@ -31,34 +32,26 @@ import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.merge
 
 class OauthViewModel(
-    dataSource: DataSource<Int, OauthItem>,
+    dataSource: PagingSource<Int, OauthItem>,
     private val eventDispatcher: EventDispatcher,
     viewStates: OauthViewStates,
 ) : ListItemLoadableViewModel<QueryType.Oauth, OauthItem>() {
 
-    override val loading: LiveData<Boolean> = MutableLiveData(false)
-    override val timeline: LiveData<PagedList<OauthItem>>
+    override val timeline: Flow<PagingData<OauthItem>> = Pager(
+        config = PagingConfig(
+            maxSize = 100,
+            pageSize = 10,
+            prefetchDistance = 10,
+            enablePlaceholders = false,
+            initialLoadSize = 10
+        ),
+        pagingSourceFactory = { dataSource }
+    ).flow
     val pin: LiveData<CharSequence> = viewStates.pinText
     val sendPinButtonEnabled: LiveData<Boolean> = viewStates.sendPinEnabled
     override val navigationEvent: Flow<NavigationEvent> =
         merge(viewStates.launchTwitterOauth, viewStates.completeAuthProcess)
     override val feedbackMessage: Flow<FeedbackMessage> = emptyFlow()
-
-    init {
-        val config = PagedList.Config.Builder()
-            .setMaxSize(100)
-            .setPageSize(10)
-            .setPrefetchDistance(10)
-            .setEnablePlaceholders(false)
-            .setInitialLoadSizeHint(10)
-            .build()
-        timeline = MutableLiveData(
-            PagedList.Builder(dataSource, config)
-                .setNotifyExecutor {}
-                .setFetchExecutor {}
-                .build()
-        )
-    }
 
     override fun onRefresh() {}
 
