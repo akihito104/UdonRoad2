@@ -45,6 +45,10 @@
             android:id="@+id/action_timeline_to_detail"
             app:destination="@id/fragment_detail"
             />
+        <action
+            android:id="@+id/action_timeline_to_timeline"
+            app:destination="@id/fragment_timeline"
+            />
     </fragment>
 
     <fragment

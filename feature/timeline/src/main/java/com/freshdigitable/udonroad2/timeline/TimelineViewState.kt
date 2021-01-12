@@ -24,16 +24,19 @@ import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.app.AppExecutor
-import com.freshdigitable.udonroad2.model.app.mainContext
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.AppViewState
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.StateHolder
-import com.freshdigitable.udonroad2.model.app.navigation.suspendMap
 import com.freshdigitable.udonroad2.model.app.navigation.toViewState
 import com.freshdigitable.udonroad2.shortcut.ShortcutViewStates
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentEventDelegate
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.rx2.asFlow
 import javax.inject.Inject
 
 class TimelineViewState(
@@ -74,16 +77,22 @@ class TimelineViewState(
 
     val selectedItemId: AppViewState<SelectedItemId?> = _selectedItemId.map { it.value }
 
-    internal val updateNavHost: AppAction<out TimelineEvent.Navigate> = AppAction.merge(
-        actions.showTimeline.suspendMap(executor.mainContext) {
+    internal val updateNavHost: Flow<TimelineEvent.Navigate> = merge(
+        actions.showTimeline.asFlow().map {
             listOwnerGenerator.getTimelineEvent(
                 QueryType.TweetQueryType.Timeline(),
                 NavigationEvent.Type.INIT
             )
-        }.map { it.value!! }, // FIXME
-        actions.showTweetDetail.map { TimelineEvent.Navigate.Detail(it.tweetId) },
-        actions.launchUserInfo.map { TimelineEvent.Navigate.UserInfo(it.user) },
-        actions.launchMediaViewer.filter { it.selectedItemId?.owner == owner }
+        },
+        actions.showTweetDetail.asFlow().map { TimelineEvent.Navigate.Detail(it.tweetId) },
+        actions.showConversation.asFlow().map {
+            listOwnerGenerator.getTimelineEvent(
+                QueryType.TweetQueryType.Conversation(it.tweetId),
+                NavigationEvent.Type.NAVIGATE
+            )
+        },
+        actions.launchUserInfo.asFlow().map { TimelineEvent.Navigate.UserInfo(it.user) },
+        actions.launchMediaViewer.asFlow().filter { it.selectedItemId?.owner == owner }
             .map { TimelineEvent.Navigate.MediaViewer(it) }
     )
 }

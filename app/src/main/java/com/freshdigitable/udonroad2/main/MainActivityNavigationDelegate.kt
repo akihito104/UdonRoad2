@@ -117,7 +117,15 @@ internal class MainActivityNavigationDelegate @Inject constructor(
                     ListItemFragment.bundle(nextState.owner, getString(nextState.label))
                 )
             }
-            NavigationEvent.Type.NAVIGATE -> TODO()
+            NavigationEvent.Type.NAVIGATE -> {
+                navController.navigate(
+                    ListItemFragmentDirections.actionTimelineToTimeline(
+                        nextState.owner.query,
+                        nextState.owner.id,
+                        getString(nextState.label)
+                    )
+                )
+            }
         }
     }
 
@@ -171,6 +179,7 @@ private val TimelineEvent.Navigate.Timeline.label: Int
             is QueryType.TweetQueryType.Timeline -> {
                 if (type.userId == null) R.string.title_home else 0
             }
+            is QueryType.TweetQueryType.Conversation -> R.string.title_conversation
             else -> TODO()
         }
     }
