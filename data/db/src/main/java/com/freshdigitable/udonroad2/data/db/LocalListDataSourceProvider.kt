@@ -17,6 +17,7 @@
 package com.freshdigitable.udonroad2.data.db
 
 import com.freshdigitable.udonroad2.data.LocalListDataSource
+import com.freshdigitable.udonroad2.data.db.dao.ConversationListDao
 import com.freshdigitable.udonroad2.data.db.dao.CustomTimelineListDao
 import com.freshdigitable.udonroad2.data.db.dao.TweetListDao
 import com.freshdigitable.udonroad2.data.db.dao.UserListDao
@@ -51,6 +52,11 @@ interface LocalListDataSourceModule {
     @IntoMap
     @LocalListDataSourceKey(QueryType.TweetQueryType::class)
     fun bindTweetListDao(dao: TweetListDao): LocalListDataSource<out QueryType, *>
+
+    @Binds
+    @IntoMap
+    @LocalListDataSourceKey(QueryType.TweetQueryType.Conversation::class)
+    fun bindConversationListDao(dao: ConversationListDao): LocalListDataSource<out QueryType, *>
 
     @Binds
     @IntoMap
