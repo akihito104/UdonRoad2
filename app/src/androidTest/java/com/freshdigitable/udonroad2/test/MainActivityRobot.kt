@@ -20,6 +20,11 @@ import android.widget.TextView
 import androidx.annotation.StringRes
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.ViewInteraction
+import androidx.test.espresso.action.GeneralLocation
+import androidx.test.espresso.action.GeneralSwipeAction
+import androidx.test.espresso.action.Press
+import androidx.test.espresso.action.Swipe
+import androidx.test.espresso.action.ViewActions.actionWithAssertions
 import androidx.test.espresso.action.ViewActions.swipeLeft
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.isAssignableFrom
@@ -41,6 +46,22 @@ class MainActivityRobot : ActivityRobot {
 
     fun showDetail() {
         fab.perform(swipeLeft())
+    }
+
+    fun showConversation() {
+        fab.perform(
+            actionWithAssertions(
+                GeneralSwipeAction(
+                    Swipe.FAST,
+                    { v ->
+                        val coord = GeneralLocation.CENTER.calculateCoordinates(v)
+                        floatArrayOf(coord[0] - 0.083f * v.width, coord[1] - 0.083f * v.height)
+                    },
+                    GeneralLocation.BOTTOM_LEFT,
+                    Press.FINGER
+                )
+            )
+        )
     }
 
     fun checkFabIsDisplayed() {
