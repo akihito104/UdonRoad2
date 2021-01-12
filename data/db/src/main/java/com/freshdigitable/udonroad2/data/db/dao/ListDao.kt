@@ -79,7 +79,6 @@ class ConversationListDao(
         db.withTransaction {
             tweetDao.addTweetListEntities(entities)
             listDao.updateAppendCursorById(owner, conversation.last().replyTo?.value)
-            listDao.updatePrependCursorById(owner, null)
         }
     }
 

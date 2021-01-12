@@ -79,7 +79,7 @@ abstract class ListDao {
     abstract suspend fun findListEntityById(id: ListId): ListEntityDb?
 
     @Query("UPDATE list SET prepend_cursor = :cursor WHERE id = :id")
-    abstract suspend fun updatePrependCursorById(id: ListId, cursor: Long?)
+    abstract suspend fun updatePrependCursorById(id: ListId, cursor: Long)
 
     @Query("UPDATE list SET append_cursor = :cursor WHERE id = :id")
     abstract suspend fun updateAppendCursorById(id: ListId, cursor: Long?)
