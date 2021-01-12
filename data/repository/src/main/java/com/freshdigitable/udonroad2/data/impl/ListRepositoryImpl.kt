@@ -44,7 +44,11 @@ internal class ListRepositoryImpl<Q : QueryType, E : Any>(
     override suspend fun loadAtFirst(query: Q, owner: ListId) {
         localDataSource.prepareList(query, owner)
         loadList(query, owner) {
-            if (it.hasNotFetchedYet) PageOption.OnInit else null
+            when {
+                it.appendCursor != null -> PageOption.OnTail(it.appendCursor)
+                it.hasNotFetchedYet -> PageOption.OnInit
+                else -> null
+            }
         }
     }
 
@@ -119,7 +123,8 @@ internal class PagedListProviderImpl<Q : QueryType, I : Any>(
         owner: ListId
     ): RemoteMediator<Int, I> = object : RemoteMediator<Int, I>() {
         override suspend fun load(loadType: LoadType, state: PagingState<Int, I>): MediatorResult {
-            Timber.tag("PagedListProvider").d("getList: type>$loadType")
+            Timber.tag("PagedListProvider")
+                .d("getList: query>$queryType, owner>$owner type>$loadType")
             return try {
                 when (loadType) {
                     LoadType.REFRESH -> repository.loadAtFirst(queryType, owner)
