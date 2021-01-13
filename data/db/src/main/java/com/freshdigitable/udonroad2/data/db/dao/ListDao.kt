@@ -49,21 +49,32 @@ class TweetListDao(
     override suspend fun clean(owner: ListId) {
         listDao.deleteList(owner)
     }
+
+    companion object {
+        private suspend fun AppDatabase.addTweetToListWithTransaction(
+            entities: PagedResponseList<TweetEntity>,
+            query: ListQuery<out QueryType.TweetQueryType>,
+            owner: ListId
+        ) = withTransaction {
+            val listEntity = listDao().getListById(owner)
+            tweetDao().addTweetsToList(entities, listEntity)
+            listDao().updateCursorById(entities, query, owner)
+        }
+    }
 }
 
 class ConversationListDao(
-    private val db: AppDatabase
+    private val db: AppDatabase,
+    private val tweetListDao: TweetListDao
 ) : LocalListDataSource<QueryType.TweetQueryType.Conversation, TweetEntity>,
-    PagedListProvider.DataSourceFactory<TweetEntity> {
-    private val tweetDao = db.tweetDao()
-    private val listDao = db.listDao()
-
-    override suspend fun findListEntity(id: ListId): ListEntity? = listDao.findListEntityById(id)
+    PagedListProvider.DataSourceFactory<TweetListItem> by tweetListDao {
 
     override suspend fun prepareList(
         query: QueryType.TweetQueryType.Conversation,
         owner: ListId
     ) {
+        val tweetDao = db.tweetDao()
+        val listDao = db.listDao()
         var id: TweetId? = query.tweetId
         val conversation = mutableListOf<TweetDao.ConversationEntity>()
         while (id != null) {
@@ -82,30 +93,19 @@ class ConversationListDao(
         }
     }
 
+    override suspend fun findListEntity(id: ListId): ListEntity? = tweetListDao.findListEntity(id)
+
     override suspend fun putList(
         entities: PagedResponseList<TweetEntity>,
         query: ListQuery<QueryType.TweetQueryType.Conversation>,
         owner: ListId
     ) {
-        db.addTweetToListWithTransaction(entities, query, owner)
+        tweetListDao.putList(entities, query as ListQuery<QueryType.TweetQueryType>, owner)
     }
 
     override suspend fun clean(owner: ListId) {
-        listDao.deleteList(owner)
+        tweetListDao.clean(owner)
     }
-
-    override fun getDataSourceFactory(owner: ListId): PagingSource<Int, TweetEntity> =
-        tweetDao.getTimeline(owner) as PagingSource<Int, TweetEntity>
-}
-
-internal suspend fun AppDatabase.addTweetToListWithTransaction(
-    entities: PagedResponseList<TweetEntity>,
-    query: ListQuery<out QueryType.TweetQueryType>,
-    owner: ListId
-) = withTransaction {
-    val listEntity = listDao().getListById(owner)
-    tweetDao().addTweetsToList(entities, listEntity)
-    listDao().updateCursorById(entities, query, owner)
 }
 
 internal suspend fun TweetDao.addTweetsToList(
@@ -116,7 +116,6 @@ internal suspend fun TweetDao.addTweetsToList(
     addTweetListEntities(tweet.map { it.toListEntity(listEntity.id) })
     addReactions(tweet, listEntity.ownerId)
 }
-
 
 class UserListDao(
     private val db: AppDatabase,
