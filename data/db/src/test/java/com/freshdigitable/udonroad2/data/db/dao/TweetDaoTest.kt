@@ -28,6 +28,7 @@ import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
+import com.freshdigitable.udonroad2.model.tweet.plus
 import com.freshdigitable.udonroad2.test_common.jvm.createMock
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.runBlocking
@@ -79,6 +80,27 @@ class TweetDaoTest {
         assertThat(actual).containsExactly(*list.mapToConversationEntity().toTypedArray())
         assertThat(actual.first()).isEqualTo(list.first().toConversation())
     }
+
+    @Test
+    fun getConversationTweetIdsByTweetId_queryWithRetweet_then_returnWithRetweet(): Unit =
+        runBlocking {
+            // setup
+            val list = createConversationList(1000, 1010)
+            val rt = TweetEntity.createMock(list.first().id + 1, retweeted = list.first())
+            rule.setupTweetList(ownerUser, list + rt)
+
+            // exercise
+            val actual = sut.getConversationTweetIdsByTweetId(rt.id)
+
+            // verify
+            val expectedFirstItem =
+                TweetDao.ConversationEntity(rt.id, list.first().inReplyToTweetId)
+            assertThat(actual).containsExactly(
+                expectedFirstItem,
+                *list.slice(1 until list.size).mapToConversationEntity().toTypedArray()
+            )
+            assertThat(actual.first()).isEqualTo(expectedFirstItem)
+        }
 
     @Test
     fun getConversationTweetIdsByTweetId_queryWithLimit20_then_returnOnly20(): Unit = runBlocking {

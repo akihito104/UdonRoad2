@@ -100,7 +100,7 @@ abstract class TweetDao(
 
     @Query(
         """WITH RECURSIVE conversation_list(original, reply_to) AS (
-        SELECT id, in_reply_to_tweet_id FROM tweet_element WHERE id = :id
+        SELECT original_id, in_reply_to_tweet_id FROM view_tweet_list_item WHERE original_id = :id
         UNION
         SELECT id, in_reply_to_tweet_id FROM tweet_element JOIN conversation_list ON id = reply_to
        )

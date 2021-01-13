@@ -17,7 +17,6 @@
 package com.freshdigitable.udonroad2.model.tweet
 
 import com.freshdigitable.udonroad2.model.MediaEntity
-import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.user.UserEntity
 
@@ -28,8 +27,6 @@ interface TweetEntity : TweetElement {
     val retweetedTweet: TweetEntity?
 
     val quotedTweet: TweetEntity?
-
-    val inReplyToTweetId: TweetId?
 
     val possiblySensitive: Boolean
 
