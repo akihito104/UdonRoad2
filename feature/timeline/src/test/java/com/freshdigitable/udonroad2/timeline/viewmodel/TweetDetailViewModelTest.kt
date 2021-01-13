@@ -17,6 +17,8 @@
 package com.freshdigitable.udonroad2.timeline.viewmodel
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import com.freshdigitable.udonroad2.data.impl.create
+import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.app.AppExecutor
@@ -84,6 +86,7 @@ class TweetDetailViewModelTest {
                 actions,
                 tweetRepositoryRule.mock,
                 oauthRepositoryRule.mock,
+                ListOwnerGenerator.create(),
                 executor
             ),
             executor.dispatcher.mainContext
