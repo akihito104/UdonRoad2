@@ -18,25 +18,29 @@ package com.freshdigitable.udonroad2.model
 
 import java.io.Serializable
 
-interface TwitterId : Serializable {
+abstract class TwitterId(
     /**
      * twitter id (for tweet, direct massage, user, list...) is 64 bit unsigned integer.
      * kotlin ULong is now experimental status.
      */
     val value: Long
+) : Serializable {
+    init {
+        require(value > -1) { "Twitter ID is unsigned value. " }
+    }
 }
 
-data class TweetId(override val value: Long) : TwitterId
+data class TweetId(private val _value: Long) : TwitterId(_value)
 
-data class MediaId(override val value: Long) : TwitterId
+data class MediaId(private val _value: Long) : TwitterId(_value)
 
-data class CustomTimelineId(override val value: Long) : TwitterId {
+data class CustomTimelineId(private val _value: Long) : TwitterId(_value) {
     companion object {
         fun create(value: Long?): CustomTimelineId? = value?.let { CustomTimelineId(it) }
     }
 }
 
-data class UserId(override val value: Long) : TwitterId {
+data class UserId(private val _value: Long) : TwitterId(_value) {
     val isValid: Boolean = value >= 0
 
     companion object {

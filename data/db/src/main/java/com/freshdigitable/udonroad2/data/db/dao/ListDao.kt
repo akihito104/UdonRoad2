@@ -7,6 +7,7 @@ import com.freshdigitable.udonroad2.data.PagedListProvider
 import com.freshdigitable.udonroad2.data.db.AppDatabase
 import com.freshdigitable.udonroad2.data.db.entity.CustomTimelineListDb
 import com.freshdigitable.udonroad2.data.db.entity.ListDao
+import com.freshdigitable.udonroad2.data.db.entity.TweetListEntity
 import com.freshdigitable.udonroad2.data.db.entity.UserListEntity
 import com.freshdigitable.udonroad2.data.db.entity.updateCursorById
 import com.freshdigitable.udonroad2.data.db.ext.toEntity
@@ -18,6 +19,7 @@ import com.freshdigitable.udonroad2.model.ListId
 import com.freshdigitable.udonroad2.model.ListQuery
 import com.freshdigitable.udonroad2.model.PagedResponseList
 import com.freshdigitable.udonroad2.model.QueryType
+import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import com.freshdigitable.udonroad2.model.user.UserEntity
@@ -39,21 +41,7 @@ class TweetListDao(
         query: ListQuery<QueryType.TweetQueryType>,
         owner: ListId
     ) {
-        db.withTransaction {
-            addTweetsToList(entities, owner)
-            listDao.updateCursorById(entities, query, owner)
-        }
-    }
-
-    private suspend fun addTweetsToList(
-        tweet: PagedResponseList<TweetEntity>,
-        owner: ListId
-    ) = with(dao) {
-        addTweets(tweet)
-        addTweetListEntities(tweet.map { it.toListEntity(owner) })
-
-        val listOwner = db.listDao().getListById(owner)
-        addReactions(tweet, listOwner.ownerId)
+        db.addTweetToListWithTransaction(entities, query, owner)
     }
 
     override suspend fun findListEntity(id: ListId): ListEntity? = listDao.findListEntityById(id)
@@ -62,6 +50,73 @@ class TweetListDao(
         listDao.deleteList(owner)
     }
 }
+
+class ConversationListDao(
+    private val db: AppDatabase
+) : LocalListDataSource<QueryType.TweetQueryType.Conversation, TweetEntity>,
+    PagedListProvider.DataSourceFactory<TweetEntity> {
+    private val tweetDao = db.tweetDao()
+    private val listDao = db.listDao()
+
+    override suspend fun findListEntity(id: ListId): ListEntity? = listDao.findListEntityById(id)
+
+    override suspend fun prepareList(
+        query: QueryType.TweetQueryType.Conversation,
+        owner: ListId
+    ) {
+        var id: TweetId? = query.tweetId
+        val conversation = mutableListOf<TweetDao.ConversationEntity>()
+        while (id != null) {
+            val res = tweetDao.getConversationTweetIdsByTweetId(id, 20)
+            conversation.addAll(res)
+            if (res.size < 20) {
+                break
+            }
+            id = res.last().replyTo
+        }
+
+        val entities = conversation.map { TweetListEntity(it.original, owner) }
+        db.withTransaction {
+            tweetDao.addTweetListEntities(entities)
+            listDao.updateAppendCursorById(owner, conversation.last().replyTo?.value)
+        }
+    }
+
+    override suspend fun putList(
+        entities: PagedResponseList<TweetEntity>,
+        query: ListQuery<QueryType.TweetQueryType.Conversation>,
+        owner: ListId
+    ) {
+        db.addTweetToListWithTransaction(entities, query, owner)
+    }
+
+    override suspend fun clean(owner: ListId) {
+        listDao.deleteList(owner)
+    }
+
+    override fun getDataSourceFactory(owner: ListId): PagingSource<Int, TweetEntity> =
+        tweetDao.getTimeline(owner) as PagingSource<Int, TweetEntity>
+}
+
+internal suspend fun AppDatabase.addTweetToListWithTransaction(
+    entities: PagedResponseList<TweetEntity>,
+    query: ListQuery<out QueryType.TweetQueryType>,
+    owner: ListId
+) = withTransaction {
+    val listEntity = listDao().getListById(owner)
+    tweetDao().addTweetsToList(entities, listEntity)
+    listDao().updateCursorById(entities, query, owner)
+}
+
+internal suspend fun TweetDao.addTweetsToList(
+    tweet: PagedResponseList<TweetEntity>,
+    listEntity: ListEntity
+) {
+    addTweets(tweet)
+    addTweetListEntities(tweet.map { it.toListEntity(listEntity.id) })
+    addReactions(tweet, listEntity.ownerId)
+}
+
 
 class UserListDao(
     private val db: AppDatabase,

@@ -53,6 +53,9 @@ interface TweetElement {
 
     val favoriteCount: Int
 
+    val inReplyToTweetId: TweetId?
+        get() = null
+
     val retweetIdByCurrentUser: TweetId?
         get() = null
 

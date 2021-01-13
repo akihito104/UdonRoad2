@@ -38,7 +38,7 @@ data class ListEntityDb(
     @ColumnInfo(name = "id")
     val _id: Int = 0,
     @ColumnInfo(name = "owner_id", index = true)
-    val ownerId: UserId,
+    override val ownerId: UserId,
     @ColumnInfo(name = "prepend_cursor")
     override val prependCursor: Long = ListEntity.CURSOR_INIT,
     @ColumnInfo(name = "append_cursor")
@@ -79,7 +79,7 @@ abstract class ListDao {
     abstract suspend fun findListEntityById(id: ListId): ListEntityDb?
 
     @Query("UPDATE list SET prepend_cursor = :cursor WHERE id = :id")
-    abstract suspend fun updatePrependCursorById(id: ListId, cursor: Long?)
+    abstract suspend fun updatePrependCursorById(id: ListId, cursor: Long)
 
     @Query("UPDATE list SET append_cursor = :cursor WHERE id = :id")
     abstract suspend fun updateAppendCursorById(id: ListId, cursor: Long?)

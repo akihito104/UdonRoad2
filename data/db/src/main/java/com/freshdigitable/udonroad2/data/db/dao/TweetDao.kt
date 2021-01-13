@@ -17,6 +17,7 @@
 package com.freshdigitable.udonroad2.data.db.dao
 
 import androidx.paging.PagingSource
+import androidx.room.ColumnInfo
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
@@ -96,6 +97,21 @@ abstract class TweetDao(
         ORDER BY l.original_id DESC"""
     )
     internal abstract fun getTimeline(owner: ListId): PagingSource<Int, TweetListItemImpl>
+
+    @Query(
+        """WITH RECURSIVE conversation_list(original, reply_to) AS (
+        SELECT original_id, in_reply_to_tweet_id FROM view_tweet_list_item WHERE original_id = :id
+        UNION
+        SELECT id, in_reply_to_tweet_id FROM tweet_element JOIN conversation_list ON id = reply_to
+       )
+       SELECT * FROM conversation_list
+       ORDER BY original DESC
+       LIMIT :limit""" // to avoid infinite recursive call
+    )
+    internal abstract suspend fun getConversationTweetIdsByTweetId(
+        id: TweetId,
+        limit: Int = 20
+    ): List<ConversationEntity>
 
     @Transaction
     @Query(QUERY_FIND_DETAIL_TWEET_ITEM_BY_ID)
@@ -212,16 +228,20 @@ abstract class TweetDao(
     internal suspend fun addReactions(tweet: List<TweetEntity>, ownerUserId: UserId) {
         val tweetsMayHaveReactions = tweet.flatMap { listOfNotNull(it, it.retweetedTweet) }
             .distinctBy { it.id }
-        db.reactionsDao.addRetweeteds(
-            tweetsMayHaveReactions
-                .filter { it.isRetweeted && it.retweetedTweet == null }
-                .map { Retweeted(it.id, ownerUserId, it.retweetIdByCurrentUser) }
-        )
-        db.reactionsDao.addFavs(
-            tweetsMayHaveReactions
-                .filter { it.isFavorited }
-                .map { Favorited(it.id, ownerUserId) }
-        )
+
+        val retweeteds = tweetsMayHaveReactions
+            .filter { it.isRetweeted && it.retweetedTweet == null }
+            .map { Retweeted(it.id, ownerUserId, it.retweetIdByCurrentUser) }
+        if (retweeteds.isNotEmpty()) {
+            db.reactionsDao.addRetweeteds(retweeteds)
+        }
+
+        val favorited = tweetsMayHaveReactions
+            .filter { it.isFavorited }
+            .map { Favorited(it.id, ownerUserId) }
+        if (favorited.isNotEmpty()) {
+            db.reactionsDao.addFavs(favorited)
+        }
     }
 
     @Query("DELETE FROM tweet_list WHERE original_id = :id")
@@ -238,6 +258,11 @@ abstract class TweetDao(
 
     @Query("DELETE FROM tweet_list WHERE list_id = :owner")
     internal abstract suspend fun deleteByListId(owner: ListId)
+
+    internal data class ConversationEntity(
+        @ColumnInfo(name = "original") val original: TweetId,
+        @ColumnInfo(name = "reply_to") val replyTo: TweetId?
+    )
 }
 
 @Dao

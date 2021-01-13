@@ -47,7 +47,16 @@ dependencies {
 
     implementation Libs.THREETENBP
 
+    testImplementation project(":test-common-jvm")
     testImplementation Libs.JUNIT
+    testImplementation Libs.MOCKK
+    testImplementation Libs.TRUTH
+    testImplementation Libs.ANDROIDX_TEST_CORE
+    testImplementation Libs.ANDROIDX_TEST_ARCH_CORE
+    testImplementation Libs.ANDROIDX_TEST_EXT_JUNIT
+    testImplementation Libs.ANDROIDX_TEST_RUNNER
+    testImplementation Libs.ROBOLECTRIC
+
     androidTestImplementation Libs.ANDROIDX_TEST_RUNNER
     androidTestImplementation Libs.ANDROIDX_TEST_ESPRESSO
 }

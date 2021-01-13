@@ -24,5 +24,5 @@ internal class TweetIdConverter {
     fun toDb(id: TweetId?): Long? = id?.value
 
     @TypeConverter
-    fun toObject(value: Long?): TweetId? = if (value != null) TweetId(value) else null
+    fun toObject(value: Long?): TweetId? = if (value != null && value > -1) TweetId(value) else null
 }

@@ -50,6 +50,13 @@ interface TweetTimelineDataSourceModule {
     fun bindMediaTimelineDataSource(
         dataSource: MediaTimelineDataSource
     ): RemoteListDataSource<out QueryType, *>
+
+    @Binds
+    @IntoMap
+    @RemoteListDataSourceKey(TweetQueryType.Conversation::class)
+    fun bindConversationListDataSource(
+        dataSource: ConversationListDataSource
+    ): RemoteListDataSource<out QueryType, *>
 }
 
 @Module
