@@ -27,6 +27,6 @@ jobs:
         run: ./gradlew testDebugUnitTest
 
       - name: Danger
-        uses: danger/kotlin@0.5.1
+        uses: danger/kotlin@0.7.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
