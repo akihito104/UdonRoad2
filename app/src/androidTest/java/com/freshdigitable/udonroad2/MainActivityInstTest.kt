@@ -121,7 +121,8 @@ class MainActivityInstTest {
 
             val user = createUser(2000, "user2000", "_user2000")
             twitterRobot.setupGetHomeTimeline(
-                response = (0 until 10).map {
+                pagingBlock = { this.match { it.maxId == -1L && it.sinceId == -1L } },
+                response = (0 until 50).map {
                     createStatus(
                         100L + it,
                         "tweet: $it",
