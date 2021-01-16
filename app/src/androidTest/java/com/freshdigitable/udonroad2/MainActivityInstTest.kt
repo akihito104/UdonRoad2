@@ -155,6 +155,35 @@ class MainActivityInstTest {
         }
 
         @Test
+        fun swipeFabAndThenMoveToConversationOfSelectedTweet(): Unit = onMainActivity {
+            // exercise
+            mainList {
+                waitForItems<MainActivity> {
+                    clickListItemOf(0)
+                }
+            } verify {
+                stateIsSelectedOnItemOf(0)
+            }
+            verify {
+                checkFabIsDisplayed()
+            }
+            showConversation()
+
+            // verify
+            verify {
+                fabIsNotDisplayed()
+                actionBarTitle(R.string.title_conversation)
+            }
+            mainList {
+                waitForItems<MainActivity> {
+                    verify {
+                        stateIsUnselectedOnItemOf(0)
+                    }
+                }
+            }
+        }
+
+        @Test
         fun backFromDetailAndThenTweetIsSelected(): Unit = onMainActivity {
             // setup
             mainList {

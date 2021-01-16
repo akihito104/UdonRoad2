@@ -34,6 +34,7 @@ import androidx.test.espresso.matcher.ViewMatchers.withParent
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.media.MediaThumbnailContainer
 import org.hamcrest.CoreMatchers.allOf
+import org.hamcrest.CoreMatchers.not
 import org.hamcrest.Description
 import org.hamcrest.Matcher
 
@@ -101,6 +102,10 @@ class TimelineRobot(
     class Verify(private val robot: TimelineRobot) {
         fun stateIsSelectedOnItemOf(adapterPosition: Int) {
             robot.onListItemOf(adapterPosition).check(matches(isSelected()))
+        }
+
+        fun stateIsUnselectedOnItemOf(adapterPosition: Int) {
+            robot.onListItemOf(adapterPosition).check(matches(not(isSelected())))
         }
     }
 }

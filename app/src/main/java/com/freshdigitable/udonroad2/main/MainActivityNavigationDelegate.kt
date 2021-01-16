@@ -31,6 +31,7 @@ import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragment
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentArgs
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentDirections
 import com.freshdigitable.udonroad2.timeline.fragment.TweetDetailFragmentArgs
+import com.freshdigitable.udonroad2.timeline.fragment.TweetDetailFragmentDirections
 import com.freshdigitable.udonroad2.user.UserActivityDirections
 import java.io.Serializable
 import javax.inject.Inject
@@ -117,7 +118,26 @@ internal class MainActivityNavigationDelegate @Inject constructor(
                     ListItemFragment.bundle(nextState.owner, getString(nextState.label))
                 )
             }
-            NavigationEvent.Type.NAVIGATE -> TODO()
+            NavigationEvent.Type.NAVIGATE -> {
+                val dir = when (val container = state.containerState.value) {
+                    is MainNavHostState.Timeline -> {
+                        ListItemFragmentDirections.actionTimelineToTimeline(
+                            nextState.owner.query,
+                            nextState.owner.id,
+                            getString(nextState.label)
+                        )
+                    }
+                    is MainNavHostState.TweetDetail -> {
+                        TweetDetailFragmentDirections.actionDetailToTimeline(
+                            nextState.owner.query,
+                            nextState.owner.id,
+                            getString(nextState.label)
+                        )
+                    }
+                    else -> throw AssertionError("undefined navigation at $container")
+                }
+                navController.navigate(dir)
+            }
         }
     }
 
@@ -171,6 +191,7 @@ private val TimelineEvent.Navigate.Timeline.label: Int
             is QueryType.TweetQueryType.Timeline -> {
                 if (type.userId == null) R.string.title_home else 0
             }
+            is QueryType.TweetQueryType.Conversation -> R.string.title_conversation
             else -> TODO()
         }
     }

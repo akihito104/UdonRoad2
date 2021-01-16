@@ -53,7 +53,10 @@ object DaoModule {
     fun provideTweetListDao(db: AppDatabase): TweetListDao = TweetListDao(db)
 
     @Provides
-    fun provideConversationListDao(db: AppDatabase): ConversationListDao = ConversationListDao(db)
+    fun provideConversationListDao(
+        db: AppDatabase,
+        tweetListDao: TweetListDao
+    ): ConversationListDao = ConversationListDao(db, tweetListDao)
 
     @Provides
     fun providesUserDao(db: AppDatabase): UserDao = db.userDao()

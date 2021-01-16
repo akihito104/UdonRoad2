@@ -33,6 +33,7 @@ import com.freshdigitable.udonroad2.shortcut.SelectedItemShortcut
 import com.freshdigitable.udonroad2.test_common.RxExceptionHandler
 import com.freshdigitable.udonroad2.test_common.jvm.CoroutineTestRule
 import com.freshdigitable.udonroad2.test_common.jvm.TweetRepositoryRule
+import com.freshdigitable.udonroad2.test_common.jvm.testCollect
 import com.freshdigitable.udonroad2.timeline.TimelineEvent.TweetItemSelection
 import com.google.common.truth.Truth.assertThat
 import io.reactivex.observers.TestObserver
@@ -65,7 +66,7 @@ class TimelineViewStateTest {
 
             // verify
             assertThat(sut.selectedItemId.value?.originalId).isEqualTo(TweetId(1000L))
-            navEvents.assertValueAt(0) { it is TimelineEvent.Navigate.MediaViewer }
+            assertThat(navEvents[0]).isInstanceOf(TimelineEvent.Navigate.MediaViewer::class.java)
         }
 
     @Test
@@ -175,15 +176,16 @@ class TimelineViewStatesTestRule : TestWatcher() {
     val tweetRepositoryMock = TweetRepositoryRule()
     val owner = ListOwner(0, QueryType.TweetQueryType.Timeline())
     private val coroutineTestRule = CoroutineTestRule()
+    private val executor = AppExecutor(dispatcher = coroutineTestRule.coroutineContextProvider)
     val sut = TimelineViewState(
         owner,
         actionsRule.sut,
         SelectedItemRepository(),
         tweetRepositoryMock.mock,
         ListOwnerGenerator.create(AtomicInteger(1)),
-        AppExecutor(dispatcher = coroutineTestRule.coroutineContextProvider)
+        executor
     )
-    val navEvents: TestObserver<out TimelineEvent.Navigate> = sut.updateNavHost.test()
+    val navEvents: List<TimelineEvent.Navigate> = sut.updateNavHost.testCollect(executor)
     val messageEvents: TestObserver<FeedbackMessage> = sut.updateTweet.test()
 
     fun dispatchEvents(vararg event: AppEvent) {

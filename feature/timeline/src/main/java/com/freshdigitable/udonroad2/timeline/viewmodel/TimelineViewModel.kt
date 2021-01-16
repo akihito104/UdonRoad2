@@ -54,7 +54,7 @@ class TimelineViewModel(
     override val timeline: Flow<PagingData<TweetListItem>> =
         pagedListProvider.getList(owner.query, owner.id)
 
-    override val navigationEvent: Flow<NavigationEvent> = viewStates.updateNavHost.asFlow()
+    override val navigationEvent: Flow<NavigationEvent> = viewStates.updateNavHost
     override val feedbackMessage: Flow<FeedbackMessage> = viewStates.updateTweet.asFlow()
 
     override fun onRefresh() {

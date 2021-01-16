@@ -131,7 +131,9 @@ class UserActivityInstTest {
         twitterRobot.setupGetUserListMemberships(UserId(1000), response = emptyList())
         twitterRobot.setupGetSearchList(response = emptyList())
         mainList {
-            clickListItemOf(0)
+            waitForListItem {
+                clickListItemOf(0)
+            }
         } verify {
             stateIsSelectedOnItemOf(0)
         }

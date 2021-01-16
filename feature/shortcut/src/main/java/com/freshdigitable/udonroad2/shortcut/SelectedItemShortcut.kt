@@ -29,6 +29,7 @@ sealed class SelectedItemShortcut : TweetContextMenuEvent {
     data class Retweet(override val tweetId: TweetId) : SelectedItemShortcut()
     data class Reply(override val tweetId: TweetId) : SelectedItemShortcut()
     data class Quote(override val tweetId: TweetId) : SelectedItemShortcut()
+    data class Conversation(override val tweetId: TweetId) : SelectedItemShortcut()
 
     companion object
 }
@@ -59,6 +60,7 @@ fun EventDispatcher.postSelectedItemShortcutEvent(
         )
         R.id.iffabMenu_main_reply -> postEvent(SelectedItemShortcut.Reply(tweetId))
         R.id.iffabMenu_main_quote -> postEvent(SelectedItemShortcut.Quote(tweetId))
-        else -> TODO()
+        R.id.iffabMenu_main_conv -> postEvent(SelectedItemShortcut.Conversation(tweetId))
+        else -> throw IllegalStateException("selected unregistered menu item: $menuItem")
     }
 }
