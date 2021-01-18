@@ -60,6 +60,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@id/quotedItem_names"
             app:bindUserIcon="@{tweet.quoted.user.iconUrl}"
+            app:corner_radius="@{@dimen/icon_corner_radius_small}"
             />
 
         <TextView

@@ -112,21 +112,20 @@ fun bindCreatedAtRelative(v: TextView, createdAt: Instant?) {
     }
 }
 
-private var roundedCorners: RoundedCorners? = null
+private val roundedCornersTransforms: HashMap<Int, RoundedCorners?> = hashMapOf()
 
-@BindingAdapter("bindUserIcon")
-fun bindUserIcon(v: ImageView, url: String?) {
+@BindingAdapter("bindUserIcon", "corner_radius", requireAll = false)
+fun bindUserIcon(v: ImageView, url: String?, cornerRadius: Float?) {
     if (url == null) {
         Glide.with(v).clear(v)
         return
     }
-    if (roundedCorners == null) {
-        roundedCorners =
-            RoundedCorners(v.resources.getDimensionPixelSize(R.dimen.icon_corner_radius))
-    }
+    val cr: Int =
+        cornerRadius?.toInt() ?: v.resources.getDimensionPixelSize(R.dimen.icon_corner_radius)
+    val trans = roundedCornersTransforms.getOrPut(cr) { RoundedCorners(cr) }
     Glide.with(v)
         .load(url)
-        .transform(requireNotNull(roundedCorners))
+        .transform(requireNotNull(trans))
         .into(v)
 }
 
