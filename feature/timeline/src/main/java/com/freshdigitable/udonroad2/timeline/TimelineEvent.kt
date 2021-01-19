@@ -41,6 +41,11 @@ sealed class TimelineEvent : AppEvent {
         val selectedItemId: SelectedItemId? = null
     ) : TimelineEvent()
 
+    sealed class ListScrolled : TimelineEvent() {
+        object Started : ListScrolled()
+        data class Stopped(val firstVisibleItemPosition: Int) : ListScrolled()
+    }
+
     sealed class Navigate : TimelineEvent(), NavigationEvent {
         data class Timeline(
             val owner: ListOwner<*>,

@@ -27,8 +27,6 @@ import com.freshdigitable.udonroad2.model.QueryType.TweetQueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
-import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
-import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.tweet.TweetElement
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
@@ -39,24 +37,24 @@ import com.freshdigitable.udonroad2.timeline.TweetListEventListener
 import com.freshdigitable.udonroad2.timeline.TweetListItemClickListener
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.rx2.asFlow
 import timber.log.Timber
 
 class TimelineViewModel(
     private val owner: ListOwner<TweetQueryType>,
     private val eventDispatcher: EventDispatcher,
-    viewStates: TimelineViewState,
+    private val viewStates: TimelineViewState,
     private val homeRepository: ListRepository<TweetQueryType>,
     pagedListProvider: PagedListProvider<TweetQueryType, TweetListItem>
-) : ListItemLoadableViewModel<TweetQueryType, TweetListItem>(),
+) : ListItemLoadableViewModel<TweetQueryType, TweetListItem>(
+    eventDispatcher,
+    viewStates,
+    viewStates
+),
     TweetListItemClickListener,
     TweetListEventListener {
 
     override val timeline: Flow<PagingData<TweetListItem>> =
         pagedListProvider.getList(owner.query, owner.id).cachedIn(viewModelScope)
-
-    override val navigationEvent: Flow<NavigationEvent> = viewStates.updateNavHost
-    override val feedbackMessage: Flow<FeedbackMessage> = viewStates.updateTweet.asFlow()
 
     override fun onRefresh() {
         viewModelScope.launch {
@@ -70,6 +68,7 @@ class TimelineViewModel(
         viewModelScope.launch {
             homeRepository.clear(owner.id)
         }
+        viewStates.clear()
     }
 
     override val selectedItemId: LiveData<SelectedItemId?> = viewStates.selectedItemId

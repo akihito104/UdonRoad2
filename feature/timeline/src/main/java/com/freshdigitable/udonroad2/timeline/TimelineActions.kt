@@ -28,7 +28,8 @@ import com.freshdigitable.udonroad2.timeline.TimelineEvent.UserIconClicked
 
 class TimelineActions(
     dispatcher: EventDispatcher,
-) : UserIconClickedAction by UserIconClickedAction.create(dispatcher),
+) : ListItemLoadableActions by ListItemLoadableActions.create(dispatcher),
+    UserIconClickedAction by UserIconClickedAction.create(dispatcher),
     LaunchMediaViewerAction by LaunchMediaViewerAction.create(dispatcher),
     ShortcutActions by ShortcutActions.create(dispatcher) {
 

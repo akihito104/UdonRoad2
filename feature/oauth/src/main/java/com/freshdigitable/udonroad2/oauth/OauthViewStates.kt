@@ -26,12 +26,18 @@ import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.RequestTokenItem
 import com.freshdigitable.udonroad2.model.app.DispatcherProvider
 import com.freshdigitable.udonroad2.model.app.ext.combineLatest
+import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventStream
 import com.freshdigitable.udonroad2.model.app.navigation.AppViewState
+import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.toViewState
+import com.freshdigitable.udonroad2.timeline.ListItemLoadableViewState
 import com.freshdigitable.udonroad2.timeline.getTimelineEvent
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.rx2.asFlow
 import kotlinx.coroutines.withContext
 
@@ -41,8 +47,8 @@ class OauthViewStates(
     repository: OAuthTokenRepository,
     listOwnerGenerator: ListOwnerGenerator,
     savedState: OauthSavedStates,
-) {
-    internal val launchTwitterOauth: Flow<NavigationEvent> = actions.authApp.asFlow().mapLatest {
+) : ListItemLoadableViewState, ActivityEventStream {
+    private val launchTwitterOauth: Flow<NavigationEvent> = actions.authApp.asFlow().mapLatest {
         val token = repository.getRequestTokenItem()
         savedState.setToken(token)
         OauthEvent.Navigation.LaunchTwitter(token.authorizationUrl)
@@ -58,7 +64,7 @@ class OauthViewStates(
             t != null && p?.isNotEmpty() == true
         }
 
-    internal val completeAuthProcess: Flow<NavigationEvent> = actions.sendPin.asFlow().mapLatest {
+    private val completeAuthProcess: Flow<NavigationEvent> = actions.sendPin.asFlow().mapLatest {
         val token = requireNotNull(requestToken.value)
         val verifier = pinText.value.toString()
         val t = repository.getAccessToken(token, verifier)
@@ -68,6 +74,10 @@ class OauthViewStates(
             QueryType.TweetQueryType.Timeline(), NavigationEvent.Type.INIT
         )
     }
+    override val isHeadingEnabled: Flow<Boolean> = flowOf(false)
+    override val navigationEvent: Flow<NavigationEvent> =
+        merge(launchTwitterOauth, completeAuthProcess)
+    override val feedbackMessage: Flow<FeedbackMessage> = emptyFlow()
 }
 
 class OauthSavedStates(

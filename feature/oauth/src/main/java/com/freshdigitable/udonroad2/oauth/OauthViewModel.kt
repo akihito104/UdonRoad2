@@ -24,18 +24,15 @@ import androidx.paging.PagingSource
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
-import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.timeline.ListItemLoadableViewModel
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emptyFlow
-import kotlinx.coroutines.flow.merge
 
 class OauthViewModel(
     dataSource: PagingSource<Int, OauthItem>,
     private val eventDispatcher: EventDispatcher,
     viewStates: OauthViewStates,
-) : ListItemLoadableViewModel<QueryType.Oauth, OauthItem>() {
+) : ListItemLoadableViewModel<QueryType.Oauth, OauthItem>(eventDispatcher, viewStates, viewStates) {
 
     override val timeline: Flow<PagingData<OauthItem>> = Pager(
         config = PagingConfig(
@@ -49,9 +46,6 @@ class OauthViewModel(
     ).flow
     val pin: LiveData<CharSequence> = viewStates.pinText
     val sendPinButtonEnabled: LiveData<Boolean> = viewStates.sendPinEnabled
-    override val navigationEvent: Flow<NavigationEvent> =
-        merge(viewStates.launchTwitterOauth, viewStates.completeAuthProcess)
-    override val feedbackMessage: Flow<FeedbackMessage> = emptyFlow()
 
     override fun onRefresh() {}
 

@@ -9,14 +9,11 @@ import com.freshdigitable.udonroad2.model.CustomTimelineItem
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
-import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
-import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.timeline.ListItemClickListener
 import com.freshdigitable.udonroad2.timeline.ListItemLoadableViewModel
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
 
 class CustomTimelineListViewModel(
@@ -24,7 +21,7 @@ class CustomTimelineListViewModel(
     private val repository: ListRepository<QueryType.UserListMembership>,
     private val eventDispatcher: EventDispatcher,
     pagedListProvider: PagedListProvider<QueryType.UserListMembership, CustomTimelineItem>
-) : ListItemLoadableViewModel<QueryType.UserListMembership, CustomTimelineItem>(),
+) : ListItemLoadableViewModel<QueryType.UserListMembership, CustomTimelineItem>(eventDispatcher),
     ListItemClickListener<CustomTimelineItem> {
 
     override fun onRefresh() {
@@ -50,7 +47,4 @@ class CustomTimelineListViewModel(
             repository.clear(owner.id)
         }
     }
-
-    override val navigationEvent: Flow<NavigationEvent> = emptyFlow()
-    override val feedbackMessage: Flow<FeedbackMessage> = emptyFlow()
 }

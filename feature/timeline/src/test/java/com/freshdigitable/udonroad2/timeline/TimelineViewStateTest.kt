@@ -28,6 +28,7 @@ import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.AppTwitterException
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
+import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.postEvents
 import com.freshdigitable.udonroad2.shortcut.SelectedItemShortcut
 import com.freshdigitable.udonroad2.test_common.RxExceptionHandler
@@ -170,13 +171,16 @@ class TimelineViewStateTest {
         }
 }
 
-@ExperimentalCoroutinesApi
 class TimelineViewStatesTestRule : TestWatcher() {
-    private val actionsRule: TimelineActionsTestRule = TimelineActionsTestRule()
+    internal val actionsRule: TimelineActionsTestRule = TimelineActionsTestRule()
     val tweetRepositoryMock = TweetRepositoryRule()
     val owner = ListOwner(0, QueryType.TweetQueryType.Timeline())
-    private val coroutineTestRule = CoroutineTestRule()
-    private val executor = AppExecutor(dispatcher = coroutineTestRule.coroutineContextProvider)
+
+    @ExperimentalCoroutinesApi
+    internal val coroutineTestRule = CoroutineTestRule()
+
+    @ExperimentalCoroutinesApi
+    internal val executor = AppExecutor(dispatcher = coroutineTestRule.coroutineContextProvider)
     val sut = TimelineViewState(
         owner,
         actionsRule.sut,
@@ -185,7 +189,7 @@ class TimelineViewStatesTestRule : TestWatcher() {
         ListOwnerGenerator.create(AtomicInteger(1)),
         executor
     )
-    val navEvents: List<TimelineEvent.Navigate> = sut.updateNavHost.testCollect(executor)
+    val navEvents: List<NavigationEvent> = sut.navigationEvent.testCollect(executor)
     val messageEvents: TestObserver<FeedbackMessage> = sut.updateTweet.test()
 
     fun dispatchEvents(vararg event: AppEvent) {
