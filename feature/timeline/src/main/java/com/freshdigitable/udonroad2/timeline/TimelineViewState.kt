@@ -39,6 +39,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
@@ -114,7 +115,7 @@ class TimelineViewState(
         _selectedItemId.map { it.value != null }
     ) { sinceListPosition, sinceItemSelected ->
         sinceListPosition || sinceItemSelected
-    }
+    }.distinctUntilChanged()
 
     internal fun clear() {
         coroutineScope.cancel()
