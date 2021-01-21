@@ -35,6 +35,7 @@ import com.freshdigitable.udonroad2.model.app.navigation.StateHolder
 import com.freshdigitable.udonroad2.shortcut.ShortcutViewStates
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentEventDelegate
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
@@ -57,7 +58,8 @@ class TimelineViewState(
 ) : ListItemLoadableViewState,
     ActivityEventStream,
     ShortcutViewStates by ShortcutViewStates.create(actions, tweetRepository, executor) {
-    private val coroutineScope = CoroutineScope(executor.mainContext)
+    private val coroutineScope = CoroutineScope(executor.mainContext + SupervisorJob())
+    private val baseViewState = ListItemLoadableViewState.create(actions, coroutineScope)
 
     private val _selectedItemId: Flow<StateHolder<out SelectedItemId>> = AppAction.merge(
         AppAction.just(owner).map {
@@ -84,7 +86,7 @@ class TimelineViewState(
                     else -> selectedItemRepository.put(it.item)
                 }
                 StateHolder(selectedItemRepository.find(it.owner))
-            }
+            },
     ).asFlow().shareIn(coroutineScope, SharingStarted.Eagerly, 1)
 
     val selectedItemId: AppViewState<SelectedItemId?> = _selectedItemId.map { it.value }
@@ -106,12 +108,13 @@ class TimelineViewState(
         },
         actions.launchUserInfo.asFlow().map { TimelineEvent.Navigate.UserInfo(it.user) },
         actions.launchMediaViewer.asFlow().filter { it.selectedItemId?.owner == owner }
-            .map { TimelineEvent.Navigate.MediaViewer(it) }
+            .map { TimelineEvent.Navigate.MediaViewer(it) },
+        baseViewState.navigationEvent,
     )
     override val feedbackMessage: Flow<FeedbackMessage> = updateTweet.asFlow()
 
     override val isHeadingEnabled: Flow<Boolean> = combine(
-        ListItemLoadableViewState.create(actions).isHeadingEnabled,
+        baseViewState.isHeadingEnabled,
         _selectedItemId.map { it.value != null }
     ) { sinceListPosition, sinceItemSelected ->
         sinceListPosition || sinceItemSelected

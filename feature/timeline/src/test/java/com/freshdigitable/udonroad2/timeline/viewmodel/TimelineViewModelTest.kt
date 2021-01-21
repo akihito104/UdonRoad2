@@ -24,6 +24,7 @@ import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import com.freshdigitable.udonroad2.test_common.MockVerified
 import com.freshdigitable.udonroad2.test_common.jvm.testCollect
+import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.TimelineViewStatesTestRule
 import com.google.common.truth.Truth.assertThat
 import io.mockk.every
@@ -59,12 +60,12 @@ class TimelineViewModelTest {
     )
 
     private val isHeadingEnabledFlow = sut.isHeadingEnabled.testCollect(viewStatesTestRule.executor)
+    private val navigationEvents = sut.navigationEvent.testCollect(viewStatesTestRule.executor)
 
     @Before
     fun setup() {
         sut.timeline.testCollect(viewStatesTestRule.executor)
         sut.selectedItemId.observeForever { }
-        sut.navigationEvent.testCollect(viewStatesTestRule.executor)
         sut.feedbackMessage.testCollect(viewStatesTestRule.executor)
     }
 
@@ -132,5 +133,67 @@ class TimelineViewModelTest {
         // verify
         assertThat(sut.selectedItemId.value?.originalId).isEqualTo(TweetId(1000))
         assertThat(isHeadingEnabledFlow.last()).isTrue()
+    }
+
+    @Test
+    fun onHeadingClicked_firstVisibleItemPositionIs0_navigationEventIsEmpty() {
+        viewStatesTestRule.coroutineTestRule.runBlockingTest {
+            // setup
+            sut.onListScrollStopped(0)
+
+            // exercise
+            sut.onHeadingClicked()
+        }
+
+        // verify
+        assertThat(navigationEvents).isEmpty()
+    }
+
+    @Test
+    fun onHeadingClicked_clearSelectedItem() {
+        viewStatesTestRule.coroutineTestRule.runBlockingTest {
+            // setup
+            sut.onListScrollStopped(0)
+            val item = mockk<TweetListItem>().also {
+                every { it.originalId } returns TweetId(1000)
+                every { it.body } returns mockk(relaxed = true)
+            }
+            sut.onBodyItemClicked(item)
+
+            // exercise
+            sut.onHeadingClicked()
+        }
+
+        // verify
+        assertThat(navigationEvents).isEmpty()
+        assertThat(sut.selectedItemId.value).isNull()
+    }
+
+    @Test
+    fun onHeadingClicked_firstVisibleItemPositionIs3_ToTopOfListWithNeedsSkipIsFalseIsCollected() {
+        viewStatesTestRule.coroutineTestRule.runBlockingTest {
+            // setup
+            sut.onListScrollStopped(3)
+
+            // exercise
+            sut.onHeadingClicked()
+        }
+
+        // verify
+        assertThat(navigationEvents.last()).isEqualTo(TimelineEvent.Navigate.ToTopOfList(false))
+    }
+
+    @Test
+    fun onHeadingClicked_firstVisibleItemPositionIs3_ToTopOfListWithNeedsSkipIsTrueIsCollected() {
+        viewStatesTestRule.coroutineTestRule.runBlockingTest {
+            // setup
+            sut.onListScrollStopped(4)
+
+            // exercise
+            sut.onHeadingClicked()
+        }
+
+        // verify
+        assertThat(navigationEvents.last()).isEqualTo(TimelineEvent.Navigate.ToTopOfList(true))
     }
 }

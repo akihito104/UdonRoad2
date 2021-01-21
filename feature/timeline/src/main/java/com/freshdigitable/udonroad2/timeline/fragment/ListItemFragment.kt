@@ -130,7 +130,10 @@ class ListItemFragment : Fragment() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
-            R.id.action_heading -> TODO()
+            R.id.action_heading -> {
+                viewModel.onHeadingClicked()
+                true
+            }
             else -> super.onOptionsItemSelected(item)
         }
     }

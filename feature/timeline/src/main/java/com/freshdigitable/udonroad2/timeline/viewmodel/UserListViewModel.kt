@@ -22,7 +22,7 @@ class UserListViewModel(
     private val eventDispatcher: EventDispatcher,
     private val repository: ListRepository<QueryType.UserQueryType>,
     pagedListProvider: PagedListProvider<QueryType.UserQueryType, UserListItem>
-) : ListItemLoadableViewModel<QueryType.UserQueryType, UserListItem>(eventDispatcher),
+) : ListItemLoadableViewModel<QueryType.UserQueryType, UserListItem>(owner, eventDispatcher),
     ListItemClickListener<UserListItem> {
 
     override val timeline: Flow<PagingData<UserListItem>> =

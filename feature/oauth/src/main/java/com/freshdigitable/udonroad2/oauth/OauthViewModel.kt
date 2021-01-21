@@ -21,6 +21,7 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.PagingSource
+import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
@@ -29,10 +30,15 @@ import com.freshdigitable.udonroad2.timeline.ListItemLoadableViewModel
 import kotlinx.coroutines.flow.Flow
 
 class OauthViewModel(
+    owner: ListOwner<QueryType.Oauth>,
     dataSource: PagingSource<Int, OauthItem>,
     private val eventDispatcher: EventDispatcher,
     viewStates: OauthViewStates,
-) : ListItemLoadableViewModel<QueryType.Oauth, OauthItem>(eventDispatcher, viewStates, viewStates) {
+) : ListItemLoadableViewModel<QueryType.Oauth, OauthItem>(
+    owner,
+    eventDispatcher,
+    viewStates
+) {
 
     override val timeline: Flow<PagingData<OauthItem>> = Pager(
         config = PagingConfig(

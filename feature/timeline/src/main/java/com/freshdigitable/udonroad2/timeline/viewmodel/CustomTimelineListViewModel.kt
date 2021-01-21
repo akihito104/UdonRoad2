@@ -21,7 +21,10 @@ class CustomTimelineListViewModel(
     private val repository: ListRepository<QueryType.UserListMembership>,
     private val eventDispatcher: EventDispatcher,
     pagedListProvider: PagedListProvider<QueryType.UserListMembership, CustomTimelineItem>
-) : ListItemLoadableViewModel<QueryType.UserListMembership, CustomTimelineItem>(eventDispatcher),
+) : ListItemLoadableViewModel<QueryType.UserListMembership, CustomTimelineItem>(
+    owner,
+    eventDispatcher
+),
     ListItemClickListener<CustomTimelineItem> {
 
     override fun onRefresh() {

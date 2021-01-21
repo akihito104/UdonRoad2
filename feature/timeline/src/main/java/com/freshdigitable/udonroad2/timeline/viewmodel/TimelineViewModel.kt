@@ -46,9 +46,9 @@ class TimelineViewModel(
     private val homeRepository: ListRepository<TweetQueryType>,
     pagedListProvider: PagedListProvider<TweetQueryType, TweetListItem>
 ) : ListItemLoadableViewModel<TweetQueryType, TweetListItem>(
+    owner,
     eventDispatcher,
     viewStates,
-    viewStates
 ),
     TweetListItemClickListener,
     TweetListEventListener {

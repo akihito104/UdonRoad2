@@ -44,7 +44,10 @@ class TimelineActions(
         )
     }
     val toggleItem: AppAction<TweetItemSelection.Toggle> = dispatcher.toAction()
-    val unselectItem: AppAction<TweetItemSelection.Unselected> = dispatcher.toAction()
+    val unselectItem: AppAction<TweetItemSelection.Unselected> = AppAction.merge(
+        dispatcher.toAction(),
+        heading.map { TweetItemSelection.Unselected(it.owner) }
+    )
 }
 
 interface UserIconClickedAction {
