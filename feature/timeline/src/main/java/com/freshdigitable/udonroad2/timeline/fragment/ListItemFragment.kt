@@ -24,6 +24,7 @@ import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.timeline.ListItemLoadableViewModel
 import com.freshdigitable.udonroad2.timeline.R
+import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.databinding.FragmentTimelineBinding
 import com.freshdigitable.udonroad2.timeline.di.ListItemAdapterComponent
 import com.freshdigitable.udonroad2.timeline.di.ListItemFragmentEventDelegateComponent
@@ -88,7 +89,17 @@ class ListItemFragment : Fragment() {
 
         val eventDelegate = eventDelegate.create(viewModel).eventDelegate
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.navigationEvent.collect(eventDelegate::dispatchNavHostNavigate)
+            viewModel.navigationEvent.collect {
+                when (it) {
+                    is TimelineEvent.Navigate.ToTopOfList -> {
+                        if (it.needsSkip) {
+                            binding.mainList.scrollToPosition(4)
+                        }
+                        binding.mainList.smoothScrollToPosition(0)
+                    }
+                    else -> eventDelegate.dispatchNavHostNavigate(it)
+                }
+            }
         }
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.feedbackMessage.collect(eventDelegate::dispatchFeedbackMessage)
