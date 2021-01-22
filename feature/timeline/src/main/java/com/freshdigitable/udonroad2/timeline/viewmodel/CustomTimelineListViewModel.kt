@@ -2,6 +2,7 @@ package com.freshdigitable.udonroad2.timeline.viewmodel
 
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import com.freshdigitable.udonroad2.data.ListRepository
 import com.freshdigitable.udonroad2.data.PagedListProvider
 import com.freshdigitable.udonroad2.model.CustomTimelineItem
@@ -33,7 +34,7 @@ class CustomTimelineListViewModel(
     }
 
     override val timeline: Flow<PagingData<CustomTimelineItem>> =
-        pagedListProvider.getList(owner.query, owner.id)
+        pagedListProvider.getList(owner.query, owner.id).cachedIn(viewModelScope)
 
     override fun onUserIconClicked(user: TweetUserItem) {
         eventDispatcher.postEvent(TimelineEvent.UserIconClicked(user))
