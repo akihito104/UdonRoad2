@@ -21,6 +21,7 @@ import com.freshdigitable.udonroad2.data.PagedListProvider
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.TweetId
+import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import com.freshdigitable.udonroad2.test_common.MockVerified
 import com.freshdigitable.udonroad2.test_common.jvm.testCollect
@@ -51,19 +52,23 @@ class TimelineViewModelTest {
             )
         }
 
-    val sut: TimelineViewModel = TimelineViewModel(
-        viewStatesTestRule.owner as ListOwner<QueryType.TweetQueryType>,
-        viewStatesTestRule.actionsRule.dispatcher,
-        viewStatesTestRule.sut,
-        repositoryRule.mock,
-        listProviderRule.mock,
-    )
+    val sut: TimelineViewModel by lazy {
+        TimelineViewModel(
+            viewStatesTestRule.owner as ListOwner<QueryType.TweetQueryType>,
+            viewStatesTestRule.actionsRule.dispatcher,
+            viewStatesTestRule.sut,
+            repositoryRule.mock,
+            listProviderRule.mock,
+        )
+    }
 
-    private val isHeadingEnabledFlow = sut.isHeadingEnabled.testCollect(viewStatesTestRule.executor)
-    private val navigationEvents = sut.navigationEvent.testCollect(viewStatesTestRule.executor)
+    private lateinit var isHeadingEnabledFlow: List<Boolean>
+    private lateinit var navigationEvents: List<NavigationEvent>
 
     @Before
     fun setup() {
+        isHeadingEnabledFlow = sut.isHeadingEnabled.testCollect(viewStatesTestRule.executor)
+        navigationEvents = sut.navigationEvent.testCollect(viewStatesTestRule.executor)
         sut.timeline.testCollect(viewStatesTestRule.executor)
         sut.selectedItemId.observeForever { }
         sut.feedbackMessage.testCollect(viewStatesTestRule.executor)

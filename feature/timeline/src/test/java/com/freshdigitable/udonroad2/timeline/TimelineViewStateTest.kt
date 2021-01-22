@@ -181,16 +181,18 @@ class TimelineViewStatesTestRule : TestWatcher() {
 
     @ExperimentalCoroutinesApi
     internal val executor = AppExecutor(dispatcher = coroutineTestRule.coroutineContextProvider)
-    val sut = TimelineViewState(
-        owner,
-        actionsRule.sut,
-        SelectedItemRepository(),
-        tweetRepositoryMock.mock,
-        ListOwnerGenerator.create(AtomicInteger(1)),
-        executor
-    )
-    val navEvents: List<NavigationEvent> = sut.navigationEvent.testCollect(executor)
-    val messageEvents: TestObserver<FeedbackMessage> = sut.updateTweet.test()
+    val sut: TimelineViewState by lazy {
+        TimelineViewState(
+            owner,
+            actionsRule.sut,
+            SelectedItemRepository(),
+            tweetRepositoryMock.mock,
+            ListOwnerGenerator.create(AtomicInteger(1)),
+            executor
+        )
+    }
+    lateinit var navEvents: List<NavigationEvent>
+    lateinit var messageEvents: TestObserver<FeedbackMessage>
 
     fun dispatchEvents(vararg event: AppEvent) {
         actionsRule.dispatcher.postEvents(*event)
@@ -198,6 +200,8 @@ class TimelineViewStatesTestRule : TestWatcher() {
 
     override fun starting(description: Description?) {
         super.starting(description)
+        navEvents = sut.navigationEvent.testCollect(executor)
+        messageEvents = sut.updateTweet.test()
         sut.selectedItemId.observeForever { }
     }
 
