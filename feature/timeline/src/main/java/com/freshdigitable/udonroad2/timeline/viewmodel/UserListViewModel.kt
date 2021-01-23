@@ -2,6 +2,7 @@ package com.freshdigitable.udonroad2.timeline.viewmodel
 
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import com.freshdigitable.udonroad2.data.ListRepository
 import com.freshdigitable.udonroad2.data.PagedListProvider
 import com.freshdigitable.udonroad2.model.ListOwner
@@ -28,7 +29,7 @@ class UserListViewModel(
     ListItemClickListener<UserListItem> {
 
     override val timeline: Flow<PagingData<UserListItem>> =
-        pagedListProvider.getList(owner.query, owner.id)
+        pagedListProvider.getList(owner.query, owner.id).cachedIn(viewModelScope)
 
     override fun onRefresh() {
         viewModelScope.launch {

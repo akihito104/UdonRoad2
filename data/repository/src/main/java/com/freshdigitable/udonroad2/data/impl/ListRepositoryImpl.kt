@@ -34,6 +34,7 @@ import com.freshdigitable.udonroad2.model.ListQuery
 import com.freshdigitable.udonroad2.model.PageOption
 import com.freshdigitable.udonroad2.model.QueryType
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import timber.log.Timber
 
 internal class ListRepositoryImpl<Q : QueryType, E : Any>(
@@ -102,8 +103,8 @@ internal class PagedListProviderImpl<Q : QueryType, I : Any>(
     companion object {
         private val config = PagingConfig(
             enablePlaceholders = false,
-            pageSize = 50,
-            initialLoadSize = 50,
+            pageSize = 20,
+            initialLoadSize = 20,
             prefetchDistance = 10,
         )
     }
@@ -114,7 +115,7 @@ internal class PagedListProviderImpl<Q : QueryType, I : Any>(
             config = config,
             pagingSourceFactory = { pagedListDataSourceFactory.getDataSourceFactory(owner) },
             remoteMediator = getRemoteMediator(queryType, owner)
-        ).flow
+        ).flow.distinctUntilChanged()
     }
 
     @ExperimentalPagingApi
@@ -129,7 +130,7 @@ internal class PagedListProviderImpl<Q : QueryType, I : Any>(
                 when (loadType) {
                     LoadType.REFRESH -> repository.loadAtFirst(queryType, owner)
                     LoadType.APPEND -> repository.appendList(queryType, owner)
-                    LoadType.PREPEND -> repository.prependList(queryType, owner)
+                    LoadType.PREPEND -> Unit
                 }
                 val listEntity = checkNotNull(repository.findListEntity(owner))
                 MediatorResult.Success(endOfPaginationReached = listEntity.appendCursor == null)
