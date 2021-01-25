@@ -47,6 +47,7 @@ sealed class TimelineEvent : AppEvent {
     }
 
     data class HeadingClicked(val owner: ListOwner<*>) : TimelineEvent()
+    object SwipedToRefresh : TimelineEvent()
 
     sealed class Navigate : TimelineEvent(), NavigationEvent {
         data class Timeline(

@@ -159,7 +159,7 @@ interface ListItemFragmentEventDelegateComponentImpl : ListItemFragmentEventDele
     @Subcomponent.Factory
     interface Factory : ListItemFragmentEventDelegateComponent.Factory {
         override fun create(
-            @BindsInstance viewModel: ListItemLoadableViewModel<*, *>
+            @BindsInstance viewModel: ListItemLoadableViewModel<*>
         ): ListItemFragmentEventDelegateComponentImpl
     }
 }
@@ -168,7 +168,7 @@ interface ListItemFragmentEventDelegateComponentImpl : ListItemFragmentEventDele
 object ListItemFragmentEventDelegateProvider {
     @Provides
     fun ClassKeyMap<ViewModel, Provider<ListItemFragmentEventDelegate>>.provideEventDelegate(
-        viewModel: ListItemLoadableViewModel<*, *>
+        viewModel: ListItemLoadableViewModel<*>
     ): ListItemFragmentEventDelegate = this.valueByAssignableClassObject(viewModel).get()
 }
 

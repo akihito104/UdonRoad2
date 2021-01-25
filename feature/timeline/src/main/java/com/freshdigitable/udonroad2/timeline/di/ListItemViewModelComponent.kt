@@ -39,8 +39,8 @@ interface ListItemViewModelComponent {
     val viewModelProvider: ViewModelProvider
 }
 
-fun ListItemViewModelComponent.viewModel(key: String): ListItemLoadableViewModel<*, Any> {
-    return viewModelProvider.get(key, viewModelClass) as ListItemLoadableViewModel<*, Any>
+fun ListItemViewModelComponent.viewModel(key: String): ListItemLoadableViewModel<*> {
+    return viewModelProvider.get(key, viewModelClass) as ListItemLoadableViewModel<*>
 }
 
 interface ListItemAdapterComponent {
@@ -57,7 +57,7 @@ interface ListItemAdapterComponent {
 interface ListItemFragmentEventDelegateComponent {
     interface Factory {
         fun create(
-            viewModel: ListItemLoadableViewModel<*, *>
+            viewModel: ListItemLoadableViewModel<*>
         ): ListItemFragmentEventDelegateComponent
     }
 

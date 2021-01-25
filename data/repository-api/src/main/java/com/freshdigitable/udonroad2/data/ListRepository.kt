@@ -25,9 +25,9 @@ import com.freshdigitable.udonroad2.model.PagedResponseList
 import com.freshdigitable.udonroad2.model.QueryType
 import kotlinx.coroutines.flow.Flow
 
-interface ListRepository<Q : QueryType> {
+interface ListRepository<Q : QueryType, E : Any> {
     suspend fun loadAtFirst(query: Q, owner: ListId)
-    suspend fun prependList(query: Q, owner: ListId)
+    suspend fun prependList(query: Q, owner: ListId): List<E>
     suspend fun appendList(query: Q, owner: ListId)
     suspend fun findListEntity(owner: ListId): ListEntity?
     suspend fun clear(owner: ListId)

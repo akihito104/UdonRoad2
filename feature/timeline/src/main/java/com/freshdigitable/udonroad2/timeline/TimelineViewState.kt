@@ -17,6 +17,9 @@
 package com.freshdigitable.udonroad2.timeline
 
 import androidx.lifecycle.asLiveData
+import androidx.paging.PagingData
+import com.freshdigitable.udonroad2.data.ListRepository
+import com.freshdigitable.udonroad2.data.PagedListProvider
 import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
 import com.freshdigitable.udonroad2.model.ListOwner
@@ -49,17 +52,25 @@ import kotlinx.coroutines.rx2.asFlow
 import javax.inject.Inject
 
 class TimelineViewState(
-    owner: ListOwner<*>,
+    owner: ListOwner<QueryType.TweetQueryType>,
     actions: TimelineActions,
     selectedItemRepository: SelectedItemRepository,
     tweetRepository: TweetRepository,
+    listRepository: ListRepository<QueryType.TweetQueryType, Any>,
+    pagedListProvider: PagedListProvider<QueryType.TweetQueryType, Any>,
     listOwnerGenerator: ListOwnerGenerator,
     executor: AppExecutor,
 ) : ListItemLoadableViewState,
     ActivityEventStream,
     ShortcutViewStates by ShortcutViewStates.create(actions, tweetRepository, executor) {
     private val coroutineScope = CoroutineScope(executor.mainContext + SupervisorJob())
-    private val baseViewState = ListItemLoadableViewState.create(actions, coroutineScope)
+    private val baseViewState = ListItemLoadableViewStateImpl(
+        owner as ListOwner<QueryType>,
+        actions,
+        listRepository as ListRepository<QueryType, *>,
+        pagedListProvider as PagedListProvider<QueryType, Any>
+    )
+    override val pagedList: Flow<PagingData<Any>> = baseViewState.pagedList
 
     private val _selectedItemId: Flow<StateHolder<out SelectedItemId>> = AppAction.merge(
         AppAction.just(owner).map {
@@ -120,7 +131,7 @@ class TimelineViewState(
         sinceListPosition || sinceItemSelected
     }.distinctUntilChanged()
 
-    internal fun clear() {
+    override suspend fun clear() {
         coroutineScope.cancel()
     }
 }

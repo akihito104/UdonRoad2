@@ -118,11 +118,11 @@ class OauthViewModelTestRule : TestWatcher() {
 
     val sut = OauthViewModel(
         ListOwner(ListId(-1), QueryType.Oauth),
-        OauthDataSource(ApplicationProvider.getApplicationContext()),
         dispatcher,
         OauthViewStates(
             OauthAction(dispatcher),
             LoginUseCase(repositoryRule.mock, userRepositoryRule.mock),
+            OauthDataSource(ApplicationProvider.getApplicationContext()),
             repositoryRule.mock,
             ListOwnerGenerator.create(),
             OauthSavedStates(SavedStateHandle(), coroutineRule.coroutineContextProvider),

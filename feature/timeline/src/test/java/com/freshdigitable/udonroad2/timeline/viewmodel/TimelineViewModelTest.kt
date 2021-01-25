@@ -16,21 +16,16 @@
 
 package com.freshdigitable.udonroad2.timeline.viewmodel
 
-import com.freshdigitable.udonroad2.data.ListRepository
-import com.freshdigitable.udonroad2.data.PagedListProvider
-import com.freshdigitable.udonroad2.model.ListOwner
-import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
+import com.freshdigitable.udonroad2.model.tweet.TweetEntity
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
-import com.freshdigitable.udonroad2.test_common.MockVerified
 import com.freshdigitable.udonroad2.test_common.jvm.testCollect
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.TimelineViewStatesTestRule
 import com.google.common.truth.Truth.assertThat
 import io.mockk.every
 import io.mockk.mockk
-import kotlinx.coroutines.flow.emptyFlow
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -39,26 +34,11 @@ class TimelineViewModelTest {
     @get:Rule
     val viewStatesTestRule = TimelineViewStatesTestRule()
 
-    @get:Rule
-    val repositoryRule = MockVerified.create<ListRepository<QueryType.TweetQueryType>>()
-
-    @get:Rule
-    val listProviderRule =
-        MockVerified.create<PagedListProvider<QueryType.TweetQueryType, TweetListItem>>().apply {
-            val owner = viewStatesTestRule.owner as ListOwner<QueryType.TweetQueryType>
-            setupResponseWithVerify(
-                { mock.getList(owner.query, owner.id) },
-                emptyFlow()
-            )
-        }
-
     val sut: TimelineViewModel by lazy {
         TimelineViewModel(
-            viewStatesTestRule.owner as ListOwner<QueryType.TweetQueryType>,
+            viewStatesTestRule.owner,
             viewStatesTestRule.actionsRule.dispatcher,
             viewStatesTestRule.sut,
-            repositoryRule.mock,
-            listProviderRule.mock,
         )
     }
 
@@ -200,5 +180,57 @@ class TimelineViewModelTest {
 
         // verify
         assertThat(navigationEvents.last()).isEqualTo(TimelineEvent.Navigate.ToTopOfList(true))
+    }
+
+    @Test
+    fun onRefresh_prependListReturns0Items_then_isHeadingEnabledIsFalse() {
+        // setup
+        viewStatesTestRule.setupPrependListResponse()
+
+        viewStatesTestRule.coroutineTestRule.runBlockingTest {
+            sut.onListScrollStopped(0)
+
+            // exercise
+            sut.onRefresh()
+        }
+
+        // verify
+        assertThat(isHeadingEnabledFlow.last()).isFalse()
+    }
+
+    @Test
+    fun onRefresh_prependListReturns0ItemsWhenFirstVisiblePositionIs1_then_isHeadingEnabledIsTrue() {
+        // setup
+        viewStatesTestRule.setupPrependListResponse()
+
+        viewStatesTestRule.coroutineTestRule.runBlockingTest {
+            sut.onListScrollStopped(1)
+
+            // exercise
+            sut.onRefresh()
+        }
+
+        // verify
+        assertThat(isHeadingEnabledFlow.last()).isTrue()
+    }
+
+    @Test
+    fun onRefresh_prependListReturns1Items_then_isHeadingEnabledIsTrue() {
+        // setup
+        viewStatesTestRule.setupPrependListResponse(
+            mockk<List<TweetEntity>>().also {
+                every { it.size } returns 1
+            }
+        )
+
+        viewStatesTestRule.coroutineTestRule.runBlockingTest {
+            sut.onListScrollStopped(0)
+
+            // exercise
+            sut.onRefresh()
+        }
+
+        // verify
+        assertThat(isHeadingEnabledFlow.last()).isTrue()
     }
 }

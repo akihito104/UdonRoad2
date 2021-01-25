@@ -81,11 +81,19 @@ interface OauthViewModelModule {
         fun provideOauthViewStates(
             actions: OauthAction,
             login: LoginUseCase,
+            dataSource: PagingSource<Int, OauthItem>,
             repository: OAuthTokenRepository,
             listOwnerGenerator: ListOwnerGenerator,
             savedState: OauthSavedStates,
         ): OauthViewStates {
-            return OauthViewStates(actions, login, repository, listOwnerGenerator, savedState)
+            return OauthViewStates(
+                actions,
+                login,
+                dataSource,
+                repository,
+                listOwnerGenerator,
+                savedState
+            )
         }
 
         @Provides
@@ -94,13 +102,11 @@ interface OauthViewModelModule {
         @IntoSavedStateFactory
         fun provideOauthViewModel(
             owner: ListOwner<*>,
-            dataSource: PagingSource<Int, OauthItem>,
             eventDispatcher: EventDispatcher,
             viewStates: OauthViewStates,
         ): ViewModel {
             return OauthViewModel(
                 owner as ListOwner<QueryType.Oauth>,
-                dataSource,
                 eventDispatcher,
                 viewStates
             )

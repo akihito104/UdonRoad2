@@ -45,7 +45,7 @@ class ListItemFragment : Fragment() {
 
     @Inject
     lateinit var eventDelegate: ListItemFragmentEventDelegateComponent.Factory
-    private lateinit var viewModel: ListItemLoadableViewModel<*, Any>
+    private lateinit var viewModel: ListItemLoadableViewModel<*>
 
     override fun onAttach(context: Context) {
         AndroidSupportInjection.inject(this)
@@ -75,9 +75,7 @@ class ListItemFragment : Fragment() {
         val adapter = listItemAdapterFactory.create(viewModel, viewLifecycleOwner)
             .adapter as PagingDataAdapter<Any, *>
         binding.mainList.setup(adapter, viewModel)
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.timeline.collectLatest(adapter::submitData)
-        }
+
         val swipeRefresh = binding.mainSwipeRefresh
         viewLifecycleOwner.lifecycleScope.launchWhenResumed {
             adapter.loadStateFlow.collectLatest {
@@ -107,13 +105,14 @@ class ListItemFragment : Fragment() {
     }
 
     private fun RecyclerView.setup(
-        adapter: PagingDataAdapter<*, *>,
-        viewModel: ListItemLoadableViewModel<*, Any>
+        adapter: PagingDataAdapter<Any, *>,
+        viewModel: ListItemLoadableViewModel<*>
     ) {
         val linearLayoutManager = LinearLayoutManager(context)
         this.layoutManager = linearLayoutManager
         this.addItemDecoration(DividerItemDecoration(context, linearLayoutManager.orientation))
         this.adapter = adapter
+
         addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 if (newState == RecyclerView.SCROLL_STATE_IDLE) {
@@ -125,6 +124,9 @@ class ListItemFragment : Fragment() {
                 }
             }
         })
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.timeline.collectLatest(adapter::submitData)
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
