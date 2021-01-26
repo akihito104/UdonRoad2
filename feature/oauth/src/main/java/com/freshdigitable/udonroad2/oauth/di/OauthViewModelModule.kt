@@ -21,7 +21,6 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.paging.PagingSource
 import androidx.savedstate.SavedStateRegistryOwner
-import com.freshdigitable.udonroad2.data.impl.LoginUseCase
 import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
 import com.freshdigitable.udonroad2.data.impl.di.ListRepositoryComponentModule
 import com.freshdigitable.udonroad2.model.ListOwner
@@ -32,6 +31,7 @@ import com.freshdigitable.udonroad2.model.app.di.QueryTypeKey
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
+import com.freshdigitable.udonroad2.oauth.LoginUseCase
 import com.freshdigitable.udonroad2.oauth.OauthAction
 import com.freshdigitable.udonroad2.oauth.OauthDataSource
 import com.freshdigitable.udonroad2.oauth.OauthItem

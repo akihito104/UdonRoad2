@@ -17,11 +17,11 @@
 package com.freshdigitable.udonroad2
 
 import android.app.Application
-import com.freshdigitable.udonroad2.data.impl.LoginUseCase
-import com.freshdigitable.udonroad2.data.impl.invokeIfCan
 import com.freshdigitable.udonroad2.di.AppComponent
 import com.freshdigitable.udonroad2.di.DaggerAppComponent
 import com.freshdigitable.udonroad2.model.app.AppExecutor
+import com.freshdigitable.udonroad2.oauth.LoginUseCase
+import com.freshdigitable.udonroad2.oauth.LoginUseCase.Companion.invokeIfCan
 import com.jakewharton.threetenabp.AndroidThreeTen
 import dagger.Module
 import dagger.Provides

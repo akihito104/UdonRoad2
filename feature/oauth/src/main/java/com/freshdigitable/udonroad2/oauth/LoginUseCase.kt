@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020. Matsuda, Akihit (akihito104)
+ * Copyright (c) 2021. Matsuda, Akihit (akihito104)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-package com.freshdigitable.udonroad2.data.impl
+package com.freshdigitable.udonroad2.oauth
 
+import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
+import com.freshdigitable.udonroad2.data.impl.UserRepository
 import com.freshdigitable.udonroad2.model.UserId
 import javax.inject.Inject
 
@@ -27,10 +29,12 @@ class LoginUseCase @Inject constructor(
         val user = tokenRepository.login(checkNotNull(userId))
         userRepository.addUser(user)
     }
-}
 
-suspend fun LoginUseCase.invokeIfCan() {
-    if (tokenRepository.getCurrentUserId() != null) {
-        invoke()
+    companion object {
+        suspend fun LoginUseCase.invokeIfCan() {
+            if (tokenRepository.getCurrentUserId() != null) {
+                invoke()
+            }
+        }
     }
 }
