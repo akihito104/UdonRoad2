@@ -1,6 +1,5 @@
 package com.freshdigitable.udonroad2.data.impl
 
-import com.freshdigitable.udonroad2.data.db.DaoModule
 import com.freshdigitable.udonroad2.data.db.dao.RelationshipDao
 import com.freshdigitable.udonroad2.data.local.SharedPreferenceDataSource
 import com.freshdigitable.udonroad2.data.local.requireCurrentUserId
@@ -9,8 +8,6 @@ import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.app.AppTwitterException
 import com.freshdigitable.udonroad2.model.user.Relationship
 import com.freshdigitable.udonroad2.model.user.UserEntity
-import dagger.Module
-import dagger.Provides
 import kotlinx.coroutines.flow.Flow
 
 class RelationshipRepository(
@@ -94,21 +91,5 @@ class RelationshipRepository(
         val user = restClient.reportSpam(userId)
         dao.updateBlockingStatusTransaction(user.id, prefs.requireCurrentUserId(), true)
         return user
-    }
-}
-
-@Module(
-    includes = [
-        DaoModule::class
-    ]
-)
-object RelationshipRepositoryModule {
-    @Provides
-    fun provideRelationshipRepository(
-        dao: RelationshipDao,
-        prefs: SharedPreferenceDataSource,
-        restClient: FriendshipRestClient,
-    ): RelationshipRepository {
-        return RelationshipRepository(dao, prefs, restClient)
     }
 }

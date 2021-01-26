@@ -16,80 +16,63 @@
 
 package com.freshdigitable.udonroad2.data.impl.di
 
-import com.freshdigitable.udonroad2.data.ListRepository
-import com.freshdigitable.udonroad2.data.PagedListProvider
-import com.freshdigitable.udonroad2.data.db.LocalListDataSourceModule
-import com.freshdigitable.udonroad2.data.db.LocalListDataSourceProvider
-import com.freshdigitable.udonroad2.data.db.PagedListDataSourceFactoryModule
-import com.freshdigitable.udonroad2.data.db.PagedListDataSourceFactoryProvider
-import com.freshdigitable.udonroad2.data.impl.ListRepositoryImpl
-import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepositoryModule
-import com.freshdigitable.udonroad2.data.impl.PagedListProviderImpl
-import com.freshdigitable.udonroad2.data.impl.RelationshipRepositoryModule
-import com.freshdigitable.udonroad2.data.impl.ReplyRepositoryModule
-import com.freshdigitable.udonroad2.data.impl.TweetRepositoryModule
-import com.freshdigitable.udonroad2.data.impl.UserRepositoryModule
-import com.freshdigitable.udonroad2.data.restclient.CustomTimelineDataSourceModule
-import com.freshdigitable.udonroad2.data.restclient.RemoteListDataSourceProvider
-import com.freshdigitable.udonroad2.data.restclient.TweetTimelineDataSourceModule
-import com.freshdigitable.udonroad2.data.restclient.UserListDataSourceModule
-import com.freshdigitable.udonroad2.model.QueryType
-import com.freshdigitable.udonroad2.model.app.AppExecutor
-import dagger.BindsInstance
+import com.freshdigitable.udonroad2.data.ReplyRepository
+import com.freshdigitable.udonroad2.data.db.DaoModule
+import com.freshdigitable.udonroad2.data.db.LocalSourceModule
+import com.freshdigitable.udonroad2.data.db.dao.RelationshipDao
+import com.freshdigitable.udonroad2.data.db.dao.TweetDao
+import com.freshdigitable.udonroad2.data.db.dao.UserDao
+import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
+import com.freshdigitable.udonroad2.data.impl.RelationshipRepository
+import com.freshdigitable.udonroad2.data.impl.ReplyRepositoryImpl
+import com.freshdigitable.udonroad2.data.impl.TweetRepository
+import com.freshdigitable.udonroad2.data.impl.UserRepository
+import com.freshdigitable.udonroad2.data.local.SharedPreferenceDataSource
+import com.freshdigitable.udonroad2.data.restclient.FriendshipRestClient
+import com.freshdigitable.udonroad2.data.restclient.OAuthApiClient
+import com.freshdigitable.udonroad2.data.restclient.TweetApiClient
+import com.freshdigitable.udonroad2.data.restclient.UserRestClient
 import dagger.Module
-import dagger.Subcomponent
+import dagger.Provides
+import javax.inject.Singleton
 
 @Module(
     includes = [
-        TweetRepositoryModule::class,
-        UserRepositoryModule::class,
-        RelationshipRepositoryModule::class,
-        OAuthTokenRepositoryModule::class,
-        ReplyRepositoryModule::class,
+        DaoModule::class,
+        LocalSourceModule::class,
     ]
 )
-interface RepositoryModule
+interface RepositoryModule {
+    companion object {
+        @Provides
+        fun provideTweetRepository(
+            dao: TweetDao,
+            prefs: SharedPreferenceDataSource,
+            apiClient: TweetApiClient,
+        ): TweetRepository = TweetRepository(dao, prefs, apiClient)
 
-@Module(
-    includes = [
-        LocalListDataSourceModule::class,
-        TweetTimelineDataSourceModule::class,
-        UserListDataSourceModule::class,
-        CustomTimelineDataSourceModule::class,
-        PagedListDataSourceFactoryModule::class
-    ]
-)
-internal interface ListRepositoryModule
+        @Provides
+        fun provideUserRepository(
+            dao: UserDao,
+            restClient: UserRestClient,
+        ): UserRepository = UserRepository(dao, restClient)
 
-@Subcomponent(modules = [ListRepositoryModule::class])
-interface ListRepositoryComponent {
-    @Subcomponent.Factory
-    interface Factory {
-        fun create(@BindsInstance query: QueryType): ListRepositoryComponent
+        @Provides
+        fun provideRelationshipRepository(
+            dao: RelationshipDao,
+            prefs: SharedPreferenceDataSource,
+            restClient: FriendshipRestClient,
+        ): RelationshipRepository = RelationshipRepository(dao, prefs, restClient)
+
+        @Provides
+        fun provideOAuthTokenRepository(
+            apiClient: OAuthApiClient,
+            prefs: SharedPreferenceDataSource
+        ): OAuthTokenRepository = OAuthTokenRepository(apiClient, prefs)
+
+        @Provides
+        @Singleton
+        fun provideReplyRepository(localSource: ReplyRepository.LocalSource): ReplyRepository =
+            ReplyRepositoryImpl(localSource)
     }
-
-    val query: QueryType
-    val localListDataSourceProvider: LocalListDataSourceProvider
-    val remoteListDataSourceProvider: RemoteListDataSourceProvider
-    val pagedListDataSourceFactoryProvider: PagedListDataSourceFactoryProvider
-    val appExecutor: AppExecutor
 }
-
-fun <Q : QueryType> ListRepositoryComponent.listRepository(): ListRepository<Q, Any> {
-    return ListRepositoryImpl(
-        localListDataSourceProvider.get(query as Q),
-        remoteListDataSourceProvider.get(query as Q),
-    )
-}
-
-fun <Q : QueryType, I : Any> ListRepositoryComponent.pagedListProvider(
-    repository: ListRepository<Q, I>
-): PagedListProvider<Q, I> {
-    return PagedListProviderImpl(
-        pagedListDataSourceFactoryProvider.get(query as Q),
-        repository,
-    )
-}
-
-@Module(subcomponents = [ListRepositoryComponent::class])
-interface ListRepositoryComponentModule

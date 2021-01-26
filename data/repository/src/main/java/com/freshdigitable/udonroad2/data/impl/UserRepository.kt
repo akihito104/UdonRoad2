@@ -1,12 +1,9 @@
 package com.freshdigitable.udonroad2.data.impl
 
-import com.freshdigitable.udonroad2.data.db.DaoModule
 import com.freshdigitable.udonroad2.data.db.dao.UserDao
 import com.freshdigitable.udonroad2.data.restclient.UserRestClient
 import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.user.UserEntity
-import dagger.Module
-import dagger.Provides
 import kotlinx.coroutines.flow.Flow
 
 class UserRepository(
@@ -22,17 +19,4 @@ class UserRepository(
     suspend fun addUser(user: UserEntity) {
         dao.addUsers(listOf(user))
     }
-}
-
-@Module(
-    includes = [
-        DaoModule::class
-    ]
-)
-object UserRepositoryModule {
-    @Provides
-    fun provideUserRepository(
-        dao: UserDao,
-        restClient: UserRestClient,
-    ): UserRepository = UserRepository(dao, restClient)
 }

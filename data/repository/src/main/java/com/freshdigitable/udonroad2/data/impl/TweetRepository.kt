@@ -1,6 +1,5 @@
 package com.freshdigitable.udonroad2.data.impl
 
-import com.freshdigitable.udonroad2.data.db.DaoModule
 import com.freshdigitable.udonroad2.data.db.dao.TweetDao
 import com.freshdigitable.udonroad2.data.local.SharedPreferenceDataSource
 import com.freshdigitable.udonroad2.data.restclient.TweetApiClient
@@ -8,8 +7,6 @@ import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.app.AppTwitterException
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
-import dagger.Module
-import dagger.Provides
 import kotlinx.coroutines.flow.Flow
 
 class TweetRepository(
@@ -84,21 +81,5 @@ class TweetRepository(
         val deleted = restClient.deleteTweet(id)
         dao.deleteTweet(id)
         return deleted
-    }
-}
-
-@Module(
-    includes = [
-        DaoModule::class
-    ]
-)
-object TweetRepositoryModule {
-    @Provides
-    fun provideTweetRepository(
-        dao: TweetDao,
-        prefs: SharedPreferenceDataSource,
-        apiClient: TweetApiClient,
-    ): TweetRepository {
-        return TweetRepository(dao, prefs, apiClient)
     }
 }

@@ -22,8 +22,6 @@ import com.freshdigitable.udonroad2.model.AccessTokenEntity
 import com.freshdigitable.udonroad2.model.RequestTokenItem
 import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.user.UserEntity
-import dagger.Module
-import dagger.Provides
 import kotlinx.coroutines.flow.Flow
 
 class OAuthTokenRepository(
@@ -75,18 +73,5 @@ class OAuthTokenRepository(
 
     fun getAllAuthenticatedUserIds(): Set<String> {
         return prefs.getAllAuthenticatedUserIds()
-    }
-}
-
-@Module
-interface OAuthTokenRepositoryModule {
-    companion object {
-        @Provides
-        fun provideOAuthTokenRepository(
-            apiClient: OAuthApiClient,
-            prefs: SharedPreferenceDataSource
-        ): OAuthTokenRepository {
-            return OAuthTokenRepository(apiClient, prefs)
-        }
     }
 }

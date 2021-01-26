@@ -17,19 +17,7 @@
 package com.freshdigitable.udonroad2.data.impl
 
 import com.freshdigitable.udonroad2.data.ReplyRepository
-import com.freshdigitable.udonroad2.data.db.LocalSourceModule
-import dagger.Binds
-import dagger.Module
-import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
-class ReplyRepositoryImpl @Inject constructor(
+internal class ReplyRepositoryImpl(
     private val localSource: ReplyRepository.LocalSource
 ) : ReplyRepository by localSource
-
-@Module(includes = [LocalSourceModule::class])
-interface ReplyRepositoryModule {
-    @Binds
-    fun bindReplyRepository(repository: ReplyRepositoryImpl): ReplyRepository
-}
