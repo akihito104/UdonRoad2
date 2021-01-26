@@ -6,7 +6,7 @@ include(
     ":feature:shortcut",
     ":feature:input",
     ":candysh",
-    ":data:db",
+    ":data:local-source",
     ":data:restclient",
     ":data:repository",
     ":data:repository-api",
