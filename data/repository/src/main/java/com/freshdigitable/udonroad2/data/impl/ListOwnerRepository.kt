@@ -17,6 +17,7 @@
 package com.freshdigitable.udonroad2.data.impl
 
 import com.freshdigitable.udonroad2.data.db.entity.ListDao
+import com.freshdigitable.udonroad2.data.local.SharedPreferenceDataSource
 import com.freshdigitable.udonroad2.model.ListId
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator

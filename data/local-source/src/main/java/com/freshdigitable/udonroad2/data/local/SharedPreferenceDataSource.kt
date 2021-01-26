@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019. Matsuda, Akihit (akihito104)
+ * Copyright (c) 2021. Matsuda, Akihit (akihito104)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.freshdigitable.udonroad2.data.impl
+package com.freshdigitable.udonroad2.data.local
 
 import android.content.SharedPreferences
 import androidx.core.content.edit

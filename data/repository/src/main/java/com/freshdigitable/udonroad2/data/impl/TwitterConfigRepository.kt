@@ -18,6 +18,7 @@ package com.freshdigitable.udonroad2.data.impl
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.freshdigitable.udonroad2.data.local.SharedPreferenceDataSource
 import com.freshdigitable.udonroad2.data.restclient.TwitterConfigApiClient
 import com.freshdigitable.udonroad2.model.TwitterApiConfigEntity
 import com.freshdigitable.udonroad2.model.app.AppExecutor

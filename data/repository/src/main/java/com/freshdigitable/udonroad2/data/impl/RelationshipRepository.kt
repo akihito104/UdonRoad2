@@ -2,6 +2,8 @@ package com.freshdigitable.udonroad2.data.impl
 
 import com.freshdigitable.udonroad2.data.db.DaoModule
 import com.freshdigitable.udonroad2.data.db.dao.RelationshipDao
+import com.freshdigitable.udonroad2.data.local.SharedPreferenceDataSource
+import com.freshdigitable.udonroad2.data.local.requireCurrentUserId
 import com.freshdigitable.udonroad2.data.restclient.FriendshipRestClient
 import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.app.AppTwitterException
