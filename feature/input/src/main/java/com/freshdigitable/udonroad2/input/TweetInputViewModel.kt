@@ -20,9 +20,9 @@ import android.text.Editable
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
+import com.freshdigitable.udonroad2.data.UserRepository
 import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
 import com.freshdigitable.udonroad2.data.impl.TweetInputRepository
-import com.freshdigitable.udonroad2.data.impl.UserRepository
 import com.freshdigitable.udonroad2.input.CameraApp.Companion.transition
 import com.freshdigitable.udonroad2.input.MediaChooserResultContract.MediaChooserResult
 import com.freshdigitable.udonroad2.model.TweetId
@@ -173,7 +173,7 @@ class TweetInputViewState @Inject constructor(
     @ExperimentalCoroutinesApi
     internal val user: AppViewState<UserEntity?> = oauthRepository.getCurrentUserIdFlow()
         .flatMapLatest { id ->
-            userRepository.getUserFlow(id)
+            userRepository.getUserSource(id)
                 .mapLatest { it ?: userRepository.getUser(id) }
         }
         .flowOn(executor.ioContext)

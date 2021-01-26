@@ -19,8 +19,8 @@ package com.freshdigitable.udonroad2.input
 import android.text.Editable
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.Observer
+import com.freshdigitable.udonroad2.data.UserRepository
 import com.freshdigitable.udonroad2.data.impl.TweetInputRepository
-import com.freshdigitable.udonroad2.data.impl.UserRepository
 import com.freshdigitable.udonroad2.input.MediaChooserResultContract.MediaChooserResult
 import com.freshdigitable.udonroad2.model.MediaId
 import com.freshdigitable.udonroad2.model.TweetId
@@ -607,7 +607,7 @@ class TweetInputViewModelRule(
         }
         oAuthTokenRepositoryRule.setupCurrentUserIdSource(userId.value)
         userRepositoryRule.setupResponseWithVerify(
-            { userRepositoryRule.mock.getUserFlow(userId) },
+            { userRepositoryRule.mock.getUserSource(userId) },
             flow { emit(authenticatedUser) }
         )
         with(sut) {

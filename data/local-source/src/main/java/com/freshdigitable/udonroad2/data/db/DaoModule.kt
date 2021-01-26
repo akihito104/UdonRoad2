@@ -19,6 +19,7 @@ package com.freshdigitable.udonroad2.data.db
 import android.app.Application
 import androidx.room.Room
 import com.freshdigitable.udonroad2.data.ReplyRepository
+import com.freshdigitable.udonroad2.data.UserRepository
 import com.freshdigitable.udonroad2.data.db.dao.ConversationListDao
 import com.freshdigitable.udonroad2.data.db.dao.CustomTimelineDao
 import com.freshdigitable.udonroad2.data.db.dao.CustomTimelineListDao
@@ -27,8 +28,8 @@ import com.freshdigitable.udonroad2.data.db.dao.RelationshipDao
 import com.freshdigitable.udonroad2.data.db.dao.ReplyLocalDataSource
 import com.freshdigitable.udonroad2.data.db.dao.TweetDao
 import com.freshdigitable.udonroad2.data.db.dao.TweetListDao
-import com.freshdigitable.udonroad2.data.db.dao.UserDao
 import com.freshdigitable.udonroad2.data.db.dao.UserListDao
+import com.freshdigitable.udonroad2.data.db.dao.UserLocalSource
 import com.freshdigitable.udonroad2.data.db.entity.ListDao
 import dagger.Module
 import dagger.Provides
@@ -59,9 +60,6 @@ object DaoModule {
     ): ConversationListDao = ConversationListDao(db, tweetListDao)
 
     @Provides
-    fun providesUserDao(db: AppDatabase): UserDao = db.userDao()
-
-    @Provides
     fun provideUserListDao(db: AppDatabase): UserListDao = UserListDao(db)
 
     @Provides
@@ -86,8 +84,14 @@ interface LocalSourceModule {
     companion object {
         @Singleton
         @Provides
-        fun bindReplyRepositoryLocalSource(
+        fun provideReplyRepositoryLocalSource(
             db: AppDatabase
         ): ReplyRepository.LocalSource = ReplyLocalDataSource(db.userReplyDao())
+
+        @Singleton
+        @Provides
+        fun provideUserRepositoryLocalSource(
+            db: AppDatabase
+        ): UserRepository.LocalSource = UserLocalSource(db.userDao())
     }
 }

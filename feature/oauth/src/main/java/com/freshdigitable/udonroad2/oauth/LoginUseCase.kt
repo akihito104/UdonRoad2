@@ -16,8 +16,8 @@
 
 package com.freshdigitable.udonroad2.oauth
 
+import com.freshdigitable.udonroad2.data.UserRepository
 import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
-import com.freshdigitable.udonroad2.data.impl.UserRepository
 import com.freshdigitable.udonroad2.model.UserId
 import javax.inject.Inject
 

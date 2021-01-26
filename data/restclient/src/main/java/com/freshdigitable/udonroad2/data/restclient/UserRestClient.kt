@@ -16,16 +16,22 @@
 
 package com.freshdigitable.udonroad2.data.restclient
 
+import com.freshdigitable.udonroad2.data.UserRepository
 import com.freshdigitable.udonroad2.data.restclient.ext.toEntity
 import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.user.UserEntity
-import javax.inject.Inject
+import kotlinx.coroutines.flow.Flow
 
-class UserRestClient @Inject constructor(
+internal class UserRestClient(
     private val twitter: AppTwitter
-) {
-    suspend fun showUser(id: UserId): UserEntity {
+) : UserRepository.RemoteSource {
+    override suspend fun getUser(id: UserId): UserEntity {
         val u = twitter.fetch { showUser(id.value) }
         return u.toEntity()
     }
+
+    override fun getUserSource(id: UserId): Flow<UserEntity?> = throw NotImplementedError()
+    override suspend fun findUser(id: UserId): UserEntity = throw NotImplementedError()
+    override suspend fun addUser(user: UserEntity) = throw NotImplementedError()
+    override suspend fun addUsers(users: List<UserEntity>) = throw NotImplementedError()
 }

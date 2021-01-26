@@ -99,7 +99,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun tweetDao(): TweetDao
     internal abstract val reactionsDao: ReactionsDao
 
-    abstract fun userDao(): UserDao
+    internal abstract fun userDao(): UserDao
 
     abstract fun customTimelineDao(): CustomTimelineDao
 

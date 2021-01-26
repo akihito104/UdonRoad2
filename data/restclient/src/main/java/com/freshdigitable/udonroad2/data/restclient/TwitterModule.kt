@@ -16,6 +16,7 @@
 
 package com.freshdigitable.udonroad2.data.restclient
 
+import com.freshdigitable.udonroad2.data.UserRepository
 import com.freshdigitable.udonroad2.model.AccessTokenEntity
 import com.freshdigitable.udonroad2.model.app.AppTwitterException
 import dagger.Module
@@ -49,6 +50,11 @@ object AppTwitterModule {
     @Provides
     @Singleton
     fun providesAppTwitter(twitter: Twitter): AppTwitter = AppTwitter(twitter)
+
+    @Provides
+    @Singleton
+    fun provideUserRemoteSource(appTwitter: AppTwitter): UserRepository.RemoteSource =
+        UserRestClient(appTwitter)
 }
 
 class AppTwitter(

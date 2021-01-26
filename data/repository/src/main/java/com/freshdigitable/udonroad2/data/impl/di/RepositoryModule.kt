@@ -17,21 +17,20 @@
 package com.freshdigitable.udonroad2.data.impl.di
 
 import com.freshdigitable.udonroad2.data.ReplyRepository
+import com.freshdigitable.udonroad2.data.UserRepository
 import com.freshdigitable.udonroad2.data.db.DaoModule
 import com.freshdigitable.udonroad2.data.db.LocalSourceModule
 import com.freshdigitable.udonroad2.data.db.dao.RelationshipDao
 import com.freshdigitable.udonroad2.data.db.dao.TweetDao
-import com.freshdigitable.udonroad2.data.db.dao.UserDao
 import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
 import com.freshdigitable.udonroad2.data.impl.RelationshipRepository
 import com.freshdigitable.udonroad2.data.impl.ReplyRepositoryImpl
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
-import com.freshdigitable.udonroad2.data.impl.UserRepository
+import com.freshdigitable.udonroad2.data.impl.UserRepositoryImpl
 import com.freshdigitable.udonroad2.data.local.SharedPreferenceDataSource
 import com.freshdigitable.udonroad2.data.restclient.FriendshipRestClient
 import com.freshdigitable.udonroad2.data.restclient.OAuthApiClient
 import com.freshdigitable.udonroad2.data.restclient.TweetApiClient
-import com.freshdigitable.udonroad2.data.restclient.UserRestClient
 import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton
@@ -53,9 +52,9 @@ interface RepositoryModule {
 
         @Provides
         fun provideUserRepository(
-            dao: UserDao,
-            restClient: UserRestClient,
-        ): UserRepository = UserRepository(dao, restClient)
+            localSource: UserRepository.LocalSource,
+            restClient: UserRepository.RemoteSource,
+        ): UserRepository = UserRepositoryImpl(localSource, restClient)
 
         @Provides
         fun provideRelationshipRepository(
