@@ -14,4 +14,7 @@
   ~ limitations under the License.
   -->
 
-<resources></resources>
+<resources>
+    <dimen name="icon_corner_radius">4dp</dimen>
+    <dimen name="icon_corner_radius_small">2dp</dimen>
+</resources>

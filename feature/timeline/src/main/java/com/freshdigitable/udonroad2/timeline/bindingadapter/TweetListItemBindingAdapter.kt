@@ -27,6 +27,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.databinding.BindingAdapter
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.bumptech.glide.request.RequestOptions
 import com.freshdigitable.udonroad2.media.MediaThumbnailContainer
 import com.freshdigitable.udonroad2.media.mediaViews
@@ -111,14 +112,20 @@ fun bindCreatedAtRelative(v: TextView, createdAt: Instant?) {
     }
 }
 
-@BindingAdapter("bindUserIcon")
-fun bindUserIcon(v: ImageView, url: String?) {
+private val roundedCornersTransforms: HashMap<Int, RoundedCorners?> = hashMapOf()
+
+@BindingAdapter("bindUserIcon", "corner_radius", requireAll = false)
+fun bindUserIcon(v: ImageView, url: String?, cornerRadius: Float?) {
     if (url == null) {
         Glide.with(v).clear(v)
         return
     }
+    val cr: Int =
+        cornerRadius?.toInt() ?: v.resources.getDimensionPixelSize(R.dimen.icon_corner_radius)
+    val trans = roundedCornersTransforms.getOrPut(cr) { RoundedCorners(cr) }
     Glide.with(v)
         .load(url)
+        .transform(requireNotNull(trans))
         .into(v)
 }
 
