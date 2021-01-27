@@ -18,20 +18,43 @@ package com.freshdigitable.udonroad2.data.impl
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.freshdigitable.udonroad2.data.UserRepository
 import com.freshdigitable.udonroad2.data.local.SharedPreferenceDataSource
+import com.freshdigitable.udonroad2.data.restclient.OAuthApiClient
 import com.freshdigitable.udonroad2.data.restclient.TwitterConfigApiClient
 import com.freshdigitable.udonroad2.model.TwitterApiConfigEntity
+import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.app.AppExecutor
+import kotlinx.coroutines.flow.Flow
 import java.util.concurrent.TimeUnit
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class TwitterConfigRepository(
+@Singleton
+class AppSettingRepository @Inject constructor(
     private val apiClient: TwitterConfigApiClient,
+    private val oAuthApiClient: OAuthApiClient,
     private val prefs: SharedPreferenceDataSource,
+    private val userDao: UserRepository.LocalSource,
     private val executor: AppExecutor
 ) {
+    val currentUserId: UserId?
+        get() = prefs.getCurrentUserId()
+    val currentUserIdSource: Flow<UserId> = prefs.getCurrentUserIdFlow()
 
-    private val twitterApiConfig =
-        MutableLiveData<TwitterApiConfigEntity>()
+    suspend fun updateCurrentUser(userId: UserId) {
+        if (!prefs.isAuthenticatedUser(userId)) {
+            throw IllegalArgumentException("userId: ${userId.value} is not registered...")
+        }
+        prefs.setCurrentUserId(userId)
+        val token = requireNotNull(prefs.findUserAccessToken(userId))
+        val user = oAuthApiClient.login(token)
+        userDao.addUser(user)
+    }
+
+    fun getAllAuthenticatedUserIds(): Set<String> = prefs.getAllAuthenticatedUserIds()
+
+    private val twitterApiConfig = MutableLiveData<TwitterApiConfigEntity>()
 
     fun getTwitterAPIConfig(): LiveData<TwitterApiConfigEntity> {
         if (isTwitterAPIConfigFetchable() || twitterApiConfig.value == null) {

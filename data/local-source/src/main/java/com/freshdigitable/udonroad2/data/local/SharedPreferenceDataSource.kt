@@ -76,17 +76,10 @@ class SharedPreferenceDataSource @Inject constructor(
         }
     }
 
-    fun getCurrentUserAccessToken(): AccessTokenEntity? {
-        val currentUserId = getCurrentUserId() ?: return null
-        val token =
-            prefs.getString("$ACCESS_TOKEN_PREFIX${currentUserId.value}", null) ?: return null
-        val secret =
-            prefs.getString("$TOKEN_SECRET_PREFIX${currentUserId.value}", null) ?: return null
-        return AccessTokenEntity.create(
-            currentUserId,
-            token,
-            secret
-        )
+    fun findUserAccessToken(userId: UserId): AccessTokenEntity? {
+        val token = prefs.getString("$ACCESS_TOKEN_PREFIX${userId.value}", null) ?: return null
+        val secret = prefs.getString("$TOKEN_SECRET_PREFIX${userId.value}", null) ?: return null
+        return AccessTokenEntity.create(userId, token, secret)
     }
 
     fun isAuthenticatedUser(userId: UserId): Boolean {

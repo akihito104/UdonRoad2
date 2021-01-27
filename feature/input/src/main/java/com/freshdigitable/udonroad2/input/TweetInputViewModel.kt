@@ -21,7 +21,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import com.freshdigitable.udonroad2.data.UserRepository
-import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
+import com.freshdigitable.udonroad2.data.impl.AppSettingRepository
 import com.freshdigitable.udonroad2.data.impl.TweetInputRepository
 import com.freshdigitable.udonroad2.input.CameraApp.Companion.transition
 import com.freshdigitable.udonroad2.input.MediaChooserResultContract.MediaChooserResult
@@ -139,7 +139,7 @@ class TweetInputViewState @Inject constructor(
     createQuoteText: CreateQuoteTextUseCase,
     sharedState: TweetInputSharedState,
     repository: TweetInputRepository,
-    oauthRepository: OAuthTokenRepository,
+    oauthRepository: AppSettingRepository,
     userRepository: UserRepository,
     executor: AppExecutor,
 ) {
@@ -171,7 +171,7 @@ class TweetInputViewState @Inject constructor(
         }.asLiveDataWithMain(executor)
 
     @ExperimentalCoroutinesApi
-    internal val user: AppViewState<UserEntity?> = oauthRepository.getCurrentUserIdFlow()
+    internal val user: AppViewState<UserEntity?> = oauthRepository.currentUserIdSource
         .flatMapLatest { id ->
             userRepository.getUserSource(id)
                 .mapLatest { it ?: userRepository.getUser(id) }

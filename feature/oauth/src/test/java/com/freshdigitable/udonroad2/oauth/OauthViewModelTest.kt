@@ -20,7 +20,6 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.SavedStateHandle
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.freshdigitable.udonroad2.data.UserRepository
 import com.freshdigitable.udonroad2.data.impl.create
 import com.freshdigitable.udonroad2.model.ListId
 import com.freshdigitable.udonroad2.model.ListOwner
@@ -30,7 +29,6 @@ import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
-import com.freshdigitable.udonroad2.test_common.MockVerified
 import com.freshdigitable.udonroad2.test_common.RxExceptionHandler
 import com.freshdigitable.udonroad2.test_common.jvm.CoroutineTestRule
 import com.freshdigitable.udonroad2.test_common.jvm.OAuthTokenRepositoryRule
@@ -56,7 +54,7 @@ class OauthViewModelTest {
     @Test
     fun onLoginClicked(): Unit = rule.runBlockingTest {
         // setup
-        repositoryRule.setupGetRequestTokenItem()
+        oauthRepository.setupGetRequestTokenItem()
 
         // exercise
         sut.onLoginClicked()
@@ -69,7 +67,7 @@ class OauthViewModelTest {
     @Test
     fun onAfterPinTextChanged(): Unit = rule.runBlockingTest {
         // setup
-        repositoryRule.setupGetRequestTokenItem()
+        oauthRepository.setupGetRequestTokenItem()
 
         sut.onLoginClicked()
         assertThat(sut.sendPinButtonEnabled.value).isFalse()
@@ -85,8 +83,8 @@ class OauthViewModelTest {
     @Test
     fun onSendPinClicked(): Unit = rule.runBlockingTest {
         // setup
-        repositoryRule.setupGetRequestTokenItem()
-        repositoryRule.setupGetAccessToken("012345", UserId(100))
+        oauthRepository.setupGetRequestTokenItem()
+        oauthRepository.setupGetAccessToken("012345", UserId(100))
         setupLogin(UserId(100))
 
         sut.onLoginClicked()
@@ -111,18 +109,17 @@ class OauthViewModelTest {
 @ExperimentalCoroutinesApi
 class OauthViewModelTestRule : TestWatcher() {
     private val coroutineRule = CoroutineTestRule()
-    val repositoryRule = OAuthTokenRepositoryRule()
+    val oauthRepository = OAuthTokenRepositoryRule()
     private val dispatcher = EventDispatcher()
-    private val userRepositoryRule = MockVerified.create<UserRepository>()
 
     val sut = OauthViewModel(
         ListOwner(ListId(-1), QueryType.Oauth),
         dispatcher,
         OauthViewStates(
             OauthAction(dispatcher),
-            LoginUseCase(repositoryRule.mock, userRepositoryRule.mock),
+            LoginUseCase(oauthRepository.appSettingMock),
             OauthDataSource(ApplicationProvider.getApplicationContext()),
-            repositoryRule.mock,
+            oauthRepository.mock,
             ListOwnerGenerator.create(),
             OauthSavedStates(SavedStateHandle(), coroutineRule.coroutineContextProvider),
         )
@@ -143,19 +140,14 @@ class OauthViewModelTestRule : TestWatcher() {
     }
 
     fun setupLogin(id: UserId) {
-        repositoryRule.setupLogin(id)
-        userRepositoryRule.coSetupResponseWithVerify(
-            target = { userRepositoryRule.mock.addUser(any()) },
-            res = Unit
-        )
+        oauthRepository.setupLogin(id)
     }
 
     override fun apply(base: Statement?, description: Description?): Statement {
         return RuleChain.outerRule(InstantTaskExecutorRule())
             .around(RxExceptionHandler())
             .around(coroutineRule)
-            .around(repositoryRule)
-            .around(userRepositoryRule)
+            .around(oauthRepository)
             .apply(super.apply(base, description), description)
     }
 }

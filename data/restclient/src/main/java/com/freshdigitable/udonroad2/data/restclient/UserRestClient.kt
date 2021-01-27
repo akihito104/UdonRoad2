@@ -33,5 +33,4 @@ internal class UserRestClient(
     override fun getUserSource(id: UserId): Flow<UserEntity?> = throw NotImplementedError()
     override suspend fun findUser(id: UserId): UserEntity = throw NotImplementedError()
     override suspend fun addUser(user: UserEntity) = throw NotImplementedError()
-    override suspend fun addUsers(users: List<UserEntity>) = throw NotImplementedError()
 }

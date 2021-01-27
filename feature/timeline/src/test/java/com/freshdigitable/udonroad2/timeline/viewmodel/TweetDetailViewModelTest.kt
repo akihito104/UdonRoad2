@@ -85,7 +85,7 @@ class TweetDetailViewModelTest {
                 tweet.originalId,
                 actions,
                 tweetRepositoryRule.mock,
-                oauthRepositoryRule.mock,
+                oauthRepositoryRule.appSettingMock,
                 ListOwnerGenerator.create(),
                 executor
             ),

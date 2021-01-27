@@ -587,7 +587,7 @@ class TweetInputViewModelRule(
                 createQuoteTextUseCaseRule.mock,
                 TweetInputSharedState(executor),
                 repository.mock,
-                oAuthTokenRepositoryRule.mock,
+                oAuthTokenRepositoryRule.appSettingMock,
                 userRepositoryRule.mock,
                 executor,
             ),

@@ -5,7 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
-import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
+import com.freshdigitable.udonroad2.data.impl.AppSettingRepository
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
@@ -141,7 +141,7 @@ class TweetDetailViewStates @Inject constructor(
     tweetId: TweetId,
     actions: TweetDetailActions,
     repository: TweetRepository,
-    oAuthTokenRepository: OAuthTokenRepository,
+    appSettingRepository: AppSettingRepository,
     listOwnerGenerator: ListOwnerGenerator,
     executor: AppExecutor
 ) : ShortcutViewStates by ShortcutViewStates.create(actions, repository, executor) {
@@ -178,7 +178,7 @@ class TweetDetailViewStates @Inject constructor(
                 isMainGroupEnabled = true,
                 isRetweetChecked = tweet.body.isRetweeted,
                 isFavChecked = tweet.body.isFavorited,
-                isDeleteVisible = oAuthTokenRepository.getCurrentUserId() == tweet.originalUser.id
+                isDeleteVisible = appSettingRepository.currentUserId == tweet.originalUser.id
             )
         }
     }.distinctUntilChanged()

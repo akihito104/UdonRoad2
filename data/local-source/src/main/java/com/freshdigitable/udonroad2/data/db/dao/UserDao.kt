@@ -73,16 +73,10 @@ internal class UserLocalSource(private val dao: UserDao) : UserRepository.LocalS
         findUser(id) ?: throw IllegalStateException("UserId: $id is not found in local...")
 
     override suspend fun addUser(user: UserEntity) {
-        addUsers(listOf(user))
-    }
-
-    override suspend fun addUsers(users: List<UserEntity>) {
-        val u = users.map { user ->
-            when (user) {
-                is UserEntityDb -> user
-                else -> user.toEntity()
-            }
+        val u = when (user) {
+            is UserEntityDb -> user
+            else -> user.toEntity()
         }
-        dao.addUsers(u)
+        dao.addUsers(listOf(u))
     }
 }

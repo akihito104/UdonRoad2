@@ -115,7 +115,7 @@ class MainActivityInstTest {
             val authedUser = createUser(userId.value, "user1", "User1")
             component.userDao.apply {
                 runBlocking {
-                    addUsers(listOf(authedUser.toEntity()))
+                    addUser(authedUser.toEntity())
                 }
             }
 

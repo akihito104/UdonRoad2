@@ -26,8 +26,4 @@ internal class UserRepositoryImpl(
     override suspend fun addUser(user: UserEntity) {
         localSource.addUser(user)
     }
-
-    override suspend fun addUsers(users: List<UserEntity>) {
-        localSource.addUsers(users)
-    }
 }

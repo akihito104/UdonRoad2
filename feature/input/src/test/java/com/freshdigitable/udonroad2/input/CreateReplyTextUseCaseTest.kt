@@ -130,7 +130,7 @@ class CreateReplyTextUseCaseTest(private val param: Param) {
         val sut = CreateReplyTextUseCase(
             tweetRepositoryRule.mock,
             replyRepositoryRule.mock,
-            oAuthTokenRepositoryRule.mock
+            oAuthTokenRepositoryRule.appSettingMock
         )
 
         // exercise

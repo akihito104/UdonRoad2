@@ -89,7 +89,7 @@ class UserActivityInstTest {
             userDao.apply {
                 runBlocking {
                     val authedUser = createUser(authenticatedUserId.value, "user2", "User2")
-                    addUsers(listOf(authedUser.toEntity()))
+                    addUser(authedUser.toEntity())
                 }
             }
         }

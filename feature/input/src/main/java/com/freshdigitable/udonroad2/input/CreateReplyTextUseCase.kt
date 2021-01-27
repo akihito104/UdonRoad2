@@ -17,7 +17,7 @@
 package com.freshdigitable.udonroad2.input
 
 import com.freshdigitable.udonroad2.data.ReplyRepository
-import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
+import com.freshdigitable.udonroad2.data.impl.AppSettingRepository
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
 import com.freshdigitable.udonroad2.model.TweetId
 import javax.inject.Inject
@@ -25,7 +25,7 @@ import javax.inject.Inject
 class CreateReplyTextUseCase @Inject constructor(
     private val tweetRepository: TweetRepository,
     private val replyRepository: ReplyRepository,
-    private val oauthRepository: OAuthTokenRepository,
+    private val appSettingRepository: AppSettingRepository,
 ) {
     suspend operator fun invoke(tweetId: TweetId): String {
         val replyEntity = replyRepository.findEntitiesByTweetId(tweetId)
@@ -37,7 +37,7 @@ class CreateReplyTextUseCase @Inject constructor(
             item.body.user.id to item.body.user.screenName,
         )
 
-        val currentUser = checkNotNull(oauthRepository.getCurrentUserId())
+        val currentUser = checkNotNull(appSettingRepository.currentUserId)
 
         val replied = (replyEntity + targetUsers)
             .filter { (id, _) -> id != currentUser }

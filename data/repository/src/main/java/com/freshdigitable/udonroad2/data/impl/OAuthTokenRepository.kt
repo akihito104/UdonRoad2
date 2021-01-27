@@ -20,20 +20,11 @@ import com.freshdigitable.udonroad2.data.local.SharedPreferenceDataSource
 import com.freshdigitable.udonroad2.data.restclient.OAuthApiClient
 import com.freshdigitable.udonroad2.model.AccessTokenEntity
 import com.freshdigitable.udonroad2.model.RequestTokenItem
-import com.freshdigitable.udonroad2.model.UserId
-import com.freshdigitable.udonroad2.model.user.UserEntity
-import kotlinx.coroutines.flow.Flow
 
 class OAuthTokenRepository(
     private val apiClient: OAuthApiClient,
     private val prefs: SharedPreferenceDataSource
 ) {
-    suspend fun login(userId: UserId = requireNotNull(getCurrentUserId())): UserEntity {
-        setCurrentUserId(userId)
-        val oauthAccessToken = requireNotNull(getCurrentUserAccessToken())
-        return apiClient.login(oauthAccessToken)
-    }
-
     suspend fun getRequestTokenItem(): RequestTokenItem {
         apiClient.logout()
         return apiClient.getRequestToken()
@@ -44,34 +35,7 @@ class OAuthTokenRepository(
         verifier: String
     ): AccessTokenEntity {
         return apiClient.getOauthAccessToken(requestToken, verifier).also {
-            storeAccessToken(it)
+            prefs.storeAccessToken(it)
         }
-    }
-
-    private fun storeAccessToken(token: AccessTokenEntity) {
-        prefs.storeAccessToken(token)
-    }
-
-    private fun getCurrentUserAccessToken(): AccessTokenEntity? {
-        val currentUserId = prefs.getCurrentUserId() ?: return null
-        if (!currentUserId.isValid) {
-            return null
-        }
-        return prefs.getCurrentUserAccessToken()
-    }
-
-    fun getCurrentUserId(): UserId? {
-        return prefs.getCurrentUserId()
-    }
-
-    fun getCurrentUserIdFlow(): Flow<UserId> = prefs.getCurrentUserIdFlow()
-
-    private fun setCurrentUserId(userId: UserId) {
-        require(prefs.isAuthenticatedUser(userId)) { "unregistered userId: $userId" }
-        prefs.setCurrentUserId(userId)
-    }
-
-    fun getAllAuthenticatedUserIds(): Set<String> {
-        return prefs.getAllAuthenticatedUserIds()
     }
 }

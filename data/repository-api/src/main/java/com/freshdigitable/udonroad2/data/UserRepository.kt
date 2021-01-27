@@ -25,7 +25,6 @@ interface UserRepository {
     suspend fun getUser(id: UserId): UserEntity
     suspend fun findUser(id: UserId): UserEntity?
     suspend fun addUser(user: UserEntity)
-    suspend fun addUsers(users: List<UserEntity>)
 
     interface LocalSource : UserRepository
     interface RemoteSource : UserRepository
