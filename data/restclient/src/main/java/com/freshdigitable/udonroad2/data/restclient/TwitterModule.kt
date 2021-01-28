@@ -18,7 +18,7 @@ package com.freshdigitable.udonroad2.data.restclient
 
 import com.freshdigitable.udonroad2.data.AppSettingDataSource
 import com.freshdigitable.udonroad2.data.OAuthTokenDataSource
-import com.freshdigitable.udonroad2.data.UserRepository
+import com.freshdigitable.udonroad2.data.UserDataSource
 import com.freshdigitable.udonroad2.model.AccessTokenEntity
 import com.freshdigitable.udonroad2.model.app.AppTwitterException
 import dagger.Binds
@@ -57,7 +57,7 @@ interface AppTwitterModule {
 
         @Provides
         @Singleton
-        fun provideUserRemoteSource(appTwitter: AppTwitter): UserRepository.RemoteSource =
+        fun provideUserRemoteSource(appTwitter: AppTwitter): UserDataSource.Remote =
             UserRestClient(appTwitter)
     }
 

@@ -20,7 +20,7 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.SavedStateHandle
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.freshdigitable.udonroad2.data.UserRepository
+import com.freshdigitable.udonroad2.data.UserDataSource
 import com.freshdigitable.udonroad2.data.impl.create
 import com.freshdigitable.udonroad2.model.ListId
 import com.freshdigitable.udonroad2.model.ListOwner
@@ -120,7 +120,7 @@ class OauthViewModelTest {
 class OauthViewModelTestRule : TestWatcher() {
     private val coroutineRule = CoroutineTestRule()
     val oauthRepository = OAuthTokenRepositoryRule()
-    val userRepository = MockVerified.create<UserRepository>()
+    val userRepository = MockVerified.create<UserDataSource>()
     private val dispatcher = EventDispatcher()
 
     val sut = OauthViewModel(

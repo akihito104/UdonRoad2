@@ -19,7 +19,7 @@ package com.freshdigitable.udonroad2.user
 import androidx.annotation.IdRes
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.freshdigitable.udonroad2.R
-import com.freshdigitable.udonroad2.data.UserRepository
+import com.freshdigitable.udonroad2.data.UserDataSource
 import com.freshdigitable.udonroad2.data.impl.RelationshipRepository
 import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
 import com.freshdigitable.udonroad2.data.impl.create
@@ -363,7 +363,7 @@ class UserViewModelTestRule : TestWatcher() {
     val user = mockk<UserEntity>().apply {
         every { id } returns targetId
     }
-    val userRepositoryMock = MockVerified.create<UserRepository>()
+    val userRepositoryMock = MockVerified.create<UserDataSource>()
     val relationshipRepositoryMock = MockVerified.create<RelationshipRepository>()
     val relationshipRepository: RelationshipRepository = relationshipRepositoryMock.mock
     val selectedItemRepository = SelectedItemRepository()

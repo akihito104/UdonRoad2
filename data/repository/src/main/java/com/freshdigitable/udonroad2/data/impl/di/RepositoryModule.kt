@@ -19,7 +19,7 @@ package com.freshdigitable.udonroad2.data.impl.di
 import com.freshdigitable.udonroad2.data.AppSettingDataSource
 import com.freshdigitable.udonroad2.data.OAuthTokenDataSource
 import com.freshdigitable.udonroad2.data.ReplyRepository
-import com.freshdigitable.udonroad2.data.UserRepository
+import com.freshdigitable.udonroad2.data.UserDataSource
 import com.freshdigitable.udonroad2.data.db.DaoModule
 import com.freshdigitable.udonroad2.data.db.LocalSourceModule
 import com.freshdigitable.udonroad2.data.db.dao.RelationshipDao
@@ -29,7 +29,7 @@ import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
 import com.freshdigitable.udonroad2.data.impl.RelationshipRepository
 import com.freshdigitable.udonroad2.data.impl.ReplyRepositoryImpl
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
-import com.freshdigitable.udonroad2.data.impl.UserRepositoryImpl
+import com.freshdigitable.udonroad2.data.impl.UserRepository
 import com.freshdigitable.udonroad2.data.local.SharedPreferenceDataSource
 import com.freshdigitable.udonroad2.data.restclient.FriendshipRestClient
 import com.freshdigitable.udonroad2.data.restclient.TweetApiClient
@@ -55,9 +55,9 @@ interface RepositoryModule {
 
         @Provides
         fun provideUserRepository(
-            localSource: UserRepository.LocalSource,
-            restClient: UserRepository.RemoteSource,
-        ): UserRepository = UserRepositoryImpl(localSource, restClient)
+            localSource: UserDataSource.Local,
+            restClient: UserDataSource.Remote,
+        ): UserDataSource = UserRepository(localSource, restClient)
 
         @Provides
         fun provideRelationshipRepository(

@@ -18,14 +18,14 @@ package com.freshdigitable.udonroad2.oauth
 
 import com.freshdigitable.udonroad2.data.AppSettingDataSource
 import com.freshdigitable.udonroad2.data.OAuthTokenDataSource
-import com.freshdigitable.udonroad2.data.UserRepository
+import com.freshdigitable.udonroad2.data.UserDataSource
 import com.freshdigitable.udonroad2.model.UserId
 import javax.inject.Inject
 
 class LoginUseCase @Inject constructor(
     private val appSettingRepository: AppSettingDataSource,
     private val oAuthTokenRepository: OAuthTokenDataSource,
-    private val userRepository: UserRepository,
+    private val userRepository: UserDataSource,
 ) {
     suspend operator fun invoke(userId: UserId) {
         val token = requireNotNull(oAuthTokenRepository.findUserAccessTokenEntity(userId))

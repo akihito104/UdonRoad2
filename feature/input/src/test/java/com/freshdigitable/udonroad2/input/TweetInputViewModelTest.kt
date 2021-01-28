@@ -19,7 +19,7 @@ package com.freshdigitable.udonroad2.input
 import android.text.Editable
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.Observer
-import com.freshdigitable.udonroad2.data.UserRepository
+import com.freshdigitable.udonroad2.data.UserDataSource
 import com.freshdigitable.udonroad2.data.impl.TweetInputRepository
 import com.freshdigitable.udonroad2.input.MediaChooserResultContract.MediaChooserResult
 import com.freshdigitable.udonroad2.model.MediaId
@@ -571,7 +571,7 @@ class TweetInputViewModelRule(
         every { onChanged(any()) } just runs
     }
     private val oAuthTokenRepositoryRule = OAuthTokenRepositoryRule()
-    private val userRepositoryRule = MockVerified.create<UserRepository>()
+    private val userRepositoryRule = MockVerified.create<UserDataSource>()
     private val createReplyTextUseCaseRule = MockVerified.create<CreateReplyTextUseCase>()
     private val createQuoteTextUseCaseRule = MockVerified.create<CreateQuoteTextUseCase>()
     val executor = AppExecutor(dispatcher = coroutineTestRule.coroutineContextProvider)

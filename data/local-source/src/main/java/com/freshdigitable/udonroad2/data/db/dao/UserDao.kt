@@ -22,7 +22,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import com.freshdigitable.udonroad2.data.UserRepository
+import com.freshdigitable.udonroad2.data.UserDataSource
 import com.freshdigitable.udonroad2.data.db.dbview.UserListDbView
 import com.freshdigitable.udonroad2.data.db.entity.UserEntityDb
 import com.freshdigitable.udonroad2.data.db.entity.UserListEntity
@@ -64,7 +64,7 @@ internal abstract class UserDao {
     abstract suspend fun deleteByListId(owner: ListId)
 }
 
-internal class UserLocalSource(private val dao: UserDao) : UserRepository.LocalSource {
+internal class UserLocalSource(private val dao: UserDao) : UserDataSource.Local {
     override fun getUserSource(id: UserId): Flow<UserEntity?> = dao.getUserFlow(id)
 
     override suspend fun findUser(id: UserId): UserEntity? = dao.getUser(id)

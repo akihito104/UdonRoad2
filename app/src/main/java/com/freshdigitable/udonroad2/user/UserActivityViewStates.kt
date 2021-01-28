@@ -22,7 +22,7 @@ import androidx.lifecycle.asLiveData
 import androidx.lifecycle.map
 import androidx.lifecycle.switchMap
 import com.freshdigitable.udonroad2.R
-import com.freshdigitable.udonroad2.data.UserRepository
+import com.freshdigitable.udonroad2.data.UserDataSource
 import com.freshdigitable.udonroad2.data.impl.RelationshipRepository
 import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
 import com.freshdigitable.udonroad2.model.ListOwner
@@ -60,7 +60,7 @@ import kotlin.math.min
 class UserActivityViewStates @Inject constructor(
     tweetUserItem: TweetUserItem,
     actions: UserActivityActions,
-    userRepository: UserRepository,
+    userRepository: UserDataSource,
     relationshipRepository: RelationshipRepository,
     selectedItemRepository: SelectedItemRepository,
     ownerGenerator: ListOwnerGenerator,

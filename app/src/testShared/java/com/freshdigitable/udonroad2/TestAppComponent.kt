@@ -17,7 +17,7 @@
 package com.freshdigitable.udonroad2
 
 import android.app.Application
-import com.freshdigitable.udonroad2.data.UserRepository
+import com.freshdigitable.udonroad2.data.UserDataSource
 import com.freshdigitable.udonroad2.data.db.DatabaseModule
 import com.freshdigitable.udonroad2.data.impl.di.RepositoryModule
 import com.freshdigitable.udonroad2.data.local.SharedPreferenceDataSource
@@ -60,5 +60,5 @@ interface TestAppComponent : AppComponent {
 
     val twitter: Twitter
     val sharedPreferencesDao: SharedPreferenceDataSource
-    val userDao: UserRepository.LocalSource
+    val userDao: UserDataSource.Local
 }

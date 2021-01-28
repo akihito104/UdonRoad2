@@ -20,12 +20,12 @@ import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.user.UserEntity
 import kotlinx.coroutines.flow.Flow
 
-interface UserRepository {
+interface UserDataSource {
     fun getUserSource(id: UserId): Flow<UserEntity?>
     suspend fun getUser(id: UserId): UserEntity
     suspend fun findUser(id: UserId): UserEntity?
     suspend fun addUser(user: UserEntity)
 
-    interface LocalSource : UserRepository
-    interface RemoteSource : UserRepository
+    interface Local : UserDataSource
+    interface Remote : UserDataSource
 }

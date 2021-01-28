@@ -21,7 +21,7 @@ import androidx.room.Room
 import com.freshdigitable.udonroad2.data.AppSettingDataSource
 import com.freshdigitable.udonroad2.data.OAuthTokenDataSource
 import com.freshdigitable.udonroad2.data.ReplyRepository
-import com.freshdigitable.udonroad2.data.UserRepository
+import com.freshdigitable.udonroad2.data.UserDataSource
 import com.freshdigitable.udonroad2.data.db.dao.ConversationListDao
 import com.freshdigitable.udonroad2.data.db.dao.CustomTimelineDao
 import com.freshdigitable.udonroad2.data.db.dao.CustomTimelineListDao
@@ -96,7 +96,7 @@ interface LocalSourceModule {
         @Provides
         fun provideUserRepositoryLocalSource(
             db: AppDatabase
-        ): UserRepository.LocalSource = UserLocalSource(db.userDao())
+        ): UserDataSource.Local = UserLocalSource(db.userDao())
     }
 
     @Binds

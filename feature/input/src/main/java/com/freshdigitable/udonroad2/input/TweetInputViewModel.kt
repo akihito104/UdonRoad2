@@ -20,7 +20,7 @@ import android.text.Editable
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
-import com.freshdigitable.udonroad2.data.UserRepository
+import com.freshdigitable.udonroad2.data.UserDataSource
 import com.freshdigitable.udonroad2.data.impl.AppSettingRepository
 import com.freshdigitable.udonroad2.data.impl.TweetInputRepository
 import com.freshdigitable.udonroad2.input.CameraApp.Companion.transition
@@ -140,7 +140,7 @@ class TweetInputViewState @Inject constructor(
     sharedState: TweetInputSharedState,
     repository: TweetInputRepository,
     oauthRepository: AppSettingRepository,
-    userRepository: UserRepository,
+    userRepository: UserDataSource,
     executor: AppExecutor,
 ) {
     private val idlingState = if (collapsible) InputTaskState.IDLING else InputTaskState.OPENED

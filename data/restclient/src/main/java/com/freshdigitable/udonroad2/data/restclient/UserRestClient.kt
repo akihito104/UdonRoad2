@@ -16,7 +16,7 @@
 
 package com.freshdigitable.udonroad2.data.restclient
 
-import com.freshdigitable.udonroad2.data.UserRepository
+import com.freshdigitable.udonroad2.data.UserDataSource
 import com.freshdigitable.udonroad2.data.restclient.ext.toEntity
 import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.user.UserEntity
@@ -24,7 +24,7 @@ import kotlinx.coroutines.flow.Flow
 
 internal class UserRestClient(
     private val twitter: AppTwitter
-) : UserRepository.RemoteSource {
+) : UserDataSource.Remote {
     override suspend fun getUser(id: UserId): UserEntity {
         val u = twitter.fetch { showUser(id.value) }
         return u.toEntity()
