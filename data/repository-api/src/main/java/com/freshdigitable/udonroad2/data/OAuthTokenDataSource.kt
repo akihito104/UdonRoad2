@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019. Matsuda, Akihit (akihito104)
+ * Copyright (c) 2021. Matsuda, Akihit (akihito104)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,27 +14,26 @@
  * limitations under the License.
  */
 
-package com.freshdigitable.udonroad2.data.impl
+package com.freshdigitable.udonroad2.data
 
-import com.freshdigitable.udonroad2.data.OAuthTokenDataSource
 import com.freshdigitable.udonroad2.model.AccessTokenEntity
 import com.freshdigitable.udonroad2.model.RequestTokenItem
+import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.user.UserEntity
 
-internal class OAuthTokenRepository(
-    private val prefs: OAuthTokenDataSource.Local,
-    private val apiClient: OAuthTokenDataSource.Remote,
-) : OAuthTokenDataSource by prefs {
-    override suspend fun getRequestTokenItem(): RequestTokenItem = apiClient.getRequestTokenItem()
+interface OAuthTokenDataSource {
+    suspend fun getRequestTokenItem(): RequestTokenItem
 
-    override suspend fun getAccessToken(
+    suspend fun getAccessToken(
         requestToken: RequestTokenItem,
         verifier: String
-    ): AccessTokenEntity {
-        val accessToken = apiClient.getAccessToken(requestToken, verifier)
-        prefs.addAccessTokenEntity(accessToken)
-        return accessToken
-    }
+    ): AccessTokenEntity
 
-    override suspend fun verifyCredentials(): UserEntity = apiClient.verifyCredentials()
+    suspend fun verifyCredentials(): UserEntity
+
+    suspend fun addAccessTokenEntity(token: AccessTokenEntity)
+    suspend fun findUserAccessTokenEntity(userId: UserId): AccessTokenEntity?
+
+    interface Local : OAuthTokenDataSource
+    interface Remote : OAuthTokenDataSource
 }

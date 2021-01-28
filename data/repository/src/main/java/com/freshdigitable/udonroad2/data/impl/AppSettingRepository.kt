@@ -16,80 +16,64 @@
 
 package com.freshdigitable.udonroad2.data.impl
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import com.freshdigitable.udonroad2.data.UserRepository
-import com.freshdigitable.udonroad2.data.local.SharedPreferenceDataSource
-import com.freshdigitable.udonroad2.data.restclient.OAuthApiClient
+import com.freshdigitable.udonroad2.data.AppSettingDataSource
 import com.freshdigitable.udonroad2.data.restclient.TwitterConfigApiClient
-import com.freshdigitable.udonroad2.model.TwitterApiConfigEntity
-import com.freshdigitable.udonroad2.model.UserId
+import com.freshdigitable.udonroad2.model.AccessTokenEntity
 import com.freshdigitable.udonroad2.model.app.AppExecutor
-import kotlinx.coroutines.flow.Flow
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class AppSettingRepository @Inject constructor(
+    private val prefs: AppSettingDataSource.Local,
     private val apiClient: TwitterConfigApiClient,
-    private val oAuthApiClient: OAuthApiClient,
-    private val prefs: SharedPreferenceDataSource,
-    private val userDao: UserRepository.LocalSource,
-    private val executor: AppExecutor
-) {
-    val currentUserId: UserId?
-        get() = prefs.getCurrentUserId()
-    val currentUserIdSource: Flow<UserId> = prefs.getCurrentUserIdFlow()
+    private val oAuthApiClient: AppSettingDataSource.Remote,
+    private val executor: AppExecutor,
+) : AppSettingDataSource by prefs {
 
-    suspend fun updateCurrentUser(userId: UserId) {
-        if (!prefs.isAuthenticatedUser(userId)) {
-            throw IllegalArgumentException("userId: ${userId.value} is not registered...")
-        }
-        prefs.setCurrentUserId(userId)
-        val token = requireNotNull(prefs.findUserAccessToken(userId))
-        val user = oAuthApiClient.login(token)
-        userDao.addUser(user)
+    override suspend fun updateCurrentUser(accessToken: AccessTokenEntity) {
+        prefs.updateCurrentUser(accessToken)
+        oAuthApiClient.updateCurrentUser(accessToken)
     }
 
-    fun getAllAuthenticatedUserIds(): Set<String> = prefs.getAllAuthenticatedUserIds()
-
-    private val twitterApiConfig = MutableLiveData<TwitterApiConfigEntity>()
-
-    fun getTwitterAPIConfig(): LiveData<TwitterApiConfigEntity> {
-        if (isTwitterAPIConfigFetchable() || twitterApiConfig.value == null) {
-            fetchTwitterAPIConfig()
-        }
-        return twitterApiConfig
-    }
-
-    private fun setFetchTwitterAPIConfigTime(timestamp: Long) {
-        prefs.putFetchTwitterApiConfig(timestamp)
-    }
-
-    private fun getFetchTwitterAPIConfigTime(): Long {
-        return prefs.getFetchTwitterApiConfigTime()
-    }
-
-    private fun isTwitterAPIConfigFetchable(): Boolean {
-        val lastTime = getFetchTwitterAPIConfigTime()
-        if (lastTime == -1L) {
-            return true
-        }
-        val now = System.currentTimeMillis()
-        return now - lastTime > TimeUnit.DAYS.toMillis(1)
-    }
-
-    private fun fetchTwitterAPIConfig() {
-        executor.launchIO {
-            val conf = apiClient.getTwitterApiConfig()
-            setFetchTwitterAPIConfigTime(System.currentTimeMillis())
-//        realm.executeTransaction({ r ->
-//            r.delete(TwitterAPIConfigurationRealm::class.java)
-//            val twitterAPIConfiguration = TwitterAPIConfigurationRealm(twitterAPIConfig)
-//            r.insertOrUpdate(twitterAPIConfiguration)
-//        })
-            twitterApiConfig.postValue(conf)
-        }
-    }
+//    fun getAllAuthenticatedUserIds(): Set<String> = prefs.getAllAuthenticatedUserIds()
+//
+//    private val twitterApiConfig = MutableLiveData<TwitterApiConfigEntity>()
+//
+//    fun getTwitterAPIConfig(): LiveData<TwitterApiConfigEntity> {
+//        if (isTwitterAPIConfigFetchable() || twitterApiConfig.value == null) {
+//            fetchTwitterAPIConfig()
+//        }
+//        return twitterApiConfig
+//    }
+//
+//    private fun setFetchTwitterAPIConfigTime(timestamp: Long) {
+//        prefs.putFetchTwitterApiConfig(timestamp)
+//    }
+//
+//    private fun getFetchTwitterAPIConfigTime(): Long {
+//        return prefs.getFetchTwitterApiConfigTime()
+//    }
+//
+//    private fun isTwitterAPIConfigFetchable(): Boolean {
+//        val lastTime = getFetchTwitterAPIConfigTime()
+//        if (lastTime == -1L) {
+//            return true
+//        }
+//        val now = System.currentTimeMillis()
+//        return now - lastTime > TimeUnit.DAYS.toMillis(1)
+//    }
+//
+//    private fun fetchTwitterAPIConfig() {
+//        executor.launchIO {
+//            val conf = apiClient.getTwitterApiConfig()
+//            setFetchTwitterAPIConfigTime(System.currentTimeMillis())
+////        realm.executeTransaction({ r ->
+////            r.delete(TwitterAPIConfigurationRealm::class.java)
+////            val twitterAPIConfiguration = TwitterAPIConfigurationRealm(twitterAPIConfig)
+////            r.insertOrUpdate(twitterAPIConfiguration)
+////        })
+//            twitterApiConfig.postValue(conf)
+//        }
+//    }
 }

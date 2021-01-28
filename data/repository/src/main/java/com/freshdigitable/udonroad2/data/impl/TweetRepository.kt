@@ -1,7 +1,8 @@
 package com.freshdigitable.udonroad2.data.impl
 
+import com.freshdigitable.udonroad2.data.AppSettingDataSource
 import com.freshdigitable.udonroad2.data.db.dao.TweetDao
-import com.freshdigitable.udonroad2.data.local.SharedPreferenceDataSource
+import com.freshdigitable.udonroad2.data.local.requireCurrentUserId
 import com.freshdigitable.udonroad2.data.restclient.TweetApiClient
 import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.app.AppTwitterException
@@ -11,21 +12,21 @@ import kotlinx.coroutines.flow.Flow
 
 class TweetRepository(
     private val dao: TweetDao,
-    private val prefs: SharedPreferenceDataSource,
+    private val prefs: AppSettingDataSource.Local,
     private val restClient: TweetApiClient,
 ) {
     fun getTweetItemSource(id: TweetId): Flow<TweetListItem?> =
-        dao.getDetailTweetListItemSource(id, checkNotNull(prefs.getCurrentUserId()))
+        dao.getDetailTweetListItemSource(id, prefs.requireCurrentUserId())
 
     suspend fun findTweetListItem(id: TweetId): TweetListItem? {
-        val currentUserId = checkNotNull(prefs.getCurrentUserId())
+        val currentUserId = prefs.requireCurrentUserId()
         val tweet = restClient.fetchTweet(id)
         dao.addTweet(tweet, currentUserId)
         return dao.findDetailTweetListItem(id, currentUserId)
     }
 
     suspend fun postLike(id: TweetId): TweetEntity {
-        val currentUserId = checkNotNull(prefs.getCurrentUserId())
+        val currentUserId = prefs.requireCurrentUserId()
         try {
             val liked = restClient.postLike(id)
             dao.addTweet(liked, currentUserId)
@@ -40,7 +41,7 @@ class TweetRepository(
 
     // todo: already unliked error
     suspend fun postUnlike(id: TweetId): TweetEntity {
-        val currentUserId = checkNotNull(prefs.getCurrentUserId())
+        val currentUserId = prefs.requireCurrentUserId()
         val unliked = restClient.postUnlike(id)
         dao.addTweet(unliked, currentUserId)
         dao.updateFav(id, currentUserId, false)
@@ -48,7 +49,7 @@ class TweetRepository(
     }
 
     suspend fun postRetweet(id: TweetId): TweetEntity {
-        val currentUserId = checkNotNull(prefs.getCurrentUserId())
+        val currentUserId = prefs.requireCurrentUserId()
         try {
             val retweet = restClient.postRetweet(id)
 
@@ -66,7 +67,7 @@ class TweetRepository(
 
     // todo: already unretweeted error
     suspend fun postUnretweet(id: TweetId): TweetEntity {
-        val currentUserId = checkNotNull(prefs.getCurrentUserId())
+        val currentUserId = prefs.requireCurrentUserId()
         val retweetId = dao.findRetweetIdByTweetId(id, currentUserId)
         val unretweeted = restClient.postUnretweet(retweetId ?: id)
 

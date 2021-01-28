@@ -16,12 +16,14 @@
 
 package com.freshdigitable.udonroad2.test_common.jvm
 
+import com.freshdigitable.udonroad2.data.OAuthTokenDataSource
 import com.freshdigitable.udonroad2.data.impl.AppSettingRepository
-import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
 import com.freshdigitable.udonroad2.model.AccessTokenEntity
 import com.freshdigitable.udonroad2.model.RequestTokenItem
 import com.freshdigitable.udonroad2.model.UserId
+import com.freshdigitable.udonroad2.model.user.UserEntity
 import com.freshdigitable.udonroad2.test_common.MockVerified
+import io.mockk.mockk
 import kotlinx.coroutines.flow.flow
 import org.junit.rules.TestRule
 import org.junit.runner.Description
@@ -29,10 +31,10 @@ import org.junit.runners.model.Statement
 import java.io.Serializable
 
 class OAuthTokenRepositoryRule(
-    private val mockVerified: MockVerified<OAuthTokenRepository> = MockVerified.create(),
+    private val mockVerified: MockVerified<OAuthTokenDataSource> = MockVerified.create(),
     private val appSettingRepository: MockVerified<AppSettingRepository> = MockVerified.create(),
 ) : TestRule {
-    val mock: OAuthTokenRepository = mockVerified.mock
+    val mock: OAuthTokenDataSource = mockVerified.mock
     val appSettingMock: AppSettingRepository = appSettingRepository.mock
 
     fun setupCurrentUserId(userId: Long?, needLogin: Boolean = true) {
@@ -55,8 +57,12 @@ class OAuthTokenRepositoryRule(
     }
 
     fun setupLogin(userId: UserId) {
+        val token = mockk<AccessTokenEntity>()
+        mockVerified.run {
+            coSetupResponseWithVerify({ mock.findUserAccessTokenEntity(userId) }, token)
+        }
         appSettingRepository.run {
-            coSetupResponseWithVerify({ mock.updateCurrentUser(userId) }, Unit)
+            coSetupResponseWithVerify({ mock.updateCurrentUser(token) }, Unit)
         }
     }
 
@@ -69,6 +75,10 @@ class OAuthTokenRepositoryRule(
             { mock.getAccessToken(any(), verifier) },
             AccessTokenEntity.create(accessTokenUser, "token", "tokenSecret")
         )
+    }
+
+    fun setupVerifyCredentials(user: UserEntity) {
+        mockVerified.coSetupResponseWithVerify({ mock.verifyCredentials() }, user)
     }
 
     override fun apply(base: Statement, description: Description): Statement {

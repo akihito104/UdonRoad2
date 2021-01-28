@@ -18,6 +18,8 @@ package com.freshdigitable.udonroad2.data.db
 
 import android.app.Application
 import androidx.room.Room
+import com.freshdigitable.udonroad2.data.AppSettingDataSource
+import com.freshdigitable.udonroad2.data.OAuthTokenDataSource
 import com.freshdigitable.udonroad2.data.ReplyRepository
 import com.freshdigitable.udonroad2.data.UserRepository
 import com.freshdigitable.udonroad2.data.db.dao.ConversationListDao
@@ -31,6 +33,8 @@ import com.freshdigitable.udonroad2.data.db.dao.TweetListDao
 import com.freshdigitable.udonroad2.data.db.dao.UserListDao
 import com.freshdigitable.udonroad2.data.db.dao.UserLocalSource
 import com.freshdigitable.udonroad2.data.db.entity.ListDao
+import com.freshdigitable.udonroad2.data.local.SharedPreferenceDataSource
+import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton
@@ -94,4 +98,12 @@ interface LocalSourceModule {
             db: AppDatabase
         ): UserRepository.LocalSource = UserLocalSource(db.userDao())
     }
+
+    @Binds
+    fun bindOAuthDataSourceLocal(source: SharedPreferenceDataSource): OAuthTokenDataSource.Local
+
+    @Binds
+    fun bindAppSettingDataSourceLocal(
+        source: SharedPreferenceDataSource
+    ): AppSettingDataSource.Local
 }

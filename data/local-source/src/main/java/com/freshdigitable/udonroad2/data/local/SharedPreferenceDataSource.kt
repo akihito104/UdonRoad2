@@ -18,8 +18,12 @@ package com.freshdigitable.udonroad2.data.local
 
 import android.content.SharedPreferences
 import androidx.core.content.edit
+import com.freshdigitable.udonroad2.data.AppSettingDataSource
+import com.freshdigitable.udonroad2.data.OAuthTokenDataSource
 import com.freshdigitable.udonroad2.model.AccessTokenEntity
+import com.freshdigitable.udonroad2.model.RequestTokenItem
 import com.freshdigitable.udonroad2.model.UserId
+import com.freshdigitable.udonroad2.model.user.UserEntity
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.channels.sendBlocking
 import kotlinx.coroutines.flow.Flow
@@ -31,8 +35,8 @@ import javax.inject.Singleton
 @Singleton
 class SharedPreferenceDataSource @Inject constructor(
     private val prefs: SharedPreferences
-) {
-    fun storeAccessToken(token: AccessTokenEntity) {
+) : AppSettingDataSource.Local, OAuthTokenDataSource.Local {
+    override suspend fun addAccessTokenEntity(token: AccessTokenEntity) {
         val userId = token.userId
         check(userId.isValid) { "invalid token: $token" }
         val authenticatedUsers = prefs.getStringSet(AUTHENTICATED_USERS, HashSet()) ?: HashSet()
@@ -55,12 +59,13 @@ class SharedPreferenceDataSource @Inject constructor(
         return prefs.getLong(TWITTER_API_CONFIG_DATE, -1)
     }
 
-    fun getCurrentUserId(): UserId? {
-        val userId = prefs.getLong(CURRENT_USER_ID, -1)
-        return if (userId != -1L) UserId(userId) else null
-    }
+    override val currentUserId: UserId?
+        get() {
+            val userId = prefs.getLong(CURRENT_USER_ID, -1)
+            return if (userId != -1L) UserId(userId) else null
+        }
 
-    fun getCurrentUserIdFlow(): Flow<UserId> = callbackFlow {
+    override val currentUserIdSource: Flow<UserId> = callbackFlow {
         val listener = SharedPreferences.OnSharedPreferenceChangeListener { sp, k ->
             if (k == CURRENT_USER_ID) {
                 val id = sp.getLong(CURRENT_USER_ID, -1)
@@ -70,27 +75,19 @@ class SharedPreferenceDataSource @Inject constructor(
         prefs.registerOnSharedPreferenceChangeListener(listener)
         awaitClose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
     }.onStart {
-        val userId = getCurrentUserId()
-        if (userId != null) {
-            emit(userId)
+        currentUserId?.let { emit(it) }
+    }
+
+    override suspend fun updateCurrentUser(accessToken: AccessTokenEntity) {
+        prefs.edit {
+            putLong(CURRENT_USER_ID, accessToken.userId.value)
         }
     }
 
-    fun findUserAccessToken(userId: UserId): AccessTokenEntity? {
+    override suspend fun findUserAccessTokenEntity(userId: UserId): AccessTokenEntity? {
         val token = prefs.getString("$ACCESS_TOKEN_PREFIX${userId.value}", null) ?: return null
         val secret = prefs.getString("$TOKEN_SECRET_PREFIX${userId.value}", null) ?: return null
         return AccessTokenEntity.create(userId, token, secret)
-    }
-
-    fun isAuthenticatedUser(userId: UserId): Boolean {
-        val userIds = prefs.getStringSet(AUTHENTICATED_USERS, emptySet()) ?: return false
-        return userIds.any { it == "${userId.value}" }
-    }
-
-    fun setCurrentUserId(userId: UserId) {
-        prefs.edit {
-            putLong(CURRENT_USER_ID, userId.value)
-        }
     }
 
     fun getAllAuthenticatedUserIds(): Set<String> {
@@ -118,6 +115,15 @@ class SharedPreferenceDataSource @Inject constructor(
 
         private const val TWITTER_API_CONFIG_DATE = "twitterAPIConfigDate"
     }
+
+    override suspend fun getRequestTokenItem(): RequestTokenItem = throw NotImplementedError()
+
+    override suspend fun getAccessToken(
+        requestToken: RequestTokenItem,
+        verifier: String
+    ): AccessTokenEntity = throw NotImplementedError()
+
+    override suspend fun verifyCredentials(): UserEntity = throw NotImplementedError()
 }
 
-fun SharedPreferenceDataSource.requireCurrentUserId(): UserId = requireNotNull(getCurrentUserId())
+fun AppSettingDataSource.Local.requireCurrentUserId(): UserId = requireNotNull(currentUserId)

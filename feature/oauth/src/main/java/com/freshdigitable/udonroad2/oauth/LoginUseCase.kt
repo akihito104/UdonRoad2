@@ -16,23 +16,27 @@
 
 package com.freshdigitable.udonroad2.oauth
 
-import com.freshdigitable.udonroad2.data.impl.AppSettingRepository
+import com.freshdigitable.udonroad2.data.AppSettingDataSource
+import com.freshdigitable.udonroad2.data.OAuthTokenDataSource
+import com.freshdigitable.udonroad2.data.UserRepository
 import com.freshdigitable.udonroad2.model.UserId
 import javax.inject.Inject
 
 class LoginUseCase @Inject constructor(
-    private val appSettingRepository: AppSettingRepository,
+    private val appSettingRepository: AppSettingDataSource,
+    private val oAuthTokenRepository: OAuthTokenDataSource,
+    private val userRepository: UserRepository,
 ) {
-    suspend operator fun invoke(userId: UserId? = null) {
-        val id = requireNotNull(userId ?: appSettingRepository.currentUserId)
-        appSettingRepository.updateCurrentUser(id)
+    suspend operator fun invoke(userId: UserId) {
+        val token = requireNotNull(oAuthTokenRepository.findUserAccessTokenEntity(userId))
+        appSettingRepository.updateCurrentUser(token)
+        val verifiedUser = oAuthTokenRepository.verifyCredentials()
+        userRepository.addUser(verifiedUser)
     }
 
     companion object {
         suspend fun LoginUseCase.invokeIfCan() {
-            if (appSettingRepository.currentUserId != null) {
-                invoke()
-            }
+            appSettingRepository.currentUserId?.let { invoke(it) }
         }
     }
 }

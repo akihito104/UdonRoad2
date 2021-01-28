@@ -24,6 +24,7 @@ import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.TestApplicationBase
 import com.freshdigitable.udonroad2.data.restclient.ext.toEntity
 import com.freshdigitable.udonroad2.media.MediaActivityArgs
+import com.freshdigitable.udonroad2.model.AccessTokenEntity
 import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
@@ -84,7 +85,11 @@ class UserActivityInstTest {
         val context = ApplicationProvider.getApplicationContext<TestApplicationBase>()
         context.component.apply {
             sharedPreferencesDao.apply {
-                setCurrentUserId(authenticatedUserId)
+                runBlocking {
+                    val accessToken =
+                        AccessTokenEntity.create(authenticatedUserId, "token", "token_secret")
+                    updateCurrentUser(accessToken)
+                }
             }
             userDao.apply {
                 runBlocking {

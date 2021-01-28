@@ -20,6 +20,7 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.SavedStateHandle
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.freshdigitable.udonroad2.data.UserRepository
 import com.freshdigitable.udonroad2.data.impl.create
 import com.freshdigitable.udonroad2.model.ListId
 import com.freshdigitable.udonroad2.model.ListOwner
@@ -29,12 +30,16 @@ import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
+import com.freshdigitable.udonroad2.model.user.UserEntity
+import com.freshdigitable.udonroad2.test_common.MockVerified
 import com.freshdigitable.udonroad2.test_common.RxExceptionHandler
 import com.freshdigitable.udonroad2.test_common.jvm.CoroutineTestRule
 import com.freshdigitable.udonroad2.test_common.jvm.OAuthTokenRepositoryRule
 import com.freshdigitable.udonroad2.test_common.jvm.testCollect
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.google.common.truth.Truth.assertThat
+import io.mockk.every
+import io.mockk.mockk
 import io.reactivex.observers.TestObserver
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Rule
@@ -83,9 +88,14 @@ class OauthViewModelTest {
     @Test
     fun onSendPinClicked(): Unit = rule.runBlockingTest {
         // setup
+        val user = mockk<UserEntity>().also {
+            every { it.id } returns UserId(100)
+        }
         oauthRepository.setupGetRequestTokenItem()
         oauthRepository.setupGetAccessToken("012345", UserId(100))
-        setupLogin(UserId(100))
+        oauthRepository.setupVerifyCredentials(user)
+        setupLogin(user.id)
+        userRepository.coSetupResponseWithVerify({ userRepository.mock.addUser(user) }, Unit)
 
         sut.onLoginClicked()
         sut.onAfterPinTextChanged("012345")
@@ -110,6 +120,7 @@ class OauthViewModelTest {
 class OauthViewModelTestRule : TestWatcher() {
     private val coroutineRule = CoroutineTestRule()
     val oauthRepository = OAuthTokenRepositoryRule()
+    val userRepository = MockVerified.create<UserRepository>()
     private val dispatcher = EventDispatcher()
 
     val sut = OauthViewModel(
@@ -117,7 +128,7 @@ class OauthViewModelTestRule : TestWatcher() {
         dispatcher,
         OauthViewStates(
             OauthAction(dispatcher),
-            LoginUseCase(oauthRepository.appSettingMock),
+            LoginUseCase(oauthRepository.appSettingMock, oauthRepository.mock, userRepository.mock),
             OauthDataSource(ApplicationProvider.getApplicationContext()),
             oauthRepository.mock,
             ListOwnerGenerator.create(),
@@ -148,6 +159,7 @@ class OauthViewModelTestRule : TestWatcher() {
             .around(RxExceptionHandler())
             .around(coroutineRule)
             .around(oauthRepository)
+            .around(userRepository)
             .apply(super.apply(base, description), description)
     }
 }

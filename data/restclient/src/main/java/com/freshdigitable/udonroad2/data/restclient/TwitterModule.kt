@@ -16,9 +16,12 @@
 
 package com.freshdigitable.udonroad2.data.restclient
 
+import com.freshdigitable.udonroad2.data.AppSettingDataSource
+import com.freshdigitable.udonroad2.data.OAuthTokenDataSource
 import com.freshdigitable.udonroad2.data.UserRepository
 import com.freshdigitable.udonroad2.model.AccessTokenEntity
 import com.freshdigitable.udonroad2.model.app.AppTwitterException
+import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import kotlinx.coroutines.Dispatchers
@@ -46,15 +49,23 @@ object TwitterModule {
 }
 
 @Module
-object AppTwitterModule {
-    @Provides
-    @Singleton
-    fun providesAppTwitter(twitter: Twitter): AppTwitter = AppTwitter(twitter)
+interface AppTwitterModule {
+    companion object {
+        @Provides
+        @Singleton
+        fun providesAppTwitter(twitter: Twitter): AppTwitter = AppTwitter(twitter)
 
-    @Provides
-    @Singleton
-    fun provideUserRemoteSource(appTwitter: AppTwitter): UserRepository.RemoteSource =
-        UserRestClient(appTwitter)
+        @Provides
+        @Singleton
+        fun provideUserRemoteSource(appTwitter: AppTwitter): UserRepository.RemoteSource =
+            UserRestClient(appTwitter)
+    }
+
+    @Binds
+    fun bindOAuthDataSourceRemote(source: OAuthApiClient): OAuthTokenDataSource.Remote
+
+    @Binds
+    fun bindAppSettingDataSourceRemote(source: OAuthApiClient): AppSettingDataSource.Remote
 }
 
 class AppTwitter(

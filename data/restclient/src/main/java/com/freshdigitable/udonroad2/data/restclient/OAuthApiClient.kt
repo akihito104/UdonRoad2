@@ -16,32 +16,38 @@
 
 package com.freshdigitable.udonroad2.data.restclient
 
+import com.freshdigitable.udonroad2.data.AppSettingDataSource
+import com.freshdigitable.udonroad2.data.OAuthTokenDataSource
 import com.freshdigitable.udonroad2.data.restclient.ext.toEntity
 import com.freshdigitable.udonroad2.model.AccessTokenEntity
 import com.freshdigitable.udonroad2.model.RequestTokenItem
 import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.user.UserEntity
+import kotlinx.coroutines.flow.Flow
 import twitter4j.auth.AccessToken
 import twitter4j.auth.RequestToken
 import javax.inject.Inject
 
 class OAuthApiClient @Inject constructor(
     private val twitter: AppTwitter
-) {
-    suspend fun login(oauthAccessToken: AccessTokenEntity): UserEntity {
-        twitter.oauthToken = oauthAccessToken
-        return twitter.fetch { verifyCredentials().toEntity() }
+) : OAuthTokenDataSource.Remote, AppSettingDataSource.Remote {
+
+    override val currentUserId: UserId?
+        get() = twitter.oauthToken?.userId
+
+    override suspend fun updateCurrentUser(accessToken: AccessTokenEntity) {
+        twitter.oauthToken = accessToken
     }
 
-    fun logout() {
-        twitter.oauthToken = null
+    override suspend fun verifyCredentials(): UserEntity =
+        twitter.fetch { verifyCredentials().toEntity() }
+
+    override suspend fun getRequestTokenItem(): RequestTokenItem = twitter.run {
+        oauthToken = null
+        return fetch { getOAuthRequestToken("oob").toItem() }
     }
 
-    suspend fun getRequestToken(): RequestTokenItem = twitter.fetch {
-        getOAuthRequestToken("oob").toItem()
-    }
-
-    suspend fun getOauthAccessToken(
+    override suspend fun getAccessToken(
         requestToken: RequestTokenItem,
         verifier: String
     ): AccessTokenEntity = twitter.fetch {
@@ -53,6 +59,15 @@ class OAuthApiClient @Inject constructor(
 
     private fun AccessToken.toEntity(): AccessTokenEntity =
         AccessTokenEntity.create(UserId(userId), token, tokenSecret)
+
+    override val currentUserIdSource: Flow<UserId>
+        get() = throw NotImplementedError()
+
+    override suspend fun addAccessTokenEntity(token: AccessTokenEntity) =
+        throw NotImplementedError()
+
+    override suspend fun findUserAccessTokenEntity(userId: UserId): AccessTokenEntity =
+        throw NotImplementedError()
 }
 
 private data class RequestTokenItemImpl(override val token: RequestToken) : RequestTokenItem {

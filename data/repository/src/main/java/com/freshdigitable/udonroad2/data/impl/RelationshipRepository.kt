@@ -1,7 +1,7 @@
 package com.freshdigitable.udonroad2.data.impl
 
+import com.freshdigitable.udonroad2.data.AppSettingDataSource
 import com.freshdigitable.udonroad2.data.db.dao.RelationshipDao
-import com.freshdigitable.udonroad2.data.local.SharedPreferenceDataSource
 import com.freshdigitable.udonroad2.data.local.requireCurrentUserId
 import com.freshdigitable.udonroad2.data.restclient.FriendshipRestClient
 import com.freshdigitable.udonroad2.model.UserId
@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.Flow
 
 class RelationshipRepository(
     private val dao: RelationshipDao,
-    private val prefs: SharedPreferenceDataSource,
+    private val prefs: AppSettingDataSource.Local,
     private val restClient: FriendshipRestClient,
 ) {
     fun getRelationshipSource(targetUserId: UserId): Flow<Relationship?> {

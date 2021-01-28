@@ -25,6 +25,7 @@ import com.freshdigitable.udonroad2.data.db.AppDatabase
 import com.freshdigitable.udonroad2.data.db.dao.TweetListDao
 import com.freshdigitable.udonroad2.data.local.SharedPreferenceDataSource
 import com.freshdigitable.udonroad2.data.restclient.TweetApiClient
+import com.freshdigitable.udonroad2.model.AccessTokenEntity
 import com.freshdigitable.udonroad2.model.ListQuery
 import com.freshdigitable.udonroad2.model.PagedResponseList
 import com.freshdigitable.udonroad2.model.QueryType
@@ -364,7 +365,9 @@ class TweetRepositoryTestRule : TestWatcher() {
 
     override fun starting(description: Description?) {
         super.starting(description)
-        prefs.setCurrentUserId(currentUser)
+        runBlocking {
+            prefs.updateCurrentUser(AccessTokenEntity.create(currentUser, "token", "token_secret"))
+        }
     }
 
     override fun apply(base: Statement?, description: Description?): Statement {

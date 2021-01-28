@@ -23,7 +23,7 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.PagingSource
-import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
+import com.freshdigitable.udonroad2.data.OAuthTokenDataSource
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.RequestTokenItem
@@ -48,7 +48,7 @@ class OauthViewStates(
     actions: OauthAction,
     login: LoginUseCase,
     dataSource: PagingSource<Int, OauthItem>,
-    repository: OAuthTokenRepository,
+    repository: OAuthTokenDataSource,
     listOwnerGenerator: ListOwnerGenerator,
     savedState: OauthSavedStates,
 ) : ListItemLoadableViewState, ActivityEventStream {
