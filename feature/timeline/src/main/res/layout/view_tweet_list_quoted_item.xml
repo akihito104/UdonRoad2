@@ -44,7 +44,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="@dimen/margin_half"
-        android:background="@drawable/selector_item_background"
+        android:background="@drawable/selector_item_quoted_background"
         android:onClick="@{v -> clickListener.onQuoteItemClicked(tweet)}"
         app:selected="@{eventListener.selectedItemId.equalsTo(tweet.originalId, tweet.quoted.id)}"
         >
