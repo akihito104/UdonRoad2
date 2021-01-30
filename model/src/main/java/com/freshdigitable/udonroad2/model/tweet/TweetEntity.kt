@@ -20,13 +20,13 @@ import com.freshdigitable.udonroad2.model.MediaEntity
 import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.user.UserEntity
 
-interface TweetEntity : TweetElement {
+interface TweetEntity : TweetElement, TweetEntityUpdatable {
 
     override val user: UserEntity
 
-    val retweetedTweet: TweetEntity?
+    override val retweetedTweet: TweetEntity?
 
-    val quotedTweet: TweetEntity?
+    override val quotedTweet: TweetEntity?
 
     val possiblySensitive: Boolean
 
@@ -35,6 +35,11 @@ interface TweetEntity : TweetElement {
     override val media: List<MediaEntity>
 
     companion object
+}
+
+interface TweetEntityUpdatable : TweetElementUpdatable {
+    val retweetedTweet: TweetEntityUpdatable?
+    val quotedTweet: TweetEntityUpdatable?
 }
 
 interface UserReplyEntity {
