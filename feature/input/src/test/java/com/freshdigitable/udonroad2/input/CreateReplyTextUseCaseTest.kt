@@ -20,8 +20,8 @@ import com.freshdigitable.udonroad2.data.ReplyRepository
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
 import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.UserId
-import com.freshdigitable.udonroad2.model.tweet.TweetElement
-import com.freshdigitable.udonroad2.model.tweet.TweetListItem
+import com.freshdigitable.udonroad2.model.tweet.DetailTweetElement
+import com.freshdigitable.udonroad2.model.tweet.DetailTweetListItem
 import com.freshdigitable.udonroad2.model.tweet.UserReplyEntity
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.test_common.MockVerified
@@ -116,7 +116,7 @@ class CreateReplyTextUseCaseTest(private val param: Param) {
         )
         oAuthTokenRepositoryRule.setupCurrentUserId(authenticatedUserId.value, needLogin = false)
         tweetRepositoryRule.coSetupResponseWithVerify(
-            target = { tweetRepositoryRule.mock.findTweetListItem(selectedTweetId) },
+            target = { tweetRepositoryRule.mock.findDetailTweetItem(selectedTweetId) },
             res = tweet
         )
         replyRepositoryRule.coSetupResponseWithVerify(
@@ -188,7 +188,7 @@ class CreateQuoteTextUseCaseTest(private val param: Param) {
             tweet(targetBodyTweetId, targetBodyTweetUserItem)
         )
         tweetRepositoryRule.coSetupResponseWithVerify(
-            target = { tweetRepositoryRule.mock.findTweetListItem(selectedTweetId) },
+            target = { tweetRepositoryRule.mock.findDetailTweetItem(selectedTweetId) },
             res = tweet
         )
     }
@@ -212,8 +212,8 @@ fun tweetingUser(targetUserId: UserId, targetUserScreenName: String): TweetUserI
     }
 }
 
-private fun tweet(targetTweetId: TweetId, tweetUserItem: TweetUserItem): TweetElement {
-    return mockk<TweetElement>().apply {
+private fun tweet(targetTweetId: TweetId, tweetUserItem: TweetUserItem): DetailTweetElement {
+    return mockk<DetailTweetElement>().apply {
         every { id } returns targetTweetId
         every { user } returns tweetUserItem
     }
@@ -223,9 +223,9 @@ private fun tweetItem(
     resOriginalId: TweetId,
     resOriginalUser: TweetUserItem,
     resIsRetweet: Boolean,
-    resBody: TweetElement
-): TweetListItem {
-    return mockk<TweetListItem>().apply {
+    resBody: DetailTweetElement
+): DetailTweetListItem {
+    return mockk<DetailTweetListItem>().apply {
         every { originalId } returns resOriginalId
         every { originalUser } returns resOriginalUser
         every { isRetweet } returns resIsRetweet

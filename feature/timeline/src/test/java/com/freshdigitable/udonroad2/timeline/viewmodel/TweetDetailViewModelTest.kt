@@ -24,7 +24,8 @@ import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
-import com.freshdigitable.udonroad2.model.tweet.TweetElement
+import com.freshdigitable.udonroad2.model.tweet.DetailTweetElement
+import com.freshdigitable.udonroad2.model.tweet.DetailTweetListItem
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.test_common.jvm.CoroutineTestRule
@@ -60,12 +61,12 @@ class TweetDetailViewModelTest {
         .around(tweetRepositoryRule)
         .around(oauthRepositoryRule)
 
-    private val tweet = mockk<TweetListItem>().apply {
+    private val tweet = mockk<DetailTweetListItem>().apply {
         every { originalId } returns TweetId(1000)
         every { originalUser } returns mockk<TweetUserItem>().apply {
             every { id } returns UserId(3000)
         }
-        every { body } returns mockk<TweetElement>().apply {
+        every { body } returns mockk<DetailTweetElement>().apply {
             every { id } returns TweetId(1001)
             every { user } returns mockk<TweetUserItem>().apply {
                 every { id } returns UserId(3001)

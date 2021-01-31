@@ -19,11 +19,11 @@ package com.freshdigitable.udonroad2.data.impl.di
 import com.freshdigitable.udonroad2.data.AppSettingDataSource
 import com.freshdigitable.udonroad2.data.OAuthTokenDataSource
 import com.freshdigitable.udonroad2.data.ReplyRepository
+import com.freshdigitable.udonroad2.data.TweetDataSource
 import com.freshdigitable.udonroad2.data.UserDataSource
 import com.freshdigitable.udonroad2.data.db.DaoModule
 import com.freshdigitable.udonroad2.data.db.LocalSourceModule
 import com.freshdigitable.udonroad2.data.db.dao.RelationshipDao
-import com.freshdigitable.udonroad2.data.db.dao.TweetDao
 import com.freshdigitable.udonroad2.data.impl.AppSettingRepository
 import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
 import com.freshdigitable.udonroad2.data.impl.RelationshipRepository
@@ -32,7 +32,6 @@ import com.freshdigitable.udonroad2.data.impl.TweetRepository
 import com.freshdigitable.udonroad2.data.impl.UserRepository
 import com.freshdigitable.udonroad2.data.local.SharedPreferenceDataSource
 import com.freshdigitable.udonroad2.data.restclient.FriendshipRestClient
-import com.freshdigitable.udonroad2.data.restclient.TweetApiClient
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -48,10 +47,9 @@ interface RepositoryModule {
     companion object {
         @Provides
         fun provideTweetRepository(
-            dao: TweetDao,
-            prefs: SharedPreferenceDataSource,
-            apiClient: TweetApiClient,
-        ): TweetRepository = TweetRepository(dao, prefs, apiClient)
+            local: TweetDataSource.Local,
+            remote: TweetDataSource.Remote,
+        ): TweetRepository = TweetRepository(local, remote)
 
         @Provides
         fun provideUserRepository(

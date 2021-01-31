@@ -31,6 +31,7 @@ interface TweetDataSource {
 
     suspend fun updateLike(id: TweetId, isLiked: Boolean): TweetEntityUpdatable
     suspend fun updateRetweet(id: TweetId, isRetweeted: Boolean): TweetEntityUpdatable
+    suspend fun updateTweet(tweet: TweetEntityUpdatable)
 
     suspend fun deleteTweet(id: TweetId)
 

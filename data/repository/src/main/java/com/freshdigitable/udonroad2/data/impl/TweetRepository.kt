@@ -1,86 +1,90 @@
 package com.freshdigitable.udonroad2.data.impl
 
-import com.freshdigitable.udonroad2.data.AppSettingDataSource
-import com.freshdigitable.udonroad2.data.db.dao.TweetDao
-import com.freshdigitable.udonroad2.data.local.requireCurrentUserId
-import com.freshdigitable.udonroad2.data.restclient.TweetApiClient
+import com.freshdigitable.udonroad2.data.TweetDataSource
 import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.app.AppTwitterException
+import com.freshdigitable.udonroad2.model.tweet.DetailTweetListItem
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
-import com.freshdigitable.udonroad2.model.tweet.TweetListItem
-import kotlinx.coroutines.flow.Flow
+import com.freshdigitable.udonroad2.model.tweet.TweetEntityUpdatable
 
 class TweetRepository(
-    private val dao: TweetDao,
-    private val prefs: AppSettingDataSource.Local,
-    private val restClient: TweetApiClient,
-) {
-    fun getTweetItemSource(id: TweetId): Flow<TweetListItem?> =
-        dao.getDetailTweetListItemSource(id, prefs.requireCurrentUserId())
+    private val local: TweetDataSource.Local,
+    private val restClient: TweetDataSource.Remote,
+) : TweetDataSource by local {
 
-    suspend fun findTweetListItem(id: TweetId): TweetListItem? {
-        val currentUserId = prefs.requireCurrentUserId()
-        val tweet = restClient.fetchTweet(id)
-        dao.addTweet(tweet, currentUserId)
-        return dao.findDetailTweetListItem(id, currentUserId)
+    override suspend fun findTweetEntity(tweetId: TweetId): TweetEntity? {
+        val entity = restClient.findTweetEntity(tweetId)
+        entity?.let { local.addTweetEntity(it) }
+        return entity
     }
 
-    suspend fun postLike(id: TweetId): TweetEntity {
-        val currentUserId = prefs.requireCurrentUserId()
+    override suspend fun findDetailTweetItem(id: TweetId): DetailTweetListItem? {
+        val tweet = restClient.findTweetEntity(id)
+        tweet?.let { local.addTweetEntity(it) }
+        return local.findDetailTweetItem(id)
+    }
+
+    override suspend fun updateLike(id: TweetId, isLiked: Boolean): TweetEntityUpdatable {
+        return when (isLiked) {
+            true -> postLike(id)
+            false -> postUnlike(id)
+        }
+    }
+
+    private suspend fun postLike(id: TweetId): TweetEntityUpdatable {
         try {
-            val liked = restClient.postLike(id)
-            dao.addTweet(liked, currentUserId)
+            val liked = restClient.updateLike(id, true)
+            local.updateTweet(liked)
             return liked
         } catch (ex: AppTwitterException) {
             if (ex.errorType == AppTwitterException.ErrorType.ALREADY_FAVORITED) {
-                dao.updateFav(id, currentUserId, true)
+                local.updateLike(id, true)
             }
             throw ex
         }
     }
 
     // todo: already unliked error
-    suspend fun postUnlike(id: TweetId): TweetEntity {
-        val currentUserId = prefs.requireCurrentUserId()
-        val unliked = restClient.postUnlike(id)
-        dao.addTweet(unliked, currentUserId)
-        dao.updateFav(id, currentUserId, false)
+    private suspend fun postUnlike(id: TweetId): TweetEntityUpdatable {
+        val unliked = restClient.updateLike(id, false)
+        local.updateTweet(unliked)
+        local.updateLike(id, false)
         return unliked
     }
 
-    suspend fun postRetweet(id: TweetId): TweetEntity {
-        val currentUserId = prefs.requireCurrentUserId()
-        try {
-            val retweet = restClient.postRetweet(id)
+    override suspend fun updateRetweet(id: TweetId, isRetweeted: Boolean): TweetEntityUpdatable {
+        return when (isRetweeted) {
+            true -> postRetweet(id)
+            false -> postUnretweet(id)
+        }
+    }
 
-            val retweetedTweetId = checkNotNull(retweet.retweetedTweet).id
-            dao.addTweet(retweet, currentUserId) // TODO: omit update reactions
-            dao.updateRetweeted(retweetedTweetId, retweet.id, currentUserId, true)
+    private suspend fun postRetweet(id: TweetId): TweetEntityUpdatable {
+        try {
+            val retweet = restClient.updateRetweet(id, true)
+            local.updateTweet(retweet)
             return retweet
         } catch (ex: AppTwitterException) {
             if (ex.errorType == AppTwitterException.ErrorType.ALREADY_RETWEETED) {
-                dao.updateRetweeted(id, null, currentUserId, true)
+                local.updateRetweet(id, false)
             }
             throw ex
         }
     }
 
     // todo: already unretweeted error
-    suspend fun postUnretweet(id: TweetId): TweetEntity {
-        val currentUserId = prefs.requireCurrentUserId()
-        val retweetId = dao.findRetweetIdByTweetId(id, currentUserId)
-        val unretweeted = restClient.postUnretweet(retweetId ?: id)
+    private suspend fun postUnretweet(id: TweetId): TweetEntityUpdatable {
+        val unretweeted = restClient.updateRetweet(id, false)
 
         val tweetId = unretweeted.retweetedTweet?.id ?: unretweeted.id
-        dao.addTweet(unretweeted, currentUserId) // TODO: omit update reactions
-        dao.updateRetweeted(tweetId, null, currentUserId, false)
+        local.updateTweet(unretweeted)
+        local.updateRetweet(tweetId, false)
         return unretweeted
     }
 
     // todo: already deleted error
-    suspend fun deleteTweet(id: TweetId): TweetEntity {
-        val deleted = restClient.deleteTweet(id)
-        dao.deleteTweet(id)
-        return deleted
+    override suspend fun deleteTweet(id: TweetId) {
+        restClient.deleteTweet(id)
+        local.deleteTweet(id)
     }
 }

@@ -93,7 +93,7 @@ class ConversationListDataSource @Inject constructor(
         val res = mutableListOf<TweetEntity>()
         var tweetId: TweetId? = query.type.tweetId
         while (tweetId != null && res.size <= query.pageOption.count) {
-            val element = tweetApi.fetchTweet(tweetId)
+            val element = tweetApi.findTweetEntity(tweetId)
             res.add(element)
             tweetId = element.inReplyToTweetId
         }

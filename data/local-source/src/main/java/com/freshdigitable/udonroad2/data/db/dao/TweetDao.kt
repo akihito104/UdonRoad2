@@ -25,6 +25,7 @@ import androidx.room.Query
 import androidx.room.Transaction
 import com.freshdigitable.udonroad2.data.db.AppDatabase
 import com.freshdigitable.udonroad2.data.db.dbview.DetailTweetListItemImpl
+import com.freshdigitable.udonroad2.data.db.dbview.TweetEntityUpdatableImpl
 import com.freshdigitable.udonroad2.data.db.dbview.TweetListItemImpl
 import com.freshdigitable.udonroad2.data.db.entity.Favorited
 import com.freshdigitable.udonroad2.data.db.entity.MediaUrlEntity
@@ -42,8 +43,8 @@ import com.freshdigitable.udonroad2.model.MediaEntity
 import com.freshdigitable.udonroad2.model.MediaId
 import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.UserId
-import com.freshdigitable.udonroad2.model.tweet.DetailTweetListItem
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
+import com.freshdigitable.udonroad2.model.tweet.TweetEntityUpdatable
 import com.freshdigitable.udonroad2.model.tweet.UserReplyEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -120,52 +121,12 @@ abstract class TweetDao(
         currentUserId: UserId,
     ): DetailTweetListItemImpl?
 
-    suspend fun findDetailTweetListItem(
-        tweetId: TweetId,
-        currentUserId: UserId
-    ): DetailTweetListItem? = findDetailTweetListItemById(tweetId, currentUserId)
-
     @Transaction
     @Query(QUERY_FIND_DETAIL_TWEET_ITEM_BY_ID)
     internal abstract fun getDetailTweetListItemSourceById(
         tweetId: TweetId,
         currentUserId: UserId,
     ): Flow<DetailTweetListItemImpl?>
-
-    fun getDetailTweetListItemSource(
-        tweetId: TweetId,
-        currentUserId: UserId
-    ): Flow<DetailTweetListItem?> = getDetailTweetListItemSourceById(tweetId, currentUserId)
-
-    @Transaction
-    open suspend fun addTweet(tweet: TweetEntity, ownerUserId: UserId) {
-        val tweets = listOf(tweet)
-        addTweets(tweets)
-        addReactions(tweets, ownerUserId)
-    }
-
-    suspend fun updateFav(tweetId: TweetId, ownerUserId: UserId, isFavorited: Boolean) {
-        when (isFavorited) {
-            true -> db.reactionsDao.addFav(Favorited(tweetId, ownerUserId))
-            false -> db.reactionsDao.deleteFav(tweetId, ownerUserId)
-        }
-    }
-
-    suspend fun updateRetweeted(
-        tweetId: TweetId,
-        retweetId: TweetId?,
-        ownerUserId: UserId,
-        isRetweeted: Boolean
-    ) {
-        when (isRetweeted) {
-            true -> {
-                db.reactionsDao.addRetweeted(
-                    Retweeted(tweetId = tweetId, sourceUserId = ownerUserId, retweetId = retweetId)
-                )
-            }
-            false -> db.reactionsDao.deleteRetweeted(tweetId, ownerUserId)
-        }
-    }
 
     @Query(
         """SELECT r.retweet_id
@@ -225,7 +186,7 @@ abstract class TweetDao(
         )
     }
 
-    internal suspend fun addReactions(tweet: List<TweetEntity>, ownerUserId: UserId) {
+    internal suspend fun addReactions(tweet: List<TweetEntityUpdatable>, ownerUserId: UserId) {
         val tweetsMayHaveReactions = tweet.flatMap { listOfNotNull(it, it.retweetedTweet) }
             .distinctBy { it.id }
 
@@ -244,8 +205,25 @@ abstract class TweetDao(
         }
     }
 
+    @Query(
+        """UPDATE tweet_element 
+         SET favorite_count = :favCount, retweet_count = :retweetCount
+         WHERE id = :id"""
+    )
+    internal abstract suspend fun updateTweetElement(
+        id: TweetId,
+        favCount: Int,
+        retweetCount: Int,
+    )
+
     @Query("DELETE FROM tweet_list WHERE original_id = :id")
     abstract suspend fun deleteTweet(id: TweetId)
+
+    @Query(QUERY_FIND_DETAIL_TWEET_ITEM_BY_ID)
+    internal abstract suspend fun findTweetEntityUpdatable(
+        tweetId: TweetId,
+        currentUserId: UserId
+    ): TweetEntityUpdatableImpl?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     internal abstract suspend fun addTweetEntitiesInternal(tweet: List<TweetElementDb>)

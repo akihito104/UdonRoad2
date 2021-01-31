@@ -31,7 +31,7 @@ class CreateReplyTextUseCase @Inject constructor(
         val replyEntity = replyRepository.findEntitiesByTweetId(tweetId)
             .map { it.userId to it.screenName }
 
-        val item = checkNotNull(tweetRepository.findTweetListItem(tweetId))
+        val item = checkNotNull(tweetRepository.findDetailTweetItem(tweetId))
         val targetUsers = listOfNotNull(
             if (item.isRetweet) item.originalUser.id to item.originalUser.screenName else null,
             item.body.user.id to item.body.user.screenName,
@@ -53,7 +53,7 @@ class CreateQuoteTextUseCase @Inject constructor(
     private val tweetRepository: TweetRepository,
 ) {
     suspend operator fun invoke(tweetId: TweetId): String {
-        val item = checkNotNull(tweetRepository.findTweetListItem(tweetId)).body
+        val item = checkNotNull(tweetRepository.findDetailTweetItem(tweetId)).body
         val screenName = item.user.screenName
         return "https://twitter.com/$screenName/status/${item.id.value}"
     }

@@ -28,6 +28,8 @@ import com.freshdigitable.udonroad2.model.TweetMediaItem
 import com.freshdigitable.udonroad2.model.tweet.DetailTweetElement
 import com.freshdigitable.udonroad2.model.tweet.DetailTweetListItem
 import com.freshdigitable.udonroad2.model.tweet.TweetElement
+import com.freshdigitable.udonroad2.model.tweet.TweetElementUpdatable
+import com.freshdigitable.udonroad2.model.tweet.TweetEntityUpdatable
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import com.freshdigitable.udonroad2.model.tweet.UserReplyEntity
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
@@ -225,3 +227,73 @@ internal data class DetailTweetListItemImpl(
     override val originalUser: TweetUserItem
         @Ignore get() = tweetListItem.originalUser
 }
+
+internal data class TweetEntityUpdatableImpl(
+    @Embedded
+    private val item: TweetListItemDbView,
+    @ColumnInfo(name = "is_retweeted")
+    private val isBodyRetweeted: Boolean,
+    @ColumnInfo(name = "retweet_id_by_current_user")
+    private val bodyRetweetIdByCurrentUser: TweetId?,
+    @ColumnInfo(name = "is_favorited")
+    private val isBodyFavorited: Boolean,
+    @ColumnInfo(name = "qt_is_retweeted")
+    private val isQuoteRetweeted: Boolean,
+    @ColumnInfo(name = "qt_retweet_id_by_current_user")
+    private val quoteRetweetIdByCurrentUser: TweetId?,
+    @ColumnInfo(name = "qt_is_favorited")
+    private val isQuoteFavorited: Boolean,
+) : TweetEntityUpdatable {
+    @Ignore
+    private val body = if (!item.isRetweet) item.body else null
+    override val id: TweetId @Ignore get() = item.originalId
+    override val isRetweeted: Boolean @Ignore get() = if (!item.isRetweet) isBodyRetweeted else false
+    override val retweetCount: Int @Ignore get() = body?.retweetCount ?: 0
+    override val isFavorited: Boolean @Ignore get() = if (!item.isRetweet) isBodyFavorited else false
+    override val favoriteCount: Int @Ignore get() = body?.favoriteCount ?: 0
+    override val user: TweetUserItem @Ignore get() = item.originalUser
+
+    override val retweetedTweet: TweetEntityUpdatable?
+        @Ignore get() = if (item.isRetweet) object : TweetEntityUpdatable,
+            TweetElementUpdatable by TweetElementUpdatableImpl(
+                item.body,
+                isBodyRetweeted,
+                isBodyFavorited
+            ) {
+            override val retweetedTweet: TweetEntityUpdatable? = null
+            override val quotedTweet: TweetEntityUpdatable? = item.quoted?.let {
+                object : TweetEntityUpdatable, TweetElementUpdatable by TweetElementUpdatableImpl(
+                    it,
+                    isQuoteRetweeted,
+                    isQuoteFavorited
+                ) {
+                    override val retweetedTweet: TweetEntityUpdatable? = null
+                    override val quotedTweet: TweetEntityUpdatable? = null
+                }
+            }
+        } else null
+    override val quotedTweet: TweetEntityUpdatable?
+        @Ignore get() = item.quoted?.let {
+            object : TweetEntityUpdatable, TweetElementUpdatable by TweetElementUpdatableImpl(
+                it,
+                isQuoteRetweeted,
+                isQuoteFavorited
+            ) {
+                override val retweetedTweet: TweetEntityUpdatable? = null
+                override val quotedTweet: TweetEntityUpdatable? = null
+            }
+        }
+}
+
+internal data class TweetElementUpdatableImpl(
+    private val item: TweetElementDbView,
+    override val isRetweeted: Boolean,
+    override val isFavorited: Boolean,
+) : TweetElementUpdatable {
+    override val id: TweetId get() = item.id
+    override val retweetCount: Int get() = item.retweetCount
+    override val favoriteCount: Int get() = item.favoriteCount
+    override val user: TweetUserItem get() = item.user
+}
+
+private val TweetListItemDbView.isRetweet: Boolean get() = this.originalId != this.body.id
