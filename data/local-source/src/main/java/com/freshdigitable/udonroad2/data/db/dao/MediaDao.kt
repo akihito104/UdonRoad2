@@ -54,7 +54,7 @@ abstract class MediaDao {
 }
 
 @Dao
-abstract class VideoValiantDao {
+internal abstract class VideoValiantDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     internal abstract suspend fun addVideoValiantEntities(entities: Iterable<VideoValiantEntity>)
 }

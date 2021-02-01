@@ -22,7 +22,7 @@ import androidx.room.OnConflictStrategy
 import com.freshdigitable.udonroad2.data.db.entity.UrlEntity
 
 @Dao
-abstract class UrlDao {
+internal abstract class UrlDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     internal abstract suspend fun addUrlEntities(entities: Iterable<UrlEntity>)
 }

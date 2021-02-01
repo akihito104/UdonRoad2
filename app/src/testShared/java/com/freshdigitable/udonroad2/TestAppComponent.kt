@@ -18,9 +18,9 @@ package com.freshdigitable.udonroad2
 
 import android.app.Application
 import com.freshdigitable.udonroad2.data.UserDataSource
-import com.freshdigitable.udonroad2.data.db.DatabaseModule
 import com.freshdigitable.udonroad2.data.impl.di.RepositoryModule
 import com.freshdigitable.udonroad2.data.local.SharedPreferenceDataSource
+import com.freshdigitable.udonroad2.data.local.di.DatabaseModule
 import com.freshdigitable.udonroad2.data.restclient.AppTwitterModule
 import com.freshdigitable.udonroad2.di.ActivityBuilders
 import com.freshdigitable.udonroad2.di.AppComponent

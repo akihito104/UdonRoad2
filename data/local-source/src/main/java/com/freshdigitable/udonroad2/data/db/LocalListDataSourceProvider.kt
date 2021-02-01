@@ -17,20 +17,11 @@
 package com.freshdigitable.udonroad2.data.db
 
 import com.freshdigitable.udonroad2.data.LocalListDataSource
-import com.freshdigitable.udonroad2.data.db.dao.ConversationListDao
-import com.freshdigitable.udonroad2.data.db.dao.CustomTimelineListDao
-import com.freshdigitable.udonroad2.data.db.dao.TweetListDao
-import com.freshdigitable.udonroad2.data.db.dao.UserListDao
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.app.ClassKeyMap
 import com.freshdigitable.udonroad2.model.app.valueByAssignableClassObject
-import dagger.Binds
-import dagger.MapKey
-import dagger.Module
-import dagger.multibindings.IntoMap
 import javax.inject.Inject
 import javax.inject.Provider
-import kotlin.reflect.KClass
 
 class LocalListDataSourceProvider @Inject constructor(
     private val providers: ClassKeyMap<QueryType, Provider<LocalListDataSource<out QueryType, *>>>
@@ -39,32 +30,4 @@ class LocalListDataSourceProvider @Inject constructor(
         @Suppress("UNCHECKED_CAST")
         return providers.valueByAssignableClassObject(query).get() as DS
     }
-}
-
-@MustBeDocumented
-@MapKey
-@Retention
-annotation class LocalListDataSourceKey(val clazz: KClass<out QueryType>)
-
-@Module(includes = [DaoModule::class])
-interface LocalListDataSourceModule {
-    @Binds
-    @IntoMap
-    @LocalListDataSourceKey(QueryType.TweetQueryType::class)
-    fun bindTweetListDao(dao: TweetListDao): LocalListDataSource<out QueryType, *>
-
-    @Binds
-    @IntoMap
-    @LocalListDataSourceKey(QueryType.TweetQueryType.Conversation::class)
-    fun bindConversationListDao(dao: ConversationListDao): LocalListDataSource<out QueryType, *>
-
-    @Binds
-    @IntoMap
-    @LocalListDataSourceKey(QueryType.UserQueryType::class)
-    fun bindUserListDao(dao: UserListDao): LocalListDataSource<out QueryType, *>
-
-    @Binds
-    @IntoMap
-    @LocalListDataSourceKey(QueryType.UserListMembership::class)
-    fun bindCustomTimelineListDao(dao: CustomTimelineListDao): LocalListDataSource<out QueryType, *>
 }

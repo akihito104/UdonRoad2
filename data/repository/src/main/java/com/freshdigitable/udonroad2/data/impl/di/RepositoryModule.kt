@@ -21,13 +21,13 @@ import com.freshdigitable.udonroad2.data.OAuthTokenDataSource
 import com.freshdigitable.udonroad2.data.RelationDataSource
 import com.freshdigitable.udonroad2.data.TweetDataSource
 import com.freshdigitable.udonroad2.data.UserDataSource
-import com.freshdigitable.udonroad2.data.db.DaoModule
-import com.freshdigitable.udonroad2.data.db.LocalSourceModule
 import com.freshdigitable.udonroad2.data.impl.AppSettingRepository
 import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
 import com.freshdigitable.udonroad2.data.impl.RelationshipRepository
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
 import com.freshdigitable.udonroad2.data.impl.UserRepository
+import com.freshdigitable.udonroad2.data.local.di.DaoModule
+import com.freshdigitable.udonroad2.data.local.di.LocalSourceModule
 import dagger.Binds
 import dagger.Module
 import dagger.Provides

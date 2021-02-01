@@ -17,20 +17,11 @@
 package com.freshdigitable.udonroad2.data.db
 
 import com.freshdigitable.udonroad2.data.PagedListProvider
-import com.freshdigitable.udonroad2.data.db.dao.ConversationListDao
-import com.freshdigitable.udonroad2.data.db.dao.CustomTimelineListDao
-import com.freshdigitable.udonroad2.data.db.dao.TweetListDao
-import com.freshdigitable.udonroad2.data.db.dao.UserListDao
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.app.ClassKeyMap
 import com.freshdigitable.udonroad2.model.app.valueByAssignableClassObject
-import dagger.Binds
-import dagger.MapKey
-import dagger.Module
-import dagger.multibindings.IntoMap
 import javax.inject.Inject
 import javax.inject.Provider
-import kotlin.reflect.KClass
 
 class PagedListDataSourceFactoryProvider @Inject constructor(
     private val providers: ClassKeyMap<QueryType, Provider<PagedListProvider.DataSourceFactory<*>>>
@@ -39,34 +30,4 @@ class PagedListDataSourceFactoryProvider @Inject constructor(
         @Suppress("UNCHECKED_CAST")
         return providers.valueByAssignableClassObject(query).get() as F
     }
-}
-
-@MustBeDocumented
-@MapKey
-@Retention
-annotation class PagedListDataSourceFactoryProviderKey(val clazz: KClass<out QueryType>)
-
-@Module(includes = [DaoModule::class])
-interface PagedListDataSourceFactoryModule {
-    @Binds
-    @IntoMap
-    @PagedListDataSourceFactoryProviderKey(QueryType.TweetQueryType::class)
-    fun bindTweetListDao(dao: TweetListDao): PagedListProvider.DataSourceFactory<*>
-
-    @Binds
-    @IntoMap
-    @PagedListDataSourceFactoryProviderKey(QueryType.TweetQueryType.Conversation::class)
-    fun bindConversationListDao(dao: ConversationListDao): PagedListProvider.DataSourceFactory<*>
-
-    @Binds
-    @IntoMap
-    @PagedListDataSourceFactoryProviderKey(QueryType.UserQueryType::class)
-    fun bindUserListDao(dao: UserListDao): PagedListProvider.DataSourceFactory<*>
-
-    @Binds
-    @IntoMap
-    @PagedListDataSourceFactoryProviderKey(QueryType.UserListMembership::class)
-    fun bindCustomTimelineListDao(
-        dao: CustomTimelineListDao
-    ): PagedListProvider.DataSourceFactory<*>
 }

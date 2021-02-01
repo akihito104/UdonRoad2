@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018. Matsuda, Akihit (akihito104)
+ * Copyright (c) 2021. Matsuda, Akihit (akihito104)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.freshdigitable.udonroad2.data.db
+package com.freshdigitable.udonroad2.data.local.di
 
 import android.app.Application
 import androidx.room.Room
@@ -23,12 +23,12 @@ import com.freshdigitable.udonroad2.data.OAuthTokenDataSource
 import com.freshdigitable.udonroad2.data.RelationDataSource
 import com.freshdigitable.udonroad2.data.TweetDataSource
 import com.freshdigitable.udonroad2.data.UserDataSource
+import com.freshdigitable.udonroad2.data.db.AppDatabase
 import com.freshdigitable.udonroad2.data.db.dao.ConversationListDao
 import com.freshdigitable.udonroad2.data.db.dao.CustomTimelineDao
 import com.freshdigitable.udonroad2.data.db.dao.CustomTimelineListDao
 import com.freshdigitable.udonroad2.data.db.dao.MediaDao
 import com.freshdigitable.udonroad2.data.db.dao.RelationshipLocalDataSource
-import com.freshdigitable.udonroad2.data.db.dao.TweetDao
 import com.freshdigitable.udonroad2.data.db.dao.TweetListDao
 import com.freshdigitable.udonroad2.data.db.dao.UserListDao
 import com.freshdigitable.udonroad2.data.db.dao.UserLocalSource
@@ -52,9 +52,6 @@ object DatabaseModule {
 
 @Module
 object DaoModule {
-    @Provides
-    fun providesTweetDao(db: AppDatabase): TweetDao = db.tweetDao()
-
     @Provides
     fun provideTweetListDao(db: AppDatabase): TweetListDao = TweetListDao(db)
 

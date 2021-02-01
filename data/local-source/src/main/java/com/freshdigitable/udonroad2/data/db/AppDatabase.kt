@@ -96,7 +96,7 @@ import com.freshdigitable.udonroad2.data.db.entity.VideoValiantEntity
     ListIdConverter::class,
 )
 abstract class AppDatabase : RoomDatabase() {
-    abstract fun tweetDao(): TweetDao
+    internal abstract fun tweetDao(): TweetDao
     internal abstract val reactionsDao: ReactionsDao
 
     internal abstract fun userDao(): UserDao
@@ -107,9 +107,9 @@ abstract class AppDatabase : RoomDatabase() {
 
     abstract fun mediaDao(): MediaDao
 
-    abstract fun videoValiantDao(): VideoValiantDao
+    internal abstract fun videoValiantDao(): VideoValiantDao
 
-    abstract fun urlDao(): UrlDao
+    internal abstract fun urlDao(): UrlDao
 
     internal abstract fun userReplyDao(): UserReplyEntityDao
 

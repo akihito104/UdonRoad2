@@ -21,18 +21,11 @@ import com.freshdigitable.udonroad2.data.OAuthTokenDataSource
 import com.freshdigitable.udonroad2.data.RelationDataSource
 import com.freshdigitable.udonroad2.data.TweetDataSource
 import com.freshdigitable.udonroad2.data.UserDataSource
-import com.freshdigitable.udonroad2.model.AccessTokenEntity
-import com.freshdigitable.udonroad2.model.app.AppTwitterException
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import timber.log.Timber
 import twitter4j.Twitter
-import twitter4j.TwitterException
 import twitter4j.TwitterFactory
-import twitter4j.auth.AccessToken
 import twitter4j.conf.ConfigurationBuilder
 import javax.inject.Singleton
 
@@ -74,26 +67,4 @@ interface AppTwitterModule {
 
     @Binds
     fun bindRelationshipDataSourceRemote(source: FriendshipRestClient): RelationDataSource.Remote
-}
-
-class AppTwitter(
-    private val twitter: Twitter
-) {
-    var oauthToken: AccessTokenEntity? = null
-        set(value) {
-            twitter.oAuthAccessToken = when (value) {
-                null -> null
-                else -> AccessToken(value.token, value.tokenSecret)
-            }
-            field = value
-        }
-
-    suspend fun <T> fetch(block: Twitter.() -> T): T = withContext(Dispatchers.IO) {
-        Timber.tag("AppTwitter").d("fetch: $block")
-        try {
-            block(twitter)
-        } catch (ex: TwitterException) {
-            throw AppTwitterException.create(ex)
-        }
-    }
 }

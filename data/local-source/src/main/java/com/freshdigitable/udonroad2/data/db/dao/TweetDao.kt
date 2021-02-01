@@ -49,7 +49,7 @@ import com.freshdigitable.udonroad2.model.tweet.UserReplyEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
-abstract class TweetDao(
+internal abstract class TweetDao(
     private val db: AppDatabase
 ) {
     companion object {
