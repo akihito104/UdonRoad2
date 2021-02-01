@@ -18,18 +18,16 @@ package com.freshdigitable.udonroad2.data.impl.di
 
 import com.freshdigitable.udonroad2.data.AppSettingDataSource
 import com.freshdigitable.udonroad2.data.OAuthTokenDataSource
+import com.freshdigitable.udonroad2.data.RelationDataSource
 import com.freshdigitable.udonroad2.data.TweetDataSource
 import com.freshdigitable.udonroad2.data.UserDataSource
 import com.freshdigitable.udonroad2.data.db.DaoModule
 import com.freshdigitable.udonroad2.data.db.LocalSourceModule
-import com.freshdigitable.udonroad2.data.db.dao.RelationshipDao
 import com.freshdigitable.udonroad2.data.impl.AppSettingRepository
 import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
 import com.freshdigitable.udonroad2.data.impl.RelationshipRepository
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
 import com.freshdigitable.udonroad2.data.impl.UserRepository
-import com.freshdigitable.udonroad2.data.local.SharedPreferenceDataSource
-import com.freshdigitable.udonroad2.data.restclient.FriendshipRestClient
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -56,10 +54,9 @@ interface RepositoryModule {
 
         @Provides
         fun provideRelationshipRepository(
-            dao: RelationshipDao,
-            prefs: SharedPreferenceDataSource,
-            restClient: FriendshipRestClient,
-        ): RelationshipRepository = RelationshipRepository(dao, prefs, restClient)
+            dao: RelationDataSource.Local,
+            restClient: RelationDataSource.Remote,
+        ): RelationshipRepository = RelationshipRepository(dao, restClient)
 
         @Provides
         fun provideOAuthTokenRepository(

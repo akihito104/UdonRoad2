@@ -103,7 +103,7 @@ abstract class AppDatabase : RoomDatabase() {
 
     abstract fun customTimelineDao(): CustomTimelineDao
 
-    abstract fun relationshipDao(): RelationshipDao
+    internal abstract fun relationshipDao(): RelationshipDao
 
     abstract fun mediaDao(): MediaDao
 

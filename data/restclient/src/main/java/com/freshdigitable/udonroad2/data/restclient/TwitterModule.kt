@@ -18,6 +18,7 @@ package com.freshdigitable.udonroad2.data.restclient
 
 import com.freshdigitable.udonroad2.data.AppSettingDataSource
 import com.freshdigitable.udonroad2.data.OAuthTokenDataSource
+import com.freshdigitable.udonroad2.data.RelationDataSource
 import com.freshdigitable.udonroad2.data.TweetDataSource
 import com.freshdigitable.udonroad2.data.UserDataSource
 import com.freshdigitable.udonroad2.model.AccessTokenEntity
@@ -70,6 +71,9 @@ interface AppTwitterModule {
 
     @Binds
     fun bindTweetDataSourceRemote(source: TweetApiClient): TweetDataSource.Remote
+
+    @Binds
+    fun bindRelationshipDataSourceRemote(source: FriendshipRestClient): RelationDataSource.Remote
 }
 
 class AppTwitter(

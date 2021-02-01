@@ -257,7 +257,7 @@ class UserViewModelTest {
                     R.id.action_r4s,
                     RelationshipFeedbackMessage.REPORT_SPAM_SUCCESS
                 ) {
-                    { relationshipRepository.reportSpam(targetId) }
+                    { relationshipRepository.addSpam(targetId) }
                 },
             )
         }

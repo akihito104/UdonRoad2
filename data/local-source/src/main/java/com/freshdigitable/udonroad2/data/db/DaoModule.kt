@@ -20,13 +20,14 @@ import android.app.Application
 import androidx.room.Room
 import com.freshdigitable.udonroad2.data.AppSettingDataSource
 import com.freshdigitable.udonroad2.data.OAuthTokenDataSource
+import com.freshdigitable.udonroad2.data.RelationDataSource
 import com.freshdigitable.udonroad2.data.TweetDataSource
 import com.freshdigitable.udonroad2.data.UserDataSource
 import com.freshdigitable.udonroad2.data.db.dao.ConversationListDao
 import com.freshdigitable.udonroad2.data.db.dao.CustomTimelineDao
 import com.freshdigitable.udonroad2.data.db.dao.CustomTimelineListDao
 import com.freshdigitable.udonroad2.data.db.dao.MediaDao
-import com.freshdigitable.udonroad2.data.db.dao.RelationshipDao
+import com.freshdigitable.udonroad2.data.db.dao.RelationshipLocalDataSource
 import com.freshdigitable.udonroad2.data.db.dao.TweetDao
 import com.freshdigitable.udonroad2.data.db.dao.TweetListDao
 import com.freshdigitable.udonroad2.data.db.dao.UserListDao
@@ -74,9 +75,6 @@ object DaoModule {
         CustomTimelineListDao(db)
 
     @Provides
-    fun provideRelationshipDao(db: AppDatabase): RelationshipDao = db.relationshipDao()
-
-    @Provides
     fun provideMediaDao(db: AppDatabase): MediaDao = db.mediaDao()
 
     @Provides
@@ -103,4 +101,7 @@ interface LocalSourceModule {
 
     @Binds
     fun bindTweetDataSourceLocal(source: TweetLocalDataSource): TweetDataSource.Local
+
+    @Binds
+    fun bindRelationDataSourceLocal(source: RelationshipLocalDataSource): RelationDataSource.Local
 }

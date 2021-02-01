@@ -164,7 +164,7 @@ class UserActivityViewStates @Inject constructor(
             is UserActivityEvent.Relationships.Muting -> updateMutingStatus(
                 event.targetUserId, event.wantsMute
             )
-            is UserActivityEvent.Relationships.ReportSpam -> reportSpam(event.targetUserId)
+            is UserActivityEvent.Relationships.ReportSpam -> addSpam(event.targetUserId)
         }
 
         private fun findSuccessFeedbackMessage(
