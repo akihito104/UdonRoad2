@@ -44,7 +44,6 @@ import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.experimental.runners.Enclosed
@@ -93,6 +92,8 @@ class TweetRepositoryTest {
 
             // verify
             assertThat(tweetListItem(retweeted.id)?.body?.isRetweeted).isTrue()
+            assertThat(tweetListItem(retweeted.id)?.body?.retweetIdByCurrentUser)
+                .isEqualTo(TweetId(retweetResponse.id))
         }
 
         @Test
@@ -108,11 +109,10 @@ class TweetRepositoryTest {
             assertThat(tweetListItem(retweeted.id)?.body?.isRetweeted).isFalse()
         }
 
-        @Ignore
         @Test
         fun postUnretweet_passTweetIdOfOriginal(): Unit = rule.runs {
             // setup
-            restClient.setupPostUnretweet(retweetResponse.id, createStatus(retweeted.id.value))
+            restClient.setupPostUnretweet(retweeted.id.value, createStatus(retweeted.id.value))
             sut.updateRetweet(retweeted.id, true)
 
             // exercise
@@ -154,6 +154,8 @@ class TweetRepositoryTest {
 
             // verify
             assertThat(tweetListItem(target.id)?.body?.isRetweeted).isTrue()
+            assertThat(tweetListItem(target.id)?.body?.retweetIdByCurrentUser)
+                .isEqualTo(TweetId(retweetResponse.id))
         }
 
         @Test
@@ -163,7 +165,7 @@ class TweetRepositoryTest {
             restClient.setupPostRetweet(
                 targetId,
                 createStatus(
-                    tweetList.last().id.value + 1,
+                    retweetResponse.id,
                     retweetedStatus = createStatus(targetId.value, isRetweeted = true)
                 )
             )
@@ -173,6 +175,8 @@ class TweetRepositoryTest {
 
             // verify
             assertThat(tweetListItem(target.id)?.quoted?.isRetweeted).isTrue()
+            assertThat(tweetListItem(target.id)?.quoted?.retweetIdByCurrentUser)
+                .isEqualTo(TweetId(retweetResponse.id))
         }
 
         @Test
@@ -189,12 +193,11 @@ class TweetRepositoryTest {
             assertThat(tweetListItem(target.id)?.body?.isRetweeted).isFalse()
         }
 
-        @Ignore
         @Test
         fun postUnretweet_passTweetIdOfOriginal(): Unit = rule.runs {
             // setup
             restClient.setupPostRetweet(target.id, retweetResponse)
-            restClient.setupPostUnretweet(retweetResponse.id, createStatus(target.id.value))
+            restClient.setupPostUnretweet(target.id.value, createStatus(target.id.value))
             sut.updateRetweet(target.id, true)
 
             // exercise
@@ -218,7 +221,7 @@ class TweetRepositoryTest {
         }
 
         @Test
-        fun findTweetListItem_forQuotedTweet() = rule.runs {
+        fun findDetailTweetItem_forQuotedTweet() = rule.runs {
             // setup
             val targetQuotedTweet = checkNotNull(target.quotedTweet)
             val targetQuotedTweetId = targetQuotedTweet.id
@@ -275,6 +278,8 @@ class TweetRepositoryTest {
 
             // verify
             assertThat(tweetListItem(retweeted.id)?.body?.isRetweeted).isTrue()
+            assertThat(tweetListItem(retweeted.id)?.body?.retweetIdByCurrentUser)
+                .isEqualTo(TweetId(retweetResponse.id))
         }
 
         @Test
@@ -293,12 +298,11 @@ class TweetRepositoryTest {
             assertThat(tweetListItem(retweeted.id)?.body?.isRetweeted).isFalse()
         }
 
-        @Ignore
         @Test
         fun postUnretweet_passTweetIdOfOriginal(): Unit = rule.runs {
             // setup
             restClient.setupPostUnretweet(
-                retweetResponse.id,
+                retweeted.id.value,
                 createStatus(retweetedBody.id.value)
             )
             sut.updateRetweet(retweeted.id, true)
@@ -324,6 +328,8 @@ class TweetRepositoryTest {
         @Before
         fun setup(): Unit = rule.runs {
             setupTimeline(tweetList = tweetList)
+            assertThat(tweetListItem(targetTweet.id)?.body?.isRetweeted).isTrue()
+            assertThat(tweetListItem(targetTweet.id)?.body?.retweetIdByCurrentUser).isNull()
         }
 
         @Test

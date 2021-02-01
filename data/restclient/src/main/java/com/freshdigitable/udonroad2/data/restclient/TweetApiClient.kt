@@ -36,7 +36,8 @@ class TweetApiClient @Inject constructor(
     }
 
     private suspend fun postRetweet(id: TweetId): TweetEntity = twitter.fetch {
-        retweetStatus(id.value).toEntity()
+        val retweetStatus = retweetStatus(id.value)
+        retweetStatus.toEntity(retweetIdForRetweetedStatus = TweetId(retweetStatus.id))
     }
 
     private suspend fun postUnretweet(id: TweetId): TweetEntity = twitter.fetch {
