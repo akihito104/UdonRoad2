@@ -16,7 +16,6 @@
 
 package com.freshdigitable.udonroad2.input
 
-import com.freshdigitable.udonroad2.data.ReplyRepository
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
 import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.UserId
@@ -43,9 +42,6 @@ class CreateReplyTextUseCaseTest(private val param: Param) {
 
     @get:Rule
     val tweetRepositoryRule: MockVerified<TweetRepository> = MockVerified.create()
-
-    @get:Rule
-    val replyRepositoryRule: MockVerified<ReplyRepository> = MockVerified.create()
 
     companion object {
         val authenticatedUserId = UserId(100)
@@ -112,16 +108,12 @@ class CreateReplyTextUseCaseTest(private val param: Param) {
             selectedTweetId,
             tweetUserItem,
             isTargetRetweet,
-            tweet(targetBodyTweetId, targetBodyTweetUserItem)
+            tweet(targetBodyTweetId, targetBodyTweetUserItem, replyEntities)
         )
         oAuthTokenRepositoryRule.setupCurrentUserId(authenticatedUserId.value, needLogin = false)
         tweetRepositoryRule.coSetupResponseWithVerify(
             target = { tweetRepositoryRule.mock.findDetailTweetItem(selectedTweetId) },
             res = tweet
-        )
-        replyRepositoryRule.coSetupResponseWithVerify(
-            target = { replyRepositoryRule.mock.findEntitiesByTweetId(selectedTweetId) },
-            res = replyEntities
         )
     }
 
@@ -129,7 +121,6 @@ class CreateReplyTextUseCaseTest(private val param: Param) {
     fun testInvoke() = runBlocking {
         val sut = CreateReplyTextUseCase(
             tweetRepositoryRule.mock,
-            replyRepositoryRule.mock,
             oAuthTokenRepositoryRule.appSettingMock
         )
 
@@ -212,10 +203,15 @@ fun tweetingUser(targetUserId: UserId, targetUserScreenName: String): TweetUserI
     }
 }
 
-private fun tweet(targetTweetId: TweetId, tweetUserItem: TweetUserItem): DetailTweetElement {
-    return mockk<DetailTweetElement>().apply {
-        every { id } returns targetTweetId
-        every { user } returns tweetUserItem
+private fun tweet(
+    targetTweetId: TweetId,
+    tweetUserItem: TweetUserItem,
+    replyEntities: List<UserReplyEntity> = emptyList(),
+): DetailTweetElement {
+    return mockk<DetailTweetElement>().also {
+        every { it.id } returns targetTweetId
+        every { it.user } returns tweetUserItem
+        every { it.replyEntities } returns replyEntities
     }
 }
 

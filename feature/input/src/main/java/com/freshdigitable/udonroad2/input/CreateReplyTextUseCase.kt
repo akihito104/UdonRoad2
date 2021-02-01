@@ -16,7 +16,6 @@
 
 package com.freshdigitable.udonroad2.input
 
-import com.freshdigitable.udonroad2.data.ReplyRepository
 import com.freshdigitable.udonroad2.data.impl.AppSettingRepository
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
 import com.freshdigitable.udonroad2.model.TweetId
@@ -24,14 +23,12 @@ import javax.inject.Inject
 
 class CreateReplyTextUseCase @Inject constructor(
     private val tweetRepository: TweetRepository,
-    private val replyRepository: ReplyRepository,
     private val appSettingRepository: AppSettingRepository,
 ) {
     suspend operator fun invoke(tweetId: TweetId): String {
-        val replyEntity = replyRepository.findEntitiesByTweetId(tweetId)
-            .map { it.userId to it.screenName }
-
         val item = checkNotNull(tweetRepository.findDetailTweetItem(tweetId))
+        val replyEntity = item.body.replyEntities.map { it.userId to it.screenName }
+
         val targetUsers = listOfNotNull(
             if (item.isRetweet) item.originalUser.id to item.originalUser.screenName else null,
             item.body.user.id to item.body.user.screenName,

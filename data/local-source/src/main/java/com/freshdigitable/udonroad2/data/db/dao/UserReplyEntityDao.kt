@@ -19,25 +19,11 @@ package com.freshdigitable.udonroad2.data.db.dao
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
-import androidx.room.Query
-import com.freshdigitable.udonroad2.data.ReplyRepository
 import com.freshdigitable.udonroad2.data.db.entity.UserReplyEntityDb
-import com.freshdigitable.udonroad2.model.TweetId
-import com.freshdigitable.udonroad2.model.tweet.UserReplyEntity
 
 @Dao
-abstract class UserReplyEntityDao {
+internal abstract class UserReplyEntityDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     internal abstract suspend fun addEntities(entities: List<UserReplyEntityDb>)
-
-    @Query("SELECT * FROM user_reply WHERE tweet_id = :id")
-    internal abstract suspend fun findEntitiesByTweetId(id: TweetId): List<UserReplyEntityDb>
 }
 
-internal class ReplyLocalDataSource(
-    private val dao: UserReplyEntityDao
-) : ReplyRepository.LocalSource {
-    override suspend fun findEntitiesByTweetId(id: TweetId): List<UserReplyEntity> {
-        return dao.findEntitiesByTweetId(id)
-    }
-}

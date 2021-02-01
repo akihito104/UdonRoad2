@@ -111,7 +111,7 @@ abstract class AppDatabase : RoomDatabase() {
 
     abstract fun urlDao(): UrlDao
 
-    abstract fun userReplyDao(): UserReplyEntityDao
+    internal abstract fun userReplyDao(): UserReplyEntityDao
 
     abstract fun listDao(): ListDao
 }
