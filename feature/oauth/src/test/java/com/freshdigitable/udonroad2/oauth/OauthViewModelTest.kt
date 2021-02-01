@@ -23,6 +23,8 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.freshdigitable.udonroad2.data.impl.LoginUseCase
 import com.freshdigitable.udonroad2.data.impl.UserRepository
 import com.freshdigitable.udonroad2.data.impl.create
+import com.freshdigitable.udonroad2.model.ListId
+import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.UserId
@@ -115,11 +117,12 @@ class OauthViewModelTestRule : TestWatcher() {
     private val userRepositoryRule = MockVerified.create<UserRepository>()
 
     val sut = OauthViewModel(
-        OauthDataSource(ApplicationProvider.getApplicationContext()),
+        ListOwner(ListId(-1), QueryType.Oauth),
         dispatcher,
         OauthViewStates(
             OauthAction(dispatcher),
             LoginUseCase(repositoryRule.mock, userRepositoryRule.mock),
+            OauthDataSource(ApplicationProvider.getApplicationContext()),
             repositoryRule.mock,
             ListOwnerGenerator.create(),
             OauthSavedStates(SavedStateHandle(), coroutineRule.coroutineContextProvider),

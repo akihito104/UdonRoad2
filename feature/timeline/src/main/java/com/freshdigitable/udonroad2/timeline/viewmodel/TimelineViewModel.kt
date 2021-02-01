@@ -17,18 +17,11 @@
 package com.freshdigitable.udonroad2.timeline.viewmodel
 
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.viewModelScope
-import androidx.paging.PagingData
-import androidx.paging.cachedIn
-import com.freshdigitable.udonroad2.data.ListRepository
-import com.freshdigitable.udonroad2.data.PagedListProvider
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.QueryType.TweetQueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
-import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
-import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.tweet.TweetElement
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
@@ -37,41 +30,15 @@ import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.TimelineViewState
 import com.freshdigitable.udonroad2.timeline.TweetListEventListener
 import com.freshdigitable.udonroad2.timeline.TweetListItemClickListener
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.rx2.asFlow
 import timber.log.Timber
 
 class TimelineViewModel(
     private val owner: ListOwner<TweetQueryType>,
     private val eventDispatcher: EventDispatcher,
     viewStates: TimelineViewState,
-    private val homeRepository: ListRepository<TweetQueryType>,
-    pagedListProvider: PagedListProvider<TweetQueryType, TweetListItem>
-) : ListItemLoadableViewModel<TweetQueryType, TweetListItem>(),
+) : ListItemLoadableViewModel<TweetQueryType>(owner, eventDispatcher, viewStates),
     TweetListItemClickListener,
     TweetListEventListener {
-
-    override val timeline: Flow<PagingData<TweetListItem>> =
-        pagedListProvider.getList(owner.query, owner.id).cachedIn(viewModelScope)
-
-    override val navigationEvent: Flow<NavigationEvent> = viewStates.updateNavHost
-    override val feedbackMessage: Flow<FeedbackMessage> = viewStates.updateTweet.asFlow()
-
-    override fun onRefresh() {
-        viewModelScope.launch {
-            homeRepository.prependList(owner.query, owner.id)
-        }
-    }
-
-    override fun onCleared() {
-        Timber.tag("TimelineViewModel").d("onCleared: $owner")
-        super.onCleared()
-        viewModelScope.launch {
-            homeRepository.clear(owner.id)
-        }
-    }
-
     override val selectedItemId: LiveData<SelectedItemId?> = viewStates.selectedItemId
 
     override fun onBodyItemClicked(item: TweetListItem) {

@@ -24,6 +24,7 @@ import androidx.savedstate.SavedStateRegistryOwner
 import com.freshdigitable.udonroad2.data.impl.LoginUseCase
 import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
 import com.freshdigitable.udonroad2.data.impl.di.ListRepositoryComponentModule
+import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.app.di.IntoSavedStateFactory
@@ -80,11 +81,19 @@ interface OauthViewModelModule {
         fun provideOauthViewStates(
             actions: OauthAction,
             login: LoginUseCase,
+            dataSource: PagingSource<Int, OauthItem>,
             repository: OAuthTokenRepository,
             listOwnerGenerator: ListOwnerGenerator,
             savedState: OauthSavedStates,
         ): OauthViewStates {
-            return OauthViewStates(actions, login, repository, listOwnerGenerator, savedState)
+            return OauthViewStates(
+                actions,
+                login,
+                dataSource,
+                repository,
+                listOwnerGenerator,
+                savedState
+            )
         }
 
         @Provides
@@ -92,11 +101,15 @@ interface OauthViewModelModule {
         @ViewModelKey(OauthViewModel::class)
         @IntoSavedStateFactory
         fun provideOauthViewModel(
-            dataSource: PagingSource<Int, OauthItem>,
+            owner: ListOwner<*>,
             eventDispatcher: EventDispatcher,
             viewStates: OauthViewStates,
         ): ViewModel {
-            return OauthViewModel(dataSource, eventDispatcher, viewStates)
+            return OauthViewModel(
+                owner as ListOwner<QueryType.Oauth>,
+                eventDispatcher,
+                viewStates
+            )
         }
 
         @Provides

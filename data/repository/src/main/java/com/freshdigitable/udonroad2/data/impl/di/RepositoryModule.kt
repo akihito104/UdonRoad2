@@ -17,7 +17,6 @@
 package com.freshdigitable.udonroad2.data.impl.di
 
 import com.freshdigitable.udonroad2.data.ListRepository
-import com.freshdigitable.udonroad2.data.LocalListDataSource
 import com.freshdigitable.udonroad2.data.PagedListProvider
 import com.freshdigitable.udonroad2.data.db.LocalListDataSourceModule
 import com.freshdigitable.udonroad2.data.db.LocalListDataSourceProvider
@@ -76,15 +75,15 @@ interface ListRepositoryComponent {
     val appExecutor: AppExecutor
 }
 
-fun <Q : QueryType> ListRepositoryComponent.listRepository(): ListRepository<Q> {
+fun <Q : QueryType> ListRepositoryComponent.listRepository(): ListRepository<Q, Any> {
     return ListRepositoryImpl(
-        localListDataSourceProvider.get<Q, LocalListDataSource<Q, Any>>(query as Q),
+        localListDataSourceProvider.get(query as Q),
         remoteListDataSourceProvider.get(query as Q),
     )
 }
 
 fun <Q : QueryType, I : Any> ListRepositoryComponent.pagedListProvider(
-    repository: ListRepository<Q>
+    repository: ListRepository<Q, I>
 ): PagedListProvider<Q, I> {
     return PagedListProviderImpl(
         pagedListDataSourceFactoryProvider.get(query as Q),

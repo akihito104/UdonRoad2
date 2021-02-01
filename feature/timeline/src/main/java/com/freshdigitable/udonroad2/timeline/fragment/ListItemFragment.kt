@@ -3,6 +3,9 @@ package com.freshdigitable.udonroad2.timeline.fragment
 import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
@@ -20,6 +23,8 @@ import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.timeline.ListItemLoadableViewModel
+import com.freshdigitable.udonroad2.timeline.R
+import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.databinding.FragmentTimelineBinding
 import com.freshdigitable.udonroad2.timeline.di.ListItemAdapterComponent
 import com.freshdigitable.udonroad2.timeline.di.ListItemFragmentEventDelegateComponent
@@ -40,10 +45,12 @@ class ListItemFragment : Fragment() {
 
     @Inject
     lateinit var eventDelegate: ListItemFragmentEventDelegateComponent.Factory
+    private lateinit var viewModel: ListItemLoadableViewModel<*>
 
     override fun onAttach(context: Context) {
         AndroidSupportInjection.inject(this)
         super.onAttach(context)
+        setHasOptionsMenu(true)
     }
 
     override fun onCreateView(
@@ -57,7 +64,7 @@ class ListItemFragment : Fragment() {
         val binding = DataBindingUtil.findBinding<FragmentTimelineBinding>(view) ?: return
         binding.lifecycleOwner = viewLifecycleOwner
 
-        val viewModel: ListItemLoadableViewModel<*, Any> = listItemViewModelBuilder
+        viewModel = listItemViewModelBuilder
             .owner(listOwner)
             .firstArgs(savedInstanceState)
             .viewModelStoreOwner(activity as AppCompatActivity)
@@ -67,10 +74,8 @@ class ListItemFragment : Fragment() {
 
         val adapter = listItemAdapterFactory.create(viewModel, viewLifecycleOwner)
             .adapter as PagingDataAdapter<Any, *>
-        binding.mainList.setup(adapter)
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.timeline.collectLatest(adapter::submitData)
-        }
+        binding.mainList.setup(adapter, viewModel)
+
         val swipeRefresh = binding.mainSwipeRefresh
         viewLifecycleOwner.lifecycleScope.launchWhenResumed {
             adapter.loadStateFlow.collectLatest {
@@ -82,18 +87,68 @@ class ListItemFragment : Fragment() {
 
         val eventDelegate = eventDelegate.create(viewModel).eventDelegate
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.navigationEvent.collect(eventDelegate::dispatchNavHostNavigate)
+            viewModel.navigationEvent.collect {
+                when (it) {
+                    is TimelineEvent.Navigate.ToTopOfList -> {
+                        if (it.needsSkip) {
+                            binding.mainList.scrollToPosition(4)
+                        }
+                        binding.mainList.smoothScrollToPosition(0)
+                    }
+                    else -> eventDelegate.dispatchNavHostNavigate(it)
+                }
+            }
         }
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.feedbackMessage.collect(eventDelegate::dispatchFeedbackMessage)
         }
     }
 
-    private fun RecyclerView.setup(adapter: PagingDataAdapter<*, *>) {
+    private fun RecyclerView.setup(
+        adapter: PagingDataAdapter<Any, *>,
+        viewModel: ListItemLoadableViewModel<*>
+    ) {
         val linearLayoutManager = LinearLayoutManager(context)
         this.layoutManager = linearLayoutManager
         this.addItemDecoration(DividerItemDecoration(context, linearLayoutManager.orientation))
         this.adapter = adapter
+
+        addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                if (newState == RecyclerView.SCROLL_STATE_IDLE) {
+                    val firstVisibleItemPosition =
+                        linearLayoutManager.findFirstVisibleItemPosition()
+                    viewModel.onListScrollStopped(firstVisibleItemPosition)
+                } else if (newState == RecyclerView.SCROLL_STATE_DRAGGING) {
+                    viewModel.onListScrollStarted()
+                }
+            }
+        })
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.timeline.collectLatest(adapter::submitData)
+        }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        super.onCreateOptionsMenu(menu, inflater)
+        inflater.inflate(R.menu.timeline, menu)
+
+        val headingItem = menu.findItem(R.id.action_heading)
+        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
+            viewModel.isHeadingEnabled.collect {
+                headingItem.isEnabled = it
+            }
+        }
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_heading -> {
+                viewModel.onHeadingClicked()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
     }
 
     private val args: ListItemFragmentArgs by navArgs()

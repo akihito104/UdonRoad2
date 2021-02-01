@@ -1,5 +1,6 @@
-<?xml version="1.0" encoding="utf-8"?><!--
-  ~ Copyright (c) 2020. Matsuda, Akihit (akihito104)
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2017. Matsuda, Akihit (akihito104)
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -14,9 +15,10 @@
   ~ limitations under the License.
   -->
 
-<resources>
-    <string name="title_home">ホーム</string>
-    <string name="title_detail">ツイート</string>
-    <string name="title_conversation">会話</string>
-    <string name="action_totop">リストの先頭へ</string>
-</resources>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_enabled="true"
+        android:drawable="@drawable/ic_twitter_bird_enabled"
+        />
+    <item android:drawable="@drawable/ic_twitter_bird"
+        />
+</selector>

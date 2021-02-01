@@ -40,7 +40,7 @@ import timber.log.Timber
 internal class ListRepositoryImpl<Q : QueryType, E : Any>(
     private val localDataSource: LocalListDataSource<Q, E>,
     private val remoteDataSource: RemoteListDataSource<Q, E>,
-) : ListRepository<Q> {
+) : ListRepository<Q, E> {
 
     override suspend fun loadAtFirst(query: Q, owner: ListId) {
         localDataSource.prepareList(query, owner)
@@ -53,8 +53,8 @@ internal class ListRepositoryImpl<Q : QueryType, E : Any>(
         }
     }
 
-    override suspend fun prependList(query: Q, owner: ListId) {
-        loadList(query, owner) { listEntity ->
+    override suspend fun prependList(query: Q, owner: ListId): List<E> {
+        return loadList(query, owner) { listEntity ->
             when (val cursor = listEntity.prependCursor) {
                 ListEntity.CURSOR_INIT -> PageOption.OnInit
                 else -> PageOption.OnHead(cursor)
@@ -73,18 +73,19 @@ internal class ListRepositoryImpl<Q : QueryType, E : Any>(
         queryType: Q,
         owner: ListId,
         option: (ListEntity) -> PageOption?
-    ) {
+    ): List<E> {
         val listEntity = requireNotNull(findListEntity(owner)) {
             "ListEntity(owner: $owner) should be registered."
         }
         val pageOption = when {
             listEntity.hasNotFetchedYet -> PageOption.OnInit
-            else -> option(listEntity) ?: return
+            else -> option(listEntity) ?: return emptyList()
         }
         val q = ListQuery(queryType, pageOption)
 
         val timeline = remoteDataSource.getList(q)
         localDataSource.putList(timeline, q, owner)
+        return timeline
     }
 
     override suspend fun findListEntity(owner: ListId): ListEntity? =
@@ -97,7 +98,7 @@ internal class ListRepositoryImpl<Q : QueryType, E : Any>(
 
 internal class PagedListProviderImpl<Q : QueryType, I : Any>(
     private val pagedListDataSourceFactory: PagedListProvider.DataSourceFactory<I>,
-    private val repository: ListRepository<Q>,
+    private val repository: ListRepository<Q, I>,
 ) : PagedListProvider<Q, I> {
 
     companion object {

@@ -28,7 +28,8 @@ import com.freshdigitable.udonroad2.timeline.TimelineEvent.UserIconClicked
 
 class TimelineActions(
     dispatcher: EventDispatcher,
-) : UserIconClickedAction by UserIconClickedAction.create(dispatcher),
+) : ListItemLoadableActions by ListItemLoadableActions.create(dispatcher),
+    UserIconClickedAction by UserIconClickedAction.create(dispatcher),
     LaunchMediaViewerAction by LaunchMediaViewerAction.create(dispatcher),
     ShortcutActions by ShortcutActions.create(dispatcher) {
 
@@ -43,7 +44,10 @@ class TimelineActions(
         )
     }
     val toggleItem: AppAction<TweetItemSelection.Toggle> = dispatcher.toAction()
-    val unselectItem: AppAction<TweetItemSelection.Unselected> = dispatcher.toAction()
+    val unselectItem: AppAction<TweetItemSelection.Unselected> = AppAction.merge(
+        dispatcher.toAction(),
+        heading.map { TweetItemSelection.Unselected(it.owner) }
+    )
 }
 
 interface UserIconClickedAction {

@@ -16,7 +16,10 @@
 
 package com.freshdigitable.udonroad2.timeline
 
-import androidx.lifecycle.map
+import androidx.lifecycle.asLiveData
+import androidx.paging.PagingData
+import com.freshdigitable.udonroad2.data.ListRepository
+import com.freshdigitable.udonroad2.data.PagedListProvider
 import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
 import com.freshdigitable.udonroad2.model.ListOwner
@@ -24,30 +27,52 @@ import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.app.AppExecutor
+import com.freshdigitable.udonroad2.model.app.mainContext
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
+import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventStream
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.AppViewState
+import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.StateHolder
-import com.freshdigitable.udonroad2.model.app.navigation.toViewState
 import com.freshdigitable.udonroad2.shortcut.ShortcutViewStates
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentEventDelegate
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.rx2.asFlow
 import javax.inject.Inject
 
 class TimelineViewState(
-    owner: ListOwner<*>,
+    owner: ListOwner<QueryType.TweetQueryType>,
     actions: TimelineActions,
     selectedItemRepository: SelectedItemRepository,
     tweetRepository: TweetRepository,
+    listRepository: ListRepository<QueryType.TweetQueryType, Any>,
+    pagedListProvider: PagedListProvider<QueryType.TweetQueryType, Any>,
     listOwnerGenerator: ListOwnerGenerator,
     executor: AppExecutor,
-) : ShortcutViewStates by ShortcutViewStates.create(actions, tweetRepository, executor) {
-    private val _selectedItemId: AppViewState<StateHolder<SelectedItemId>> = AppAction.merge(
+) : ListItemLoadableViewState,
+    ActivityEventStream,
+    ShortcutViewStates by ShortcutViewStates.create(actions, tweetRepository, executor) {
+    private val coroutineScope = CoroutineScope(executor.mainContext + SupervisorJob())
+    private val baseViewState = ListItemLoadableViewStateImpl(
+        owner as ListOwner<QueryType>,
+        actions,
+        listRepository as ListRepository<QueryType, *>,
+        pagedListProvider as PagedListProvider<QueryType, Any>
+    )
+    override val pagedList: Flow<PagingData<Any>> = baseViewState.pagedList
+
+    private val _selectedItemId: Flow<StateHolder<out SelectedItemId>> = AppAction.merge(
         AppAction.just(owner).map {
             StateHolder(selectedItemRepository.find(it))
         },
@@ -72,12 +97,13 @@ class TimelineViewState(
                     else -> selectedItemRepository.put(it.item)
                 }
                 StateHolder(selectedItemRepository.find(it.owner))
-            }
-    ).toViewState()
+            },
+    ).asFlow().shareIn(coroutineScope, SharingStarted.Eagerly, 1)
 
     val selectedItemId: AppViewState<SelectedItemId?> = _selectedItemId.map { it.value }
+        .asLiveData(executor.mainContext)
 
-    internal val updateNavHost: Flow<TimelineEvent.Navigate> = merge(
+    override val navigationEvent: Flow<NavigationEvent> = merge(
         actions.showTimeline.asFlow().map {
             listOwnerGenerator.getTimelineEvent(
                 QueryType.TweetQueryType.Timeline(),
@@ -93,8 +119,21 @@ class TimelineViewState(
         },
         actions.launchUserInfo.asFlow().map { TimelineEvent.Navigate.UserInfo(it.user) },
         actions.launchMediaViewer.asFlow().filter { it.selectedItemId?.owner == owner }
-            .map { TimelineEvent.Navigate.MediaViewer(it) }
+            .map { TimelineEvent.Navigate.MediaViewer(it) },
+        baseViewState.navigationEvent,
     )
+    override val feedbackMessage: Flow<FeedbackMessage> = updateTweet.asFlow()
+
+    override val isHeadingEnabled: Flow<Boolean> = combine(
+        baseViewState.isHeadingEnabled,
+        _selectedItemId.map { it.value != null }
+    ) { sinceListPosition, sinceItemSelected ->
+        sinceListPosition || sinceItemSelected
+    }.distinctUntilChanged()
+
+    override suspend fun clear() {
+        coroutineScope.cancel()
+    }
 }
 
 class TimelineNavigationDelegate @Inject constructor(

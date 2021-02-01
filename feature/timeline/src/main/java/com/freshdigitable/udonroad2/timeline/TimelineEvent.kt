@@ -41,11 +41,24 @@ sealed class TimelineEvent : AppEvent {
         val selectedItemId: SelectedItemId? = null
     ) : TimelineEvent()
 
+    sealed class ListScrolled : TimelineEvent() {
+        object Started : ListScrolled()
+        data class Stopped(val firstVisibleItemPosition: Int) : ListScrolled()
+    }
+
+    data class HeadingClicked(val owner: ListOwner<*>) : TimelineEvent()
+    object SwipedToRefresh : TimelineEvent()
+
     sealed class Navigate : TimelineEvent(), NavigationEvent {
         data class Timeline(
             val owner: ListOwner<*>,
             override val type: NavigationEvent.Type = NavigationEvent.Type.NAVIGATE
         ) : Navigate()
+
+        data class ToTopOfList(val needsSkip: Boolean) : Navigate() {
+            override val type: NavigationEvent.Type
+                get() = throw UnsupportedOperationException()
+        }
 
         data class Detail(
             val id: TweetId,

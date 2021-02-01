@@ -17,6 +17,8 @@
 package com.freshdigitable.udonroad2.timeline
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import com.freshdigitable.udonroad2.data.ListRepository
+import com.freshdigitable.udonroad2.data.PagedListProvider
 import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
 import com.freshdigitable.udonroad2.data.impl.create
 import com.freshdigitable.udonroad2.model.ListOwner
@@ -28,8 +30,11 @@ import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.AppTwitterException
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
+import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.postEvents
+import com.freshdigitable.udonroad2.model.tweet.TweetEntity
 import com.freshdigitable.udonroad2.shortcut.SelectedItemShortcut
+import com.freshdigitable.udonroad2.test_common.MockVerified
 import com.freshdigitable.udonroad2.test_common.RxExceptionHandler
 import com.freshdigitable.udonroad2.test_common.jvm.CoroutineTestRule
 import com.freshdigitable.udonroad2.test_common.jvm.TweetRepositoryRule
@@ -38,6 +43,7 @@ import com.freshdigitable.udonroad2.timeline.TimelineEvent.TweetItemSelection
 import com.google.common.truth.Truth.assertThat
 import io.reactivex.observers.TestObserver
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.emptyFlow
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
@@ -170,23 +176,47 @@ class TimelineViewStateTest {
         }
 }
 
-@ExperimentalCoroutinesApi
 class TimelineViewStatesTestRule : TestWatcher() {
-    private val actionsRule: TimelineActionsTestRule = TimelineActionsTestRule()
+    internal val actionsRule: TimelineActionsTestRule = TimelineActionsTestRule()
     val tweetRepositoryMock = TweetRepositoryRule()
-    val owner = ListOwner(0, QueryType.TweetQueryType.Timeline())
-    private val coroutineTestRule = CoroutineTestRule()
-    private val executor = AppExecutor(dispatcher = coroutineTestRule.coroutineContextProvider)
-    val sut = TimelineViewState(
-        owner,
-        actionsRule.sut,
-        SelectedItemRepository(),
-        tweetRepositoryMock.mock,
-        ListOwnerGenerator.create(AtomicInteger(1)),
-        executor
-    )
-    val navEvents: List<TimelineEvent.Navigate> = sut.updateNavHost.testCollect(executor)
-    val messageEvents: TestObserver<FeedbackMessage> = sut.updateTweet.test()
+    val owner: ListOwner<QueryType.TweetQueryType> =
+        ListOwner(0, QueryType.TweetQueryType.Timeline())
+    private val listRepositoryRule =
+        MockVerified.create<ListRepository<QueryType.TweetQueryType, Any>>()
+    private val listProviderRule =
+        MockVerified.create<PagedListProvider<QueryType.TweetQueryType, Any>>().apply {
+            setupResponseWithVerify(
+                { mock.getList(owner.query, owner.id) },
+                emptyFlow()
+            )
+        }
+
+    @ExperimentalCoroutinesApi
+    internal val coroutineTestRule = CoroutineTestRule()
+
+    @ExperimentalCoroutinesApi
+    internal val executor = AppExecutor(dispatcher = coroutineTestRule.coroutineContextProvider)
+    val sut: TimelineViewState by lazy {
+        TimelineViewState(
+            owner,
+            actionsRule.sut,
+            SelectedItemRepository(),
+            tweetRepositoryMock.mock,
+            listRepositoryRule.mock,
+            listProviderRule.mock,
+            ListOwnerGenerator.create(AtomicInteger(1)),
+            executor
+        )
+    }
+    lateinit var navEvents: List<NavigationEvent>
+    lateinit var messageEvents: TestObserver<FeedbackMessage>
+
+    fun setupPrependListResponse(res: List<TweetEntity> = emptyList()) = with(listRepositoryRule) {
+        coSetupResponseWithVerify(
+            target = { mock.prependList(owner.query, owner.id) },
+            res
+        )
+    }
 
     fun dispatchEvents(vararg event: AppEvent) {
         actionsRule.dispatcher.postEvents(*event)
@@ -194,12 +224,16 @@ class TimelineViewStatesTestRule : TestWatcher() {
 
     override fun starting(description: Description?) {
         super.starting(description)
+        navEvents = sut.navigationEvent.testCollect(executor)
+        messageEvents = sut.updateTweet.test()
         sut.selectedItemId.observeForever { }
     }
 
     override fun apply(base: Statement?, description: Description?): Statement {
         return RuleChain.outerRule(InstantTaskExecutorRule())
             .around(actionsRule)
+            .around(listRepositoryRule)
+            .around(listProviderRule)
             .around(tweetRepositoryMock)
             .around(RxExceptionHandler())
             .around(coroutineTestRule)
