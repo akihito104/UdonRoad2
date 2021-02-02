@@ -27,8 +27,10 @@ import kotlinx.coroutines.flow.Flow
 import twitter4j.auth.AccessToken
 import twitter4j.auth.RequestToken
 import javax.inject.Inject
+import javax.inject.Singleton
 
-class OAuthApiClient @Inject constructor(
+@Singleton
+internal class OAuthApiClient @Inject constructor(
     private val twitter: AppTwitter
 ) : OAuthTokenDataSource.Remote, AppSettingDataSource.Remote {
 

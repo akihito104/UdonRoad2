@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018. Matsuda, Akihit (akihito104)
+ * Copyright (c) 2021. Matsuda, Akihit (akihito104)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,18 +43,19 @@ object TwitterModule {
     }
 }
 
+@Module(includes = [AppTwitterModule::class])
+interface RemoteDataSourceModule
+
 @Module
-interface AppTwitterModule {
+internal interface AppTwitterModule {
     companion object {
         @Provides
         @Singleton
         fun providesAppTwitter(twitter: Twitter): AppTwitter = AppTwitter(twitter)
-
-        @Provides
-        @Singleton
-        fun provideUserRemoteSource(appTwitter: AppTwitter): UserDataSource.Remote =
-            UserRestClient(appTwitter)
     }
+
+    @Binds
+    fun bindUserRemoteSource(source: UserRestClient): UserDataSource.Remote
 
     @Binds
     fun bindOAuthDataSourceRemote(source: OAuthApiClient): OAuthTokenDataSource.Remote

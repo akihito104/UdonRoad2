@@ -28,7 +28,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class ListOwnerRepository @Inject constructor(
+internal class ListOwnerRepository @Inject constructor(
     private val listDao: ListDao,
     private val prefsDataSource: AppSettingDataSource.Local,
 ) : ListOwnerGenerator {

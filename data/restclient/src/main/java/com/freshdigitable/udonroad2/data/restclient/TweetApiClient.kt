@@ -11,7 +11,9 @@ import kotlinx.coroutines.flow.Flow
 import twitter4j.StatusUpdate
 import java.io.InputStream
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class TweetApiClient @Inject constructor(
     private val twitter: AppTwitter
 ) : TweetDataSource.Remote {

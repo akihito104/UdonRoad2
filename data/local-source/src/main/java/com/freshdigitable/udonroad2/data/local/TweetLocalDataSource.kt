@@ -29,7 +29,9 @@ import com.freshdigitable.udonroad2.model.tweet.TweetEntity
 import com.freshdigitable.udonroad2.model.tweet.TweetEntityUpdatable
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class TweetLocalDataSource @Inject constructor(
     private val db: AppDatabase,
     private val appSetting: AppSettingDataSource.Local,

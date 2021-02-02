@@ -21,8 +21,11 @@ import com.freshdigitable.udonroad2.data.restclient.ext.toEntity
 import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.user.UserEntity
 import kotlinx.coroutines.flow.Flow
+import javax.inject.Inject
+import javax.inject.Singleton
 
-internal class UserRestClient(
+@Singleton
+internal class UserRestClient @Inject constructor(
     private val twitter: AppTwitter
 ) : UserDataSource.Remote {
     override suspend fun getUser(id: UserId): UserEntity {

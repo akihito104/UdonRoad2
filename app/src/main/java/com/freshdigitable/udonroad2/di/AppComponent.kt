@@ -21,15 +21,11 @@ import com.freshdigitable.udonroad2.AppApplication
 import com.freshdigitable.udonroad2.AppFileProviderImpl
 import com.freshdigitable.udonroad2.AppSetup
 import com.freshdigitable.udonroad2.AppSetupModule
-import com.freshdigitable.udonroad2.data.impl.ListOwnerRepository
 import com.freshdigitable.udonroad2.data.impl.di.RepositoryModule
 import com.freshdigitable.udonroad2.data.local.di.DatabaseModule
-import com.freshdigitable.udonroad2.data.restclient.AppTwitterModule
 import com.freshdigitable.udonroad2.data.restclient.TwitterModule
 import com.freshdigitable.udonroad2.input.di.MediaChooserModule
-import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.app.AppFileProvider
-import dagger.Binds
 import dagger.BindsInstance
 import dagger.Component
 import dagger.Module
@@ -47,9 +43,7 @@ import javax.inject.Singleton
         RepositoryModule::class,
         DatabaseModule::class,
         TwitterModule::class,
-        AppTwitterModule::class,
         AppSetupModule::class,
-        ListOwnerGeneratorProvider::class,
         MediaChooserModule::class,
         AppFileProviderModule::class
     ]
@@ -68,13 +62,6 @@ interface AppComponent {
     val setup: AppSetup
 
     fun inject(instance: AppApplication)
-}
-
-@Module
-interface ListOwnerGeneratorProvider {
-    @Singleton
-    @Binds
-    fun provideListOwnerGenerator(listOwnerRepository: ListOwnerRepository): ListOwnerGenerator
 }
 
 @Module

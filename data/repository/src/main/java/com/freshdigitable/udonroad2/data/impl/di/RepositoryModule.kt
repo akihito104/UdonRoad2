@@ -22,20 +22,24 @@ import com.freshdigitable.udonroad2.data.RelationDataSource
 import com.freshdigitable.udonroad2.data.TweetDataSource
 import com.freshdigitable.udonroad2.data.UserDataSource
 import com.freshdigitable.udonroad2.data.impl.AppSettingRepository
+import com.freshdigitable.udonroad2.data.impl.ListOwnerRepository
 import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
 import com.freshdigitable.udonroad2.data.impl.RelationshipRepository
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
 import com.freshdigitable.udonroad2.data.impl.UserRepository
-import com.freshdigitable.udonroad2.data.local.di.DaoModule
 import com.freshdigitable.udonroad2.data.local.di.LocalSourceModule
+import com.freshdigitable.udonroad2.data.restclient.RemoteDataSourceModule
+import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
+import javax.inject.Singleton
 
 @Module(
     includes = [
-        DaoModule::class,
         LocalSourceModule::class,
+        RemoteDataSourceModule::class,
+        ListOwnerGeneratorProvider::class,
     ]
 )
 interface RepositoryModule {
@@ -67,4 +71,11 @@ interface RepositoryModule {
 
     @Binds
     fun bindAppSettingDataSource(source: AppSettingRepository): AppSettingDataSource
+}
+
+@Module
+internal interface ListOwnerGeneratorProvider {
+    @Singleton
+    @Binds
+    fun provideListOwnerGenerator(listOwnerRepository: ListOwnerRepository): ListOwnerGenerator
 }

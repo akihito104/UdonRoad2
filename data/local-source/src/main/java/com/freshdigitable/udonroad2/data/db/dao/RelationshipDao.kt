@@ -16,6 +16,7 @@ import com.freshdigitable.udonroad2.model.user.UserEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import javax.inject.Inject
+import javax.inject.Singleton
 
 @Dao
 internal abstract class RelationshipDao {
@@ -81,7 +82,8 @@ internal abstract class RelationshipDao {
     }
 }
 
-class RelationshipLocalDataSource @Inject constructor(
+@Singleton
+internal class RelationshipLocalDataSource @Inject constructor(
     private val db: AppDatabase,
     private val appSetting: AppSettingDataSource.Local,
 ) : RelationDataSource.Local {

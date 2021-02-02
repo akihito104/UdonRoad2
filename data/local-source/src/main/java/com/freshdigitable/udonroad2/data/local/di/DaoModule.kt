@@ -50,8 +50,11 @@ object DatabaseModule {
             .build()
 }
 
+@Module(includes = [DaoModule::class, LocalSourceModuleInternal::class])
+interface LocalSourceModule
+
 @Module
-object DaoModule {
+internal object DaoModule {
     @Provides
     fun provideTweetListDao(db: AppDatabase): TweetListDao = TweetListDao(db)
 
@@ -79,14 +82,9 @@ object DaoModule {
 }
 
 @Module
-interface LocalSourceModule {
-    companion object {
-        @Singleton
-        @Provides
-        fun provideUserRepositoryLocalSource(
-            db: AppDatabase
-        ): UserDataSource.Local = UserLocalSource(db.userDao())
-    }
+internal interface LocalSourceModuleInternal {
+    @Binds
+    fun bindUserRepositoryLocalSource(source: UserLocalSource): UserDataSource.Local
 
     @Binds
     fun bindOAuthDataSourceLocal(source: SharedPreferenceDataSource): OAuthTokenDataSource.Local

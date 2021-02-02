@@ -23,6 +23,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.freshdigitable.udonroad2.data.UserDataSource
+import com.freshdigitable.udonroad2.data.db.AppDatabase
 import com.freshdigitable.udonroad2.data.db.dbview.UserListDbView
 import com.freshdigitable.udonroad2.data.db.entity.UserEntityDb
 import com.freshdigitable.udonroad2.data.db.entity.UserListEntity
@@ -31,6 +32,8 @@ import com.freshdigitable.udonroad2.model.ListId
 import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.user.UserEntity
 import kotlinx.coroutines.flow.Flow
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Dao
 internal abstract class UserDao {
@@ -64,7 +67,12 @@ internal abstract class UserDao {
     abstract suspend fun deleteByListId(owner: ListId)
 }
 
-internal class UserLocalSource(private val dao: UserDao) : UserDataSource.Local {
+@Singleton
+internal class UserLocalSource @Inject constructor(
+    db: AppDatabase,
+) : UserDataSource.Local {
+    private val dao: UserDao = db.userDao()
+
     override fun getUserSource(id: UserId): Flow<UserEntity?> = dao.getUserFlow(id)
 
     override suspend fun findUser(id: UserId): UserEntity? = dao.getUser(id)
