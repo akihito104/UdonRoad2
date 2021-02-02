@@ -5,4 +5,5 @@
     <string name="drawer_menu_license">OSS license</string>
     <string name="drawer_menu_add_account">add registered account</string>
     <string name="drawer_menu_settings">settings</string>
+    <string name="drawer_menu_list">list</string>
 </resources>
