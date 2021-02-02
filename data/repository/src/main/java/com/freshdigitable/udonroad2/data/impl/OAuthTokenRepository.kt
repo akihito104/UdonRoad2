@@ -16,76 +16,25 @@
 
 package com.freshdigitable.udonroad2.data.impl
 
-import com.freshdigitable.udonroad2.data.restclient.OAuthApiClient
+import com.freshdigitable.udonroad2.data.OAuthTokenDataSource
 import com.freshdigitable.udonroad2.model.AccessTokenEntity
 import com.freshdigitable.udonroad2.model.RequestTokenItem
-import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.user.UserEntity
-import dagger.Module
-import dagger.Provides
-import kotlinx.coroutines.flow.Flow
 
-class OAuthTokenRepository(
-    private val apiClient: OAuthApiClient,
-    private val prefs: SharedPreferenceDataSource
-) {
-    suspend fun login(userId: UserId = requireNotNull(getCurrentUserId())): UserEntity {
-        setCurrentUserId(userId)
-        val oauthAccessToken = requireNotNull(getCurrentUserAccessToken())
-        return apiClient.login(oauthAccessToken)
-    }
+internal class OAuthTokenRepository(
+    private val prefs: OAuthTokenDataSource.Local,
+    private val apiClient: OAuthTokenDataSource.Remote,
+) : OAuthTokenDataSource by prefs {
+    override suspend fun getRequestTokenItem(): RequestTokenItem = apiClient.getRequestTokenItem()
 
-    suspend fun getRequestTokenItem(): RequestTokenItem {
-        apiClient.logout()
-        return apiClient.getRequestToken()
-    }
-
-    suspend fun getAccessToken(
+    override suspend fun getAccessToken(
         requestToken: RequestTokenItem,
         verifier: String
     ): AccessTokenEntity {
-        return apiClient.getOauthAccessToken(requestToken, verifier).also {
-            storeAccessToken(it)
-        }
+        val accessToken = apiClient.getAccessToken(requestToken, verifier)
+        prefs.addAccessTokenEntity(accessToken)
+        return accessToken
     }
 
-    private fun storeAccessToken(token: AccessTokenEntity) {
-        prefs.storeAccessToken(token)
-    }
-
-    private fun getCurrentUserAccessToken(): AccessTokenEntity? {
-        val currentUserId = prefs.getCurrentUserId() ?: return null
-        if (!currentUserId.isValid) {
-            return null
-        }
-        return prefs.getCurrentUserAccessToken()
-    }
-
-    fun getCurrentUserId(): UserId? {
-        return prefs.getCurrentUserId()
-    }
-
-    fun getCurrentUserIdFlow(): Flow<UserId> = prefs.getCurrentUserIdFlow()
-
-    private fun setCurrentUserId(userId: UserId) {
-        require(prefs.isAuthenticatedUser(userId)) { "unregistered userId: $userId" }
-        prefs.setCurrentUserId(userId)
-    }
-
-    fun getAllAuthenticatedUserIds(): Set<String> {
-        return prefs.getAllAuthenticatedUserIds()
-    }
-}
-
-@Module
-interface OAuthTokenRepositoryModule {
-    companion object {
-        @Provides
-        fun provideOAuthTokenRepository(
-            apiClient: OAuthApiClient,
-            prefs: SharedPreferenceDataSource
-        ): OAuthTokenRepository {
-            return OAuthTokenRepository(apiClient, prefs)
-        }
-    }
+    override suspend fun verifyCredentials(): UserEntity = apiClient.verifyCredentials()
 }

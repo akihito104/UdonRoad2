@@ -19,9 +19,9 @@ package com.freshdigitable.udonroad2.user
 import androidx.annotation.IdRes
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.freshdigitable.udonroad2.R
+import com.freshdigitable.udonroad2.data.UserDataSource
 import com.freshdigitable.udonroad2.data.impl.RelationshipRepository
 import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
-import com.freshdigitable.udonroad2.data.impl.UserRepository
 import com.freshdigitable.udonroad2.data.impl.create
 import com.freshdigitable.udonroad2.main.menuItem
 import com.freshdigitable.udonroad2.model.ListOwner
@@ -257,7 +257,7 @@ class UserViewModelTest {
                     R.id.action_r4s,
                     RelationshipFeedbackMessage.REPORT_SPAM_SUCCESS
                 ) {
-                    { relationshipRepository.reportSpam(targetId) }
+                    { relationshipRepository.addSpam(targetId) }
                 },
             )
         }
@@ -363,7 +363,7 @@ class UserViewModelTestRule : TestWatcher() {
     val user = mockk<UserEntity>().apply {
         every { id } returns targetId
     }
-    val userRepositoryMock = MockVerified.create<UserRepository>()
+    val userRepositoryMock = MockVerified.create<UserDataSource>()
     val relationshipRepositoryMock = MockVerified.create<RelationshipRepository>()
     val relationshipRepository: RelationshipRepository = relationshipRepositoryMock.mock
     val selectedItemRepository = SelectedItemRepository()
@@ -413,7 +413,7 @@ class UserViewModelTestRule : TestWatcher() {
     val userSource = Channel<UserEntity?>()
 
     private fun setupUserSource(targetId: UserId) = with(userRepositoryMock) {
-        setupResponseWithVerify({ mock.getUserFlow(targetId) }, userSource.consumeAsFlow())
+        setupResponseWithVerify({ mock.getUserSource(targetId) }, userSource.consumeAsFlow())
     }
 
     private val relationshipSource = Channel<Relationship?>()

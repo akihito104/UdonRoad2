@@ -44,7 +44,7 @@ private class ShortcutViewStateImpl(
 ) : ShortcutViewStates {
     override val updateTweet: AppAction<FeedbackMessage> = AppAction.merge(
         actions.favTweet.suspendMap(executor.mainContext) { event ->
-            tweetRepository.postLike(event.tweetId)
+            tweetRepository.updateLike(event.tweetId, true)
         }.map {
             when {
                 it.isSuccess -> TweetFeedbackMessage.FAV_CREATE_SUCCESS
@@ -55,7 +55,7 @@ private class ShortcutViewStateImpl(
             }
         },
         actions.retweet.suspendMap(executor.mainContext) { event ->
-            tweetRepository.postRetweet(event.tweetId)
+            tweetRepository.updateRetweet(event.tweetId, true)
         }.map {
             when {
                 it.isSuccess -> TweetFeedbackMessage.RT_CREATE_SUCCESS

@@ -16,7 +16,9 @@
 
 package com.freshdigitable.udonroad2.data.impl
 
+import com.freshdigitable.udonroad2.data.AppSettingDataSource
 import com.freshdigitable.udonroad2.data.db.entity.ListDao
+import com.freshdigitable.udonroad2.data.local.requireCurrentUserId
 import com.freshdigitable.udonroad2.model.ListId
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
@@ -26,9 +28,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class ListOwnerRepository @Inject constructor(
+internal class ListOwnerRepository @Inject constructor(
     private val listDao: ListDao,
-    private val prefsDataSource: SharedPreferenceDataSource,
+    private val prefsDataSource: AppSettingDataSource.Local,
 ) : ListOwnerGenerator {
     companion object {
         private val oauthListId: ListId = ListId(-1)
@@ -38,9 +40,7 @@ class ListOwnerRepository @Inject constructor(
         val id = when (type) {
             QueryType.Oauth -> oauthListId
             else -> {
-                val currentUserId =
-                    checkNotNull(prefsDataSource.getCurrentUserId()) { "needs login" }
-                listDao.addList(currentUserId)
+                listDao.addList(prefsDataSource.requireCurrentUserId())
             }
         }
         return ListOwner(id, type)

@@ -236,13 +236,16 @@ fun createRequestToken(
 
 fun createStatus(
     id: Long,
-    text: String,
-    user: User,
-    createdAt: Date,
+    text: String = "",
+    user: User = createUser(1000, "user1", "user1"),
+    createdAt: Date = Date(1000000),
     mediaEntities: Array<MediaEntity> = emptyArray(),
     userMentionEntities: Array<UserMentionEntity> = emptyArray(),
     quotedStatus: Status? = null,
     currentUserRetweetId: Long = -1,
+    isRetweeted: Boolean = false,
+    isFavorited: Boolean = false,
+    retweetedStatus: Status? = null,
 ): Status {
     return object : Status {
         override fun getUser(): User = user
@@ -254,10 +257,10 @@ fun createStatus(
         override fun getQuotedStatusId(): Long = quotedStatus?.id ?: -1
         override fun getQuotedStatus(): Status? = quotedStatus
         override fun getSource(): String = "Twitter Web App"
-        override fun getRetweetedStatus(): Status? = null
+        override fun getRetweetedStatus(): Status? = retweetedStatus
         override fun getInReplyToStatusId(): Long = -1
-        override fun isFavorited(): Boolean = false
-        override fun isRetweeted(): Boolean = false
+        override fun isFavorited(): Boolean = isFavorited
+        override fun isRetweeted(): Boolean = isRetweeted
         override fun isPossiblySensitive(): Boolean = false
         override fun getMediaEntities(): Array<MediaEntity> = mediaEntities
         override fun getCurrentUserRetweetId(): Long = currentUserRetweetId

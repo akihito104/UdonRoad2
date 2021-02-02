@@ -120,7 +120,7 @@ internal class MainActivityStateModelTestRule : TestWatcher() {
     val sut = MainActivityViewStates(
         MainActivityActions(dispatcher),
         selectedItemRepository,
-        oauthTokenRepositoryMock.mock,
+        oauthTokenRepositoryMock.appSettingMock,
         tweetInputSharedState.mock,
         ListOwnerGenerator.create(),
         navDelegateRule.state,

@@ -1,112 +1,78 @@
 package com.freshdigitable.udonroad2.data.impl
 
-import com.freshdigitable.udonroad2.data.db.DaoModule
-import com.freshdigitable.udonroad2.data.db.dao.RelationshipDao
-import com.freshdigitable.udonroad2.data.restclient.FriendshipRestClient
+import com.freshdigitable.udonroad2.data.RelationDataSource
 import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.app.AppTwitterException
 import com.freshdigitable.udonroad2.model.user.Relationship
 import com.freshdigitable.udonroad2.model.user.UserEntity
-import dagger.Module
-import dagger.Provides
-import kotlinx.coroutines.flow.Flow
 
 class RelationshipRepository(
-    private val dao: RelationshipDao,
-    private val prefs: SharedPreferenceDataSource,
-    private val restClient: FriendshipRestClient,
-) {
-    fun getRelationshipSource(targetUserId: UserId): Flow<Relationship?> {
-        return dao.getRelationshipSource(targetUserId, prefs.requireCurrentUserId())
-    }
+    private val dao: RelationDataSource.Local,
+    private val restClient: RelationDataSource.Remote,
+) : RelationDataSource by dao {
 
-    suspend fun findRelationship(targetUserId: UserId): Relationship {
-        val f = restClient.fetchFriendship(targetUserId)
-        dao.addRelationship(f)
+    override suspend fun findRelationship(targetUserId: UserId): Relationship? {
+        val f = restClient.findRelationship(targetUserId)
+        f?.let { dao.updateRelationship(it) }
         return f
     }
 
-    suspend fun updateFollowingStatus(targetUserId: UserId, isFollowing: Boolean): UserEntity {
+    override suspend fun updateFollowingStatus(
+        targetUserId: UserId,
+        isFollowing: Boolean
+    ): UserEntity {
         try {
-            val user = when {
-                isFollowing -> restClient.createFriendship(targetUserId)
-                else -> restClient.destroyFriendship(targetUserId)
-            }
-            dao.updateFollowingStatus(user.id, prefs.requireCurrentUserId(), isFollowing)
-            return user
+            val user = restClient.updateFollowingStatus(targetUserId, isFollowing)
+            return dao.updateFollowingStatus(user.id, isFollowing)
         } catch (e: AppTwitterException) {
             findRelationship(targetUserId)
             throw e
         }
     }
 
-    suspend fun updateMutingStatus(targetUserId: UserId, isMuting: Boolean): UserEntity {
+    override suspend fun updateMutingStatus(targetUserId: UserId, isMuting: Boolean): UserEntity {
         try {
-            val user = when {
-                isMuting -> restClient.createMute(targetUserId)
-                else -> restClient.destroyMute(targetUserId)
-            }
-            dao.updateMutingStatus(user.id, prefs.requireCurrentUserId(), isMuting)
-            return user
+            val user = restClient.updateMutingStatus(targetUserId, isMuting)
+            return dao.updateMutingStatus(user.id, isMuting)
         } catch (e: AppTwitterException) {
             findRelationship(targetUserId)
             throw e
         }
     }
 
-    suspend fun updateBlockingStatus(targetUserId: UserId, isBlocking: Boolean): UserEntity {
+    override suspend fun updateBlockingStatus(
+        targetUserId: UserId,
+        isBlocking: Boolean
+    ): UserEntity {
         try {
-            val user = when {
-                isBlocking -> restClient.createBlock(targetUserId)
-                else -> restClient.destroyBlock(targetUserId)
-            }
-            dao.updateBlockingStatusTransaction(user.id, prefs.requireCurrentUserId(), isBlocking)
-            return user
+            val user = restClient.updateBlockingStatus(targetUserId, isBlocking)
+            return dao.updateBlockingStatus(user.id, isBlocking)
         } catch (e: AppTwitterException) {
             findRelationship(targetUserId)
             throw e
         }
     }
 
-    suspend fun updateWantRetweetStatus(userId: UserId, wantRetweets: Boolean): Relationship {
+    override suspend fun updateWantRetweetStatus(
+        targetUserId: UserId,
+        wantRetweets: Boolean
+    ): Relationship {
         try {
-            val currentRelation = restClient.fetchFriendship(userId)
-            val updated = restClient.updateFriendship(
-                currentRelation.targetUserId,
-                currentRelation.notificationsEnabled,
-                wantRetweets
-            )
-            dao.updateWantRetweetsStatus(
-                updated.targetUserId,
-                prefs.requireCurrentUserId(),
-                updated.wantRetweets
-            )
-            return updated
+            val currentRelation = requireNotNull(restClient.findRelationship(targetUserId))
+            val rel = object : Relationship by currentRelation {
+                override val wantRetweets: Boolean
+                    get() = wantRetweets
+            }
+            restClient.updateRelationship(rel)
+            return dao.updateWantRetweetStatus(rel.targetUserId, rel.wantRetweets)
         } catch (e: AppTwitterException) {
-            findRelationship(userId)
+            findRelationship(targetUserId)
             throw e
         }
     }
 
-    suspend fun reportSpam(userId: UserId): UserEntity {
-        val user = restClient.reportSpam(userId)
-        dao.updateBlockingStatusTransaction(user.id, prefs.requireCurrentUserId(), true)
-        return user
-    }
-}
-
-@Module(
-    includes = [
-        DaoModule::class
-    ]
-)
-object RelationshipRepositoryModule {
-    @Provides
-    fun provideRelationshipRepository(
-        dao: RelationshipDao,
-        prefs: SharedPreferenceDataSource,
-        restClient: FriendshipRestClient,
-    ): RelationshipRepository {
-        return RelationshipRepository(dao, prefs, restClient)
+    override suspend fun addSpam(userId: UserId): UserEntity {
+        val user = restClient.addSpam(userId)
+        return dao.addSpam(user.id)
     }
 }

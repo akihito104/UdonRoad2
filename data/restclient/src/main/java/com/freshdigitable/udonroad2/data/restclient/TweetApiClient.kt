@@ -1,34 +1,53 @@
 package com.freshdigitable.udonroad2.data.restclient
 
+import com.freshdigitable.udonroad2.data.TweetDataSource
 import com.freshdigitable.udonroad2.data.restclient.ext.toEntity
 import com.freshdigitable.udonroad2.model.MediaId
 import com.freshdigitable.udonroad2.model.TweetId
+import com.freshdigitable.udonroad2.model.tweet.DetailTweetListItem
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
+import com.freshdigitable.udonroad2.model.tweet.TweetEntityUpdatable
+import kotlinx.coroutines.flow.Flow
 import twitter4j.StatusUpdate
 import java.io.InputStream
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class TweetApiClient @Inject constructor(
     private val twitter: AppTwitter
-) {
-    suspend fun fetchTweet(id: TweetId): TweetEntity = twitter.fetch {
-        showStatus(id.value).toEntity()
+) : TweetDataSource.Remote {
+    override suspend fun findTweetEntity(tweetId: TweetId): TweetEntity = twitter.fetch {
+        showStatus(tweetId.value).toEntity()
     }
 
-    suspend fun postLike(id: TweetId): TweetEntity = twitter.fetch {
-        createFavorite(id.value).toEntity()
+    override suspend fun updateLike(id: TweetId, isLiked: Boolean): TweetEntityUpdatable {
+        return twitter.fetch {
+            when (isLiked) {
+                true -> createFavorite(id.value)
+                false -> destroyFavorite(id.value)
+            }
+        }.toEntity()
     }
 
-    suspend fun postUnlike(id: TweetId): TweetEntity = twitter.fetch {
-        destroyFavorite(id.value).toEntity()
+    override suspend fun updateRetweet(id: TweetId, isRetweeted: Boolean): TweetEntityUpdatable {
+        return when (isRetweeted) {
+            true -> postRetweet(id)
+            else -> postUnretweet(id)
+        }
     }
 
-    suspend fun postRetweet(id: TweetId): TweetEntity = twitter.fetch {
-        retweetStatus(id.value).toEntity()
+    private suspend fun postRetweet(id: TweetId): TweetEntity = twitter.fetch {
+        val retweetStatus = retweetStatus(id.value)
+        retweetStatus.toEntity(retweetIdForRetweetedStatus = TweetId(retweetStatus.id))
     }
 
-    suspend fun postUnretweet(id: TweetId): TweetEntity = twitter.fetch {
+    private suspend fun postUnretweet(id: TweetId): TweetEntity = twitter.fetch {
         unRetweetStatus(id.value).toEntity()
+    }
+
+    override suspend fun deleteTweet(id: TweetId): Unit = twitter.fetch {
+        destroyStatus(id.value)
     }
 
     suspend fun postTweet(
@@ -47,12 +66,20 @@ class TweetApiClient @Inject constructor(
         }
     }
 
-    suspend fun deleteTweet(id: TweetId): TweetEntity = twitter.fetch {
-        destroyStatus(id.value).toEntity()
-    }
-
     suspend fun uploadMedia(filename: String, inputStream: InputStream): MediaId = twitter.fetch {
         val uploadedMedia = uploadMedia(filename, inputStream)
         MediaId(uploadedMedia.mediaId)
     }
+
+    override suspend fun addTweetEntity(tweet: TweetEntity) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun findDetailTweetItem(id: TweetId): DetailTweetListItem =
+        throw NotImplementedError()
+
+    override fun getDetailTweetItemSource(id: TweetId): Flow<DetailTweetListItem?> =
+        throw NotImplementedError()
+
+    override suspend fun updateTweet(tweet: TweetEntityUpdatable) = throw NotImplementedError()
 }

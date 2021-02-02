@@ -35,33 +35,33 @@ class TweetRepositoryRule(
     val mock: TweetRepository = mockVerified.mock
 
     fun setupShowTweet(id: TweetId, response: Flow<TweetListItem?>) {
-        mockVerified.setupResponseWithVerify({ mock.getTweetItemSource(id) }, response)
+        mockVerified.setupResponseWithVerify({ mock.getDetailTweetItemSource(id) }, response)
     }
 
     fun setupFindTweetItem(id: TweetId, response: TweetListItem?) {
-        mockVerified.coSetupResponseWithVerify({ mock.findTweetListItem(id) }, response)
+        mockVerified.coSetupResponseWithVerify({ mock.findDetailTweetItem(id) }, response)
     }
 
     fun setupFindTweetItem(id: TweetId, throwable: Throwable) {
-        mockVerified.coSetupThrowWithVerify({ mock.findTweetListItem(id) }, throwable)
+        mockVerified.coSetupThrowWithVerify({ mock.findDetailTweetItem(id) }, throwable)
     }
 
     fun setupPostLikeForSuccess(tweetId: TweetId, liked: TweetEntity = mockk()) {
-        mockVerified.coSetupResponseWithVerify({ mock.postLike(tweetId) }, liked)
+        mockVerified.coSetupResponseWithVerify({ mock.updateLike(tweetId, true) }, liked)
     }
 
     fun setupPostLikeForFailure(tweetId: TweetId, exceptionType: AppTwitterException.ErrorType) {
         val exception = createException(exceptionType)
-        mockVerified.coSetupThrowWithVerify({ mock.postLike(tweetId) }, exception)
+        mockVerified.coSetupThrowWithVerify({ mock.updateLike(tweetId, true) }, exception)
     }
 
     fun setupPostRetweetForSuccess(tweetId: TweetId, retweeted: TweetEntity = mockk()) {
-        mockVerified.coSetupResponseWithVerify({ mock.postRetweet(tweetId) }, retweeted)
+        mockVerified.coSetupResponseWithVerify({ mock.updateRetweet(tweetId, true) }, retweeted)
     }
 
     fun setupPostRetweetForFailure(tweetId: TweetId, exceptionType: AppTwitterException.ErrorType) {
         val exception = createException(exceptionType)
-        mockVerified.coSetupThrowWithVerify({ mock.postRetweet(tweetId) }, exception)
+        mockVerified.coSetupThrowWithVerify({ mock.updateRetweet(tweetId, true) }, exception)
     }
 
     private fun createException(exceptionType: AppTwitterException.ErrorType): AppTwitterException {

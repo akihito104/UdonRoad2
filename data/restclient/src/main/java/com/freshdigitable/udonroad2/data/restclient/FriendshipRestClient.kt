@@ -1,43 +1,55 @@
 package com.freshdigitable.udonroad2.data.restclient
 
+import com.freshdigitable.udonroad2.data.RelationDataSource
 import com.freshdigitable.udonroad2.data.restclient.ext.toEntity
 import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.user.Relationship
 import com.freshdigitable.udonroad2.model.user.UserEntity
+import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class FriendshipRestClient @Inject constructor(
     private val twitter: AppTwitter
-) {
-    suspend fun fetchFriendship(userId: UserId): Relationship = twitter.fetch {
-        showFriendship(id, userId.value).toEntity()
+) : RelationDataSource.Remote {
+    override suspend fun findRelationship(targetUserId: UserId): Relationship = twitter.fetch {
+        showFriendship(id, targetUserId.value).toEntity()
     }
 
-    suspend fun createFriendship(userId: UserId): UserEntity = twitter.fetch {
-        createFriendship(userId.value).toEntity()
+    override suspend fun updateFollowingStatus(
+        targetUserId: UserId,
+        isFollowing: Boolean
+    ): UserEntity = twitter.fetch {
+        when (isFollowing) {
+            true -> createFriendship(targetUserId.value)
+            false -> destroyFriendship(targetUserId.value)
+        }
+    }.toEntity()
+
+    override suspend fun updateMutingStatus(targetUserId: UserId, isMuting: Boolean): UserEntity =
+        twitter.fetch {
+            when (isMuting) {
+                true -> createMute(targetUserId.value)
+                false -> destroyMute(targetUserId.value)
+            }
+        }.toEntity()
+
+    override suspend fun updateBlockingStatus(
+        targetUserId: UserId,
+        isBlocking: Boolean
+    ): UserEntity = twitter.fetch {
+        when (isBlocking) {
+            true -> createBlock(targetUserId.value)
+            false -> destroyBlock(targetUserId.value)
+        }
+    }.toEntity()
+
+    override suspend fun updateRelationship(relationship: Relationship) {
+        with(relationship) {
+            updateFriendship(sourceUserId, notificationsEnabled, wantRetweets)
+        }
     }
 
-    suspend fun destroyFriendship(userId: UserId): UserEntity = twitter.fetch {
-        destroyFriendship(userId.value).toEntity()
-    }
-
-    suspend fun createMute(userId: UserId): UserEntity = twitter.fetch {
-        createMute(userId.value).toEntity()
-    }
-
-    suspend fun destroyMute(userId: UserId): UserEntity = twitter.fetch {
-        destroyMute(userId.value).toEntity()
-    }
-
-    suspend fun createBlock(userId: UserId): UserEntity = twitter.fetch {
-        createBlock(userId.value).toEntity()
-    }
-
-    suspend fun destroyBlock(userId: UserId): UserEntity = twitter.fetch {
-        destroyBlock(userId.value).toEntity()
-    }
-
-    suspend fun updateFriendship(
+    private suspend fun updateFriendship(
         userId: UserId,
         notificationsEnabled: Boolean,
         wantRetweets: Boolean
@@ -45,9 +57,17 @@ class FriendshipRestClient @Inject constructor(
         updateFriendship(userId.value, notificationsEnabled, wantRetweets).toEntity()
     }
 
-    suspend fun reportSpam(userId: UserId): UserEntity = twitter.fetch {
+    override suspend fun addSpam(userId: UserId): UserEntity = twitter.fetch {
         reportSpam(userId.value).toEntity()
     }
+
+    override fun getRelationshipSource(targetUserId: UserId): Flow<Relationship?> =
+        throw NotImplementedError()
+
+    override suspend fun updateWantRetweetStatus(
+        targetUserId: UserId,
+        wantRetweets: Boolean
+    ): Relationship = throw NotImplementedError()
 }
 
 private fun twitter4j.Relationship.toEntity(): Relationship {

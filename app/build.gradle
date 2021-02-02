@@ -58,7 +58,7 @@ dependencies {
     implementation project(":feature:shortcut")
     implementation project(":feature:input")
     implementation project(':data:repository')
-    implementation project(':data:db')
+    implementation project(':data:local-source')
     implementation project(':data:restclient')
     implementation project(':model')
 

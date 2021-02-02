@@ -110,12 +110,15 @@ class MainActivityInstTest {
                 .component
             val sp = component.sharedPreferencesDao
             val userId = UserId(10000)
-            sp.storeAccessToken(AccessTokenEntity.create(userId, "token", "tokensecret"))
-            sp.setCurrentUserId(userId)
+            runBlocking {
+                val token = AccessTokenEntity.create(userId, "token", "tokensecret")
+                sp.addAccessTokenEntity(token)
+                sp.updateCurrentUser(token)
+            }
             val authedUser = createUser(userId.value, "user1", "User1")
             component.userDao.apply {
                 runBlocking {
-                    addUsers(listOf(authedUser.toEntity()))
+                    addUser(authedUser.toEntity())
                 }
             }
 

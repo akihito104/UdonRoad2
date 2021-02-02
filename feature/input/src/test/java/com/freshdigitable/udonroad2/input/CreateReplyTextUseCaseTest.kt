@@ -16,12 +16,11 @@
 
 package com.freshdigitable.udonroad2.input
 
-import com.freshdigitable.udonroad2.data.ReplyRepository
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
 import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.UserId
-import com.freshdigitable.udonroad2.model.tweet.TweetElement
-import com.freshdigitable.udonroad2.model.tweet.TweetListItem
+import com.freshdigitable.udonroad2.model.tweet.DetailTweetElement
+import com.freshdigitable.udonroad2.model.tweet.DetailTweetListItem
 import com.freshdigitable.udonroad2.model.tweet.UserReplyEntity
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.test_common.MockVerified
@@ -43,9 +42,6 @@ class CreateReplyTextUseCaseTest(private val param: Param) {
 
     @get:Rule
     val tweetRepositoryRule: MockVerified<TweetRepository> = MockVerified.create()
-
-    @get:Rule
-    val replyRepositoryRule: MockVerified<ReplyRepository> = MockVerified.create()
 
     companion object {
         val authenticatedUserId = UserId(100)
@@ -112,16 +108,12 @@ class CreateReplyTextUseCaseTest(private val param: Param) {
             selectedTweetId,
             tweetUserItem,
             isTargetRetweet,
-            tweet(targetBodyTweetId, targetBodyTweetUserItem)
+            tweet(targetBodyTweetId, targetBodyTweetUserItem, replyEntities)
         )
         oAuthTokenRepositoryRule.setupCurrentUserId(authenticatedUserId.value, needLogin = false)
         tweetRepositoryRule.coSetupResponseWithVerify(
-            target = { tweetRepositoryRule.mock.findTweetListItem(selectedTweetId) },
+            target = { tweetRepositoryRule.mock.findDetailTweetItem(selectedTweetId) },
             res = tweet
-        )
-        replyRepositoryRule.coSetupResponseWithVerify(
-            target = { replyRepositoryRule.mock.findEntitiesByTweetId(selectedTweetId) },
-            res = replyEntities
         )
     }
 
@@ -129,8 +121,7 @@ class CreateReplyTextUseCaseTest(private val param: Param) {
     fun testInvoke() = runBlocking {
         val sut = CreateReplyTextUseCase(
             tweetRepositoryRule.mock,
-            replyRepositoryRule.mock,
-            oAuthTokenRepositoryRule.mock
+            oAuthTokenRepositoryRule.appSettingMock
         )
 
         // exercise
@@ -188,7 +179,7 @@ class CreateQuoteTextUseCaseTest(private val param: Param) {
             tweet(targetBodyTweetId, targetBodyTweetUserItem)
         )
         tweetRepositoryRule.coSetupResponseWithVerify(
-            target = { tweetRepositoryRule.mock.findTweetListItem(selectedTweetId) },
+            target = { tweetRepositoryRule.mock.findDetailTweetItem(selectedTweetId) },
             res = tweet
         )
     }
@@ -212,10 +203,15 @@ fun tweetingUser(targetUserId: UserId, targetUserScreenName: String): TweetUserI
     }
 }
 
-private fun tweet(targetTweetId: TweetId, tweetUserItem: TweetUserItem): TweetElement {
-    return mockk<TweetElement>().apply {
-        every { id } returns targetTweetId
-        every { user } returns tweetUserItem
+private fun tweet(
+    targetTweetId: TweetId,
+    tweetUserItem: TweetUserItem,
+    replyEntities: List<UserReplyEntity> = emptyList(),
+): DetailTweetElement {
+    return mockk<DetailTweetElement>().also {
+        every { it.id } returns targetTweetId
+        every { it.user } returns tweetUserItem
+        every { it.replyEntities } returns replyEntities
     }
 }
 
@@ -223,9 +219,9 @@ private fun tweetItem(
     resOriginalId: TweetId,
     resOriginalUser: TweetUserItem,
     resIsRetweet: Boolean,
-    resBody: TweetElement
-): TweetListItem {
-    return mockk<TweetListItem>().apply {
+    resBody: DetailTweetElement
+): DetailTweetListItem {
+    return mockk<DetailTweetListItem>().apply {
         every { originalId } returns resOriginalId
         every { originalUser } returns resOriginalUser
         every { isRetweet } returns resIsRetweet

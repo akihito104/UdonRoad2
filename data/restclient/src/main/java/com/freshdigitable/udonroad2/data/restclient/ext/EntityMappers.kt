@@ -47,8 +47,11 @@ import twitter4j.TwitterResponse
 import twitter4j.UserList
 import twitter4j.UserMentionEntity
 
-internal fun Status.toEntity(): TweetEntity {
-    val retweetId = if (currentUserRetweetId > -1L) TweetId(currentUserRetweetId) else null
+internal fun Status.toEntity(
+    retweetIdForRetweetedStatus: TweetId? = if (currentUserRetweetId > -1L)
+        TweetId(currentUserRetweetId) else null,
+): TweetEntity {
+    val retweetId = if (retweetedStatus == null) retweetIdForRetweetedStatus else null
     val inReplyToTweetId = if (inReplyToStatusId > -1) TweetId(inReplyToStatusId) else null
     return TweetEntityRest(
         id = TweetId(id),
@@ -56,7 +59,7 @@ internal fun Status.toEntity(): TweetEntity {
         retweetCount = retweetCount,
         favoriteCount = favoriteCount,
         user = user.toEntity(),
-        retweetedTweet = retweetedStatus?.toEntity(),
+        retweetedTweet = retweetedStatus?.toEntity(retweetIdForRetweetedStatus),
         quotedTweet = quotedStatus?.toEntity(),
         inReplyToTweetId = inReplyToTweetId,
         isRetweeted = isRetweeted,

@@ -5,7 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
-import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
+import com.freshdigitable.udonroad2.data.impl.AppSettingRepository
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
@@ -106,7 +106,9 @@ class TweetDetailViewModel(
             }
             R.id.detail_main_reply -> SelectedItemShortcut.Reply(tweetId)
             R.id.detail_main_quote -> SelectedItemShortcut.Quote(tweetId)
-            R.id.detail_more_delete -> DetailMenuEvent.DeleteTweet(tweetId)
+            R.id.detail_more_delete -> DetailMenuEvent.DeleteTweet(
+                tweetItem.body.retweetIdByCurrentUser ?: tweetId
+            )
             R.id.detail_main_conv -> SelectedItemShortcut.Conversation(tweetId)
             else -> throw NotImplementedError("detail menu: $itemId is not implemented yet...")
         }
@@ -141,17 +143,17 @@ class TweetDetailViewStates @Inject constructor(
     tweetId: TweetId,
     actions: TweetDetailActions,
     repository: TweetRepository,
-    oAuthTokenRepository: OAuthTokenRepository,
+    appSettingRepository: AppSettingRepository,
     listOwnerGenerator: ListOwnerGenerator,
     executor: AppExecutor
 ) : ShortcutViewStates by ShortcutViewStates.create(actions, repository, executor) {
     private val coroutineScope = CoroutineScope(context = executor.mainContext)
-    internal val tweetItem: StateFlow<TweetListItem?> = repository.getTweetItemSource(tweetId)
+    internal val tweetItem: StateFlow<TweetListItem?> = repository.getDetailTweetItemSource(tweetId)
         .transformLatest {
             when {
                 it != null -> emit(it)
                 else -> {
-                    val item = repository.findTweetListItem(tweetId)
+                    val item = repository.findDetailTweetItem(tweetId)
                     item?.let { i -> emit(i) }
                 }
             }
@@ -178,7 +180,7 @@ class TweetDetailViewStates @Inject constructor(
                 isMainGroupEnabled = true,
                 isRetweetChecked = tweet.body.isRetweeted,
                 isFavChecked = tweet.body.isFavorited,
-                isDeleteVisible = oAuthTokenRepository.getCurrentUserId() == tweet.originalUser.id
+                isDeleteVisible = appSettingRepository.currentUserId == tweet.originalUser.id
             )
         }
     }.distinctUntilChanged()
@@ -206,10 +208,10 @@ class TweetDetailViewStates @Inject constructor(
 
     private val compositeDisposable = CompositeDisposable(
         actions.unlikeTweet.suspendMap {
-            repository.postUnlike(it.tweetId)
+            repository.updateLike(it.tweetId, false)
         }.subscribe(),
         actions.unretweetTweet.suspendMap {
-            repository.postUnretweet(it.tweetId)
+            repository.updateRetweet(it.tweetId, false)
         }.subscribe(),
         actions.deleteTweet.suspendMap {
             repository.deleteTweet(it.tweetId)

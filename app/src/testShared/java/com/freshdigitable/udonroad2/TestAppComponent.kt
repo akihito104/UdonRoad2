@@ -17,16 +17,14 @@
 package com.freshdigitable.udonroad2
 
 import android.app.Application
-import com.freshdigitable.udonroad2.data.db.DatabaseModule
-import com.freshdigitable.udonroad2.data.db.dao.UserDao
-import com.freshdigitable.udonroad2.data.impl.SharedPreferenceDataSource
+import com.freshdigitable.udonroad2.data.UserDataSource
 import com.freshdigitable.udonroad2.data.impl.di.RepositoryModule
-import com.freshdigitable.udonroad2.data.restclient.AppTwitterModule
+import com.freshdigitable.udonroad2.data.local.SharedPreferenceDataSource
+import com.freshdigitable.udonroad2.data.local.di.DatabaseModule
 import com.freshdigitable.udonroad2.di.ActivityBuilders
 import com.freshdigitable.udonroad2.di.AppComponent
 import com.freshdigitable.udonroad2.di.AppFileProviderModule
 import com.freshdigitable.udonroad2.di.ExecutorModule
-import com.freshdigitable.udonroad2.di.ListOwnerGeneratorProvider
 import dagger.BindsInstance
 import dagger.Component
 import dagger.android.support.AndroidSupportInjectionModule
@@ -42,10 +40,8 @@ import javax.inject.Singleton
         RepositoryModule::class,
         DatabaseModule::class,
         MockTwitterModule::class,
-        AppTwitterModule::class,
         TestSharedPreferencesModule::class,
         MockSetupModule::class,
-        ListOwnerGeneratorProvider::class,
         AppFileProviderModule::class,
     ]
 )
@@ -60,5 +56,5 @@ interface TestAppComponent : AppComponent {
 
     val twitter: Twitter
     val sharedPreferencesDao: SharedPreferenceDataSource
-    val userDao: UserDao
+    val userDao: UserDataSource.Local
 }

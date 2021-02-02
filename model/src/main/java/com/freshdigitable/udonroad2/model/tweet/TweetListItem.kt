@@ -39,27 +39,12 @@ interface TweetListItem {
     override fun hashCode(): Int
 }
 
-interface TweetElement {
-
-    val id: TweetId
+interface TweetElement : TweetElementUpdatable {
 
     val text: String
 
-    val isRetweeted: Boolean
-
-    val retweetCount: Int
-
-    val isFavorited: Boolean
-
-    val favoriteCount: Int
-
     val inReplyToTweetId: TweetId?
         get() = null
-
-    val retweetIdByCurrentUser: TweetId?
-        get() = null
-
-    val user: TweetUserItem
 
     val source: String
 
@@ -67,6 +52,17 @@ interface TweetElement {
 
     val media: List<TweetMediaItem>
         get() = emptyList()
+}
+
+interface TweetElementUpdatable {
+    val id: TweetId
+    val isRetweeted: Boolean
+    val retweetCount: Int
+    val isFavorited: Boolean
+    val favoriteCount: Int
+    val retweetIdByCurrentUser: TweetId?
+        get() = null
+    val user: TweetUserItem
 }
 
 operator fun TweetId.plus(adder: Long): TweetId = TweetId(

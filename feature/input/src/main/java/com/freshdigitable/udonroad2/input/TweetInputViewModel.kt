@@ -20,9 +20,9 @@ import android.text.Editable
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
-import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
+import com.freshdigitable.udonroad2.data.UserDataSource
+import com.freshdigitable.udonroad2.data.impl.AppSettingRepository
 import com.freshdigitable.udonroad2.data.impl.TweetInputRepository
-import com.freshdigitable.udonroad2.data.impl.UserRepository
 import com.freshdigitable.udonroad2.input.CameraApp.Companion.transition
 import com.freshdigitable.udonroad2.input.MediaChooserResultContract.MediaChooserResult
 import com.freshdigitable.udonroad2.model.TweetId
@@ -139,8 +139,8 @@ class TweetInputViewState @Inject constructor(
     createQuoteText: CreateQuoteTextUseCase,
     sharedState: TweetInputSharedState,
     repository: TweetInputRepository,
-    oauthRepository: OAuthTokenRepository,
-    userRepository: UserRepository,
+    oauthRepository: AppSettingRepository,
+    userRepository: UserDataSource,
     executor: AppExecutor,
 ) {
     private val idlingState = if (collapsible) InputTaskState.IDLING else InputTaskState.OPENED
@@ -171,9 +171,9 @@ class TweetInputViewState @Inject constructor(
         }.asLiveDataWithMain(executor)
 
     @ExperimentalCoroutinesApi
-    internal val user: AppViewState<UserEntity?> = oauthRepository.getCurrentUserIdFlow()
+    internal val user: AppViewState<UserEntity?> = oauthRepository.currentUserIdSource
         .flatMapLatest { id ->
-            userRepository.getUserFlow(id)
+            userRepository.getUserSource(id)
                 .mapLatest { it ?: userRepository.getUser(id) }
         }
         .flowOn(executor.ioContext)

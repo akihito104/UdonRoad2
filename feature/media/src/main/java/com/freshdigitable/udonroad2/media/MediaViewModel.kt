@@ -117,7 +117,7 @@ class MediaViewModelViewStates @Inject constructor(
                 if (it.isNotEmpty()) {
                     emit(it)
                 } else {
-                    tweetRepository.findTweetListItem(tweetId)
+                    tweetRepository.findDetailTweetItem(tweetId)
                 }
             }
             .asLiveData(executor.dispatcher.mainContext)

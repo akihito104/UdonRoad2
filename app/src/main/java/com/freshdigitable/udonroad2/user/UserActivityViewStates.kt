@@ -22,9 +22,9 @@ import androidx.lifecycle.asLiveData
 import androidx.lifecycle.map
 import androidx.lifecycle.switchMap
 import com.freshdigitable.udonroad2.R
+import com.freshdigitable.udonroad2.data.UserDataSource
 import com.freshdigitable.udonroad2.data.impl.RelationshipRepository
 import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
-import com.freshdigitable.udonroad2.data.impl.UserRepository
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.app.AppExecutor
@@ -60,7 +60,7 @@ import kotlin.math.min
 class UserActivityViewStates @Inject constructor(
     tweetUserItem: TweetUserItem,
     actions: UserActivityActions,
-    userRepository: UserRepository,
+    userRepository: UserDataSource,
     relationshipRepository: RelationshipRepository,
     selectedItemRepository: SelectedItemRepository,
     ownerGenerator: ListOwnerGenerator,
@@ -68,7 +68,7 @@ class UserActivityViewStates @Inject constructor(
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
-    private val _user: Flow<Result<UserEntity>> = userRepository.getUserFlow(tweetUserItem.id)
+    private val _user: Flow<Result<UserEntity>> = userRepository.getUserSource(tweetUserItem.id)
         .map { user ->
             when (user) {
                 null -> {
@@ -164,7 +164,7 @@ class UserActivityViewStates @Inject constructor(
             is UserActivityEvent.Relationships.Muting -> updateMutingStatus(
                 event.targetUserId, event.wantsMute
             )
-            is UserActivityEvent.Relationships.ReportSpam -> reportSpam(event.targetUserId)
+            is UserActivityEvent.Relationships.ReportSpam -> addSpam(event.targetUserId)
         }
 
         private fun findSuccessFeedbackMessage(

@@ -1,38 +1,29 @@
 package com.freshdigitable.udonroad2.data.impl
 
-import com.freshdigitable.udonroad2.data.db.DaoModule
-import com.freshdigitable.udonroad2.data.db.dao.UserDao
-import com.freshdigitable.udonroad2.data.restclient.UserRestClient
+import com.freshdigitable.udonroad2.data.UserDataSource
 import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.user.UserEntity
-import dagger.Module
-import dagger.Provides
 import kotlinx.coroutines.flow.Flow
 
-class UserRepository(
-    private val dao: UserDao,
-    private val restClient: UserRestClient,
-) {
-    fun getUserFlow(id: UserId): Flow<UserEntity?> = dao.getUserFlowById(id)
+internal class UserRepository(
+    private val localSource: UserDataSource.Local,
+    private val restClient: UserDataSource.Remote,
+) : UserDataSource {
+    override fun getUserSource(id: UserId): Flow<UserEntity?> = localSource.getUserSource(id)
 
-    suspend fun getUser(id: UserId): UserEntity {
-        return dao.getUserById(id) ?: restClient.showUser(id).also { dao.addUsers(listOf(it)) }
+    override suspend fun findUser(id: UserId): UserEntity? = localSource.findUser(id)
+
+    override suspend fun getUser(id: UserId): UserEntity {
+        val cache = localSource.findUser(id)
+        if (cache != null) {
+            return cache
+        }
+        val res = restClient.getUser(id)
+        addUser(res)
+        return res
     }
 
-    suspend fun addUser(user: UserEntity) {
-        dao.addUsers(listOf(user))
+    override suspend fun addUser(user: UserEntity) {
+        localSource.addUser(user)
     }
-}
-
-@Module(
-    includes = [
-        DaoModule::class
-    ]
-)
-object UserRepositoryModule {
-    @Provides
-    fun provideUserRepository(
-        dao: UserDao,
-        restClient: UserRestClient,
-    ): UserRepository = UserRepository(dao, restClient)
 }

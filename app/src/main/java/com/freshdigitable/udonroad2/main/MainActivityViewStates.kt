@@ -22,7 +22,7 @@ import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.map
 import androidx.lifecycle.switchMap
 import com.freshdigitable.udonroad2.R
-import com.freshdigitable.udonroad2.data.impl.OAuthTokenRepository
+import com.freshdigitable.udonroad2.data.impl.AppSettingRepository
 import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
 import com.freshdigitable.udonroad2.input.TweetInputSharedState
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
@@ -46,7 +46,7 @@ import javax.inject.Inject
 internal class MainActivityViewStates @Inject constructor(
     actions: MainActivityActions,
     selectedItemRepository: SelectedItemRepository,
-    tokenRepository: OAuthTokenRepository,
+    appSettingRepository: AppSettingRepository,
     private val tweetInputSharedState: TweetInputSharedState,
     listOwnerGenerator: ListOwnerGenerator,
     navDelegate: MainActivityNavState,
@@ -56,7 +56,7 @@ internal class MainActivityViewStates @Inject constructor(
         actions.showFirstView.map {
             Timber.tag("MainActivityViewState").d("initContainer.showFirstView: $it")
             when {
-                tokenRepository.getCurrentUserId() != null -> QueryType.TweetQueryType.Timeline()
+                appSettingRepository.currentUserId != null -> QueryType.TweetQueryType.Timeline()
                 else -> QueryType.Oauth
             }
         },
