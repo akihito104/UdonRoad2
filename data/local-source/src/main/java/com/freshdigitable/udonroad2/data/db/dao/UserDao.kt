@@ -32,6 +32,7 @@ import com.freshdigitable.udonroad2.model.ListId
 import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.user.UserEntity
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -73,7 +74,8 @@ internal class UserLocalSource @Inject constructor(
 ) : UserDataSource.Local {
     private val dao: UserDao = db.userDao()
 
-    override fun getUserSource(id: UserId): Flow<UserEntity?> = dao.getUserFlow(id)
+    override fun getUserSource(id: UserId): Flow<UserEntity?> =
+        dao.getUserFlow(id).distinctUntilChanged()
 
     override suspend fun findUser(id: UserId): UserEntity? = dao.getUser(id)
 

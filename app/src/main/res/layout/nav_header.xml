@@ -19,6 +19,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     >
 
+    <data>
+
+        <variable
+            name="viewModel"
+            type="com.freshdigitable.udonroad2.main.MainViewModel"
+            />
+    </data>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -37,6 +45,7 @@
             android:padding="2dp"
             android:background="@drawable/s_rounded_mask_default"
             app:backgroundTint="@color/layer_white_transparent"
+            app:bindUserIcon="@{viewModel.currentUser.iconUrl}"
             />
 
         <TextView
@@ -48,6 +57,7 @@
             android:textSize="@dimen/nav_drawer_header_text"
             android:textColor="@color/text_primary_inverse"
             app:drawableRightCompat="@drawable/ic_arrow_drop_down"
+            app:bindNames="@{viewModel.currentUser}"
             tools:text="name\n\@screen_name"
             />
     </LinearLayout>

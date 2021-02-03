@@ -33,6 +33,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.databinding.ActivityMainBinding
+import com.freshdigitable.udonroad2.databinding.NavHeaderBinding
 import com.freshdigitable.udonroad2.input.TweetInputFragment
 import com.freshdigitable.udonroad2.input.TweetInputFragmentArgs
 import com.freshdigitable.udonroad2.oauth.OauthEvent
@@ -93,7 +94,6 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
                     ?: return@observe
             tweetInputFragment.setMenuVisibility(it)
         }
-
         binding.mainGlobalMenu.setNavigationItemSelectedListener { item ->
             val event = when (item.itemId) {
                 R.id.drawer_menu_home -> TimelineEvent.Init
@@ -105,6 +105,14 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
                 binding.mainDrawer.closeDrawer(binding.mainGlobalMenu)
             }
             return@setNavigationItemSelectedListener event != null
+        }
+        val headerView = binding.mainGlobalMenu.getHeaderView(0)
+        val navHeaderBinding: NavHeaderBinding = requireNotNull<NavHeaderBinding>(
+            DataBindingUtil.findBinding(headerView) ?: DataBindingUtil.bind(headerView)
+        )
+        navHeaderBinding.also {
+            it.viewModel = viewModel
+            it.lifecycleOwner = this
         }
         viewModel.initialEvent(savedInstanceState?.savedViewState)
     }

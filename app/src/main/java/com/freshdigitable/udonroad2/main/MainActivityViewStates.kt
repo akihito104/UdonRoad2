@@ -22,6 +22,7 @@ import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.map
 import androidx.lifecycle.switchMap
 import com.freshdigitable.udonroad2.R
+import com.freshdigitable.udonroad2.data.UserDataSource
 import com.freshdigitable.udonroad2.data.impl.AppSettingRepository
 import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
 import com.freshdigitable.udonroad2.input.TweetInputSharedState
@@ -34,8 +35,11 @@ import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.AppViewState
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.ViewState
+import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.timeline.getTimelineEvent
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.rx2.asFlow
 import timber.log.Timber
@@ -50,7 +54,11 @@ internal class MainActivityViewStates @Inject constructor(
     private val tweetInputSharedState: TweetInputSharedState,
     listOwnerGenerator: ListOwnerGenerator,
     navDelegate: MainActivityNavState,
+    userRepository: UserDataSource,
 ) {
+    internal val currentUser: Flow<TweetUserItem> = appSettingRepository.currentUserIdSource
+        .flatMapLatest { userRepository.getUserSource(it) }
+        .filterNotNull()
 
     internal val initContainer: Flow<NavigationEvent> = AppAction.merge(
         actions.showFirstView.map {

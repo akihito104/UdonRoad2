@@ -19,7 +19,11 @@ package com.freshdigitable.udonroad2.data.impl
 import com.freshdigitable.udonroad2.data.AppSettingDataSource
 import com.freshdigitable.udonroad2.data.restclient.TwitterConfigApiClient
 import com.freshdigitable.udonroad2.model.AccessTokenEntity
+import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.app.AppExecutor
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.shareIn
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -28,8 +32,10 @@ class AppSettingRepository @Inject constructor(
     private val prefs: AppSettingDataSource.Local,
     private val apiClient: TwitterConfigApiClient,
     private val oAuthApiClient: AppSettingDataSource.Remote,
-    private val executor: AppExecutor,
+    executor: AppExecutor,
 ) : AppSettingDataSource by prefs {
+    override val currentUserIdSource: Flow<UserId> =
+        prefs.currentUserIdSource.shareIn(executor, SharingStarted.Lazily, 1)
 
     override suspend fun updateCurrentUser(accessToken: AccessTokenEntity) {
         prefs.updateCurrentUser(accessToken)

@@ -29,11 +29,11 @@ import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.google.common.truth.Truth.assertThat
 import io.mockk.every
 import io.mockk.mockk
+import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.experimental.runners.Enclosed
-import org.junit.rules.ExpectedException
 import org.junit.rules.RuleChain
 import org.junit.rules.TestWatcher
 import org.junit.runner.Description
@@ -45,6 +45,11 @@ class MainViewModelTest {
     class WhenInit {
         @get:Rule
         internal val rule = MainViewModelTestRule()
+
+        @Test
+        fun initialState(): Unit = with(rule) {
+            assertThat(sut.currentUser.value?.id).isEqualTo(stateModelRule.authenticatedUserId)
+        }
 
         @Test
         fun initialEvent_withNull_then_dispatchNavigateIsCalledWithOauth(): Unit = with(rule) {
@@ -117,18 +122,16 @@ class MainViewModelTest {
                     .assertValueAt(0) { it is TweetInputEvent.Cancel }
             }
 
-        @get:Rule
-        val expectedException: ExpectedException = ExpectedException.none()
-
         @Test
         fun collapseTweetInput_whenTweetInputIsNotExpanded_then_throwIllegalStateException(): Unit =
             with(rule) {
                 // setup
                 stateModelRule.isExpandedSource.value = false
-                expectedException.expect(IllegalStateException::class.java)
 
                 // exercise
-                sut.collapseTweetInput()
+                Assert.assertThrows(java.lang.IllegalStateException::class.java) {
+                    sut.collapseTweetInput()
+                }
             }
     }
 
@@ -207,7 +210,7 @@ class MainViewModelTest {
 internal class MainViewModelTestRule(
     val stateModelRule: MainActivityStateModelTestRule = MainActivityStateModelTestRule()
 ) : TestWatcher() {
-    val sut: MainViewModel = MainViewModel(stateModelRule.dispatcher, stateModelRule.sut)
+    val sut: MainViewModel by lazy { MainViewModel(stateModelRule.dispatcher, stateModelRule.sut) }
 
     override fun starting(description: Description?) {
         super.starting(description)
@@ -217,6 +220,7 @@ internal class MainViewModelTestRule(
                 appBarTitle,
                 isTweetInputMenuVisible,
                 isFabVisible,
+                currentUser,
             ).forEach { it.observeForever { } }
         }
     }

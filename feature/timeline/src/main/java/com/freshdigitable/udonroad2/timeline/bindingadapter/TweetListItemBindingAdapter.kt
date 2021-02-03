@@ -25,6 +25,7 @@ import android.text.format.DateUtils
 import android.text.style.StyleSpan
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.widget.TextViewCompat
 import androidx.databinding.BindingAdapter
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
@@ -65,7 +66,12 @@ fun bindNames(v: TextView, user: TweetUserItem?) {
     v.text = user?.let {
         SpannableStringBuilder(it.name).apply {
             setSpan(NAME_STYLE, 0, it.name.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-            append(" @")
+            if (TextViewCompat.getMaxLines(v) == 2) {
+                append("\n")
+            } else {
+                append(" ")
+            }
+            append("@")
             append(it.screenName)
         }
     }
