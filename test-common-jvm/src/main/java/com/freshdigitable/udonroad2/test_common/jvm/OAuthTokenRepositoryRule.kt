@@ -24,7 +24,9 @@ import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.user.UserEntity
 import com.freshdigitable.udonroad2.test_common.MockVerified
 import io.mockk.mockk
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.receiveAsFlow
 import org.junit.rules.TestRule
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
@@ -37,6 +39,8 @@ class OAuthTokenRepositoryRule(
     val mock: OAuthTokenDataSource = mockVerified.mock
     val appSettingMock: AppSettingRepository = appSettingRepository.mock
 
+    val currentUserIdSource: Channel<UserId> = Channel()
+
     fun setupCurrentUserId(userId: Long?, needLogin: Boolean = true) {
         val id = UserId.create(userId)
         with(appSettingRepository) {
@@ -47,11 +51,13 @@ class OAuthTokenRepositoryRule(
         }
     }
 
-    fun setupCurrentUserIdSource(userId: Long?) {
+    fun setupCurrentUserIdSource(userId: Long? = null) {
         appSettingRepository.run {
             setupResponseWithVerify(
                 { mock.currentUserIdSource },
-                flow { emit(UserId.create(userId)) }
+                currentUserIdSource.receiveAsFlow().onStart {
+                    userId?.let { emit(UserId(it)) }
+                }
             )
         }
     }

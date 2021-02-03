@@ -115,14 +115,15 @@ internal class MainActivityStateModelTestRule : TestWatcher() {
     val oauthTokenRepositoryMock = OAuthTokenRepositoryRule()
     val selectedItemRepository = SelectedItemRepository()
     val navDelegateRule = MainActivityNavigationDelegateRule()
-    val userRepository = MockVerified.create<UserDataSource>()
-    private val coroutineRule = CoroutineTestRule()
+    private val userRepository = MockVerified.create<UserDataSource>()
+    val coroutineRule = CoroutineTestRule()
 
     val isExpandedSource = MutableLiveData<Boolean>()
     private val tweetInputSharedState = MockVerified.create<TweetInputSharedState>().apply {
         every { mock.isExpanded } returns isExpandedSource
     }
     val authenticatedUserId = UserId(10000)
+    private val executor = AppExecutor(dispatcher = coroutineRule.coroutineContextProvider)
 
     val sut: MainActivityViewStates by lazy {
         MainActivityViewStates(
@@ -133,6 +134,7 @@ internal class MainActivityStateModelTestRule : TestWatcher() {
             ListOwnerGenerator.create(),
             navDelegateRule.state,
             userRepository.mock,
+            executor,
         )
     }
     lateinit var navigationEventActual: List<NavigationEvent>
@@ -143,21 +145,11 @@ internal class MainActivityStateModelTestRule : TestWatcher() {
 
     override fun starting(description: Description?) {
         super.starting(description)
-        oauthTokenRepositoryMock.setupCurrentUserIdSource(authenticatedUserId.value)
-        userRepository.run {
-            setupResponseWithVerify({ mock.getUserSource(authenticatedUserId) },
-                flow {
-                    emit(mockk<UserEntity>().also {
-                        every { it.id } returns authenticatedUserId
-                    })
-                })
-        }
+        oauthTokenRepositoryMock.setupCurrentUserIdSource()
         listOf(
-            sut.isFabVisible, sut.appBarTitle, sut.navIconType
+            sut.isFabVisible, sut.appBarTitle, sut.navIconType, sut.currentUser
         ).forEach { it.observeForever {} }
-        val executor = AppExecutor(dispatcher = coroutineRule.coroutineContextProvider)
         navigationEventActual = sut.initContainer.testCollect(executor)
-        sut.currentUser.testCollect(executor)
     }
 
     override fun apply(base: Statement?, description: Description?): Statement {
@@ -168,6 +160,15 @@ internal class MainActivityStateModelTestRule : TestWatcher() {
             .around(oauthTokenRepositoryMock)
             .around(RxExceptionHandler())
             .apply(super.apply(base, description), description)
+    }
+
+    fun setupGetUserSource(userId: UserId) {
+        val userEntity = mockk<UserEntity>().also {
+            every { it.id } returns userId
+        }
+        userRepository.run {
+            setupResponseWithVerify({ mock.getUserSource(userId) }, flow { emit(userEntity) })
+        }
     }
 
     fun assertThatNavigationEventOfTimeline(

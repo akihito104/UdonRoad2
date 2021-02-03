@@ -19,8 +19,6 @@ package com.freshdigitable.udonroad2.main
 import android.view.MenuItem
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.asLiveData
-import androidx.lifecycle.viewModelScope
 import com.freshdigitable.udonroad2.input.TweetInputEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
@@ -43,8 +41,7 @@ internal class MainViewModel(
     val isTweetInputMenuVisible: LiveData<Boolean> = viewStates.isTweetInputMenuVisible
     override val isFabVisible: LiveData<Boolean> = viewStates.isFabVisible
     internal val navigationEvent: Flow<NavigationEvent> = viewStates.initContainer
-    val currentUser: LiveData<TweetUserItem> =
-        viewStates.currentUser.asLiveData(viewModelScope.coroutineContext)
+    val currentUser: LiveData<TweetUserItem> = viewStates.currentUser
 
     internal fun initialEvent(savedState: MainActivityViewState?) {
         eventDispatcher.postEvent(TimelineEvent.Setup(savedState))

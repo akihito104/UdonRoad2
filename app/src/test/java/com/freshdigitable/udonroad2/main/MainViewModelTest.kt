@@ -48,7 +48,7 @@ class MainViewModelTest {
 
         @Test
         fun initialState(): Unit = with(rule) {
-            assertThat(sut.currentUser.value?.id).isEqualTo(stateModelRule.authenticatedUserId)
+            assertThat(sut.currentUser.value?.id).isEqualTo(null)
         }
 
         @Test
@@ -203,6 +203,23 @@ class MainViewModelTest {
 
             // verify
             assertThat(sut.isFabVisible.value).isFalse()
+        }
+    }
+
+    class WhenHasCurrentUserId {
+        @get:Rule
+        internal val rule = MainViewModelTestRule()
+
+        @Test
+        fun init(): Unit = with(rule) {
+            with(stateModelRule) {
+                setupGetUserSource(authenticatedUserId)
+                coroutineRule.runBlockingTest {
+                    oauthTokenRepositoryMock.currentUserIdSource.send(authenticatedUserId)
+                }
+            }
+
+            assertThat(sut.currentUser.value?.id).isEqualTo(stateModelRule.authenticatedUserId)
         }
     }
 }

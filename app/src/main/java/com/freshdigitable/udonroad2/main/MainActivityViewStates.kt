@@ -18,6 +18,7 @@ package com.freshdigitable.udonroad2.main
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.map
 import androidx.lifecycle.switchMap
@@ -29,8 +30,10 @@ import com.freshdigitable.udonroad2.input.TweetInputSharedState
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
+import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.di.ActivityScope
 import com.freshdigitable.udonroad2.model.app.ext.combineLatest
+import com.freshdigitable.udonroad2.model.app.mainContext
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.AppViewState
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
@@ -55,10 +58,12 @@ internal class MainActivityViewStates @Inject constructor(
     listOwnerGenerator: ListOwnerGenerator,
     navDelegate: MainActivityNavState,
     userRepository: UserDataSource,
+    executor: AppExecutor,
 ) {
-    internal val currentUser: Flow<TweetUserItem> = appSettingRepository.currentUserIdSource
+    internal val currentUser: AppViewState<TweetUserItem> = appSettingRepository.currentUserIdSource
         .flatMapLatest { userRepository.getUserSource(it) }
         .filterNotNull()
+        .asLiveData(executor.mainContext)
 
     internal val initContainer: Flow<NavigationEvent> = AppAction.merge(
         actions.showFirstView.map {
