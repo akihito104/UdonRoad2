@@ -41,9 +41,11 @@ import com.freshdigitable.udonroad2.model.app.navigation.ViewState
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.timeline.getTimelineEvent
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.rx2.asFlow
 import timber.log.Timber
 import java.io.Serializable
@@ -64,6 +66,12 @@ internal class MainActivityViewStates @Inject constructor(
         .flatMapLatest { userRepository.getUserSource(it) }
         .filterNotNull()
         .asLiveData(executor.mainContext)
+    internal val switchableRegisteredUsers: AppViewState<Set<TweetUserItem>> = combine(
+        appSettingRepository.registeredUserIdsSource,
+        appSettingRepository.currentUserIdSource,
+    ) { registered, current ->
+        (registered - current).map { userRepository.getUser(it) }.toSet()
+    }.onStart { emit(emptySet()) }.asLiveData(executor.mainContext)
 
     internal val initContainer: Flow<NavigationEvent> = AppAction.merge(
         actions.showFirstView.map {

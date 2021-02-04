@@ -42,8 +42,6 @@ class AppSettingRepository @Inject constructor(
         oAuthApiClient.updateCurrentUser(accessToken)
     }
 
-//    fun getAllAuthenticatedUserIds(): Set<String> = prefs.getAllAuthenticatedUserIds()
-//
 //    private val twitterApiConfig = MutableLiveData<TwitterApiConfigEntity>()
 //
 //    fun getTwitterAPIConfig(): LiveData<TwitterApiConfigEntity> {

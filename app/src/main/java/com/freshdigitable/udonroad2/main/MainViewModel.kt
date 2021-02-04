@@ -41,7 +41,10 @@ internal class MainViewModel(
     val isTweetInputMenuVisible: LiveData<Boolean> = viewStates.isTweetInputMenuVisible
     override val isFabVisible: LiveData<Boolean> = viewStates.isFabVisible
     internal val navigationEvent: Flow<NavigationEvent> = viewStates.initContainer
+
     val currentUser: LiveData<TweetUserItem> = viewStates.currentUser
+    val switchableRegisteredUsers: LiveData<Set<TweetUserItem>> =
+        viewStates.switchableRegisteredUsers
 
     internal fun initialEvent(savedState: MainActivityViewState?) {
         eventDispatcher.postEvent(TimelineEvent.Setup(savedState))

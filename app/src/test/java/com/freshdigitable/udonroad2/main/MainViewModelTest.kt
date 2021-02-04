@@ -24,6 +24,7 @@ import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.TweetId
+import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.shortcut.SelectedItemShortcut
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.google.common.truth.Truth.assertThat
@@ -49,6 +50,7 @@ class MainViewModelTest {
         @Test
         fun initialState(): Unit = with(rule) {
             assertThat(sut.currentUser.value?.id).isEqualTo(null)
+            assertThat(sut.switchableRegisteredUsers.value).isEmpty()
         }
 
         @Test
@@ -210,16 +212,39 @@ class MainViewModelTest {
         @get:Rule
         internal val rule = MainViewModelTestRule()
 
-        @Test
-        fun init(): Unit = with(rule) {
+        @Before
+        fun setup(): Unit = with(rule) {
             with(stateModelRule) {
                 setupGetUserSource(authenticatedUserId)
                 coroutineRule.runBlockingTest {
                     oauthTokenRepositoryMock.currentUserIdSource.send(authenticatedUserId)
+                    oauthTokenRepositoryMock.registeredUserIdsSource.send(setOf(authenticatedUserId))
+                }
+            }
+        }
+
+        @Test
+        fun init(): Unit = with(rule) {
+            assertThat(sut.currentUser.value?.id).isEqualTo(stateModelRule.authenticatedUserId)
+            assertThat(sut.switchableRegisteredUsers.value).isEmpty()
+        }
+
+        @Test
+        fun switchableRegisteredUsers_addedNewUser_then_switchableTo1User(): Unit = with(rule) {
+            // setup
+            with(stateModelRule) {
+                val userId = UserId(30000)
+                setupGetUser(userId)
+                coroutineRule.runBlockingTest {
+                    oauthTokenRepositoryMock.registeredUserIdsSource.send(
+                        setOf(authenticatedUserId, userId)
+                    )
                 }
             }
 
+            // verify
             assertThat(sut.currentUser.value?.id).isEqualTo(stateModelRule.authenticatedUserId)
+            assertThat(sut.switchableRegisteredUsers.value).hasSize(1)
         }
     }
 }
@@ -238,6 +263,7 @@ internal class MainViewModelTestRule(
                 isTweetInputMenuVisible,
                 isFabVisible,
                 currentUser,
+                switchableRegisteredUsers,
             ).forEach { it.observeForever { } }
         }
     }

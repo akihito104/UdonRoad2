@@ -145,7 +145,8 @@ internal class MainActivityStateModelTestRule : TestWatcher() {
 
     override fun starting(description: Description?) {
         super.starting(description)
-        oauthTokenRepositoryMock.setupCurrentUserIdSource()
+        oauthTokenRepositoryMock.setupCurrentUserIdSource(executor)
+        oauthTokenRepositoryMock.setupRegisteredUserIdsSource()
         listOf(
             sut.isFabVisible, sut.appBarTitle, sut.navIconType, sut.currentUser
         ).forEach { it.observeForever {} }
@@ -168,6 +169,15 @@ internal class MainActivityStateModelTestRule : TestWatcher() {
         }
         userRepository.run {
             setupResponseWithVerify({ mock.getUserSource(userId) }, flow { emit(userEntity) })
+        }
+    }
+
+    fun setupGetUser(userId: UserId) {
+        val userEntity = mockk<UserEntity>().also {
+            every { it.id } returns userId
+        }
+        userRepository.run {
+            coSetupResponseWithVerify({ mock.getUser(userId) }, userEntity)
         }
     }
 

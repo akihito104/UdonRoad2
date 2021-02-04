@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.Flow
 interface AppSettingDataSource {
     val currentUserId: UserId?
     val currentUserIdSource: Flow<UserId>
+    val registeredUserIdsSource: Flow<Set<UserId>>
 
     suspend fun updateCurrentUser(accessToken: AccessTokenEntity)
 

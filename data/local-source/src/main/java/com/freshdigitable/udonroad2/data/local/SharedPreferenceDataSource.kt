@@ -90,8 +90,17 @@ class SharedPreferenceDataSource @Inject constructor(
         return AccessTokenEntity.create(userId, token, secret)
     }
 
-    fun getAllAuthenticatedUserIds(): Set<String> {
-        return prefs.getStringSet(AUTHENTICATED_USERS, emptySet()) ?: emptySet()
+    override val registeredUserIdsSource: Flow<Set<UserId>> = callbackFlow {
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { sp, key ->
+            if (key == AUTHENTICATED_USERS) {
+                val userIds = sp.getAllAuthenticatedUserIds()
+                sendBlocking(userIds)
+            }
+        }
+        prefs.registerOnSharedPreferenceChangeListener(listener)
+        awaitClose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
+    }.onStart {
+        emit(prefs.getAllAuthenticatedUserIds())
     }
 
     fun deleteAll() {
@@ -114,6 +123,11 @@ class SharedPreferenceDataSource @Inject constructor(
         private const val TOKEN_SECRET_PREFIX = "tokenSecret_"
 
         private const val TWITTER_API_CONFIG_DATE = "twitterAPIConfigDate"
+
+        fun SharedPreferences.getAllAuthenticatedUserIds(): Set<UserId> =
+            (getStringSet(AUTHENTICATED_USERS, emptySet()) ?: emptySet())
+                .map { UserId(it.toLong()) }
+                .toSet()
     }
 
     override suspend fun getRequestTokenItem(): RequestTokenItem = throw NotImplementedError()

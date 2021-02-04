@@ -19,6 +19,7 @@ package com.freshdigitable.udonroad2.main
 import android.animation.Animator
 import android.animation.ObjectAnimator
 import android.os.Bundle
+import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import androidx.activity.viewModels
@@ -105,6 +106,14 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
                 binding.mainDrawer.closeDrawer(binding.mainGlobalMenu)
             }
             return@setNavigationItemSelectedListener event != null
+        }
+        viewModel.switchableRegisteredUsers.observe(this) { items ->
+            binding.mainGlobalMenu.menu.apply {
+                removeGroup(R.id.drawer_menu_accounts)
+                items.sortedBy { it.screenName }.forEachIndexed { i, item ->
+                    add(R.id.drawer_menu_accounts, Menu.NONE, i, "@${item.screenName}")
+                }
+            }
         }
         val headerView = binding.mainGlobalMenu.getHeaderView(0)
         val navHeaderBinding: NavHeaderBinding = requireNotNull<NavHeaderBinding>(

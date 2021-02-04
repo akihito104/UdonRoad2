@@ -37,15 +37,18 @@
             />
     </group>
     <group
-        android:id="@+id/drawer_menu_accounts"
+        android:id="@+id/drawer_menu_register_account"
         android:visible="false"
         tools:visible="true"
         >
-        <!-- order is 16 bit (upper 16 bit is for category) -->
         <item
             android:id="@+id/drawer_menu_add_account"
             android:title="@string/drawer_menu_add_account"
-            android:orderInCategory="32767"
             />
     </group>
+    <group
+        android:id="@+id/drawer_menu_accounts"
+        android:visible="false"
+        tools:visible="true"
+        />
 </menu>
