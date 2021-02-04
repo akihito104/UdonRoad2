@@ -18,6 +18,7 @@ package com.freshdigitable.udonroad2.main
 
 import com.freshdigitable.udonroad2.model.app.di.ActivityScope
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
+import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
 import com.freshdigitable.udonroad2.oauth.OauthEvent
@@ -30,4 +31,10 @@ class MainActivityActions @Inject constructor(
 ) {
     internal val showFirstView: AppAction<TimelineEvent.Setup> = dispatcher.toAction()
     internal val showAuth: AppAction<OauthEvent.Init> = dispatcher.toAction()
+    internal val toggleAccountSwitcher: AppAction<MainActivityEvent.AccountSwitchClicked> =
+        dispatcher.toAction()
+}
+
+sealed class MainActivityEvent : AppEvent {
+    object AccountSwitchClicked : MainActivityEvent()
 }

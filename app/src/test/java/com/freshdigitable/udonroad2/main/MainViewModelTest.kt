@@ -51,7 +51,32 @@ class MainViewModelTest {
         fun initialState(): Unit = with(rule) {
             assertThat(sut.currentUser.value?.id).isEqualTo(null)
             assertThat(sut.switchableRegisteredUsers.value).isEmpty()
+            assertThat(sut.isRegisteredUsersListOpened.value).isFalse()
         }
+
+        @Test
+        fun onAccountSwitcherClicked_isRegisteredUsersListOpenedIsTrue(): Unit = with(rule) {
+            stateModelRule.coroutineRule.runBlockingTest {
+                // exercise
+                sut.onAccountSwitcherClicked()
+            }
+
+            // verify
+            assertThat(sut.isRegisteredUsersListOpened.value).isTrue()
+        }
+
+        @Test
+        fun onAccountSwitcherClicked_calledTwice_then_isRegisteredUsersListOpenedIsFalse(): Unit =
+            with(rule) {
+                stateModelRule.coroutineRule.runBlockingTest {
+                    // exercise
+                    sut.onAccountSwitcherClicked()
+                    sut.onAccountSwitcherClicked()
+                }
+
+                // verify
+                assertThat(sut.isRegisteredUsersListOpened.value).isFalse()
+            }
 
         @Test
         fun initialEvent_withNull_then_dispatchNavigateIsCalledWithOauth(): Unit = with(rule) {
@@ -264,6 +289,7 @@ internal class MainViewModelTestRule(
                 isFabVisible,
                 currentUser,
                 switchableRegisteredUsers,
+                isRegisteredUsersListOpened,
             ).forEach { it.observeForever { } }
         }
     }

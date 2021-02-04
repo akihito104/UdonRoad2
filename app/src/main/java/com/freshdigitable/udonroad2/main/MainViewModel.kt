@@ -43,6 +43,7 @@ internal class MainViewModel(
     internal val navigationEvent: Flow<NavigationEvent> = viewStates.initContainer
 
     val currentUser: LiveData<TweetUserItem> = viewStates.currentUser
+    val isRegisteredUsersListOpened: LiveData<Boolean> = viewStates.isRegisteredUsersOpened
     val switchableRegisteredUsers: LiveData<Set<TweetUserItem>> =
         viewStates.switchableRegisteredUsers
 
@@ -71,6 +72,10 @@ internal class MainViewModel(
         }
         eventDispatcher.postEvent(event)
         return true
+    }
+
+    fun onAccountSwitcherClicked() {
+        eventDispatcher.postEvent(MainActivityEvent.AccountSwitchClicked)
     }
 
     val currentState: MainActivityViewState

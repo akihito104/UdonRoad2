@@ -46,6 +46,7 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.scan
 import kotlinx.coroutines.rx2.asFlow
 import timber.log.Timber
 import java.io.Serializable
@@ -72,6 +73,11 @@ internal class MainActivityViewStates @Inject constructor(
     ) { registered, current ->
         (registered - current).map { userRepository.getUser(it) }.toSet()
     }.onStart { emit(emptySet()) }.asLiveData(executor.mainContext)
+
+    internal val isRegisteredUsersOpened: AppViewState<Boolean> =
+        actions.toggleAccountSwitcher.asFlow()
+            .scan(false) { acc, _ -> !acc }
+            .asLiveData(executor.mainContext)
 
     internal val initContainer: Flow<NavigationEvent> = AppAction.merge(
         actions.showFirstView.map {

@@ -56,8 +56,9 @@
             android:maxLines="2"
             android:textSize="@dimen/nav_drawer_header_text"
             android:textColor="@color/text_primary_inverse"
-            app:drawableRightCompat="@drawable/ic_arrow_drop_down"
+            app:drawableRightCompat="@drawable/s_arrow_drop"
             app:bindNames="@{viewModel.currentUser}"
+            android:onClick="@{v -> viewModel.onAccountSwitcherClicked()}"
             tools:text="name\n\@screen_name"
             />
     </LinearLayout>
