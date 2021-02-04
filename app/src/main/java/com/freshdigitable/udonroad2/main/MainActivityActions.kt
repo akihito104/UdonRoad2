@@ -21,6 +21,7 @@ import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
+import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.oauth.OauthEvent
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import javax.inject.Inject
@@ -33,8 +34,11 @@ class MainActivityActions @Inject constructor(
     internal val showAuth: AppAction<OauthEvent.Init> = dispatcher.toAction()
     internal val toggleAccountSwitcher: AppAction<MainActivityEvent.AccountSwitchClicked> =
         dispatcher.toAction()
+    internal val showCurrentUser: AppAction<MainActivityEvent.CurrentUserIconClicked> =
+        dispatcher.toAction()
 }
 
 sealed class MainActivityEvent : AppEvent {
     object AccountSwitchClicked : MainActivityEvent()
+    data class CurrentUserIconClicked(val user: TweetUserItem) : MainActivityEvent()
 }

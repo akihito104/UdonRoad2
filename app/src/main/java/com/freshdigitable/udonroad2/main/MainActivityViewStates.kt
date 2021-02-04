@@ -39,6 +39,7 @@ import com.freshdigitable.udonroad2.model.app.navigation.AppViewState
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.ViewState
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
+import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.getTimelineEvent
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -91,6 +92,10 @@ internal class MainActivityViewStates @Inject constructor(
     ).asFlow().mapLatest {
         listOwnerGenerator.getTimelineEvent(it, NavigationEvent.Type.INIT)
     }
+    internal val navigateToUser: Flow<NavigationEvent> =
+        actions.showCurrentUser.asFlow().mapLatest {
+            TimelineEvent.Navigate.UserInfo(it.user)
+        }
 
     private val currentNavHost: AppViewState<MainNavHostState> = navDelegate.containerState
     val isTweetInputMenuVisible: LiveData<Boolean> = currentNavHost.map {

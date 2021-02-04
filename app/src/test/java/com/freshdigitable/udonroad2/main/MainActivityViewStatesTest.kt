@@ -123,7 +123,7 @@ internal class MainActivityStateModelTestRule : TestWatcher() {
         every { mock.isExpanded } returns isExpandedSource
     }
     val authenticatedUserId = UserId(10000)
-    private val executor = AppExecutor(dispatcher = coroutineRule.coroutineContextProvider)
+    val executor = AppExecutor(dispatcher = coroutineRule.coroutineContextProvider)
 
     val sut: MainActivityViewStates by lazy {
         MainActivityViewStates(

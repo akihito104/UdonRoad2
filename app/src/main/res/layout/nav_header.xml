@@ -45,6 +45,7 @@
             android:padding="2dp"
             android:background="@drawable/s_rounded_mask_default"
             app:backgroundTint="@color/layer_white_transparent"
+            android:onClick="@{v -> viewModel.onCurrentUserIconClicked()}"
             app:bindUserIcon="@{viewModel.currentUser.iconUrl}"
             />
 

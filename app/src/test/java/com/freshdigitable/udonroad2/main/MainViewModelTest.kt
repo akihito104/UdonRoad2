@@ -25,7 +25,9 @@ import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.UserId
+import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.shortcut.SelectedItemShortcut
+import com.freshdigitable.udonroad2.test_common.jvm.testCollect
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.google.common.truth.Truth.assertThat
 import io.mockk.every
@@ -271,6 +273,18 @@ class MainViewModelTest {
             assertThat(sut.currentUser.value?.id).isEqualTo(stateModelRule.authenticatedUserId)
             assertThat(sut.switchableRegisteredUsers.value).hasSize(1)
         }
+
+        @Test
+        fun onCurrentUserIconClicked(): Unit = with(rule) {
+            // exercise
+            sut.onCurrentUserIconClicked()
+
+            // verify
+            assertThat(navigationEventActual.last())
+                .isInstanceOf(TimelineEvent.Navigate.UserInfo::class.java)
+            val actualEvent = navigationEventActual.last() as TimelineEvent.Navigate.UserInfo
+            assertThat(actualEvent.tweetUserItem.id).isEqualTo(stateModelRule.authenticatedUserId)
+        }
     }
 }
 
@@ -278,6 +292,7 @@ internal class MainViewModelTestRule(
     val stateModelRule: MainActivityStateModelTestRule = MainActivityStateModelTestRule()
 ) : TestWatcher() {
     val sut: MainViewModel by lazy { MainViewModel(stateModelRule.dispatcher, stateModelRule.sut) }
+    lateinit var navigationEventActual: List<NavigationEvent>
 
     override fun starting(description: Description?) {
         super.starting(description)
@@ -292,6 +307,7 @@ internal class MainViewModelTestRule(
                 isRegisteredUsersListOpened,
             ).forEach { it.observeForever { } }
         }
+        navigationEventActual = sut.navigationEvent.testCollect(stateModelRule.executor)
     }
 
     override fun apply(base: Statement?, description: Description?): Statement {
