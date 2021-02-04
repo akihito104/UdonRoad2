@@ -118,7 +118,7 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
         viewModel.isRegisteredUsersListOpened.observe(this) {
             binding.mainGlobalMenu.menu.apply {
                 setGroupVisible(R.id.drawer_menu_accounts, it)
-                setGroupVisible(R.id.drawer_menu_add_account, it)
+                setGroupVisible(R.id.drawer_menu_register_account, it)
                 setGroupVisible(R.id.drawer_menu_default, !it)
             }
         }
@@ -129,9 +129,6 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
         navHeaderBinding.also {
             it.viewModel = viewModel
             it.lifecycleOwner = this
-        }
-        viewModel.isRegisteredUsersListOpened.observe(this) { isOpened ->
-            navHeaderBinding.navHeaderAccount.isSelected = isOpened
         }
         viewModel.initialEvent(savedInstanceState?.savedViewState)
     }

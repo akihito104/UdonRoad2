@@ -59,6 +59,7 @@
             android:textColor="@color/text_primary_inverse"
             app:drawableRightCompat="@drawable/s_arrow_drop"
             app:bindNames="@{viewModel.currentUser}"
+            app:selected="@{viewModel.isRegisteredUsersListOpened}"
             android:onClick="@{v -> viewModel.onAccountSwitcherClicked()}"
             tools:text="name\n\@screen_name"
             />

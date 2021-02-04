@@ -15,9 +15,7 @@
   -->
 
 <menu
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    >
+    xmlns:android="http://schemas.android.com/apk/res/android">
     <group android:id="@+id/drawer_menu_default">
         <item
             android:id="@+id/drawer_menu_home"
@@ -36,19 +34,11 @@
             android:title="@string/drawer_menu_license"
             />
     </group>
-    <group
-        android:id="@+id/drawer_menu_register_account"
-        android:visible="false"
-        tools:visible="true"
-        >
+    <group android:id="@+id/drawer_menu_register_account">
         <item
             android:id="@+id/drawer_menu_add_account"
             android:title="@string/drawer_menu_add_account"
             />
     </group>
-    <group
-        android:id="@+id/drawer_menu_accounts"
-        android:visible="false"
-        tools:visible="true"
-        />
+    <group android:id="@+id/drawer_menu_accounts" />
 </menu>
