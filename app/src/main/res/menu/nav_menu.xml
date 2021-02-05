@@ -16,29 +16,29 @@
 
 <menu
     xmlns:android="http://schemas.android.com/apk/res/android">
-    <group android:id="@+id/drawer_menu_default">
+    <group android:id="@+id/menu_group_drawer_default">
         <item
-            android:id="@+id/drawer_menu_home"
+            android:id="@+id/menu_item_drawer_home"
             android:title="@string/drawer_menu_home"
             />
         <item
-            android:id="@+id/drawer_menu_lists"
+            android:id="@+id/menu_item_drawer_lists"
             android:title="@string/drawer_menu_list"
             />
         <item
-            android:id="@+id/drawer_menu_settings"
+            android:id="@+id/menu_item_drawer_settings"
             android:title="@string/drawer_menu_settings"
             />
         <item
-            android:id="@+id/drawer_menu_license"
+            android:id="@+id/menu_item_drawer_license"
             android:title="@string/drawer_menu_license"
             />
     </group>
-    <group android:id="@+id/drawer_menu_register_account">
+    <group android:id="@+id/menu_group_drawer_register_account">
         <item
-            android:id="@+id/drawer_menu_add_account"
+            android:id="@+id/menu_item_drawer_add_account"
             android:title="@string/drawer_menu_add_account"
             />
     </group>
-    <group android:id="@+id/drawer_menu_accounts" />
+    <group android:id="@+id/menu_group_drawer_switchable_accounts" />
 </menu>

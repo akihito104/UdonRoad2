@@ -97,8 +97,8 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
         }
         binding.mainGlobalMenu.setNavigationItemSelectedListener { item ->
             val event = when (item.itemId) {
-                R.id.drawer_menu_home -> TimelineEvent.Init
-                R.id.drawer_menu_add_account -> OauthEvent.Init
+                R.id.menu_item_drawer_home -> TimelineEvent.Init
+                R.id.menu_item_drawer_add_account -> OauthEvent.Init
                 else -> null
             }
             if (event != null) {
@@ -107,19 +107,20 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
             }
             return@setNavigationItemSelectedListener event != null
         }
-        viewModel.switchableRegisteredUsers.observe(this) { items ->
+        viewModel.switchableRegisteredUsers.observe(this) { users ->
             binding.mainGlobalMenu.menu.apply {
-                removeGroup(R.id.drawer_menu_accounts)
-                items.sortedBy { it.screenName }.forEachIndexed { i, item ->
-                    add(R.id.drawer_menu_accounts, Menu.NONE, i, "@${item.screenName}")
-                }
+                removeGroup(R.id.menu_group_drawer_switchable_accounts)
+                users.map { "@${it.screenName}" }
+                    .forEachIndexed { i, screenName ->
+                        add(R.id.menu_group_drawer_switchable_accounts, Menu.NONE, i, screenName)
+                    }
             }
         }
         viewModel.isRegisteredUsersListOpened.observe(this) {
             binding.mainGlobalMenu.menu.apply {
-                setGroupVisible(R.id.drawer_menu_accounts, it)
-                setGroupVisible(R.id.drawer_menu_register_account, it)
-                setGroupVisible(R.id.drawer_menu_default, !it)
+                setGroupVisible(R.id.menu_group_drawer_switchable_accounts, it)
+                setGroupVisible(R.id.menu_group_drawer_register_account, it)
+                setGroupVisible(R.id.menu_group_drawer_default, !it)
             }
         }
         val headerView = binding.mainGlobalMenu.getHeaderView(0)

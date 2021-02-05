@@ -72,7 +72,10 @@ internal class MainActivityViewStates @Inject constructor(
         appSettingRepository.registeredUserIdsSource,
         appSettingRepository.currentUserIdSource,
     ) { registered, current ->
-        (registered - current).map { userRepository.getUser(it) }.toSet()
+        (registered - current).map { userRepository.getUser(it) }
+            .toSortedSet<TweetUserItem> { a, b ->
+                a.screenName.compareTo(b.screenName)
+            } as Set<TweetUserItem>
     }.onStart { emit(emptySet()) }.asLiveData(executor.mainContext)
 
     internal val isRegisteredUsersOpened: AppViewState<Boolean> =

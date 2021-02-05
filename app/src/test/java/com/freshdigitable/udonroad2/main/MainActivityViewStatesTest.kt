@@ -172,10 +172,7 @@ internal class MainActivityStateModelTestRule : TestWatcher() {
         }
     }
 
-    fun setupGetUser(userId: UserId) {
-        val userEntity = mockk<UserEntity>().also {
-            every { it.id } returns userId
-        }
+    fun setupGetUser(userId: UserId, userEntity: UserEntity) {
         userRepository.run {
             coSetupResponseWithVerify({ mock.getUser(userId) }, userEntity)
         }

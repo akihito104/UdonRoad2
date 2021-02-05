@@ -26,6 +26,7 @@ import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
+import com.freshdigitable.udonroad2.model.user.UserEntity
 import com.freshdigitable.udonroad2.shortcut.SelectedItemShortcut
 import com.freshdigitable.udonroad2.test_common.jvm.testCollect
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
@@ -261,7 +262,11 @@ class MainViewModelTest {
             // setup
             with(stateModelRule) {
                 val userId = UserId(30000)
-                setupGetUser(userId)
+                val userEntity = mockk<UserEntity>().also {
+                    every { it.id } returns userId
+                    every { it.screenName } returns "user30000"
+                }
+                setupGetUser(userId, userEntity)
                 coroutineRule.runBlockingTest {
                     oauthTokenRepositoryMock.registeredUserIdsSource.send(
                         setOf(authenticatedUserId, userId)
