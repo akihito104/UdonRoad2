@@ -55,6 +55,32 @@ class MainViewModelTest {
             assertThat(sut.currentUser.value?.id).isEqualTo(null)
             assertThat(sut.switchableRegisteredUsers.value).isEmpty()
             assertThat(sut.isRegisteredUsersListOpened.value).isFalse()
+            assertThat(sut.isDrawerOpened.value).isFalse()
+        }
+
+        @Test
+        fun onDrawerOpened_then_isDrawerOpenedIsTrue(): Unit = with(rule) {
+            stateModelRule.coroutineRule.runBlockingTest {
+                // exercise
+                sut.onDrawerOpened()
+            }
+
+            // verify
+            assertThat(sut.isDrawerOpened.value).isTrue()
+        }
+
+        @Test
+        fun onDrawerClosed_then_isDrawerOpenedIsFalse(): Unit = with(rule) {
+            stateModelRule.coroutineRule.runBlockingTest {
+                // setup
+                sut.onDrawerOpened()
+
+                // exercise
+                sut.onDrawerClosed()
+            }
+
+            // verify
+            assertThat(sut.isDrawerOpened.value).isFalse()
         }
 
         @Test
@@ -280,6 +306,23 @@ class MainViewModelTest {
         }
 
         @Test
+        fun onDrawerClosed_accountSwitcherIsOpened_then_isRegisteredUserListOpenedIsFalse(): Unit =
+            with(rule) {
+                stateModelRule.coroutineRule.runBlockingTest {
+                    // setup
+                    sut.onDrawerOpened()
+                    sut.onAccountSwitcherClicked()
+
+                    // exercise
+                    sut.onDrawerClosed()
+                }
+
+                // verify
+                assertThat(sut.isDrawerOpened.value).isFalse()
+                assertThat(sut.isRegisteredUsersListOpened.value).isFalse()
+            }
+
+        @Test
         fun onCurrentUserIconClicked(): Unit = with(rule) {
             // exercise
             sut.onCurrentUserIconClicked()
@@ -310,6 +353,7 @@ internal class MainViewModelTestRule(
                 currentUser,
                 switchableRegisteredUsers,
                 isRegisteredUsersListOpened,
+                isDrawerOpened,
             ).forEach { it.observeForever { } }
         }
         navigationEventActual = sut.navigationEvent.testCollect(stateModelRule.executor)

@@ -46,6 +46,7 @@ internal class MainViewModel(
         viewStates.navigateToUser
     )
 
+    val isDrawerOpened: LiveData<Boolean> = viewStates.isDrawerOpened
     val currentUser: LiveData<TweetUserItem> = viewStates.currentUser
     val isRegisteredUsersListOpened: LiveData<Boolean> = viewStates.isRegisteredUsersOpened
     val switchableRegisteredUsers: LiveData<Set<TweetUserItem>> =
@@ -79,13 +80,21 @@ internal class MainViewModel(
     }
 
     fun onAccountSwitcherClicked() {
-        eventDispatcher.postEvent(MainActivityEvent.AccountSwitchClicked)
+        eventDispatcher.postEvent(MainActivityEvent.DrawerEvent.AccountSwitchClicked)
     }
 
     fun onCurrentUserIconClicked() {
         currentUser.value?.let {
             eventDispatcher.postEvent(MainActivityEvent.CurrentUserIconClicked(it))
         }
+    }
+
+    fun onDrawerOpened() {
+        eventDispatcher.postEvent(MainActivityEvent.DrawerEvent.Opened)
+    }
+
+    fun onDrawerClosed() {
+        eventDispatcher.postEvent(MainActivityEvent.DrawerEvent.Closed)
     }
 
     val currentState: MainActivityViewState

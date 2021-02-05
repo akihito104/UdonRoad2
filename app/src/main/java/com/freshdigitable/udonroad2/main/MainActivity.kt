@@ -28,6 +28,7 @@ import androidx.appcompat.graphics.drawable.DrawerArrowDrawable
 import androidx.appcompat.widget.Toolbar
 import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.add
 import androidx.fragment.app.commit
 import androidx.lifecycle.ViewModelProvider
@@ -94,6 +95,22 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
                 supportFragmentManager.findFragmentById(binding.mainInputContainer.id)
                     ?: return@observe
             tweetInputFragment.setMenuVisibility(it)
+        }
+        binding.mainDrawer.addDrawerListener(object : DrawerLayout.SimpleDrawerListener() {
+            override fun onDrawerOpened(drawerView: View) {
+                viewModel.onDrawerOpened()
+            }
+
+            override fun onDrawerClosed(drawerView: View) {
+                viewModel.onDrawerClosed()
+            }
+        })
+        viewModel.isDrawerOpened.observe(this) {
+            if (it && !binding.mainDrawer.isDrawerOpen(binding.mainGlobalMenu)) {
+                binding.mainDrawer.openDrawer(binding.mainGlobalMenu)
+            } else if (!it && binding.mainDrawer.isDrawerOpen(binding.mainGlobalMenu)) {
+                binding.mainDrawer.closeDrawer(binding.mainGlobalMenu)
+            }
         }
         binding.mainGlobalMenu.setNavigationItemSelectedListener { item ->
             val event = when (item.itemId) {
