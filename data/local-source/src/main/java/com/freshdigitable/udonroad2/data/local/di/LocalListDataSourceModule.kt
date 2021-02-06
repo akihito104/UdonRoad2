@@ -52,6 +52,6 @@ interface LocalListDataSourceModule {
 
     @Binds
     @IntoMap
-    @LocalListDataSourceKey(QueryType.UserListMembership::class)
+    @LocalListDataSourceKey(QueryType.CustomTimelineListQueryType.Membership::class)
     fun bindCustomTimelineListDao(dao: CustomTimelineListDao): LocalListDataSource<out QueryType, *>
 }

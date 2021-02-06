@@ -164,14 +164,14 @@ internal interface CustomTimelineListViewModelModule {
             eventDispatcher: EventDispatcher,
             viewState: ListItemLoadableViewStateImpl,
         ): ViewModel = CustomTimelineListViewModel(
-            owner as ListOwner<QueryType.UserListMembership>,
+            owner as ListOwner<QueryType.CustomTimelineListQueryType>,
             viewState,
             eventDispatcher,
         )
 
         @Provides
         @IntoMap
-        @QueryTypeKey(QueryType.UserListMembership::class)
+        @QueryTypeKey(QueryType.CustomTimelineListQueryType.Membership::class)
         fun provideCustomTimelineListViewModelKClass(): KClass<out ViewModel> =
             CustomTimelineListViewModel::class
     }

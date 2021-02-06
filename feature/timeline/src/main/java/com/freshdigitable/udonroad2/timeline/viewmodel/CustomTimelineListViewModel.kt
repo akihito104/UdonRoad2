@@ -11,10 +11,14 @@ import com.freshdigitable.udonroad2.timeline.ListItemLoadableViewState
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 
 class CustomTimelineListViewModel(
-    owner: ListOwner<QueryType.UserListMembership>,
+    owner: ListOwner<QueryType.CustomTimelineListQueryType>,
     viewState: ListItemLoadableViewState,
     private val eventDispatcher: EventDispatcher,
-) : ListItemLoadableViewModel<QueryType.UserListMembership>(owner, eventDispatcher, viewState),
+) : ListItemLoadableViewModel<QueryType.CustomTimelineListQueryType>(
+    owner,
+    eventDispatcher,
+    viewState
+),
     ListItemClickListener<CustomTimelineItem> {
 
     override fun onUserIconClicked(user: TweetUserItem) {

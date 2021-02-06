@@ -50,7 +50,7 @@ class FollowingListDataSource @Inject constructor(
 @Singleton
 class ListMembershipListDataSource @Inject constructor(
     twitter: AppTwitter
-) : RemoteListDataSource<QueryType.UserListMembership, CustomTimelineEntity> by PagedListDataSource(
+) : RemoteListDataSource<QueryType.CustomTimelineListQueryType.Membership, CustomTimelineEntity> by PagedListDataSource(
     twitter,
     { query ->
         getUserListMemberships(

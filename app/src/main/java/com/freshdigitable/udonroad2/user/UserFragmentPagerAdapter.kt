@@ -57,7 +57,7 @@ enum class UserPage(
         count = { user -> user?.favoriteCount }
     ),
     LISTED(
-        createQuery = { user -> QueryType.UserListMembership(user.id) },
+        createQuery = { user -> QueryType.CustomTimelineListQueryType.Membership(user.id) },
         titleRes = R.string.user_tab_listed,
         count = { user -> user?.listedCount }
     ),

@@ -153,7 +153,7 @@ class UserListDao(
 
 class CustomTimelineListDao(
     private val db: AppDatabase,
-) : LocalListDataSource<QueryType.UserListMembership, CustomTimelineEntity>,
+) : LocalListDataSource<QueryType.CustomTimelineListQueryType.Membership, CustomTimelineEntity>,
     PagedListProvider.DataSourceFactory<CustomTimelineItem> {
     private val dao: CustomTimelineDao = db.customTimelineDao()
     private val listDao: ListDao = db.listDao()
@@ -164,7 +164,7 @@ class CustomTimelineListDao(
 
     override suspend fun putList(
         entities: PagedResponseList<CustomTimelineEntity>,
-        query: ListQuery<QueryType.UserListMembership>,
+        query: ListQuery<QueryType.CustomTimelineListQueryType.Membership>,
         owner: ListId
     ) {
         val users = entities.map { it.user.toEntity() }

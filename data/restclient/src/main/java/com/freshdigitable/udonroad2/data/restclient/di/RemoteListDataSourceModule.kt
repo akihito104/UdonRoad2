@@ -88,7 +88,7 @@ interface UserListDataSourceModule {
 interface CustomTimelineDataSourceModule {
     @Binds
     @IntoMap
-    @RemoteListDataSourceKey(QueryType.UserListMembership::class)
+    @RemoteListDataSourceKey(QueryType.CustomTimelineListQueryType.Membership::class)
     fun bindListMembershipListDataSource(
         dataSource: ListMembershipListDataSource
     ): RemoteListDataSource<out QueryType, *>
