@@ -323,6 +323,30 @@ class MainViewModelTest {
             }
 
         @Test
+        fun onDrawerMenuItemClicked(): Unit = with(rule) {
+            // setup
+            sut.onDrawerOpened()
+
+            // exercise
+            val actualConsumed = sut.onDrawerMenuItemClicked(
+                R.id.menu_group_drawer_default,
+                R.id.menu_item_drawer_lists,
+                "lists"
+            )
+
+            // verify
+            assertThat(actualConsumed).isTrue()
+            assertThat(sut.isDrawerOpened.value).isFalse()
+            assertThat(sut.isRegisteredUsersListOpened.value).isFalse()
+            assertThat(navigationEventActual.last())
+                .isInstanceOf(TimelineEvent.Navigate.Timeline::class.java)
+            val event = navigationEventActual.last() as TimelineEvent.Navigate.Timeline
+            assertThat(event.owner.query)
+                .isInstanceOf(QueryType.CustomTimelineListQueryType.Ownership::class.java)
+            assertThat(event.owner.query.userId).isEqualTo(stateModelRule.authenticatedUserId)
+        }
+
+        @Test
         fun onCurrentUserIconClicked(): Unit = with(rule) {
             // exercise
             sut.onCurrentUserIconClicked()

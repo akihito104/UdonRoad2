@@ -192,6 +192,8 @@ private val TimelineEvent.Navigate.Timeline.label: Int
                 if (type.userId == null) R.string.title_home else 0
             }
             is QueryType.TweetQueryType.Conversation -> R.string.title_conversation
+            is QueryType.CustomTimelineListQueryType.Ownership ->
+                R.string.title_custom_timeline_ownership_list
             else -> TODO()
         }
     }

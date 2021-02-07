@@ -19,6 +19,7 @@ package com.freshdigitable.udonroad2.main
 import android.view.MenuItem
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
+import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.input.TweetInputEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
@@ -28,6 +29,7 @@ import com.freshdigitable.udonroad2.shortcut.postSelectedItemShortcutEvent
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.receiveAsFlow
 import timber.log.Timber
 
 internal class MainViewModel(
@@ -43,7 +45,8 @@ internal class MainViewModel(
     override val isFabVisible: LiveData<Boolean> = viewStates.isFabVisible
     internal val navigationEvent: Flow<NavigationEvent> = merge(
         viewStates.initContainer,
-        viewStates.navigateToUser
+        viewStates.navigateToUser,
+        viewStates.navEventChannel.receiveAsFlow()
     )
 
     val isDrawerOpened: LiveData<Boolean> = viewStates.isDrawerOpened
@@ -95,6 +98,17 @@ internal class MainViewModel(
 
     fun onDrawerClosed() {
         eventDispatcher.postEvent(MainActivityEvent.DrawerEvent.Closed)
+    }
+
+    fun onDrawerMenuItemClicked(groupId: Int, itemId: Int, title: CharSequence): Boolean {
+        val event = when (itemId) {
+//            R.id.menu_item_drawer_home -> MainActivityEvent.DrawerEvent.HomeClicked
+//            R.id.menu_item_drawer_add_account -> MainActivityEvent.DrawerEvent.AddUserClicked
+            R.id.menu_item_drawer_lists -> MainActivityEvent.DrawerEvent.CustomTimelineClicked
+            else -> null
+        }
+        event?.let { eventDispatcher.postEvent(event) }
+        return event != null
     }
 
     val currentState: MainActivityViewState

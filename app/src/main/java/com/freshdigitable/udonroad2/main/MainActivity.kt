@@ -38,8 +38,6 @@ import com.freshdigitable.udonroad2.databinding.ActivityMainBinding
 import com.freshdigitable.udonroad2.databinding.NavHeaderBinding
 import com.freshdigitable.udonroad2.input.TweetInputFragment
 import com.freshdigitable.udonroad2.input.TweetInputFragmentArgs
-import com.freshdigitable.udonroad2.oauth.OauthEvent
-import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import dagger.android.AndroidInjection
 import dagger.android.AndroidInjector
 import dagger.android.DispatchingAndroidInjector
@@ -113,16 +111,7 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
             }
         }
         binding.mainGlobalMenu.setNavigationItemSelectedListener { item ->
-            val event = when (item.itemId) {
-                R.id.menu_item_drawer_home -> TimelineEvent.Init
-                R.id.menu_item_drawer_add_account -> OauthEvent.Init
-                else -> null
-            }
-            if (event != null) {
-//                navigation.navigator.postEvent(event)
-                binding.mainDrawer.closeDrawer(binding.mainGlobalMenu)
-            }
-            return@setNavigationItemSelectedListener event != null
+            viewModel.onDrawerMenuItemClicked(item.groupId, item.itemId, item.title)
         }
         viewModel.switchableRegisteredUsers.observe(this) { users ->
             binding.mainGlobalMenu.menu.apply {

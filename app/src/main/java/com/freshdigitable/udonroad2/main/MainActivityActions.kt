@@ -39,6 +39,10 @@ class MainActivityActions @Inject constructor(
         dispatcher.toAction()
     internal val showCurrentUser: AppAction<MainActivityEvent.CurrentUserIconClicked> =
         dispatcher.toAction()
+    internal val popToHome: AppAction<DrawerEvent.HomeClicked> = dispatcher.toAction()
+    internal val launchOAuth: AppAction<DrawerEvent.AddUserClicked> = dispatcher.toAction()
+    internal val launchCustomTimelineList: AppAction<DrawerEvent.CustomTimelineClicked> =
+        dispatcher.toAction()
 }
 
 sealed class MainActivityEvent : AppEvent {
@@ -46,6 +50,9 @@ sealed class MainActivityEvent : AppEvent {
         object Opened : DrawerEvent()
         object Closed : DrawerEvent()
         object AccountSwitchClicked : DrawerEvent()
+        object HomeClicked : DrawerEvent()
+        object AddUserClicked : DrawerEvent()
+        object CustomTimelineClicked : DrawerEvent()
     }
 
     data class CurrentUserIconClicked(val user: TweetUserItem) : MainActivityEvent()
