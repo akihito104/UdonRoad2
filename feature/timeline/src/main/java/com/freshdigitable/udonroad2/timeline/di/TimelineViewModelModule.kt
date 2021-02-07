@@ -171,7 +171,7 @@ internal interface CustomTimelineListViewModelModule {
 
         @Provides
         @IntoMap
-        @QueryTypeKey(QueryType.CustomTimelineListQueryType.Membership::class)
+        @QueryTypeKey(QueryType.CustomTimelineListQueryType::class)
         fun provideCustomTimelineListViewModelKClass(): KClass<out ViewModel> =
             CustomTimelineListViewModel::class
     }

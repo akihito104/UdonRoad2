@@ -18,11 +18,11 @@ package com.freshdigitable.udonroad2.data.restclient.di
 
 import com.freshdigitable.udonroad2.data.RemoteListDataSource
 import com.freshdigitable.udonroad2.data.restclient.ConversationListDataSource
+import com.freshdigitable.udonroad2.data.restclient.CustomTimelineListDataSource
 import com.freshdigitable.udonroad2.data.restclient.FavTimelineDataSource
 import com.freshdigitable.udonroad2.data.restclient.FollowerListDataSource
 import com.freshdigitable.udonroad2.data.restclient.FollowingListDataSource
 import com.freshdigitable.udonroad2.data.restclient.HomeTimelineDataSource
-import com.freshdigitable.udonroad2.data.restclient.ListMembershipListDataSource
 import com.freshdigitable.udonroad2.data.restclient.MediaTimelineDataSource
 import com.freshdigitable.udonroad2.model.QueryType
 import dagger.Binds
@@ -88,8 +88,8 @@ interface UserListDataSourceModule {
 interface CustomTimelineDataSourceModule {
     @Binds
     @IntoMap
-    @RemoteListDataSourceKey(QueryType.CustomTimelineListQueryType.Membership::class)
-    fun bindListMembershipListDataSource(
-        dataSource: ListMembershipListDataSource
+    @RemoteListDataSourceKey(QueryType.CustomTimelineListQueryType::class)
+    fun bindCustomTimelineListDataSource(
+        dataSource: CustomTimelineListDataSource
     ): RemoteListDataSource<out QueryType, *>
 }

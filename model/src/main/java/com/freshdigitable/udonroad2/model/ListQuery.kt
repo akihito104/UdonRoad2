@@ -50,7 +50,9 @@ sealed class QueryType(
         userId: UserId?
     ) : QueryType(userId) {
         data class Membership(override val userId: UserId) : CustomTimelineListQueryType(userId)
-        data class Ownership(override val userId: UserId?) : CustomTimelineListQueryType(userId)
+        data class Ownership(
+            override val userId: UserId? = null
+        ) : CustomTimelineListQueryType(userId)
     }
 
     object Oauth : QueryType(null)

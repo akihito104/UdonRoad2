@@ -52,7 +52,7 @@ interface PagedListDataSourceFactoryModule {
 
     @Binds
     @IntoMap
-    @PagedListDataSourceFactoryProviderKey(QueryType.CustomTimelineListQueryType.Membership::class)
+    @PagedListDataSourceFactoryProviderKey(QueryType.CustomTimelineListQueryType::class)
     fun bindCustomTimelineListDao(
         dao: CustomTimelineListDao
     ): PagedListProvider.DataSourceFactory<*>
