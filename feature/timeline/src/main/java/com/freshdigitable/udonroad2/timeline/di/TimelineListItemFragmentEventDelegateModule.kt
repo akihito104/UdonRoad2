@@ -38,21 +38,18 @@ interface TimelineListItemFragmentEventDelegateModule {
         eventDelegate: TimelineNavigationDelegate
     ): ListItemFragmentEventDelegate
 
+    @Binds
+    @IntoMap
+    @ViewModelKey(CustomTimelineListViewModel::class)
+    fun bindCustomTimelineListEventDelegate(
+        eventDelegate: TimelineNavigationDelegate
+    ): ListItemFragmentEventDelegate
+
     companion object {
         @Provides
         @IntoMap
         @ViewModelKey(UserListViewModel::class)
         fun provideUserListEventDelegate(): ListItemFragmentEventDelegate {
-            return object : ListItemFragmentEventDelegate {
-                override fun dispatchNavHostNavigate(event: NavigationEvent) {}
-                override fun dispatchFeedbackMessage(message: FeedbackMessage) {}
-            }
-        }
-
-        @Provides
-        @IntoMap
-        @ViewModelKey(CustomTimelineListViewModel::class)
-        fun provideCustomTimelineListEventDelegate(): ListItemFragmentEventDelegate {
             return object : ListItemFragmentEventDelegate {
                 override fun dispatchNavHostNavigate(event: NavigationEvent) {}
                 override fun dispatchFeedbackMessage(message: FeedbackMessage) {}

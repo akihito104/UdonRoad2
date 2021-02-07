@@ -103,6 +103,7 @@ class TimelineViewState(
     val selectedItemId: AppViewState<SelectedItemId?> = _selectedItemId.map { it.value }
         .asLiveData(executor.mainContext)
 
+    private val userInfoNavigation = UserIconClickedNavigation.create(actions)
     override val navigationEvent: Flow<NavigationEvent> = merge(
         actions.showTimeline.asFlow().map {
             listOwnerGenerator.getTimelineEvent(
@@ -117,7 +118,7 @@ class TimelineViewState(
                 NavigationEvent.Type.NAVIGATE
             )
         },
-        actions.launchUserInfo.asFlow().map { TimelineEvent.Navigate.UserInfo(it.user) },
+        userInfoNavigation.navEvent,
         actions.launchMediaViewer.asFlow().filter { it.selectedItemId?.owner == owner }
             .map { TimelineEvent.Navigate.MediaViewer(it) },
         baseViewState.navigationEvent,

@@ -38,6 +38,8 @@ import com.freshdigitable.udonroad2.timeline.ListItemLoadableViewState
 import com.freshdigitable.udonroad2.timeline.ListItemLoadableViewStateImpl
 import com.freshdigitable.udonroad2.timeline.TimelineActions
 import com.freshdigitable.udonroad2.timeline.TimelineViewState
+import com.freshdigitable.udonroad2.timeline.viewmodel.CustomTimelineListActions
+import com.freshdigitable.udonroad2.timeline.viewmodel.CustomTimelineListItemLoadableViewState
 import com.freshdigitable.udonroad2.timeline.viewmodel.CustomTimelineListViewModel
 import com.freshdigitable.udonroad2.timeline.viewmodel.TimelineViewModel
 import com.freshdigitable.udonroad2.timeline.viewmodel.UserListViewModel
@@ -162,10 +164,11 @@ internal interface CustomTimelineListViewModelModule {
         fun provideCustomTimelineListViewModel(
             owner: ListOwner<*>,
             eventDispatcher: EventDispatcher,
+            actions: CustomTimelineListActions,
             viewState: ListItemLoadableViewStateImpl,
         ): ViewModel = CustomTimelineListViewModel(
             owner as ListOwner<QueryType.CustomTimelineListQueryType>,
-            viewState,
+            CustomTimelineListItemLoadableViewState(actions, viewState),
             eventDispatcher,
         )
 

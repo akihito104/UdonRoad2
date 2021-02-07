@@ -18,6 +18,7 @@ package com.freshdigitable.udonroad2.timeline
 
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
+import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.filterByType
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
 import com.freshdigitable.udonroad2.shortcut.ShortcutActions
@@ -25,6 +26,9 @@ import com.freshdigitable.udonroad2.timeline.TimelineEvent.Init
 import com.freshdigitable.udonroad2.timeline.TimelineEvent.MediaItemClicked
 import com.freshdigitable.udonroad2.timeline.TimelineEvent.TweetItemSelection
 import com.freshdigitable.udonroad2.timeline.TimelineEvent.UserIconClicked
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.rx2.asFlow
 
 class TimelineActions(
     dispatcher: EventDispatcher,
@@ -58,6 +62,19 @@ interface UserIconClickedAction {
             eventDispatcher: EventDispatcher
         ): UserIconClickedAction = object : UserIconClickedAction {
             override val launchUserInfo: AppAction<UserIconClicked> = eventDispatcher.toAction()
+        }
+    }
+}
+
+interface UserIconClickedNavigation {
+    val navEvent: Flow<NavigationEvent>
+
+    companion object {
+        fun create(actions: UserIconClickedAction): UserIconClickedNavigation {
+            return object : UserIconClickedNavigation {
+                override val navEvent: Flow<NavigationEvent> = actions.launchUserInfo.asFlow()
+                    .map { TimelineEvent.Navigate.UserInfo(it.user) }
+            }
         }
     }
 }
