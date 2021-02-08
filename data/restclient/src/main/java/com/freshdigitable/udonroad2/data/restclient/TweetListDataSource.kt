@@ -32,43 +32,51 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class HomeTimelineDataSource @Inject constructor(
-    private val twitter: AppTwitter
-) : RemoteListDataSource<QueryType.TweetQueryType.Timeline, TweetEntity> {
+class TimelineRemoteDataSource @Inject constructor(
+    private val twitter: AppTwitter,
+    private val tweetApi: TweetApiClient,
+) : RemoteListDataSource<QueryType.TweetQueryType, TweetEntity> {
 
     override suspend fun getList(
-        query: ListQuery<QueryType.TweetQueryType.Timeline>
+        query: ListQuery<QueryType.TweetQueryType>
+    ): PagedResponseList<TweetEntity> {
+        return when (val type = query.type) {
+            is QueryType.TweetQueryType.Timeline -> getTimeline(query, type)
+            is QueryType.TweetQueryType.Fav -> getFavTimeline(query, type)
+            is QueryType.TweetQueryType.Media -> getMediaTimeline(query, type)
+            is QueryType.TweetQueryType.Conversation -> getConversationList(query, type)
+            is QueryType.TweetQueryType.CustomTimeline -> twitter.fetch {
+                val list = getUserListStatuses(type.id.value, query.pageOption.toPaging())
+                PagedResponseList.create(list, query.pageOption.count)
+            }
+        }
+    }
+
+    private suspend fun getTimeline(
+        query: ListQuery<QueryType.TweetQueryType>,
+        type: QueryType.TweetQueryType.Timeline,
     ): PagedResponseList<TweetEntity> = twitter.fetch {
         val paging = query.pageOption.toPaging()
-        val list = query.type.userId?.let { id -> getUserTimeline(id.value, paging) }
+        val list = type.userId?.let { id -> getUserTimeline(id.value, paging) }
             ?: getHomeTimeline(paging)
         PagedResponseList.create(list, query.pageOption.count)
     }
-}
 
-@Singleton
-class FavTimelineDataSource @Inject constructor(
-    private val twitter: AppTwitter
-) : RemoteListDataSource<QueryType.TweetQueryType.Fav, TweetEntity> {
-
-    override suspend fun getList(
-        query: ListQuery<QueryType.TweetQueryType.Fav>
+    private suspend fun getFavTimeline(
+        query: ListQuery<QueryType.TweetQueryType>,
+        type: QueryType.TweetQueryType.Fav
     ): PagedResponseList<TweetEntity> = twitter.fetch {
         val paging = query.pageOption.toPaging()
-        val list = query.type.userId?.let { id -> getFavorites(id.value, paging) }
+        val list = type.userId?.let { id -> getFavorites(id.value, paging) }
             ?: getFavorites(paging)
         PagedResponseList.create(list, query.pageOption.count)
     }
-}
 
-@Singleton
-class MediaTimelineDataSource @Inject constructor(
-    private val twitter: AppTwitter
-) : RemoteListDataSource<QueryType.TweetQueryType.Media, TweetEntity> {
-    override suspend fun getList(
-        query: ListQuery<QueryType.TweetQueryType.Media>
+    private suspend fun getMediaTimeline(
+        query: ListQuery<QueryType.TweetQueryType>,
+        type: QueryType.TweetQueryType.Media,
     ): PagedResponseList<TweetEntity> = twitter.fetch {
-        val q = Query(query.type.query).apply {
+        val q = Query(type.query).apply {
             maxId = query.pageOption.maxId ?: -1
             sinceId = query.pageOption.sinceId ?: -1
             count = query.pageOption.count
@@ -81,17 +89,13 @@ class MediaTimelineDataSource @Inject constructor(
             appendCursor = res.nextQuery()?.maxId,
         )
     }
-}
 
-@Singleton
-class ConversationListDataSource @Inject constructor(
-    private val tweetApi: TweetApiClient
-) : RemoteListDataSource<QueryType.TweetQueryType.Conversation, TweetEntity> {
-    override suspend fun getList(
-        query: ListQuery<QueryType.TweetQueryType.Conversation>
+    private suspend fun getConversationList(
+        query: ListQuery<QueryType.TweetQueryType>,
+        type: QueryType.TweetQueryType.Conversation,
     ): PagedResponseList<TweetEntity> {
         val res = mutableListOf<TweetEntity>()
-        var tweetId: TweetId? = query.type.tweetId
+        var tweetId: TweetId? = type.tweetId
         while (tweetId != null && res.size <= query.pageOption.count) {
             val element = tweetApi.findTweetEntity(tweetId)
             res.add(element)

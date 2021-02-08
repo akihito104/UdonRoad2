@@ -32,6 +32,11 @@ sealed class QueryType(
         data class Conversation(
             val tweetId: TweetId
         ) : TweetQueryType(null)
+
+        data class CustomTimeline(
+            val id: CustomTimelineId,
+            val title: String,
+        ) : TweetQueryType(null)
     }
 
     sealed class UserQueryType(

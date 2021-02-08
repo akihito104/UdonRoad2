@@ -18,8 +18,12 @@ package com.freshdigitable.udonroad2.timeline.viewmodel
 
 import com.freshdigitable.udonroad2.data.ListRepository
 import com.freshdigitable.udonroad2.data.PagedListProvider
+import com.freshdigitable.udonroad2.data.impl.create
+import com.freshdigitable.udonroad2.model.CustomTimelineId
+import com.freshdigitable.udonroad2.model.CustomTimelineItem
 import com.freshdigitable.udonroad2.model.ListId
 import com.freshdigitable.udonroad2.model.ListOwner
+import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.app.AppExecutor
@@ -53,7 +57,8 @@ class CustomTimelineListViewModelTest {
     private val sut: CustomTimelineListViewModel by lazy {
         val viewState = CustomTimelineListItemLoadableViewState(
             CustomTimelineListActions(rule.eventDispatcher),
-            rule.viewState
+            rule.viewState,
+            ListOwnerGenerator.create()
         )
         CustomTimelineListViewModel(owner, viewState, rule.eventDispatcher)
     }
@@ -71,9 +76,30 @@ class CustomTimelineListViewModelTest {
         sut.onUserIconClicked(user)
 
         // verify
-        assertThat(navEventActual.last()).isInstanceOf(TimelineEvent.Navigate.UserInfo::class.java)
-        val actual = navEventActual.last() as TimelineEvent.Navigate.UserInfo
-        assertThat(actual.tweetUserItem.id).isEqualTo(user.id)
+        assertFor<TimelineEvent.Navigate.UserInfo>(navEventActual.last()) {
+            assertThat(it.tweetUserItem.id).isEqualTo(user.id)
+        }
+    }
+
+    @Test
+    fun onBodyItemClicked() {
+        // setup
+        val item = mockk<CustomTimelineItem>().also {
+            every { it.id } returns CustomTimelineId(3000)
+            every { it.name } returns "custom timeline"
+        }
+        val executor = AppExecutor(dispatcher = rule.coroutineTestRule.coroutineContextProvider)
+        val navEventActual = sut.navigationEvent.testCollect(executor)
+
+        // exercise
+        sut.onBodyItemClicked(item)
+
+        // verify
+        assertFor<TimelineEvent.Navigate.Timeline>(navEventActual.last()) { actualEvent ->
+            assertFor<ListOwner<QueryType.TweetQueryType.CustomTimeline>>(actualEvent.owner) {
+                assertThat(it.query.id).isEqualTo(item.id)
+            }
+        }
     }
 }
 
@@ -101,4 +127,9 @@ class ListItemLoadableViewStateRule(
             .around(pagedListProvider)
             .apply(base, description)
     }
+}
+
+inline fun <reified T> assertFor(actual: Any, body: (T) -> Unit) {
+    assertThat(actual).isInstanceOf(T::class.java)
+    body(actual as T)
 }

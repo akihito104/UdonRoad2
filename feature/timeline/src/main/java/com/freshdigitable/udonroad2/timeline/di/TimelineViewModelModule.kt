@@ -166,9 +166,10 @@ internal interface CustomTimelineListViewModelModule {
             eventDispatcher: EventDispatcher,
             actions: CustomTimelineListActions,
             viewState: ListItemLoadableViewStateImpl,
+            listOwnerGenerator: ListOwnerGenerator,
         ): ViewModel = CustomTimelineListViewModel(
             owner as ListOwner<QueryType.CustomTimelineListQueryType>,
-            CustomTimelineListItemLoadableViewState(actions, viewState),
+            CustomTimelineListItemLoadableViewState(actions, viewState, listOwnerGenerator),
             eventDispatcher,
         )
 
