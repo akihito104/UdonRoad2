@@ -5,6 +5,7 @@ include(
     ":feature:timeline",
     ":feature:shortcut",
     ":feature:input",
+    ":feature:settings",
     ":candysh",
     ":data:local-source",
     ":data:restclient",

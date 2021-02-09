@@ -57,6 +57,7 @@ dependencies {
     implementation project(':feature:oauth')
     implementation project(":feature:shortcut")
     implementation project(":feature:input")
+    implementation project(":feature:settings")
     implementation project(':data:repository')
     implementation project(':data:local-source')
     implementation project(':data:restclient')

@@ -43,6 +43,7 @@ object Libs {
     const val ANDROIDX_ROOM_RUNTIME = "androidx.room:room-runtime:${Versions.ANDROIDX_ROOM}"
     const val ANDROIDX_SWIPE_REFRESH_LAYOUT =
         "androidx.swiperefreshlayout:swiperefreshlayout:${Versions.ANDROIDX_SWIPE_REFRESH_LAYOUT}"
+    const val ANDROIDX_PREFERENCE = "androidx.preference:preference:${Versions.ANDROIDX_PREFERENCE}"
     const val ANDROIDX_TEST_CORE = "androidx.test:core:${Versions.ANDROIDX_TEST_CORE}"
     const val ANDROIDX_TEST_ESPRESSO =
         "androidx.test.espresso:espresso-core:${Versions.ANDROIDX_TEST_ESPRESSO}"
