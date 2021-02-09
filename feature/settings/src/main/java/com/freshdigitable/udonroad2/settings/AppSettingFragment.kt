@@ -17,11 +17,13 @@
 package com.freshdigitable.udonroad2.settings
 
 import android.content.Context
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.preference.ListPreference
+import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import dagger.android.support.AndroidSupportInjection
 import javax.inject.Inject
@@ -46,6 +48,7 @@ class AppSettingFragment : PreferenceFragmentCompat() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupLaunchLoginUserList()
+        setupVersionInfo()
     }
 
     private fun setupLaunchLoginUserList() {
@@ -57,5 +60,14 @@ class AppSettingFragment : PreferenceFragmentCompat() {
             preference.entries = defaultEntry + accounts.map { it.second }
             preference.entryValues = defaultValue + accounts.map { it.first.value.toString() }
         }
+    }
+
+    private fun setupVersionInfo() {
+        val packageInfo = with(requireActivity()) {
+            requireNotNull(packageManager.getPackageInfo(packageName, PackageManager.GET_META_DATA))
+        }
+        val versionKey = getString(R.string.settings_key_version)
+        val versionPref: Preference = requireNotNull(findPreference(versionKey))
+        versionPref.summary = packageInfo.versionName
     }
 }
