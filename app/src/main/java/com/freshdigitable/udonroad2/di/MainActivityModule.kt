@@ -26,7 +26,7 @@ import com.freshdigitable.udonroad2.main.MainViewModel
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
-import com.freshdigitable.udonroad2.settings.AppSettingFragmentModule
+import com.freshdigitable.udonroad2.settings.di.AppSettingFragmentModule
 import dagger.Binds
 import dagger.Module
 import dagger.Provides

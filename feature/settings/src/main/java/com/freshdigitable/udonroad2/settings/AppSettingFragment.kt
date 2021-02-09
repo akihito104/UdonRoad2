@@ -16,18 +16,14 @@
 
 package com.freshdigitable.udonroad2.settings
 
+import android.content.Context
 import android.os.Bundle
+import android.view.View
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.preference.ListPreference
 import androidx.preference.PreferenceFragmentCompat
-import com.freshdigitable.udonroad2.data.impl.AppSettingRepository
-import com.freshdigitable.udonroad2.model.app.di.FragmentScope
-import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
-import dagger.Binds
-import dagger.Module
-import dagger.android.ContributesAndroidInjector
-import dagger.multibindings.IntoMap
+import dagger.android.support.AndroidSupportInjection
 import javax.inject.Inject
 
 class AppSettingFragment : PreferenceFragmentCompat() {
@@ -38,26 +34,28 @@ class AppSettingFragment : PreferenceFragmentCompat() {
         factoryProducer = { viewModelProviderFactory }
     )
 
+    override fun onAttach(context: Context) {
+        AndroidSupportInjection.inject(this)
+        super.onAttach(context)
+    }
+
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.user_settings, rootKey)
     }
-}
 
-class AppSettingViewModel @Inject constructor(
-    private val repository: AppSettingRepository
-) : ViewModel()
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        setupLaunchLoginUserList()
+    }
 
-@Module
-interface AppSettingFragmentModule {
-    @FragmentScope
-    @ContributesAndroidInjector(modules = [AppSettingModule::class])
-    fun contributeAppSettingFragment(): AppSettingFragment
-}
-
-@Module
-internal interface AppSettingModule {
-    @Binds
-    @IntoMap
-    @ViewModelKey(AppSettingViewModel::class)
-    fun bindAppSettingViewModel(viewModel: AppSettingViewModel): ViewModel
+    private fun setupLaunchLoginUserList() {
+        val defaultEntry = resources.getStringArray(R.array.settings_loginUser_entries)
+        val defaultValue = resources.getStringArray(R.array.settings_loginUser_values)
+        val loginUserKey = getString(R.string.settings_key_loginUser)
+        viewModel.registeredUserAccount.observe(viewLifecycleOwner) { accounts ->
+            val preference: ListPreference = requireNotNull(findPreference(loginUserKey))
+            preference.entries = defaultEntry + accounts.map { it.second }
+            preference.entryValues = defaultValue + accounts.map { it.first.value.toString() }
+        }
+    }
 }
