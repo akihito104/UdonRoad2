@@ -74,6 +74,7 @@ internal class MainViewModel(
     fun onBackPressed(): Boolean {
         val selectedItem = currentState.selectedItem
         val event = when {
+            isDrawerOpened.value == true -> MainActivityEvent.DrawerEvent.Closed
             isTweetInputExpanded -> TweetInputEvent.Cancel
             selectedItem != null -> TimelineEvent.TweetItemSelection.Unselected(selectedItem.owner)
             else -> return false
