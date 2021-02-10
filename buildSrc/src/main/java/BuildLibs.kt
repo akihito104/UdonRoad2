@@ -24,4 +24,5 @@ object BuildLibs {
     const val SCABBARD_PLUGIN =
         "gradle.plugin.dev.arunkumar:scabbard-gradle-plugin:${Versions.SCABBARD}"
     const val RELEASES_HUB = "com.releaseshub:releases-hub-gradle-plugin:${Versions.RELEASES_HUB}"
+    const val LICENSE_TOOL = "com.cookpad.android.plugin.license-tools${Versions.LICENSE_TOOL}"
 }

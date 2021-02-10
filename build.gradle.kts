@@ -21,6 +21,7 @@ plugins {
     id("scabbard.gradle") version Versions.SCABBARD
     id("com.releaseshub.gradle.plugin") version Versions.RELEASES_HUB
     id("org.jlleitschuh.gradle.ktlint") version Versions.KTLINT_PLUGIN
+    id("com.cookpad.android.plugin.license-tools") version Versions.LICENSE_TOOL
 }
 
 scabbard {
@@ -32,6 +33,10 @@ scabbard {
 releasesHub {
     dependenciesBasePath = "buildSrc/src/main/java/"
     dependenciesClassNames = listOf("Libs.kt", "BuildLibs.kt")
+}
+
+licenseTools {
+    ignoredProjects = setOf(":test-common", ":test-common-jvm")
 }
 
 allprojects {
