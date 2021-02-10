@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ Copyright (c) 2019. Matsuda, Akihit (akihito104)
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,33 +14,31 @@
   ~ limitations under the License.
   -->
 
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <group
-        android:id="@+id/drawer_menu_accounts"
-        >
+<menu
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:id="@+id/menu_group_drawer_default">
         <item
-            android:id="@+id/drawer_menu_add_account"
-            android:title="@string/drawer_menu_add_account"
-            android:visible="true"
-            android:orderInCategory="1000"
-            />
-    </group>
-    <group
-        android:id="@+id/drawer_menu_default"
-        >
-        <item
-            android:id="@+id/drawer_menu_home"
+            android:id="@+id/menu_item_drawer_home"
             android:title="@string/drawer_menu_home"
             />
-<!--        <item-->
-<!--            android:id="@+id/drawer_menu_lists"-->
-<!--            android:title="@string/lists"/>-->
-<!--        <item-->
-<!--            android:id="@+id/drawer_menu_settings"-->
-<!--            android:title="@string/drawer_menu_settings"-->
-<!--            />-->
-<!--        <item-->
-<!--            android:id="@+id/drawer_menu_license"-->
-<!--            android:title="@string/drawer_menu_license"/>-->
+        <item
+            android:id="@+id/menu_item_drawer_lists"
+            android:title="@string/drawer_menu_list"
+            />
+        <item
+            android:id="@+id/menu_item_drawer_settings"
+            android:title="@string/drawer_menu_settings"
+            />
+        <item
+            android:id="@+id/menu_item_drawer_license"
+            android:title="@string/drawer_menu_license"
+            />
     </group>
+    <group android:id="@+id/menu_group_drawer_register_account">
+        <item
+            android:id="@+id/menu_item_drawer_add_account"
+            android:title="@string/drawer_menu_add_account"
+            />
+    </group>
+    <group android:id="@+id/menu_group_drawer_switchable_accounts" />
 </menu>

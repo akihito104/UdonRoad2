@@ -24,16 +24,20 @@ import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.TweetId
+import com.freshdigitable.udonroad2.model.UserId
+import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
+import com.freshdigitable.udonroad2.model.user.UserEntity
 import com.freshdigitable.udonroad2.shortcut.SelectedItemShortcut
+import com.freshdigitable.udonroad2.test_common.jvm.testCollect
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.google.common.truth.Truth.assertThat
 import io.mockk.every
 import io.mockk.mockk
+import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.experimental.runners.Enclosed
-import org.junit.rules.ExpectedException
 import org.junit.rules.RuleChain
 import org.junit.rules.TestWatcher
 import org.junit.runner.Description
@@ -45,6 +49,37 @@ class MainViewModelTest {
     class WhenInit {
         @get:Rule
         internal val rule = MainViewModelTestRule()
+
+        @Test
+        fun initialState(): Unit = with(rule) {
+            assertThat(sut.currentUser.value?.id).isEqualTo(null)
+            assertThat(sut.switchableRegisteredUsers.value).isEmpty()
+            assertThat(sut.isRegisteredUsersListOpened.value).isFalse()
+        }
+
+        @Test
+        fun onAccountSwitcherClicked_isRegisteredUsersListOpenedIsTrue(): Unit = with(rule) {
+            stateModelRule.coroutineRule.runBlockingTest {
+                // exercise
+                sut.onAccountSwitcherClicked()
+            }
+
+            // verify
+            assertThat(sut.isRegisteredUsersListOpened.value).isTrue()
+        }
+
+        @Test
+        fun onAccountSwitcherClicked_calledTwice_then_isRegisteredUsersListOpenedIsFalse(): Unit =
+            with(rule) {
+                stateModelRule.coroutineRule.runBlockingTest {
+                    // exercise
+                    sut.onAccountSwitcherClicked()
+                    sut.onAccountSwitcherClicked()
+                }
+
+                // verify
+                assertThat(sut.isRegisteredUsersListOpened.value).isFalse()
+            }
 
         @Test
         fun initialEvent_withNull_then_dispatchNavigateIsCalledWithOauth(): Unit = with(rule) {
@@ -117,18 +152,16 @@ class MainViewModelTest {
                     .assertValueAt(0) { it is TweetInputEvent.Cancel }
             }
 
-        @get:Rule
-        val expectedException: ExpectedException = ExpectedException.none()
-
         @Test
         fun collapseTweetInput_whenTweetInputIsNotExpanded_then_throwIllegalStateException(): Unit =
             with(rule) {
                 // setup
                 stateModelRule.isExpandedSource.value = false
-                expectedException.expect(IllegalStateException::class.java)
 
                 // exercise
-                sut.collapseTweetInput()
+                Assert.assertThrows(java.lang.IllegalStateException::class.java) {
+                    sut.collapseTweetInput()
+                }
             }
     }
 
@@ -202,12 +235,69 @@ class MainViewModelTest {
             assertThat(sut.isFabVisible.value).isFalse()
         }
     }
+
+    class WhenHasCurrentUserId {
+        @get:Rule
+        internal val rule = MainViewModelTestRule()
+
+        @Before
+        fun setup(): Unit = with(rule) {
+            with(stateModelRule) {
+                setupGetUserSource(authenticatedUserId)
+                coroutineRule.runBlockingTest {
+                    oauthTokenRepositoryMock.currentUserIdSource.send(authenticatedUserId)
+                    oauthTokenRepositoryMock.registeredUserIdsSource.send(setOf(authenticatedUserId))
+                }
+            }
+        }
+
+        @Test
+        fun init(): Unit = with(rule) {
+            assertThat(sut.currentUser.value?.id).isEqualTo(stateModelRule.authenticatedUserId)
+            assertThat(sut.switchableRegisteredUsers.value).isEmpty()
+        }
+
+        @Test
+        fun switchableRegisteredUsers_addedNewUser_then_switchableTo1User(): Unit = with(rule) {
+            // setup
+            with(stateModelRule) {
+                val userId = UserId(30000)
+                val userEntity = mockk<UserEntity>().also {
+                    every { it.id } returns userId
+                    every { it.screenName } returns "user30000"
+                }
+                setupGetUser(userId, userEntity)
+                coroutineRule.runBlockingTest {
+                    oauthTokenRepositoryMock.registeredUserIdsSource.send(
+                        setOf(authenticatedUserId, userId)
+                    )
+                }
+            }
+
+            // verify
+            assertThat(sut.currentUser.value?.id).isEqualTo(stateModelRule.authenticatedUserId)
+            assertThat(sut.switchableRegisteredUsers.value).hasSize(1)
+        }
+
+        @Test
+        fun onCurrentUserIconClicked(): Unit = with(rule) {
+            // exercise
+            sut.onCurrentUserIconClicked()
+
+            // verify
+            assertThat(navigationEventActual.last())
+                .isInstanceOf(TimelineEvent.Navigate.UserInfo::class.java)
+            val actualEvent = navigationEventActual.last() as TimelineEvent.Navigate.UserInfo
+            assertThat(actualEvent.tweetUserItem.id).isEqualTo(stateModelRule.authenticatedUserId)
+        }
+    }
 }
 
 internal class MainViewModelTestRule(
     val stateModelRule: MainActivityStateModelTestRule = MainActivityStateModelTestRule()
 ) : TestWatcher() {
-    val sut: MainViewModel = MainViewModel(stateModelRule.dispatcher, stateModelRule.sut)
+    val sut: MainViewModel by lazy { MainViewModel(stateModelRule.dispatcher, stateModelRule.sut) }
+    lateinit var navigationEventActual: List<NavigationEvent>
 
     override fun starting(description: Description?) {
         super.starting(description)
@@ -217,8 +307,12 @@ internal class MainViewModelTestRule(
                 appBarTitle,
                 isTweetInputMenuVisible,
                 isFabVisible,
+                currentUser,
+                switchableRegisteredUsers,
+                isRegisteredUsersListOpened,
             ).forEach { it.observeForever { } }
         }
+        navigationEventActual = sut.navigationEvent.testCollect(stateModelRule.executor)
     }
 
     override fun apply(base: Statement?, description: Description?): Statement {

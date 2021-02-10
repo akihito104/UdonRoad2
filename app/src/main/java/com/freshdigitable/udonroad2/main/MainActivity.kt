@@ -19,6 +19,7 @@ package com.freshdigitable.udonroad2.main
 import android.animation.Animator
 import android.animation.ObjectAnimator
 import android.os.Bundle
+import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import androidx.activity.viewModels
@@ -33,6 +34,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.databinding.ActivityMainBinding
+import com.freshdigitable.udonroad2.databinding.NavHeaderBinding
 import com.freshdigitable.udonroad2.input.TweetInputFragment
 import com.freshdigitable.udonroad2.input.TweetInputFragmentArgs
 import com.freshdigitable.udonroad2.oauth.OauthEvent
@@ -93,11 +95,10 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
                     ?: return@observe
             tweetInputFragment.setMenuVisibility(it)
         }
-
         binding.mainGlobalMenu.setNavigationItemSelectedListener { item ->
             val event = when (item.itemId) {
-                R.id.drawer_menu_home -> TimelineEvent.Init
-                R.id.drawer_menu_add_account -> OauthEvent.Init
+                R.id.menu_item_drawer_home -> TimelineEvent.Init
+                R.id.menu_item_drawer_add_account -> OauthEvent.Init
                 else -> null
             }
             if (event != null) {
@@ -105,6 +106,30 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
                 binding.mainDrawer.closeDrawer(binding.mainGlobalMenu)
             }
             return@setNavigationItemSelectedListener event != null
+        }
+        viewModel.switchableRegisteredUsers.observe(this) { users ->
+            binding.mainGlobalMenu.menu.apply {
+                removeGroup(R.id.menu_group_drawer_switchable_accounts)
+                users.map { "@${it.screenName}" }
+                    .forEachIndexed { i, screenName ->
+                        add(R.id.menu_group_drawer_switchable_accounts, Menu.NONE, i, screenName)
+                    }
+            }
+        }
+        viewModel.isRegisteredUsersListOpened.observe(this) {
+            binding.mainGlobalMenu.menu.apply {
+                setGroupVisible(R.id.menu_group_drawer_switchable_accounts, it)
+                setGroupVisible(R.id.menu_group_drawer_register_account, it)
+                setGroupVisible(R.id.menu_group_drawer_default, !it)
+            }
+        }
+        val headerView = binding.mainGlobalMenu.getHeaderView(0)
+        val navHeaderBinding: NavHeaderBinding = requireNotNull<NavHeaderBinding>(
+            DataBindingUtil.findBinding(headerView) ?: DataBindingUtil.bind(headerView)
+        )
+        navHeaderBinding.also {
+            it.viewModel = viewModel
+            it.lifecycleOwner = this
         }
         viewModel.initialEvent(savedInstanceState?.savedViewState)
     }

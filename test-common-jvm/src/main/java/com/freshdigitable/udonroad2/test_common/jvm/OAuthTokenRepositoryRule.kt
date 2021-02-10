@@ -24,7 +24,12 @@ import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.user.UserEntity
 import com.freshdigitable.udonroad2.test_common.MockVerified
 import io.mockk.mockk
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.shareIn
 import org.junit.rules.TestRule
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
@@ -47,11 +52,24 @@ class OAuthTokenRepositoryRule(
         }
     }
 
-    fun setupCurrentUserIdSource(userId: Long?) {
+    val currentUserIdSource: Channel<UserId> = Channel()
+    fun setupCurrentUserIdSource(coroutineScope: CoroutineScope, userId: Long? = null) {
         appSettingRepository.run {
             setupResponseWithVerify(
                 { mock.currentUserIdSource },
-                flow { emit(UserId.create(userId)) }
+                currentUserIdSource.receiveAsFlow()
+                    .onStart { userId?.let { emit(UserId(it)) } }
+                    .shareIn(coroutineScope, SharingStarted.Lazily, 1)
+            )
+        }
+    }
+
+    val registeredUserIdsSource = Channel<Set<UserId>>()
+    fun setupRegisteredUserIdsSource(userIds: Set<UserId> = emptySet()) {
+        appSettingRepository.run {
+            setupResponseWithVerify(
+                { mock.registeredUserIdsSource },
+                registeredUserIdsSource.receiveAsFlow().onStart { emit(userIds) }
             )
         }
     }

@@ -22,10 +22,12 @@ import androidx.lifecycle.ViewModel
 import com.freshdigitable.udonroad2.input.TweetInputEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
+import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.shortcut.ShortcutViewModel
 import com.freshdigitable.udonroad2.shortcut.postSelectedItemShortcutEvent
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.merge
 import timber.log.Timber
 
 internal class MainViewModel(
@@ -39,7 +41,15 @@ internal class MainViewModel(
         get() = viewStates.isTweetInputExpanded
     val isTweetInputMenuVisible: LiveData<Boolean> = viewStates.isTweetInputMenuVisible
     override val isFabVisible: LiveData<Boolean> = viewStates.isFabVisible
-    internal val navigationEvent: Flow<NavigationEvent> = viewStates.initContainer
+    internal val navigationEvent: Flow<NavigationEvent> = merge(
+        viewStates.initContainer,
+        viewStates.navigateToUser
+    )
+
+    val currentUser: LiveData<TweetUserItem> = viewStates.currentUser
+    val isRegisteredUsersListOpened: LiveData<Boolean> = viewStates.isRegisteredUsersOpened
+    val switchableRegisteredUsers: LiveData<Set<TweetUserItem>> =
+        viewStates.switchableRegisteredUsers
 
     internal fun initialEvent(savedState: MainActivityViewState?) {
         eventDispatcher.postEvent(TimelineEvent.Setup(savedState))
@@ -66,6 +76,16 @@ internal class MainViewModel(
         }
         eventDispatcher.postEvent(event)
         return true
+    }
+
+    fun onAccountSwitcherClicked() {
+        eventDispatcher.postEvent(MainActivityEvent.AccountSwitchClicked)
+    }
+
+    fun onCurrentUserIconClicked() {
+        currentUser.value?.let {
+            eventDispatcher.postEvent(MainActivityEvent.CurrentUserIconClicked(it))
+        }
     }
 
     val currentState: MainActivityViewState

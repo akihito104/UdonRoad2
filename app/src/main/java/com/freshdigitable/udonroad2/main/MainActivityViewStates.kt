@@ -18,25 +18,36 @@ package com.freshdigitable.udonroad2.main
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.map
 import androidx.lifecycle.switchMap
 import com.freshdigitable.udonroad2.R
+import com.freshdigitable.udonroad2.data.UserDataSource
 import com.freshdigitable.udonroad2.data.impl.AppSettingRepository
 import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
 import com.freshdigitable.udonroad2.input.TweetInputSharedState
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
+import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.di.ActivityScope
 import com.freshdigitable.udonroad2.model.app.ext.combineLatest
+import com.freshdigitable.udonroad2.model.app.mainContext
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.AppViewState
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.ViewState
+import com.freshdigitable.udonroad2.model.user.TweetUserItem
+import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.getTimelineEvent
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.scan
 import kotlinx.coroutines.rx2.asFlow
 import timber.log.Timber
 import java.io.Serializable
@@ -50,7 +61,27 @@ internal class MainActivityViewStates @Inject constructor(
     private val tweetInputSharedState: TweetInputSharedState,
     listOwnerGenerator: ListOwnerGenerator,
     navDelegate: MainActivityNavState,
+    userRepository: UserDataSource,
+    executor: AppExecutor,
 ) {
+    internal val currentUser: AppViewState<TweetUserItem> = appSettingRepository.currentUserIdSource
+        .flatMapLatest { userRepository.getUserSource(it) }
+        .filterNotNull()
+        .asLiveData(executor.mainContext)
+    internal val switchableRegisteredUsers: AppViewState<Set<TweetUserItem>> = combine(
+        appSettingRepository.registeredUserIdsSource,
+        appSettingRepository.currentUserIdSource,
+    ) { registered, current ->
+        (registered - current).map { userRepository.getUser(it) }
+            .toSortedSet<TweetUserItem> { a, b ->
+                a.screenName.compareTo(b.screenName)
+            } as Set<TweetUserItem>
+    }.onStart { emit(emptySet()) }.asLiveData(executor.mainContext)
+
+    internal val isRegisteredUsersOpened: AppViewState<Boolean> =
+        actions.toggleAccountSwitcher.asFlow()
+            .scan(false) { acc, _ -> !acc }
+            .asLiveData(executor.mainContext)
 
     internal val initContainer: Flow<NavigationEvent> = AppAction.merge(
         actions.showFirstView.map {
@@ -64,6 +95,10 @@ internal class MainActivityViewStates @Inject constructor(
     ).asFlow().mapLatest {
         listOwnerGenerator.getTimelineEvent(it, NavigationEvent.Type.INIT)
     }
+    internal val navigateToUser: Flow<NavigationEvent> =
+        actions.showCurrentUser.asFlow().mapLatest {
+            TimelineEvent.Navigate.UserInfo(it.user)
+        }
 
     private val currentNavHost: AppViewState<MainNavHostState> = navDelegate.containerState
     val isTweetInputMenuVisible: LiveData<Boolean> = currentNavHost.map {
