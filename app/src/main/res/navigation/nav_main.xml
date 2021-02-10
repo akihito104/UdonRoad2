@@ -44,4 +44,14 @@
         app:destination="@id/nav_media"
         />
     <include app:graph="@navigation/nav_media" />
+
+    <fragment
+        android:id="@+id/fragment_settings"
+        android:name="com.freshdigitable.udonroad2.settings.AppSettingFragment"
+        android:label="@string/drawer_menu_settings"
+        />
+    <action
+        android:id="@+id/action_global_toSettings"
+        app:destination="@+id/fragment_settings"
+        />
 </navigation>

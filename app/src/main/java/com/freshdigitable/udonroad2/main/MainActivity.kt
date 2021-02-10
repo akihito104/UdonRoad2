@@ -111,7 +111,11 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
             }
         }
         binding.mainGlobalMenu.setNavigationItemSelectedListener { item ->
-            viewModel.onDrawerMenuItemClicked(item.groupId, item.itemId, item.title)
+            val isHandled = navigation.onNavDestinationSelected(item)
+            if (isHandled) {
+                binding.mainDrawer.closeDrawer(binding.mainGlobalMenu)
+            }
+            isHandled || viewModel.onDrawerMenuItemClicked(item.groupId, item.itemId, item.title)
         }
         viewModel.switchableRegisteredUsers.observe(this) { users ->
             binding.mainGlobalMenu.menu.apply {
