@@ -188,6 +188,12 @@ sealed class MainNavHostState : FragmentContainerState, Serializable {
         override fun isDestinationEqualTo(other: NavigationEvent?): Boolean = false
     }
 
+    object License : MainNavHostState() {
+        override val fragmentId: Int = R.id.fragment_license
+        override val appBarTitle: AppBarTitle = { it.getString(R.string.drawer_menu_license) }
+        override fun isDestinationEqualTo(other: NavigationEvent?): Boolean = false
+    }
+
     abstract val fragmentId: Int
     abstract val appBarTitle: AppBarTitle
     abstract fun isDestinationEqualTo(other: NavigationEvent?): Boolean
@@ -226,6 +232,7 @@ private fun MainNavHostState.Companion.create(
             MainNavHostState.TweetDetail(args.tweetId)
         }
         R.id.fragment_settings -> MainNavHostState.Settings
+        R.id.fragment_license -> MainNavHostState.License
         else -> null
     }
 }

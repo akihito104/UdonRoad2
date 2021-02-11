@@ -30,7 +30,7 @@
             android:title="@string/drawer_menu_settings"
             />
         <item
-            android:id="@+id/menu_item_drawer_license"
+            android:id="@id/fragment_license"
             android:title="@string/drawer_menu_license"
             />
     </group>
