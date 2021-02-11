@@ -35,10 +35,6 @@ releasesHub {
     dependenciesClassNames = listOf("Libs.kt", "BuildLibs.kt")
 }
 
-licenseTools {
-    ignoredProjects = setOf(":test-common", ":test-common-jvm")
-}
-
 allprojects {
     repositories {
         google()
@@ -60,6 +56,23 @@ subprojects {
         outputToConsole.set(true)
         outputColorName.set("RED")
         ignoreFailures.set(true)
+    }
+}
+
+configure(listOf(project(":app"))) {
+    apply(plugin = "com.cookpad.android.plugin.license-tools")
+
+    licenseTools {
+        ignoredProjects = setOf(":test-common", ":test-common-jvm")
+    }
+
+    tasks.whenTaskAdded {
+        if (name.contains("assemble")) {
+            dependsOn("checkLicenses")
+        }
+        if (name.matches("""generate.*Assets""".toRegex())) {
+            dependsOn("generateLicensePage")
+        }
     }
 }
 
