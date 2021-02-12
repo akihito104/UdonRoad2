@@ -26,4 +26,3 @@ internal abstract class UserReplyEntityDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     internal abstract suspend fun addEntities(entities: List<UserReplyEntityDb>)
 }
-

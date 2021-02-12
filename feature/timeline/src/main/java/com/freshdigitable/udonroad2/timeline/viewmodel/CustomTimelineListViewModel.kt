@@ -4,6 +4,7 @@ import com.freshdigitable.udonroad2.model.CustomTimelineItem
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
+import com.freshdigitable.udonroad2.model.QueryType.CustomTimelineListQueryType
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
@@ -23,14 +24,10 @@ import kotlinx.coroutines.rx2.asFlow
 import javax.inject.Inject
 
 class CustomTimelineListViewModel(
-    owner: ListOwner<QueryType.CustomTimelineListQueryType>,
+    owner: ListOwner<CustomTimelineListQueryType>,
     viewState: ListItemLoadableViewState,
     private val eventDispatcher: EventDispatcher,
-) : ListItemLoadableViewModel<QueryType.CustomTimelineListQueryType>(
-    owner,
-    eventDispatcher,
-    viewState
-),
+) : ListItemLoadableViewModel<CustomTimelineListQueryType>(owner, eventDispatcher, viewState),
     ListItemClickListener<CustomTimelineItem> {
 
     override fun onUserIconClicked(user: TweetUserItem) {
