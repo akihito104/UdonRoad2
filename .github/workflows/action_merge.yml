@@ -1,0 +1,26 @@
+name: merge check
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    name: merge check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('buildSrc/build.gradle.kts', 'buildSrc/src/main/java/*.kt', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: unit testing
+        run: ./gradlew testDebugUnitTest
