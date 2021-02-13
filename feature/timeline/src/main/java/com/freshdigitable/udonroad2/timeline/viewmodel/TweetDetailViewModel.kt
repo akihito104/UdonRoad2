@@ -28,7 +28,7 @@ import com.freshdigitable.udonroad2.shortcut.TweetContextMenuEvent
 import com.freshdigitable.udonroad2.timeline.LaunchMediaViewerAction
 import com.freshdigitable.udonroad2.timeline.R
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
-import com.freshdigitable.udonroad2.timeline.TweetListItemClickListener
+import com.freshdigitable.udonroad2.timeline.TweetMediaItemViewModel
 import com.freshdigitable.udonroad2.timeline.UserIconClickedAction
 import com.freshdigitable.udonroad2.timeline.getTimelineEvent
 import io.reactivex.disposables.CompositeDisposable
@@ -54,7 +54,7 @@ class TweetDetailViewModel(
     private val eventDispatcher: EventDispatcher,
     private val viewStates: TweetDetailViewStates,
     coroutineContext: CoroutineContext? = null
-) : TweetListItemClickListener, ViewModel() {
+) : TweetMediaItemViewModel, ViewModel() {
     private val coroutineContext: CoroutineContext =
         coroutineContext ?: viewModelScope.coroutineContext
 
@@ -75,6 +75,9 @@ class TweetDetailViewModel(
         val user = tweetItem.value?.body?.user ?: return
         eventDispatcher.postEvent(TimelineEvent.UserIconClicked(user))
     }
+
+    override val isHiddenPossibilitySensitive: LiveData<Boolean>
+        get() = TODO("Not yet implemented")
 
     override fun onMediaItemClicked(
         originalId: TweetId,

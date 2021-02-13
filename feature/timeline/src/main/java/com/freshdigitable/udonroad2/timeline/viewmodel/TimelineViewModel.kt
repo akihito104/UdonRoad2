@@ -28,8 +28,8 @@ import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.timeline.ListItemLoadableViewModel
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.TimelineViewState
-import com.freshdigitable.udonroad2.timeline.TweetListEventListener
-import com.freshdigitable.udonroad2.timeline.TweetListItemClickListener
+import com.freshdigitable.udonroad2.timeline.TweetListItemViewModel
+import com.freshdigitable.udonroad2.timeline.TweetMediaItemViewModel
 import timber.log.Timber
 
 class TimelineViewModel(
@@ -37,8 +37,8 @@ class TimelineViewModel(
     private val eventDispatcher: EventDispatcher,
     viewStates: TimelineViewState,
 ) : ListItemLoadableViewModel<TweetQueryType>(owner, eventDispatcher, viewStates),
-    TweetListItemClickListener,
-    TweetListEventListener {
+    TweetListItemViewModel,
+    TweetMediaItemViewModel {
     override val selectedItemId: LiveData<SelectedItemId?> = viewStates.selectedItemId
 
     override fun onBodyItemClicked(item: TweetListItem) {
@@ -58,6 +58,9 @@ class TimelineViewModel(
     override fun onUserIconClicked(user: TweetUserItem) {
         eventDispatcher.postEvent(TimelineEvent.UserIconClicked(user))
     }
+
+    override val isHiddenPossibilitySensitive: LiveData<Boolean>
+        get() = TODO("Not yet implemented")
 
     override fun onMediaItemClicked(
         originalId: TweetId,

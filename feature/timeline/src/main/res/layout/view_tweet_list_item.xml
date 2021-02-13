@@ -30,13 +30,13 @@
             />
 
         <variable
-            name="clickListener"
-            type="com.freshdigitable.udonroad2.timeline.TweetListItemClickListener"
+            name="itemViewModel"
+            type="com.freshdigitable.udonroad2.timeline.TweetListItemViewModel"
             />
 
         <variable
-            name="eventListener"
-            type="com.freshdigitable.udonroad2.timeline.TweetListEventListener"
+            name="mediaViewModel"
+            type="com.freshdigitable.udonroad2.timeline.TweetMediaItemViewModel"
             />
     </data>
 
@@ -45,8 +45,8 @@
         android:layout_height="wrap_content"
         android:padding="8dp"
         android:background="@drawable/selector_item_background"
-        android:onClick="@{v -> clickListener.onBodyItemClicked(tweet)}"
-        app:selected="@{eventListener.selectedItemId.equalsTo(tweet.originalId)}"
+        android:onClick="@{v -> itemViewModel.onBodyItemClicked(tweet)}"
+        app:selected="@{itemViewModel.selectedItemId.equalsTo(tweet.originalId)}"
         >
 
         <TextView
@@ -79,7 +79,7 @@
             app:layout_constraintHorizontal_chainStyle="packed"
             app:layout_constraintHorizontal_bias="0"
             app:bindUserIcon="@{tweet.body.user.iconUrl}"
-            android:onClick="@{v -> clickListener.onUserIconClicked(tweet.body.user)}"
+            android:onClick="@{v -> itemViewModel.onUserIconClicked(tweet.body.user)}"
             />
 
         <TextView
@@ -175,7 +175,7 @@
             app:layout_constraintBottom_toTopOf="@id/tweetItem_via"
             android:visibility="@{tweet.body.media.isEmpty() ? View.GONE : View.VISIBLE}"
             app:bindMedia="@{tweet.body.media}"
-            app:itemClickListener="@{(v, i) -> clickListener.onMediaItemClicked(tweet.originalId, tweet.body, i)}"
+            app:itemClickListener="@{(v, i) -> mediaViewModel.onMediaItemClicked(tweet.originalId, tweet.body, i)}"
             tools:visibility="visible"
             />
 

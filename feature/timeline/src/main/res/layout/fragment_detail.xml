@@ -188,7 +188,7 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:tweet="@{viewModel.tweetItem}"
-                    app:clickListener="@{viewModel}"
+                    app:mediaViewModel="@{viewModel}"
                     android:visibility="@{viewModel.tweetItem.quoted != null ? View.VISIBLE : View.GONE}"
                     />
             </androidx.constraintlayout.widget.ConstraintLayout>

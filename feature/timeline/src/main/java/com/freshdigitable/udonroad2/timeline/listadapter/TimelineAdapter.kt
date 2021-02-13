@@ -10,14 +10,14 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import com.freshdigitable.udonroad2.timeline.R
-import com.freshdigitable.udonroad2.timeline.TweetListEventListener
-import com.freshdigitable.udonroad2.timeline.TweetListItemClickListener
+import com.freshdigitable.udonroad2.timeline.TweetListItemViewModel
+import com.freshdigitable.udonroad2.timeline.TweetMediaItemViewModel
 import com.freshdigitable.udonroad2.timeline.databinding.ViewTweetListItemBinding
 import com.freshdigitable.udonroad2.timeline.databinding.ViewTweetListQuotedItemBinding
 
 class TimelineAdapter(
-    private val clickListener: TweetListItemClickListener,
-    private val eventListener: TweetListEventListener,
+    private val itemViewModel: TweetListItemViewModel,
+    private val mediaViewModel: TweetMediaItemViewModel,
     private val lifecycleOwner: LifecycleOwner
 ) : PagingDataAdapter<TweetListItem, TimelineAdapter.ViewHolder>(diffUtil) {
 
@@ -48,24 +48,24 @@ class TimelineAdapter(
     override fun onViewAttachedToWindow(holder: ViewHolder) {
         super.onViewAttachedToWindow(holder)
         holder.binding.apply {
-            clickListener = this@TimelineAdapter.clickListener
-            eventListener = this@TimelineAdapter.eventListener
+            itemViewModel = this@TimelineAdapter.itemViewModel
+            mediaViewModel = this@TimelineAdapter.mediaViewModel
         }
         holder.quotedView?.apply {
-            clickListener = this@TimelineAdapter.clickListener
-            eventListener = this@TimelineAdapter.eventListener
+            itemViewModel = this@TimelineAdapter.itemViewModel
+            mediaViewModel = this@TimelineAdapter.mediaViewModel
         }
     }
 
     override fun onViewDetachedFromWindow(holder: ViewHolder) {
         super.onViewDetachedFromWindow(holder)
         holder.binding.apply {
-            clickListener = null
-            eventListener = null
+            itemViewModel = null
+            mediaViewModel = null
         }
         holder.quotedView?.apply {
-            clickListener = null
-            eventListener = null
+            itemViewModel = null
+            mediaViewModel = null
         }
     }
 
@@ -91,7 +91,7 @@ class TimelineAdapter(
     private fun removeQuotedView(holder: ViewHolder) {
         holder.quotedView?.let {
             holder.root.removeView(it.root)
-            it.clickListener = null
+            it.itemViewModel = null
             quotedViewCache.add(it)
         }
         holder.quotedView = null

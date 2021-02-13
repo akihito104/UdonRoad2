@@ -12,16 +12,17 @@ interface ListItemClickListener<I> {
     fun onUserIconClicked(user: TweetUserItem) {}
 }
 
-interface TweetListItemClickListener : ListItemClickListener<TweetListItem> {
-    fun onQuoteItemClicked(item: TweetListItem) {}
+interface TweetListItemViewModel : ListItemClickListener<TweetListItem> {
+    val selectedItemId: LiveData<SelectedItemId?>
+    fun onQuoteItemClicked(item: TweetListItem)
+}
+
+interface TweetMediaItemViewModel {
+    val isHiddenPossibilitySensitive: LiveData<Boolean>
 
     fun onMediaItemClicked(originalId: TweetId, item: TweetElement, index: Int) {
         onMediaItemClicked(originalId, null, item, index)
     }
 
     fun onMediaItemClicked(originalId: TweetId, quotedId: TweetId?, item: TweetElement, index: Int)
-}
-
-interface TweetListEventListener {
-    val selectedItemId: LiveData<SelectedItemId?>
 }
