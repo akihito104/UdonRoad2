@@ -24,7 +24,8 @@ import com.freshdigitable.udonroad2.data.RemoteListDataSource
 import com.freshdigitable.udonroad2.data.db.AppDatabase
 import com.freshdigitable.udonroad2.data.db.dao.TweetListDao
 import com.freshdigitable.udonroad2.data.restclient.AppTwitter
-import com.freshdigitable.udonroad2.data.restclient.HomeTimelineDataSource
+import com.freshdigitable.udonroad2.data.restclient.TimelineRemoteDataSource
+import com.freshdigitable.udonroad2.data.restclient.TweetApiClient
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
@@ -88,6 +89,7 @@ class TwitterRuleImpl : TwitterRobotBase() {
 
 internal class ListRepositoryImplTestRule : TestWatcher() {
     val twitterRule = TwitterRuleImpl()
+    private val tweetApi = MockVerified.create<TweetApiClient>()
 
     val db = Room.inMemoryDatabaseBuilder(
         ApplicationProvider.getApplicationContext(),
@@ -96,7 +98,7 @@ internal class ListRepositoryImplTestRule : TestWatcher() {
         .allowMainThreadQueries()
         .build()
     private val local = TweetListDao(db)
-    private val remote = HomeTimelineDataSource(twitterRule.api)
+    private val remote = TimelineRemoteDataSource(twitterRule.api, tweetApi.mock)
 
     val sut: ListRepositoryImpl<QueryType.TweetQueryType, TweetEntity> by lazy {
         ListRepositoryImpl(

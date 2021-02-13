@@ -55,6 +55,32 @@ class MainViewModelTest {
             assertThat(sut.currentUser.value?.id).isEqualTo(null)
             assertThat(sut.switchableRegisteredUsers.value).isEmpty()
             assertThat(sut.isRegisteredUsersListOpened.value).isFalse()
+            assertThat(sut.isDrawerOpened.value).isFalse()
+        }
+
+        @Test
+        fun onDrawerOpened_then_isDrawerOpenedIsTrue(): Unit = with(rule) {
+            stateModelRule.coroutineRule.runBlockingTest {
+                // exercise
+                sut.onDrawerOpened()
+            }
+
+            // verify
+            assertThat(sut.isDrawerOpened.value).isTrue()
+        }
+
+        @Test
+        fun onDrawerClosed_then_isDrawerOpenedIsFalse(): Unit = with(rule) {
+            stateModelRule.coroutineRule.runBlockingTest {
+                // setup
+                sut.onDrawerOpened()
+
+                // exercise
+                sut.onDrawerClosed()
+            }
+
+            // verify
+            assertThat(sut.isDrawerOpened.value).isFalse()
         }
 
         @Test
@@ -280,6 +306,47 @@ class MainViewModelTest {
         }
 
         @Test
+        fun onDrawerClosed_accountSwitcherIsOpened_then_isRegisteredUserListOpenedIsFalse(): Unit =
+            with(rule) {
+                stateModelRule.coroutineRule.runBlockingTest {
+                    // setup
+                    sut.onDrawerOpened()
+                    sut.onAccountSwitcherClicked()
+
+                    // exercise
+                    sut.onDrawerClosed()
+                }
+
+                // verify
+                assertThat(sut.isDrawerOpened.value).isFalse()
+                assertThat(sut.isRegisteredUsersListOpened.value).isFalse()
+            }
+
+        @Test
+        fun onDrawerMenuItemClicked(): Unit = with(rule) {
+            // setup
+            sut.onDrawerOpened()
+
+            // exercise
+            val actualConsumed = sut.onDrawerMenuItemClicked(
+                R.id.menu_group_drawer_default,
+                R.id.menu_item_drawer_lists,
+                "lists"
+            )
+
+            // verify
+            assertThat(actualConsumed).isTrue()
+            assertThat(sut.isDrawerOpened.value).isFalse()
+            assertThat(sut.isRegisteredUsersListOpened.value).isFalse()
+            assertThat(navigationEventActual.last())
+                .isInstanceOf(TimelineEvent.Navigate.Timeline::class.java)
+            val event = navigationEventActual.last() as TimelineEvent.Navigate.Timeline
+            assertThat(event.owner.query)
+                .isInstanceOf(QueryType.CustomTimelineListQueryType.Ownership::class.java)
+            assertThat(event.owner.query.userId).isEqualTo(stateModelRule.authenticatedUserId)
+        }
+
+        @Test
         fun onCurrentUserIconClicked(): Unit = with(rule) {
             // exercise
             sut.onCurrentUserIconClicked()
@@ -310,6 +377,7 @@ internal class MainViewModelTestRule(
                 currentUser,
                 switchableRegisteredUsers,
                 isRegisteredUsersListOpened,
+                isDrawerOpened,
             ).forEach { it.observeForever { } }
         }
         navigationEventActual = sut.navigationEvent.testCollect(stateModelRule.executor)

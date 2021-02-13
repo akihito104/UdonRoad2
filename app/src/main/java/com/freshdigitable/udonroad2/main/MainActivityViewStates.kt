@@ -29,6 +29,7 @@ import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
 import com.freshdigitable.udonroad2.input.TweetInputSharedState
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
+import com.freshdigitable.udonroad2.model.QueryType.CustomTimelineListQueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.di.ActivityScope
@@ -41,11 +42,13 @@ import com.freshdigitable.udonroad2.model.app.navigation.ViewState
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.getTimelineEvent
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.scan
 import kotlinx.coroutines.rx2.asFlow
@@ -78,10 +81,37 @@ internal class MainActivityViewStates @Inject constructor(
             } as Set<TweetUserItem>
     }.onStart { emit(emptySet()) }.asLiveData(executor.mainContext)
 
+    internal val navEventChannel = Channel<NavigationEvent>()
+    private val drawerState = merge<MainActivityEvent.DrawerEvent>(
+        actions.showDrawerMenu.asFlow(),
+        actions.hideDrawerMenu.asFlow(),
+        actions.toggleAccountSwitcher.asFlow(),
+        actions.popToHome.asFlow(),
+        actions.launchOAuth.asFlow(),
+        actions.launchCustomTimelineList.asFlow(),
+    ).scan(DrawerViewState()) { acc, event ->
+        when (event) {
+            is MainActivityEvent.DrawerEvent.Opened -> acc.copy(isOpened = true)
+            is MainActivityEvent.DrawerEvent.AccountSwitchClicked ->
+                acc.copy(isAccountSwitcherOpened = !acc.isAccountSwitcherOpened)
+            is MainActivityEvent.DrawerEvent.CustomTimelineClicked -> {
+                val userId = requireNotNull(currentUser.value).id
+                val ev = listOwnerGenerator.getTimelineEvent(
+                    CustomTimelineListQueryType.Ownership(userId),
+                    NavigationEvent.Type.NAVIGATE
+                )
+                navEventChannel.send(ev)
+                DrawerViewState()
+            }
+            is MainActivityEvent.DrawerEvent.Closed,
+            is MainActivityEvent.DrawerEvent.HomeClicked,
+            is MainActivityEvent.DrawerEvent.AddUserClicked -> DrawerViewState()
+        }
+    }.asLiveData(executor.mainContext)
+    internal val isDrawerOpened: AppViewState<Boolean> =
+        drawerState.map { it.isOpened }.distinctUntilChanged()
     internal val isRegisteredUsersOpened: AppViewState<Boolean> =
-        actions.toggleAccountSwitcher.asFlow()
-            .scan(false) { acc, _ -> !acc }
-            .asLiveData(executor.mainContext)
+        drawerState.map { it.isAccountSwitcherOpened }.distinctUntilChanged()
 
     internal val initContainer: Flow<NavigationEvent> = AppAction.merge(
         actions.showFirstView.map {
@@ -159,4 +189,9 @@ internal class MainActivityViewStates @Inject constructor(
 data class MainActivityViewState(
     val selectedItem: SelectedItemId?,
     val fabVisible: Boolean
+) : ViewState, Serializable
+
+private data class DrawerViewState(
+    val isOpened: Boolean = false,
+    val isAccountSwitcherOpened: Boolean = false
 ) : ViewState, Serializable

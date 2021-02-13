@@ -28,6 +28,7 @@ import androidx.appcompat.graphics.drawable.DrawerArrowDrawable
 import androidx.appcompat.widget.Toolbar
 import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.add
 import androidx.fragment.app.commit
 import androidx.lifecycle.ViewModelProvider
@@ -37,8 +38,6 @@ import com.freshdigitable.udonroad2.databinding.ActivityMainBinding
 import com.freshdigitable.udonroad2.databinding.NavHeaderBinding
 import com.freshdigitable.udonroad2.input.TweetInputFragment
 import com.freshdigitable.udonroad2.input.TweetInputFragmentArgs
-import com.freshdigitable.udonroad2.oauth.OauthEvent
-import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import dagger.android.AndroidInjection
 import dagger.android.AndroidInjector
 import dagger.android.DispatchingAndroidInjector
@@ -95,17 +94,24 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
                     ?: return@observe
             tweetInputFragment.setMenuVisibility(it)
         }
-        binding.mainGlobalMenu.setNavigationItemSelectedListener { item ->
-            val event = when (item.itemId) {
-                R.id.menu_item_drawer_home -> TimelineEvent.Init
-                R.id.menu_item_drawer_add_account -> OauthEvent.Init
-                else -> null
+        binding.mainDrawer.addDrawerListener(object : DrawerLayout.SimpleDrawerListener() {
+            override fun onDrawerOpened(drawerView: View) {
+                viewModel.onDrawerOpened()
             }
-            if (event != null) {
-//                navigation.navigator.postEvent(event)
+
+            override fun onDrawerClosed(drawerView: View) {
+                viewModel.onDrawerClosed()
+            }
+        })
+        viewModel.isDrawerOpened.observe(this) {
+            if (it && !binding.mainDrawer.isDrawerOpen(binding.mainGlobalMenu)) {
+                binding.mainDrawer.openDrawer(binding.mainGlobalMenu)
+            } else if (!it && binding.mainDrawer.isDrawerOpen(binding.mainGlobalMenu)) {
                 binding.mainDrawer.closeDrawer(binding.mainGlobalMenu)
             }
-            return@setNavigationItemSelectedListener event != null
+        }
+        binding.mainGlobalMenu.setNavigationItemSelectedListener { item ->
+            viewModel.onDrawerMenuItemClicked(item.groupId, item.itemId, item.title)
         }
         viewModel.switchableRegisteredUsers.observe(this) { users ->
             binding.mainGlobalMenu.menu.apply {

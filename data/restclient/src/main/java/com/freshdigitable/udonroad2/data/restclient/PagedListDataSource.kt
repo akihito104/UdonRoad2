@@ -7,6 +7,7 @@ import com.freshdigitable.udonroad2.model.CustomTimelineEntity
 import com.freshdigitable.udonroad2.model.ListQuery
 import com.freshdigitable.udonroad2.model.PagedResponseList
 import com.freshdigitable.udonroad2.model.QueryType
+import com.freshdigitable.udonroad2.model.QueryType.CustomTimelineListQueryType
 import com.freshdigitable.udonroad2.model.QueryType.UserQueryType
 import com.freshdigitable.udonroad2.model.user.UserEntity
 import twitter4j.Twitter
@@ -48,13 +49,22 @@ class FollowingListDataSource @Inject constructor(
 )
 
 @Singleton
-class ListMembershipListDataSource @Inject constructor(
+class CustomTimelineListDataSource @Inject constructor(
     twitter: AppTwitter
-) : RemoteListDataSource<QueryType.UserListMembership, CustomTimelineEntity> by PagedListDataSource(
+) : RemoteListDataSource<CustomTimelineListQueryType, CustomTimelineEntity> by PagedListDataSource(
     twitter,
     { query ->
-        getUserListMemberships(
-            query.type.userId.value, query.pageOption.count, query.pageOption.maxId ?: -1
-        ).toPagedResponseList(UserList::toEntity)
+        when (val type = query.type) {
+            is CustomTimelineListQueryType.Membership -> {
+                getUserListMemberships(
+                    type.userId.value, query.pageOption.count, query.pageOption.maxId ?: -1
+                ).toPagedResponseList(UserList::toEntity)
+            }
+            is CustomTimelineListQueryType.Ownership -> {
+                getUserListsOwnerships(
+                    type.userId?.value ?: id, query.pageOption.count, query.pageOption.maxId ?: -1
+                ).toPagedResponseList(UserList::toEntity)
+            }
+        }
     }
 )

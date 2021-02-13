@@ -38,6 +38,8 @@ import com.freshdigitable.udonroad2.timeline.ListItemLoadableViewState
 import com.freshdigitable.udonroad2.timeline.ListItemLoadableViewStateImpl
 import com.freshdigitable.udonroad2.timeline.TimelineActions
 import com.freshdigitable.udonroad2.timeline.TimelineViewState
+import com.freshdigitable.udonroad2.timeline.viewmodel.CustomTimelineListActions
+import com.freshdigitable.udonroad2.timeline.viewmodel.CustomTimelineListItemLoadableViewState
 import com.freshdigitable.udonroad2.timeline.viewmodel.CustomTimelineListViewModel
 import com.freshdigitable.udonroad2.timeline.viewmodel.TimelineViewModel
 import com.freshdigitable.udonroad2.timeline.viewmodel.UserListViewModel
@@ -162,16 +164,18 @@ internal interface CustomTimelineListViewModelModule {
         fun provideCustomTimelineListViewModel(
             owner: ListOwner<*>,
             eventDispatcher: EventDispatcher,
+            actions: CustomTimelineListActions,
             viewState: ListItemLoadableViewStateImpl,
+            listOwnerGenerator: ListOwnerGenerator,
         ): ViewModel = CustomTimelineListViewModel(
-            owner as ListOwner<QueryType.UserListMembership>,
-            viewState,
+            owner as ListOwner<QueryType.CustomTimelineListQueryType>,
+            CustomTimelineListItemLoadableViewState(actions, viewState, listOwnerGenerator),
             eventDispatcher,
         )
 
         @Provides
         @IntoMap
-        @QueryTypeKey(QueryType.UserListMembership::class)
+        @QueryTypeKey(QueryType.CustomTimelineListQueryType::class)
         fun provideCustomTimelineListViewModelKClass(): KClass<out ViewModel> =
             CustomTimelineListViewModel::class
     }

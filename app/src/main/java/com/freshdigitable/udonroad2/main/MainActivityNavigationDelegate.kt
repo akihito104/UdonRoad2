@@ -115,7 +115,7 @@ internal class MainActivityNavigationDelegate @Inject constructor(
             NavigationEvent.Type.INIT -> {
                 navController.setGraph(
                     R.navigation.nav_main,
-                    ListItemFragment.bundle(nextState.owner, getString(nextState.label))
+                    ListItemFragment.bundle(nextState.owner, nextState.label(this))
                 )
             }
             NavigationEvent.Type.NAVIGATE -> {
@@ -124,14 +124,14 @@ internal class MainActivityNavigationDelegate @Inject constructor(
                         ListItemFragmentDirections.actionTimelineToTimeline(
                             nextState.owner.query,
                             nextState.owner.id,
-                            getString(nextState.label)
+                            nextState.label(this)
                         )
                     }
                     is MainNavHostState.TweetDetail -> {
                         TweetDetailFragmentDirections.actionDetailToTimeline(
                             nextState.owner.query,
                             nextState.owner.id,
-                            getString(nextState.label)
+                            nextState.label(this)
                         )
                     }
                     else -> throw AssertionError("undefined navigation at $container")
@@ -184,17 +184,19 @@ sealed class MainNavHostState : FragmentContainerState, Serializable {
     companion object
 }
 
-private val TimelineEvent.Navigate.Timeline.label: Int
-    get() {
-        return when (val type = owner.query) {
-            QueryType.Oauth -> R.string.title_oauth
-            is QueryType.TweetQueryType.Timeline -> {
-                if (type.userId == null) R.string.title_home else 0
-            }
-            is QueryType.TweetQueryType.Conversation -> R.string.title_conversation
-            else -> TODO()
+private fun TimelineEvent.Navigate.Timeline.label(context: Context): String {
+    return when (val type = owner.query) {
+        QueryType.Oauth -> context.getString(R.string.title_oauth)
+        is QueryType.TweetQueryType.Timeline -> {
+            if (type.userId == null) context.getString(R.string.title_home) else ""
         }
+        is QueryType.TweetQueryType.Conversation -> context.getString(R.string.title_conversation)
+        is QueryType.CustomTimelineListQueryType.Ownership ->
+            context.getString(R.string.title_custom_timeline_ownership_list)
+        is QueryType.TweetQueryType.CustomTimeline -> type.title
+        else -> TODO()
     }
+}
 
 private fun MainNavHostState.Companion.create(
     destination: NavDestination?,

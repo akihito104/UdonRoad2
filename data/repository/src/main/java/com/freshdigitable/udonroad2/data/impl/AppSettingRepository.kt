@@ -72,11 +72,11 @@ class AppSettingRepository @Inject constructor(
 //        executor.launchIO {
 //            val conf = apiClient.getTwitterApiConfig()
 //            setFetchTwitterAPIConfigTime(System.currentTimeMillis())
-////        realm.executeTransaction({ r ->
-////            r.delete(TwitterAPIConfigurationRealm::class.java)
-////            val twitterAPIConfiguration = TwitterAPIConfigurationRealm(twitterAPIConfig)
-////            r.insertOrUpdate(twitterAPIConfiguration)
-////        })
+// //        realm.executeTransaction({ r ->
+// //            r.delete(TwitterAPIConfigurationRealm::class.java)
+// //            val twitterAPIConfiguration = TwitterAPIConfigurationRealm(twitterAPIConfig)
+// //            r.insertOrUpdate(twitterAPIConfiguration)
+// //        })
 //            twitterApiConfig.postValue(conf)
 //        }
 //    }

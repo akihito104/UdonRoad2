@@ -247,42 +247,39 @@ internal data class TweetEntityUpdatableImpl(
     @Ignore
     private val body = if (!item.isRetweet) item.body else null
     override val id: TweetId @Ignore get() = item.originalId
-    override val isRetweeted: Boolean @Ignore get() = if (!item.isRetweet) isBodyRetweeted else false
+    override val isRetweeted: Boolean
+        @Ignore get() = if (!item.isRetweet) isBodyRetweeted else false
     override val retweetCount: Int @Ignore get() = body?.retweetCount ?: 0
-    override val isFavorited: Boolean @Ignore get() = if (!item.isRetweet) isBodyFavorited else false
+    override val isFavorited: Boolean
+        @Ignore get() = if (!item.isRetweet) isBodyFavorited else false
     override val favoriteCount: Int @Ignore get() = body?.favoriteCount ?: 0
     override val user: TweetUserItem @Ignore get() = item.originalUser
 
     override val retweetedTweet: TweetEntityUpdatable?
-        @Ignore get() = if (item.isRetweet) object : TweetEntityUpdatable,
-            TweetElementUpdatable by TweetElementUpdatableImpl(
-                item.body,
-                isBodyRetweeted,
-                isBodyFavorited
-            ) {
-            override val retweetedTweet: TweetEntityUpdatable? = null
-            override val quotedTweet: TweetEntityUpdatable? = item.quoted?.let {
-                object : TweetEntityUpdatable, TweetElementUpdatable by TweetElementUpdatableImpl(
-                    it,
-                    isQuoteRetweeted,
-                    isQuoteFavorited
-                ) {
+        @Ignore get() = if (item.isRetweet) createRetweetedTweet() else null
+    override val quotedTweet: TweetEntityUpdatable?
+        @Ignore get() = createQuotedTweet()
+
+    companion object {
+        private fun TweetEntityUpdatableImpl.createRetweetedTweet(): TweetEntityUpdatable {
+            val element = TweetElementUpdatableImpl(item.body, isBodyRetweeted, isBodyFavorited)
+            val quotedEntity = createQuotedTweet()
+            return object : TweetEntityUpdatable, TweetElementUpdatable by element {
+                override val retweetedTweet: TweetEntityUpdatable? = null
+                override val quotedTweet: TweetEntityUpdatable? = quotedEntity
+            }
+        }
+
+        private fun TweetEntityUpdatableImpl.createQuotedTweet(): TweetEntityUpdatable? {
+            return item.quoted?.let {
+                val quoteElement = TweetElementUpdatableImpl(it, isQuoteRetweeted, isQuoteFavorited)
+                object : TweetEntityUpdatable, TweetElementUpdatable by quoteElement {
                     override val retweetedTweet: TweetEntityUpdatable? = null
                     override val quotedTweet: TweetEntityUpdatable? = null
                 }
             }
-        } else null
-    override val quotedTweet: TweetEntityUpdatable?
-        @Ignore get() = item.quoted?.let {
-            object : TweetEntityUpdatable, TweetElementUpdatable by TweetElementUpdatableImpl(
-                it,
-                isQuoteRetweeted,
-                isQuoteFavorited
-            ) {
-                override val retweetedTweet: TweetEntityUpdatable? = null
-                override val quotedTweet: TweetEntityUpdatable? = null
-            }
         }
+    }
 }
 
 internal data class TweetElementUpdatableImpl(

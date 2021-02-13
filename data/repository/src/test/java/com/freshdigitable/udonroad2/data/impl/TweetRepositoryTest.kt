@@ -371,8 +371,10 @@ class TweetRepositoryTest {
         fun postUnretweet_passOriginalTweetId(): Unit = rule.runs {
             // setup
             restClient.setupPostUnretweet(
-                targetTweet.id.value, createStatus(
-                    targetTweet.id.value, retweetedStatus = createStatus(
+                targetTweet.id.value,
+                createStatus(
+                    targetTweet.id.value,
+                    retweetedStatus = createStatus(
                         requireNotNull(targetTweet.retweetedTweet).id.value,
                         isRetweeted = requireNotNull(targetTweet.retweetedTweet).isRetweeted
                     )

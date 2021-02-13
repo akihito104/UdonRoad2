@@ -6,5 +6,6 @@
     <string name="title_home">Home</string>
     <string name="title_detail">Tweet</string>
     <string name="title_conversation">Conversation</string>
+    <string name="title_custom_timeline_ownership_list">My lists</string>
     <string name="action_totop">to top of the list</string>
 </resources>
