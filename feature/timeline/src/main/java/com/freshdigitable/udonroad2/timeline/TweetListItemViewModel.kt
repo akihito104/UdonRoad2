@@ -18,7 +18,7 @@ interface TweetListItemViewModel : ListItemClickListener<TweetListItem> {
 }
 
 interface TweetMediaItemViewModel {
-    val isHiddenPossibilitySensitive: LiveData<Boolean>
+    val isPossiblySensitiveHidden: LiveData<Boolean>
 
     fun onMediaItemClicked(originalId: TweetId, item: TweetElement, index: Int) {
         onMediaItemClicked(originalId, null, item, index)

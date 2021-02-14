@@ -59,7 +59,7 @@ class TimelineViewModel(
         eventDispatcher.postEvent(TimelineEvent.UserIconClicked(user))
     }
 
-    override val isHiddenPossibilitySensitive: LiveData<Boolean>
+    override val isPossiblySensitiveHidden: LiveData<Boolean>
         get() = TODO("Not yet implemented")
 
     override fun onMediaItemClicked(
