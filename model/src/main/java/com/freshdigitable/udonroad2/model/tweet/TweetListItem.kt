@@ -52,6 +52,8 @@ interface TweetElement : TweetElementUpdatable {
 
     val media: List<TweetMediaItem>
         get() = emptyList()
+
+    val possiblySensitive: Boolean
 }
 
 interface TweetElementUpdatable {

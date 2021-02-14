@@ -60,6 +60,7 @@ import org.threeten.bp.Instant
      retweet_count AS qt_retweet_count,
      favorite_count AS qt_favorite_count,
      in_reply_to_tweet_id AS qt_in_reply_to_tweet_id,
+     possibly_sensitive AS qt_possibly_sensitive,
      source AS qt_source,
      u.id AS qt_user_id,
      u.name AS qt_user_name,
@@ -71,7 +72,7 @@ import org.threeten.bp.Instant
     INNER JOIN view_user_item AS u ON tweet_element.user_id = u.id
     )
     SELECT t.id, t.text, t.created_at, t.retweet_count,
-     t.favorite_count, t.source, t.in_reply_to_tweet_id,
+     t.favorite_count, t.source, t.in_reply_to_tweet_id, t.possibly_sensitive,
      vu.id AS user_id, vu.name AS user_name, vu.screen_name AS user_screen_name,
      vu.icon_url AS user_icon_url, vu.is_verified AS user_is_verified, 
      vu.is_protected AS user_is_protected,
@@ -120,6 +121,9 @@ internal data class TweetListItemDbView(
 
         @ColumnInfo(name = "created_at")
         val createdAt: Instant,
+
+        @ColumnInfo(name = "possibly_sensitive")
+        val possiblySensitive: Boolean,
     )
 }
 
@@ -197,6 +201,7 @@ internal data class TweetElementImpl(
     override val user: TweetUserItem get() = tweet.user
     override val source: String get() = tweet.source
     override val createdAt: Instant get() = tweet.createdAt
+    override val possiblySensitive: Boolean = tweet.possiblySensitive
     override val inReplyToTweetId: TweetId? = tweet.inReplyToTweetId
 }
 
