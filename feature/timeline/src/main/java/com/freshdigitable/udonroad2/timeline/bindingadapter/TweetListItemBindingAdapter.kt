@@ -137,8 +137,11 @@ fun bindUserIcon(v: ImageView, url: String?, cornerRadius: Float?) {
 
 private val movieType: Set<MediaType> = EnumSet.of(MediaType.VIDEO, MediaType.ANIMATED_GIF)
 
-@BindingAdapter("bindMedia")
-fun MediaThumbnailContainer.bindMedia(items: List<TweetMediaItem>?) {
+@BindingAdapter("bindMedia", "hideForPossiblySensitive", requireAll = false)
+fun MediaThumbnailContainer.bindMedia(
+    items: List<TweetMediaItem>?,
+    hideForPossiblySensitive: Boolean?
+) {
     if (items.isNullOrEmpty()) {
         return
     }
