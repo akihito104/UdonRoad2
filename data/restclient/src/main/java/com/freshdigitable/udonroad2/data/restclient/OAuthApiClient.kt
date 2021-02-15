@@ -66,6 +66,8 @@ internal class OAuthApiClient @Inject constructor(
         get() = throw NotImplementedError()
     override val registeredUserIdsSource: Flow<Set<UserId>>
         get() = throw NotImplementedError()
+    override val isPossiblySensitiveHidden: Flow<Boolean>
+        get() = throw NotImplementedError()
 
     override suspend fun addAccessTokenEntity(token: AccessTokenEntity) =
         throw NotImplementedError()

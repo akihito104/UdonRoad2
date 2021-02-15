@@ -18,6 +18,7 @@ package com.freshdigitable.udonroad2.data.impl
 
 import android.app.Application
 import android.content.Context
+import androidx.preference.PreferenceManager
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -393,7 +394,9 @@ class TweetRepositoryTest {
 class TweetRepositoryTestRule : TestWatcher() {
     private val app: Application = ApplicationProvider.getApplicationContext()
     private val prefs = SharedPreferenceDataSource(
-        app.getSharedPreferences("test_pref", Context.MODE_PRIVATE)
+        app.getSharedPreferences("test_pref", Context.MODE_PRIVATE),
+        PreferenceManager.getDefaultSharedPreferences(app),
+        app,
     )
     private val db = Room.inMemoryDatabaseBuilder(app, AppDatabase::class.java)
         .allowMainThreadQueries()

@@ -16,10 +16,13 @@
 
 package com.freshdigitable.udonroad2.data.local
 
+import android.app.Application
 import android.content.SharedPreferences
 import androidx.core.content.edit
+import com.freshdigitable.db.R
 import com.freshdigitable.udonroad2.data.AppSettingDataSource
 import com.freshdigitable.udonroad2.data.OAuthTokenDataSource
+import com.freshdigitable.udonroad2.data.local.di.SharedPreferencesModule
 import com.freshdigitable.udonroad2.model.AccessTokenEntity
 import com.freshdigitable.udonroad2.model.RequestTokenItem
 import com.freshdigitable.udonroad2.model.UserId
@@ -37,6 +40,7 @@ import javax.inject.Singleton
 class SharedPreferenceDataSource @Inject constructor(
     @Named(SharedPreferencesModule.NAMED_SETTING_TWITTER) private val prefs: SharedPreferences,
     @Named(SharedPreferencesModule.NAMED_SETTING_APP) private val appPrefs: SharedPreferences,
+    application: Application,
 ) : AppSettingDataSource.Local, OAuthTokenDataSource.Local {
     override suspend fun addAccessTokenEntity(token: AccessTokenEntity) {
         val userId = token.userId
@@ -103,6 +107,21 @@ class SharedPreferenceDataSource @Inject constructor(
         awaitClose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
     }.onStart {
         emit(prefs.getAllAuthenticatedUserIds())
+    }
+
+    private val possiblySensitiveHiddenKey = application.getString(R.string.settings_key_sensitive)
+    private val possiblySensitiveHiddenDefault =
+        application.resources.getBoolean(R.bool.settings_sensitive_default)
+    override val isPossiblySensitiveHidden: Flow<Boolean> = callbackFlow {
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { sp, key ->
+            if (key == possiblySensitiveHiddenKey) {
+                val isPossiblySensitiveHidden =
+                    sp.getBoolean(possiblySensitiveHiddenKey, possiblySensitiveHiddenDefault)
+                sendBlocking(isPossiblySensitiveHidden)
+            }
+        }
+        appPrefs.registerOnSharedPreferenceChangeListener(listener)
+        awaitClose { appPrefs.unregisterOnSharedPreferenceChangeListener(listener) }
     }
 
     fun deleteAll() {
