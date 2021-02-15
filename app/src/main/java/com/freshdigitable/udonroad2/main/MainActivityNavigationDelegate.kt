@@ -2,6 +2,7 @@ package com.freshdigitable.udonroad2.main
 
 import android.content.Context
 import android.os.Bundle
+import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Lifecycle
@@ -14,6 +15,7 @@ import androidx.navigation.NavDestination
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
+import androidx.navigation.ui.onNavDestinationSelected
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.media.MediaActivityArgs
 import com.freshdigitable.udonroad2.model.ListOwner
@@ -51,9 +53,9 @@ internal class MainActivityNavigationDelegate @Inject constructor(
     }
     private val onDestinationChanged =
         NavController.OnDestinationChangedListener { nc, destination, arguments ->
-            val containerState = requireNotNull(
-                MainNavHostState.create(destination, arguments)
-            )
+            val containerState = requireNotNull(MainNavHostState.create(destination, arguments)) {
+                "destination id is not registered at MainNavHostState: $destination"
+            }
             state.setContainerState(containerState)
             state.setIsInTopLevelDest(destination.isTopLevelDestination(nc))
         }
@@ -143,6 +145,9 @@ internal class MainActivityNavigationDelegate @Inject constructor(
 
     fun onSupportNavigateUp(): Boolean = navController.navigateUp(drawerLayout)
 
+    fun onNavDestinationSelected(item: MenuItem): Boolean =
+        item.onNavDestinationSelected(navController)
+
     override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
         when (event) {
             Lifecycle.Event.ON_DESTROY ->
@@ -175,6 +180,12 @@ sealed class MainNavHostState : FragmentContainerState, Serializable {
         override fun isDestinationEqualTo(other: NavigationEvent?): Boolean {
             return (other as? TimelineEvent.Navigate.Detail)?.id == this.tweetId
         }
+    }
+
+    object Settings : MainNavHostState() {
+        override val fragmentId: Int = R.id.fragment_settings
+        override val appBarTitle: AppBarTitle = { it.getString(R.string.drawer_menu_settings) }
+        override fun isDestinationEqualTo(other: NavigationEvent?): Boolean = false
     }
 
     abstract val fragmentId: Int
@@ -214,6 +225,7 @@ private fun MainNavHostState.Companion.create(
             val args = TweetDetailFragmentArgs.fromBundle(requireNotNull(arguments))
             MainNavHostState.TweetDetail(args.tweetId)
         }
+        R.id.fragment_settings -> MainNavHostState.Settings
         else -> null
     }
 }

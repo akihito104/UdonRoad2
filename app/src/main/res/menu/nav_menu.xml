@@ -26,7 +26,7 @@
             android:title="@string/drawer_menu_list"
             />
         <item
-            android:id="@+id/menu_item_drawer_settings"
+            android:id="@id/fragment_settings"
             android:title="@string/drawer_menu_settings"
             />
         <item
