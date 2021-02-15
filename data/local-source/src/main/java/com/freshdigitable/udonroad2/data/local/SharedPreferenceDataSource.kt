@@ -30,11 +30,13 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.onStart
 import javax.inject.Inject
+import javax.inject.Named
 import javax.inject.Singleton
 
 @Singleton
 class SharedPreferenceDataSource @Inject constructor(
-    private val prefs: SharedPreferences
+    @Named(SharedPreferencesModule.NAMED_SETTING_TWITTER) private val prefs: SharedPreferences,
+    @Named(SharedPreferencesModule.NAMED_SETTING_APP) private val appPrefs: SharedPreferences,
 ) : AppSettingDataSource.Local, OAuthTokenDataSource.Local {
     override suspend fun addAccessTokenEntity(token: AccessTokenEntity) {
         val userId = token.userId

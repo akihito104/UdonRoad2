@@ -81,7 +81,7 @@ internal object DaoModule {
     fun provideListDao(db: AppDatabase): ListDao = db.listDao()
 }
 
-@Module
+@Module(includes = [SharedPreferencesModule::class])
 internal interface LocalSourceModuleInternal {
     @Binds
     fun bindUserRepositoryLocalSource(source: UserLocalSource): UserDataSource.Local

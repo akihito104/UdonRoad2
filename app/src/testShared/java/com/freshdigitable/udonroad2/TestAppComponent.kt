@@ -40,18 +40,20 @@ import javax.inject.Singleton
         RepositoryModule::class,
         DatabaseModule::class,
         MockTwitterModule::class,
-        TestSharedPreferencesModule::class,
         MockSetupModule::class,
         AppFileProviderModule::class,
     ]
 )
 interface TestAppComponent : AppComponent {
     @Component.Builder
-    interface Builder {
+    interface Builder : AppComponent.Builder {
         @BindsInstance
-        fun application(application: Application): Builder
+        override fun application(application: Application): Builder
 
-        fun build(): TestAppComponent
+        @BindsInstance
+        override fun sharedPreferencesName(name: String): Builder
+
+        override fun build(): TestAppComponent
     }
 
     val twitter: Twitter
