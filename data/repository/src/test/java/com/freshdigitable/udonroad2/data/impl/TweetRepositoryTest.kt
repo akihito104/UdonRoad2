@@ -24,8 +24,10 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.freshdigitable.udonroad2.data.db.AppDatabase
 import com.freshdigitable.udonroad2.data.db.dao.TweetListDao
+import com.freshdigitable.udonroad2.data.local.AppPreferences
 import com.freshdigitable.udonroad2.data.local.SharedPreferenceDataSource
 import com.freshdigitable.udonroad2.data.local.TweetLocalDataSource
+import com.freshdigitable.udonroad2.data.local.TwitterPreferences
 import com.freshdigitable.udonroad2.data.restclient.AppTwitter
 import com.freshdigitable.udonroad2.data.restclient.TweetApiClient
 import com.freshdigitable.udonroad2.model.AccessTokenEntity
@@ -394,9 +396,8 @@ class TweetRepositoryTest {
 class TweetRepositoryTestRule : TestWatcher() {
     private val app: Application = ApplicationProvider.getApplicationContext()
     private val prefs = SharedPreferenceDataSource(
-        app.getSharedPreferences("test_pref", Context.MODE_PRIVATE),
-        PreferenceManager.getDefaultSharedPreferences(app),
-        app,
+        TwitterPreferences(app.getSharedPreferences("test_pref", Context.MODE_PRIVATE)),
+        AppPreferences(PreferenceManager.getDefaultSharedPreferences(app), app)
     )
     private val db = Room.inMemoryDatabaseBuilder(app, AppDatabase::class.java)
         .allowMainThreadQueries()
