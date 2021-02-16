@@ -23,7 +23,6 @@ import com.freshdigitable.udonroad2.model.app.navigation.filterByType
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
 import com.freshdigitable.udonroad2.shortcut.ShortcutActions
 import com.freshdigitable.udonroad2.timeline.TimelineEvent.Init
-import com.freshdigitable.udonroad2.timeline.TimelineEvent.MediaItemClicked
 import com.freshdigitable.udonroad2.timeline.TimelineEvent.TweetItemSelection
 import com.freshdigitable.udonroad2.timeline.TimelineEvent.UserIconClicked
 import kotlinx.coroutines.flow.Flow
@@ -75,18 +74,6 @@ interface UserIconClickedNavigation {
                 override val navEvent: Flow<NavigationEvent> = actions.launchUserInfo.asFlow()
                     .map { TimelineEvent.Navigate.UserInfo(it.user) }
             }
-        }
-    }
-}
-
-interface LaunchMediaViewerAction {
-    val launchMediaViewer: AppAction<MediaItemClicked>
-
-    companion object {
-        fun create(
-            eventDispatcher: EventDispatcher
-        ): LaunchMediaViewerAction = object : LaunchMediaViewerAction {
-            override val launchMediaViewer: AppAction<MediaItemClicked> = eventDispatcher.toAction()
         }
     }
 }

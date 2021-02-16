@@ -40,6 +40,7 @@ class TimelineViewModel(
     TweetListItemViewModel,
     TweetMediaItemViewModel {
     override val selectedItemId: LiveData<SelectedItemId?> = viewStates.selectedItemId
+    override val isPossiblySensitiveHidden: LiveData<Boolean> = viewStates.isPossiblySensitiveHidden
 
     override fun onBodyItemClicked(item: TweetListItem) {
         Timber.tag("TimelineViewModel").d("onBodyItemClicked: ${item.body.id}")
@@ -59,21 +60,13 @@ class TimelineViewModel(
         eventDispatcher.postEvent(TimelineEvent.UserIconClicked(user))
     }
 
-    override val isPossiblySensitiveHidden: LiveData<Boolean>
-        get() = TODO("Not yet implemented")
-
     override fun onMediaItemClicked(
         originalId: TweetId,
         quotedId: TweetId?,
         item: TweetElement,
         index: Int
     ) {
-        eventDispatcher.postEvent(
-            TimelineEvent.MediaItemClicked(
-                item.id,
-                index,
-                SelectedItemId(owner, originalId, quotedId)
-            )
-        )
+        val selected = SelectedItemId(owner, originalId, quotedId)
+        eventDispatcher.postEvent(TimelineEvent.MediaItemClicked(item.id, index, selected))
     }
 }

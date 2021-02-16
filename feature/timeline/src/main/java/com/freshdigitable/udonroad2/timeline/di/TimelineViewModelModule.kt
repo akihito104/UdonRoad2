@@ -19,6 +19,7 @@ package com.freshdigitable.udonroad2.timeline.di
 import androidx.lifecycle.ViewModel
 import com.freshdigitable.udonroad2.data.ListRepository
 import com.freshdigitable.udonroad2.data.PagedListProvider
+import com.freshdigitable.udonroad2.data.impl.AppSettingRepository
 import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
 import com.freshdigitable.udonroad2.data.impl.di.ListRepositoryComponent
@@ -86,6 +87,7 @@ internal interface TimelineViewModelModule {
             actions: TimelineActions,
             selectedItemRepository: SelectedItemRepository,
             tweetRepository: TweetRepository,
+            appSettingRepository: AppSettingRepository,
             listOwnerGenerator: ListOwnerGenerator,
             listRepositoryFactory: ListRepositoryComponent.Factory,
             executor: AppExecutor,
@@ -98,6 +100,7 @@ internal interface TimelineViewModelModule {
                 actions,
                 selectedItemRepository,
                 tweetRepository,
+                appSettingRepository,
                 repository,
                 listProvider,
                 listOwnerGenerator,

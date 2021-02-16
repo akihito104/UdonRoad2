@@ -99,8 +99,10 @@ class TweetDetailViewModelTest {
     @Before
     fun setup() {
         tweetRepositoryRule.setupShowTweet(tweet.originalId, tweetSource.receiveAsFlow())
+        oauthRepositoryRule.setupIsPossiblySensitiveHidden()
         sut.tweetItem.observeForever { }
         sut.menuItemStates.observeForever { }
+        sut.isPossiblySensitiveHidden.observeForever { }
         navigationEvents = sut.navigationEvent.testCollect(executor)
     }
 

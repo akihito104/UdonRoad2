@@ -13,13 +13,13 @@ import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.AppTwitterException
 import com.freshdigitable.udonroad2.model.app.mainContext
+import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventStream
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.suspendMap
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
-import com.freshdigitable.udonroad2.model.tweet.TweetElement
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import com.freshdigitable.udonroad2.shortcut.SelectedItemShortcut
 import com.freshdigitable.udonroad2.shortcut.ShortcutActions
@@ -29,6 +29,7 @@ import com.freshdigitable.udonroad2.timeline.LaunchMediaViewerAction
 import com.freshdigitable.udonroad2.timeline.R
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.TweetMediaItemViewModel
+import com.freshdigitable.udonroad2.timeline.TweetMediaViewStates
 import com.freshdigitable.udonroad2.timeline.UserIconClickedAction
 import com.freshdigitable.udonroad2.timeline.getTimelineEvent
 import io.reactivex.disposables.CompositeDisposable
@@ -54,7 +55,8 @@ class TweetDetailViewModel(
     private val eventDispatcher: EventDispatcher,
     private val viewStates: TweetDetailViewStates,
     coroutineContext: CoroutineContext? = null
-) : TweetMediaItemViewModel, ViewModel() {
+) : TweetMediaItemViewModel by TweetMediaItemViewModel.create(eventDispatcher, viewStates),
+    ViewModel() {
     private val coroutineContext: CoroutineContext =
         coroutineContext ?: viewModelScope.coroutineContext
 
@@ -62,7 +64,7 @@ class TweetDetailViewModel(
         .asLiveData(this.coroutineContext)
     val menuItemStates: LiveData<TweetDetailViewStates.MenuItemState> = viewStates.menuItemState
         .asLiveData(this.coroutineContext)
-    internal val navigationEvent: Flow<NavigationEvent> = viewStates.navigateEvent
+    internal val navigationEvent: Flow<NavigationEvent> = viewStates.navigationEvent
 
     fun onOriginalUserClicked() {
         val user = tweetItem.value?.originalUser ?: return
@@ -74,18 +76,6 @@ class TweetDetailViewModel(
     fun onBodyUserClicked() {
         val user = tweetItem.value?.body?.user ?: return
         eventDispatcher.postEvent(TimelineEvent.UserIconClicked(user))
-    }
-
-    override val isPossiblySensitiveHidden: LiveData<Boolean>
-        get() = TODO("Not yet implemented")
-
-    override fun onMediaItemClicked(
-        originalId: TweetId,
-        quotedId: TweetId?,
-        item: TweetElement,
-        index: Int
-    ) {
-        eventDispatcher.postEvent(TimelineEvent.MediaItemClicked(item.id, index))
     }
 
     fun onMenuItemClicked(@IdRes itemId: Int) {
@@ -149,8 +139,13 @@ class TweetDetailViewStates @Inject constructor(
     appSettingRepository: AppSettingRepository,
     listOwnerGenerator: ListOwnerGenerator,
     executor: AppExecutor
-) : ShortcutViewStates by ShortcutViewStates.create(actions, repository, executor) {
+) : TweetMediaViewStates,
+    ActivityEventStream by ActivityEventStream.EmptyStream,
+    ShortcutViewStates by ShortcutViewStates.create(actions, repository, executor) {
     private val coroutineScope = CoroutineScope(context = executor.mainContext)
+    private val mediaViewStates =
+        TweetMediaViewStates.create(actions, appSettingRepository, coroutineScope)
+
     internal val tweetItem: StateFlow<TweetListItem?> = repository.getDetailTweetItemSource(tweetId)
         .transformLatest {
             when {
@@ -188,12 +183,12 @@ class TweetDetailViewStates @Inject constructor(
         }
     }.distinctUntilChanged()
 
-    internal val navigateEvent: Flow<NavigationEvent> = merge(
+    override val navigationEvent: Flow<NavigationEvent> = merge(
         actions.launchUserInfo.asFlow().mapLatest { TimelineEvent.Navigate.UserInfo(it.user) },
         actions.launchOriginalTweetUserInfo.asFlow().mapLatest {
             TimelineEvent.Navigate.UserInfo(it.user)
         },
-        actions.launchMediaViewer.asFlow().mapLatest { TimelineEvent.Navigate.MediaViewer(it) },
+        mediaViewStates.navigationEvent,
         actions.showConversation.asFlow().mapLatest {
             listOwnerGenerator.getTimelineEvent(
                 QueryType.TweetQueryType.Conversation(it.tweetId),
@@ -201,6 +196,9 @@ class TweetDetailViewStates @Inject constructor(
             )
         }
     )
+
+    override val isPossiblySensitiveHidden: LiveData<Boolean> =
+        mediaViewStates.isPossiblySensitiveHidden
 
     data class MenuItemState(
         val isMainGroupEnabled: Boolean = false,

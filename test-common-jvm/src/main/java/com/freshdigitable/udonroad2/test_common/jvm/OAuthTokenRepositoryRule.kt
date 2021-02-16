@@ -27,6 +27,7 @@ import io.mockk.mockk
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.shareIn
@@ -97,6 +98,13 @@ class OAuthTokenRepositoryRule(
 
     fun setupVerifyCredentials(user: UserEntity) {
         mockVerified.coSetupResponseWithVerify({ mock.verifyCredentials() }, user)
+    }
+
+    fun setupIsPossiblySensitiveHidden() {
+        appSettingRepository.setupResponseWithVerify(
+            { appSettingMock.isPossiblySensitiveHidden },
+            flowOf(true)
+        )
     }
 
     override fun apply(base: Statement, description: Description): Statement {

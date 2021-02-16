@@ -121,6 +121,9 @@ class SharedPreferenceDataSource @Inject constructor(
             }
         }
         appPrefs.registerOnSharedPreferenceChangeListener(listener)
+        val isPossiblySensitiveHidden =
+            appPrefs.getBoolean(possiblySensitiveHiddenKey, possiblySensitiveHiddenDefault)
+        send(isPossiblySensitiveHidden)
         awaitClose { appPrefs.unregisterOnSharedPreferenceChangeListener(listener) }
     }
 

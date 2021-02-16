@@ -52,12 +52,14 @@ class TimelineViewModelTest {
         sut.timeline.testCollect(viewStatesTestRule.executor)
         sut.selectedItemId.observeForever { }
         sut.feedbackMessage.testCollect(viewStatesTestRule.executor)
+        sut.isPossiblySensitiveHidden.observeForever { }
     }
 
     @Test
     fun init() {
         assertThat(sut.selectedItemId.value).isNull()
         assertThat(isHeadingEnabledFlow.first()).isFalse()
+        assertThat(sut.isPossiblySensitiveHidden.value).isTrue()
     }
 
     @Test

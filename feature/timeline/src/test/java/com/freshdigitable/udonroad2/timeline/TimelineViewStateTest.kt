@@ -19,6 +19,7 @@ package com.freshdigitable.udonroad2.timeline
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.freshdigitable.udonroad2.data.ListRepository
 import com.freshdigitable.udonroad2.data.PagedListProvider
+import com.freshdigitable.udonroad2.data.impl.AppSettingRepository
 import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
 import com.freshdigitable.udonroad2.data.impl.create
 import com.freshdigitable.udonroad2.model.ListOwner
@@ -44,6 +45,7 @@ import com.google.common.truth.Truth.assertThat
 import io.reactivex.observers.TestObserver
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.flowOf
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
@@ -190,6 +192,9 @@ class TimelineViewStatesTestRule : TestWatcher() {
                 emptyFlow()
             )
         }
+    private val appSettingRepository = MockVerified.create<AppSettingRepository>().apply {
+        setupResponseWithVerify({ mock.isPossiblySensitiveHidden }, flowOf(true))
+    }
 
     @ExperimentalCoroutinesApi
     internal val coroutineTestRule = CoroutineTestRule()
@@ -202,6 +207,7 @@ class TimelineViewStatesTestRule : TestWatcher() {
             actionsRule.sut,
             SelectedItemRepository(),
             tweetRepositoryMock.mock,
+            appSettingRepository.mock,
             listRepositoryRule.mock,
             listProviderRule.mock,
             ListOwnerGenerator.create(AtomicInteger(1)),
@@ -235,6 +241,7 @@ class TimelineViewStatesTestRule : TestWatcher() {
             .around(listRepositoryRule)
             .around(listProviderRule)
             .around(tweetRepositoryMock)
+            .around(appSettingRepository)
             .around(RxExceptionHandler())
             .around(coroutineTestRule)
             .apply(super.apply(base, description), description)
