@@ -53,5 +53,23 @@
     <action
         android:id="@+id/action_global_toSettings"
         app:destination="@+id/fragment_settings"
+        app:enterAnim="@android:anim/fade_in"
+        app:popEnterAnim="@android:anim/fade_in"
+        app:popExitAnim="@android:anim/fade_out"
+        app:exitAnim="@android:anim/fade_out"
+        />
+
+    <fragment
+        android:id="@+id/fragment_license"
+        android:name="com.freshdigitable.udonroad2.main.LicenseFragment"
+        android:label="@string/drawer_menu_license"
+        />
+    <action
+        android:id="@+id/action_global_toLicense"
+        app:destination="@id/fragment_license"
+        app:enterAnim="@android:anim/fade_in"
+        app:popEnterAnim="@android:anim/fade_in"
+        app:popExitAnim="@android:anim/fade_out"
+        app:exitAnim="@android:anim/fade_out"
         />
 </navigation>

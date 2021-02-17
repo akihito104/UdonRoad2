@@ -21,6 +21,7 @@ plugins {
     id("scabbard.gradle") version Versions.SCABBARD
     id("com.releaseshub.gradle.plugin") version Versions.RELEASES_HUB
     id("org.jlleitschuh.gradle.ktlint") version Versions.KTLINT_PLUGIN
+    id("com.cookpad.android.plugin.license-tools") version Versions.LICENSE_TOOL
 }
 
 scabbard {
@@ -55,6 +56,23 @@ subprojects {
         outputToConsole.set(true)
         outputColorName.set("RED")
         ignoreFailures.set(true)
+    }
+}
+
+configure(listOf(project(":app"))) {
+    apply(plugin = "com.cookpad.android.plugin.license-tools")
+
+    licenseTools {
+        ignoredProjects = setOf(":test-common", ":test-common-jvm")
+    }
+
+    tasks.whenTaskAdded {
+        if (name.contains("assemble")) {
+            dependsOn("checkLicenses")
+        }
+        if (name.matches("""generate.*Assets""".toRegex())) {
+            dependsOn("generateLicensePage")
+        }
     }
 }
 

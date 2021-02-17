@@ -7,5 +7,6 @@
 /build
 /captures
 .externalNativeBuild
+**/licenses.html
 
 !.idea/codeStyles
