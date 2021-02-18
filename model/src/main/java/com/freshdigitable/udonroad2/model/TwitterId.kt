@@ -44,6 +44,6 @@ data class UserId(private val _value: Long) : TwitterId(_value) {
     val isValid: Boolean = value >= 0
 
     companion object {
-        fun create(value: Long?): UserId? = value?.let { UserId(it) }
+        fun create(value: Long?): UserId? = if (value != null && value >= 0) UserId(value) else null
     }
 }

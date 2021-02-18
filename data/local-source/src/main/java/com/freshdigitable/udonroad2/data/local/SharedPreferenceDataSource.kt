@@ -39,12 +39,15 @@ import javax.inject.Singleton
 @Singleton
 class SharedPreferenceDataSource @Inject constructor(
     private val twitterPrefs: TwitterPreferences,
-    appPrefs: AppPreferences,
+    private val appPrefs: AppPreferences,
 ) : AppSettingDataSource.Local, OAuthTokenDataSource.Local {
 
-    override val currentUserId: UserId? get() = twitterPrefs.currentUserId
+    override val currentUserId: UserId?
+        get() = twitterPrefs.currentUserId
     override val currentUserIdSource: Flow<UserId> = twitterPrefs.currentUserIdSource
     override val registeredUserIdsSource: Flow<Set<UserId>> = twitterPrefs.registeredUserIdsSource
+    override val loginAccountOnLaunch: UserId?
+        get() = appPrefs.loginAccountOnLaunch
 
     override suspend fun updateCurrentUser(accessToken: AccessTokenEntity) {
         twitterPrefs.updateCurrentUser(accessToken)
@@ -167,6 +170,12 @@ class AppPreferences @Inject constructor(
 
     private val SharedPreferences.isPossiblySensitiveHidden: Boolean
         get() = getBoolean(possiblySensitiveHiddenKey, possiblySensitiveHiddenDefault)
+
+    private val loginAccountKey = application.getString(R.string.settings_key_loginUser)
+    private val loginAccountDefault = application.getString(R.string.settings_loginUser_default)
+    internal val loginAccountOnLaunch: UserId?
+        get() = prefs.getString(loginAccountKey, loginAccountDefault)
+            ?.let { UserId.create(it.toLong()) }
 }
 
 private fun <T> SharedPreferences.createSource(

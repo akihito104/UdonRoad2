@@ -35,8 +35,13 @@ class LoginUseCase @Inject constructor(
     }
 
     companion object {
-        suspend fun LoginUseCase.invokeIfCan() {
-            appSettingRepository.currentUserId?.let { invoke(it) }
+        suspend fun LoginUseCase.invokeOnLaunchApp() {
+            val loginAccount = appSettingRepository.loginAccountOnLaunch
+            if (loginAccount != null) {
+                invoke(loginAccount)
+            } else {
+                appSettingRepository.currentUserId?.let { invoke(it) }
+            }
         }
     }
 }

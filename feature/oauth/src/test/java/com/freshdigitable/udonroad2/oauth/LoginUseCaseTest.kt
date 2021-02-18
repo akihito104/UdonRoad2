@@ -23,7 +23,7 @@ import com.freshdigitable.udonroad2.data.UserDataSource
 import com.freshdigitable.udonroad2.model.AccessTokenEntity
 import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.user.UserEntity
-import com.freshdigitable.udonroad2.oauth.LoginUseCase.Companion.invokeIfCan
+import com.freshdigitable.udonroad2.oauth.LoginUseCase.Companion.invokeOnLaunchApp
 import com.freshdigitable.udonroad2.test_common.MockVerified
 import com.google.common.truth.Truth.assertThat
 import io.mockk.coVerify
@@ -70,37 +70,54 @@ class LoginUseCaseTest {
     }
 
     @Test
-    fun invokeIfCan_currentUserIdIsNull_then_notInvoked() {
+    fun invokeOnLaunchApp_currentUserIdIsNull_then_notInvoked() {
         // setup
         appSettingRepository.run {
+            setupResponseWithVerify({ mock.loginAccountOnLaunch }, null)
             setupResponseWithVerify({ mock.currentUserId }, null)
         }
 
         // exercise
         runBlocking {
-            sut.invokeIfCan()
+            sut.invokeOnLaunchApp()
         }
 
         coVerify(exactly = 0) { oauthRepository.mock.verifyCredentials() }
     }
 
     @Test
-    fun invokeIfCan_hasCurrentUserId_then_login() {
+    fun invokeOnLaunchApp_hasCurrentUserId_then_login() {
         // setup
         val userId = UserId(1000)
         appSettingRepository.run {
+            setupResponseWithVerify({ mock.loginAccountOnLaunch }, null)
             setupResponseWithVerify({ mock.currentUserId }, userId)
         }
         setupForLogin(userId)
 
         // exercise
         runBlocking {
-            sut.invokeIfCan()
+            sut.invokeOnLaunchApp()
         }
     }
 
     @Test
-    fun hasAccessToken_then_passVerifyCredentials() {
+    fun invokeOnLaunchApp_specifiedAccount_then_loginWithTheAccount() {
+        // setup
+        val userId = UserId(1000)
+        appSettingRepository.run {
+            setupResponseWithVerify({ mock.loginAccountOnLaunch }, userId)
+        }
+        setupForLogin(userId)
+
+        // exercise
+        runBlocking {
+            sut.invokeOnLaunchApp()
+        }
+    }
+
+    @Test
+    fun hasAccessToken_then_callVerifyCredentials() {
         // setup
         val userId = UserId(1000)
         setupForLogin(userId)
