@@ -28,8 +28,8 @@ import com.freshdigitable.udonroad2.model.tweet.DetailTweetElement
 import com.freshdigitable.udonroad2.model.tweet.DetailTweetListItem
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
+import com.freshdigitable.udonroad2.test_common.jvm.AppSettingRepositoryRule
 import com.freshdigitable.udonroad2.test_common.jvm.CoroutineTestRule
-import com.freshdigitable.udonroad2.test_common.jvm.OAuthTokenRepositoryRule
 import com.freshdigitable.udonroad2.test_common.jvm.TweetRepositoryRule
 import com.freshdigitable.udonroad2.test_common.jvm.testCollect
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
@@ -51,7 +51,7 @@ class TweetDetailViewModelTest {
 
     private val exceptions: ExpectedException = ExpectedException.none()
     private val tweetRepositoryRule = TweetRepositoryRule()
-    private val oauthRepositoryRule = OAuthTokenRepositoryRule()
+    private val appSettingRepositoryRule = AppSettingRepositoryRule()
     private val coroutineRule = CoroutineTestRule()
 
     @get:Rule
@@ -59,7 +59,7 @@ class TweetDetailViewModelTest {
         .around(InstantTaskExecutorRule())
         .around(coroutineRule)
         .around(tweetRepositoryRule)
-        .around(oauthRepositoryRule)
+        .around(appSettingRepositoryRule)
 
     private val tweet = mockk<DetailTweetListItem>().apply {
         every { originalId } returns TweetId(1000)
@@ -86,7 +86,7 @@ class TweetDetailViewModelTest {
                 tweet.originalId,
                 actions,
                 tweetRepositoryRule.mock,
-                oauthRepositoryRule.appSettingMock,
+                appSettingRepositoryRule.mock,
                 ListOwnerGenerator.create(),
                 executor
             ),
@@ -99,7 +99,7 @@ class TweetDetailViewModelTest {
     @Before
     fun setup() {
         tweetRepositoryRule.setupShowTweet(tweet.originalId, tweetSource.receiveAsFlow())
-        oauthRepositoryRule.setupIsPossiblySensitiveHidden()
+        appSettingRepositoryRule.setupIsPossiblySensitiveHidden()
         sut.tweetItem.observeForever { }
         sut.menuItemStates.observeForever { }
         sut.isPossiblySensitiveHidden.observeForever { }
@@ -117,7 +117,7 @@ class TweetDetailViewModelTest {
     @Test
     fun whenItemIsFound_then_tweetItemHasItem() {
         // setup
-        oauthRepositoryRule.setupCurrentUserId(tweet.originalId.value + 10, false)
+        appSettingRepositoryRule.setupCurrentUserId(tweet.originalId.value + 10)
 
         // exercise
         coroutineRule.runBlockingTest {
@@ -133,7 +133,7 @@ class TweetDetailViewModelTest {
     fun whenItemIsNotFoundInLocal_then_fetchTweetItem() {
         // setup
         tweetRepositoryRule.setupFindTweetItem(tweet.originalId, tweet)
-        oauthRepositoryRule.setupCurrentUserId(tweet.originalId.value + 10, false)
+        appSettingRepositoryRule.setupCurrentUserId(tweet.originalId.value + 10)
 
         // exercise
         coroutineRule.runBlockingTest {
@@ -178,7 +178,7 @@ class TweetDetailViewModelTest {
     @Test
     fun onOriginalUserClicked_navigationDelegateIsCalled() {
         // setup
-        oauthRepositoryRule.setupCurrentUserId(tweet.originalId.value + 10, false)
+        appSettingRepositoryRule.setupCurrentUserId(tweet.originalId.value + 10)
         coroutineRule.runBlockingTest {
             tweetSource.send(tweet)
         }
@@ -195,7 +195,7 @@ class TweetDetailViewModelTest {
     @Test
     fun onBodyUserClicked_navigationDelegateIsCalled() {
         // setup
-        oauthRepositoryRule.setupCurrentUserId(tweet.originalId.value + 10, false)
+        appSettingRepositoryRule.setupCurrentUserId(tweet.originalId.value + 10)
         coroutineRule.runBlockingTest {
             tweetSource.send(tweet)
         }
@@ -212,7 +212,7 @@ class TweetDetailViewModelTest {
     @Test
     fun onMediaItemClicked_navigationDelegateIsCalled() {
         // setup
-        oauthRepositoryRule.setupCurrentUserId(tweet.originalId.value + 10, false)
+        appSettingRepositoryRule.setupCurrentUserId(tweet.originalId.value + 10)
         coroutineRule.runBlockingTest {
             tweetSource.send(tweet)
         }

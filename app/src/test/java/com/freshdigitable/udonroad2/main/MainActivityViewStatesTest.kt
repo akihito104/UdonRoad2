@@ -33,8 +33,8 @@ import com.freshdigitable.udonroad2.model.app.navigation.postEvents
 import com.freshdigitable.udonroad2.model.user.UserEntity
 import com.freshdigitable.udonroad2.test_common.MockVerified
 import com.freshdigitable.udonroad2.test_common.RxExceptionHandler
+import com.freshdigitable.udonroad2.test_common.jvm.AppSettingRepositoryRule
 import com.freshdigitable.udonroad2.test_common.jvm.CoroutineTestRule
-import com.freshdigitable.udonroad2.test_common.jvm.OAuthTokenRepositoryRule
 import com.freshdigitable.udonroad2.test_common.jvm.testCollect
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.google.common.truth.Truth.assertThat
@@ -56,7 +56,7 @@ class MainActivityViewStatesTest {
     @Test
     fun updateContainer_dispatchSetupEvent_then_flowInitOauthEvent(): Unit = with(rule) {
         // setup
-        oauthTokenRepositoryMock.setupCurrentUserId(null)
+        appSettingsRepositoryMock.setupCurrentUserId(null)
 
         // exercise
         dispatcher.postEvent(TimelineEvent.Setup())
@@ -70,7 +70,7 @@ class MainActivityViewStatesTest {
     @Test
     fun updateContainer_dispatchSetupEvent_then_TimelineQueryIsFlowing(): Unit = with(rule) {
         // setup
-        oauthTokenRepositoryMock.setupCurrentUserId(authenticatedUserId.value, false)
+        appSettingsRepositoryMock.setupCurrentUserId(authenticatedUserId.value)
 
         // exercise
         dispatcher.postEvent(TimelineEvent.Setup())
@@ -84,7 +84,7 @@ class MainActivityViewStatesTest {
     @Test
     fun setupEventDispatched_then_dispatchNavigateCalled(): Unit = with(rule) {
         // setup
-        oauthTokenRepositoryMock.setupCurrentUserId(null)
+        appSettingsRepositoryMock.setupCurrentUserId(null)
 
         // exercise
         dispatchEvents(TimelineEvent.Setup())
@@ -112,7 +112,7 @@ internal class MainActivityNavigationDelegateRule(
 
 internal class MainActivityStateModelTestRule : TestWatcher() {
     val dispatcher = EventDispatcher()
-    val oauthTokenRepositoryMock = OAuthTokenRepositoryRule()
+    val appSettingsRepositoryMock = AppSettingRepositoryRule()
     val selectedItemRepository = SelectedItemRepository()
     val navDelegateRule = MainActivityNavigationDelegateRule()
     private val userRepository = MockVerified.create<UserDataSource>()
@@ -129,7 +129,7 @@ internal class MainActivityStateModelTestRule : TestWatcher() {
         MainActivityViewStates(
             MainActivityActions(dispatcher),
             selectedItemRepository,
-            oauthTokenRepositoryMock.appSettingMock,
+            appSettingsRepositoryMock.mock,
             tweetInputSharedState.mock,
             ListOwnerGenerator.create(),
             navDelegateRule.state,
@@ -145,8 +145,8 @@ internal class MainActivityStateModelTestRule : TestWatcher() {
 
     override fun starting(description: Description?) {
         super.starting(description)
-        oauthTokenRepositoryMock.setupCurrentUserIdSource(executor)
-        oauthTokenRepositoryMock.setupRegisteredUserIdsSource()
+        appSettingsRepositoryMock.setupCurrentUserIdSource(executor)
+        appSettingsRepositoryMock.setupRegisteredUserIdsSource()
         listOf(
             sut.isFabVisible, sut.appBarTitle, sut.navIconType, sut.currentUser
         ).forEach { it.observeForever {} }
@@ -158,7 +158,7 @@ internal class MainActivityStateModelTestRule : TestWatcher() {
             .around(coroutineRule)
             .around(navDelegateRule)
             .around(userRepository)
-            .around(oauthTokenRepositoryMock)
+            .around(appSettingsRepositoryMock)
             .around(RxExceptionHandler())
             .apply(super.apply(base, description), description)
     }
