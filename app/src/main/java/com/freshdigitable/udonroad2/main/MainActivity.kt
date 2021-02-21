@@ -111,16 +111,19 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
             }
         }
         binding.mainGlobalMenu.setNavigationItemSelectedListener { item ->
-            val isHandled = navigation.onNavDestinationSelected(item)
-            if (isHandled) {
-                binding.mainDrawer.closeDrawer(binding.mainGlobalMenu)
+            if (item.groupId != R.id.menu_group_drawer_switchable_accounts) {
+                val handled = navigation.onNavDestinationSelected(item)
+                if (handled) {
+                    binding.mainDrawer.closeDrawer(binding.mainGlobalMenu)
+                    return@setNavigationItemSelectedListener true
+                }
             }
-            isHandled || viewModel.onDrawerMenuItemClicked(item.groupId, item.itemId, item.title)
+            viewModel.onDrawerMenuItemClicked(item.groupId, item.itemId, item.title)
         }
         viewModel.switchableRegisteredUsers.observe(this) { users ->
             binding.mainGlobalMenu.menu.apply {
                 removeGroup(R.id.menu_group_drawer_switchable_accounts)
-                users.map { "@${it.screenName}" }
+                users.map { it.account }
                     .forEachIndexed { i, screenName ->
                         add(R.id.menu_group_drawer_switchable_accounts, Menu.NONE, i, screenName)
                     }

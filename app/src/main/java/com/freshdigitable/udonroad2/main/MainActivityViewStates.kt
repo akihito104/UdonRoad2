@@ -40,6 +40,7 @@ import com.freshdigitable.udonroad2.model.app.navigation.AppViewState
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.ViewState
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
+import com.freshdigitable.udonroad2.oauth.LoginUseCase
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.getTimelineEvent
 import kotlinx.coroutines.channels.Channel
@@ -59,6 +60,7 @@ import javax.inject.Inject
 @ActivityScope
 internal class MainActivityViewStates @Inject constructor(
     actions: MainActivityActions,
+    login: LoginUseCase,
     selectedItemRepository: SelectedItemRepository,
     appSettingRepository: AppSettingRepository,
     private val tweetInputSharedState: TweetInputSharedState,
@@ -89,6 +91,7 @@ internal class MainActivityViewStates @Inject constructor(
         actions.popToHome.asFlow(),
         actions.launchOAuth.asFlow(),
         actions.launchCustomTimelineList.asFlow(),
+        actions.switchAccount.asFlow(),
     ).scan(DrawerViewState()) { acc, event ->
         when (event) {
             is MainActivityEvent.DrawerEvent.Opened -> acc.copy(isOpened = true)
@@ -104,8 +107,24 @@ internal class MainActivityViewStates @Inject constructor(
                 DrawerViewState()
             }
             is MainActivityEvent.DrawerEvent.Closed,
-            is MainActivityEvent.DrawerEvent.HomeClicked,
-            is MainActivityEvent.DrawerEvent.AddUserClicked -> DrawerViewState()
+            is MainActivityEvent.DrawerEvent.HomeClicked -> DrawerViewState()
+            is MainActivityEvent.DrawerEvent.AddUserClicked -> {
+                val timelineEvent = listOwnerGenerator.getTimelineEvent(
+                    QueryType.Oauth,
+                    NavigationEvent.Type.NAVIGATE
+                )
+                navEventChannel.send(timelineEvent)
+                DrawerViewState()
+            }
+            is MainActivityEvent.DrawerEvent.SwitchableAccountClicked -> {
+                login(event.userId)
+                val timelineEvent = listOwnerGenerator.getTimelineEvent(
+                    QueryType.TweetQueryType.Timeline(),
+                    NavigationEvent.Type.INIT
+                )
+                navEventChannel.send(timelineEvent)
+                DrawerViewState()
+            }
         }
     }.asLiveData(executor.mainContext)
     internal val isDrawerOpened: AppViewState<Boolean> =

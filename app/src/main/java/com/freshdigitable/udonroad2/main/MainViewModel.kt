@@ -104,14 +104,26 @@ internal class MainViewModel(
     fun onDrawerMenuItemClicked(groupId: Int, itemId: Int, title: CharSequence): Boolean {
         val event = when (itemId) {
 //            R.id.menu_item_drawer_home -> MainActivityEvent.DrawerEvent.HomeClicked
-//            R.id.menu_item_drawer_add_account -> MainActivityEvent.DrawerEvent.AddUserClicked
+            R.id.menu_item_drawer_add_account -> MainActivityEvent.DrawerEvent.AddUserClicked
             R.id.menu_item_drawer_lists -> MainActivityEvent.DrawerEvent.CustomTimelineClicked
-            else -> null
+            else -> {
+                if (groupId == R.id.menu_group_drawer_switchable_accounts) {
+                    val user = requireNotNull(
+                        switchableRegisteredUsers.value?.find { it.account == title }
+                    )
+                    MainActivityEvent.DrawerEvent.SwitchableAccountClicked(user.id)
+                } else {
+                    null
+                }
+            }
         }
-        event?.let { eventDispatcher.postEvent(event) }
+        event?.let { eventDispatcher.postEvent(it) }
         return event != null
     }
 
     val currentState: MainActivityViewState
         get() = viewStates.current
 }
+
+val TweetUserItem.account: String
+    get() = "@${screenName}"
