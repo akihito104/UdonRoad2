@@ -28,8 +28,6 @@ interface TweetEntity : TweetElement, TweetEntityUpdatable {
 
     override val quotedTweet: TweetEntity?
 
-    val possiblySensitive: Boolean
-
     val replyEntities: List<UserReplyEntity>
 
     override val media: List<MediaEntity>

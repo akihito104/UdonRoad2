@@ -16,9 +16,6 @@
 
 package com.freshdigitable.udonroad2.di
 
-import android.app.Application
-import android.content.Context
-import android.content.SharedPreferences
 import com.freshdigitable.udonroad2.input.di.TweetInputViewModelComponentModule
 import com.freshdigitable.udonroad2.main.MainActivity
 import com.freshdigitable.udonroad2.media.MediaActivity
@@ -26,9 +23,7 @@ import com.freshdigitable.udonroad2.media.di.MediaActivityModule
 import com.freshdigitable.udonroad2.model.app.di.ActivityScope
 import com.freshdigitable.udonroad2.user.UserActivity
 import dagger.Module
-import dagger.Provides
 import dagger.android.ContributesAndroidInjector
-import javax.inject.Singleton
 
 @Module
 interface ActivityBuilders {
@@ -59,13 +54,4 @@ interface ActivityBuilders {
         ]
     )
     fun contributeMediaActivity(): MediaActivity
-}
-
-@Module
-object SharedPreferencesModule {
-    @Provides
-    @Singleton
-    fun Application.provideSharedPreferences(): SharedPreferences {
-        return getSharedPreferences("udonroad_prefs", Context.MODE_PRIVATE)
-    }
 }

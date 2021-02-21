@@ -28,8 +28,8 @@ import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.timeline.ListItemLoadableViewModel
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.TimelineViewState
-import com.freshdigitable.udonroad2.timeline.TweetListEventListener
-import com.freshdigitable.udonroad2.timeline.TweetListItemClickListener
+import com.freshdigitable.udonroad2.timeline.TweetListItemViewModel
+import com.freshdigitable.udonroad2.timeline.TweetMediaItemViewModel
 import timber.log.Timber
 
 class TimelineViewModel(
@@ -37,9 +37,10 @@ class TimelineViewModel(
     private val eventDispatcher: EventDispatcher,
     viewStates: TimelineViewState,
 ) : ListItemLoadableViewModel<TweetQueryType>(owner, eventDispatcher, viewStates),
-    TweetListItemClickListener,
-    TweetListEventListener {
+    TweetListItemViewModel,
+    TweetMediaItemViewModel {
     override val selectedItemId: LiveData<SelectedItemId?> = viewStates.selectedItemId
+    override val isPossiblySensitiveHidden: LiveData<Boolean> = viewStates.isPossiblySensitiveHidden
 
     override fun onBodyItemClicked(item: TweetListItem) {
         Timber.tag("TimelineViewModel").d("onBodyItemClicked: ${item.body.id}")
@@ -65,12 +66,7 @@ class TimelineViewModel(
         item: TweetElement,
         index: Int
     ) {
-        eventDispatcher.postEvent(
-            TimelineEvent.MediaItemClicked(
-                item.id,
-                index,
-                SelectedItemId(owner, originalId, quotedId)
-            )
-        )
+        val selected = SelectedItemId(owner, originalId, quotedId)
+        eventDispatcher.postEvent(TimelineEvent.MediaItemClicked(item.id, index, selected))
     }
 }

@@ -135,6 +135,7 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     android:visibility="@{viewModel.tweetItem.body.media.isEmpty() ? View.GONE : View.VISIBLE}"
                     app:bindMedia="@{viewModel.tweetItem.body.media}"
+                    app:hideForPossiblySensitive="@{viewModel.isPossiblySensitiveHidden &amp;&amp; viewModel.tweetItem.body.possiblySensitive}"
                     app:itemClickListener="@{(v, i) -> viewModel.onMediaItemClicked(viewModel.tweetItem.originalId, viewModel.tweetItem.body, i)}"
                     tools:visibility="visible"
                     />
@@ -188,7 +189,7 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:tweet="@{viewModel.tweetItem}"
-                    app:clickListener="@{viewModel}"
+                    app:mediaViewModel="@{viewModel}"
                     android:visibility="@{viewModel.tweetItem.quoted != null ? View.VISIBLE : View.GONE}"
                     />
             </androidx.constraintlayout.widget.ConstraintLayout>

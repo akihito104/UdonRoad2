@@ -50,5 +50,6 @@ data class OauthTweetElement(
     override val createdAt: Instant = Instant.now(),
     override val media: List<MediaEntity> = emptyList(),
     override val isRetweeted: Boolean = false,
-    override val isFavorited: Boolean = false
+    override val isFavorited: Boolean = false,
+    override val possiblySensitive: Boolean = false
 ) : TweetElement

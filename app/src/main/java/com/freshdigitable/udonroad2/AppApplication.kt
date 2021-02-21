@@ -48,6 +48,7 @@ open class AppApplication : HasAndroidInjector, Application() {
     protected open fun createComponent(): AppComponent {
         return DaggerAppComponent.builder()
             .application(this)
+            .sharedPreferencesName("udonroad_prefs")
             .build()
     }
 

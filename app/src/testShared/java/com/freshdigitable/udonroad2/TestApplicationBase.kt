@@ -25,6 +25,7 @@ abstract class TestApplicationBase : AppApplication() {
     val component: TestAppComponent by lazy {
         DaggerTestAppComponent.builder()
             .application(this)
+            .sharedPreferencesName("test_udonroad_prefs")
             .build()
     }
 

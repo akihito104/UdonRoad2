@@ -38,7 +38,6 @@ import javax.inject.Singleton
     modules = [
         AndroidSupportInjectionModule::class,
         ActivityBuilders::class,
-        SharedPreferencesModule::class,
         ExecutorModule::class,
         RepositoryModule::class,
         DatabaseModule::class,
@@ -55,6 +54,9 @@ interface AppComponent {
 
         @BindsInstance
         fun application(application: Application): Builder
+
+        @BindsInstance
+        fun sharedPreferencesName(name: String): Builder
 
         fun build(): AppComponent
     }

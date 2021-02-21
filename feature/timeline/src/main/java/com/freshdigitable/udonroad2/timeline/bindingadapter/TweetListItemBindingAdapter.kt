@@ -137,23 +137,34 @@ fun bindUserIcon(v: ImageView, url: String?, cornerRadius: Float?) {
 
 private val movieType: Set<MediaType> = EnumSet.of(MediaType.VIDEO, MediaType.ANIMATED_GIF)
 
-@BindingAdapter("bindMedia")
-fun MediaThumbnailContainer.bindMedia(items: List<TweetMediaItem>?) {
+@BindingAdapter("bindMedia", "hideForPossiblySensitive", requireAll = false)
+fun MediaThumbnailContainer.bindMedia(
+    items: List<TweetMediaItem>?,
+    hideForPossiblySensitive: Boolean?
+) {
     if (items.isNullOrEmpty()) {
         return
     }
     mediaCount = items.size
-    items.zip(mediaViews) { item, view ->
-        val option = RequestOptions.centerCropTransform()
-            .placeholder(ColorDrawable(Color.LTGRAY)).apply {
-                if (itemWidth > 0) {
-                    override(itemWidth, height)
+    if (hideForPossiblySensitive == true) {
+        mediaViews.forEach {
+            Glide.with(it)
+                .load(R.drawable.ic_whatshot)
+                .into(it)
+        }
+    } else {
+        items.zip(mediaViews) { item, view ->
+            val option = RequestOptions.centerCropTransform()
+                .placeholder(ColorDrawable(Color.LTGRAY)).apply {
+                    if (itemWidth > 0) {
+                        override(itemWidth, height)
+                    }
                 }
-            }
-        view.isMovie = movieType.contains(item.type)
-        Glide.with(view)
-            .load(item.thumbMediaUrl)
-            .apply(option)
-            .into(view)
+            view.isMovie = movieType.contains(item.type)
+            Glide.with(view)
+                .load(item.thumbMediaUrl)
+                .apply(option)
+                .into(view)
+        }
     }
 }

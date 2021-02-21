@@ -25,6 +25,8 @@ interface AppSettingDataSource {
     val currentUserIdSource: Flow<UserId>
     val registeredUserIdsSource: Flow<Set<UserId>>
 
+    val isPossiblySensitiveHidden: Flow<Boolean>
+
     suspend fun updateCurrentUser(accessToken: AccessTokenEntity)
 
     interface Local : AppSettingDataSource
