@@ -30,10 +30,11 @@ import org.junit.runner.Description
 import org.junit.runners.model.Statement
 import java.io.Serializable
 
-class OAuthTokenRepositoryRule : TestRule {
+class OAuthTokenRepositoryRule(
+    private val appSettingRule: AppSettingRepositoryRule = AppSettingRepositoryRule(),
+) : TestRule {
     private val mockVerified: MockVerified<OAuthTokenDataSource> = MockVerified.create()
     val mock: OAuthTokenDataSource = mockVerified.mock
-    private val appSettingRule = AppSettingRepositoryRule()
     val appSettingMock: AppSettingRepository = appSettingRule.rule.mock
 
     fun setupLogin(userId: UserId) {

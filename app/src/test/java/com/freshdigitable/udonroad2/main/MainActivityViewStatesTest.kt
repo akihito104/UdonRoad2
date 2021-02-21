@@ -31,10 +31,12 @@ import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.postEvents
 import com.freshdigitable.udonroad2.model.user.UserEntity
+import com.freshdigitable.udonroad2.oauth.LoginUseCase
 import com.freshdigitable.udonroad2.test_common.MockVerified
 import com.freshdigitable.udonroad2.test_common.RxExceptionHandler
 import com.freshdigitable.udonroad2.test_common.jvm.AppSettingRepositoryRule
 import com.freshdigitable.udonroad2.test_common.jvm.CoroutineTestRule
+import com.freshdigitable.udonroad2.test_common.jvm.OAuthTokenRepositoryRule
 import com.freshdigitable.udonroad2.test_common.jvm.testCollect
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.google.common.truth.Truth.assertThat
@@ -56,7 +58,7 @@ class MainActivityViewStatesTest {
     @Test
     fun updateContainer_dispatchSetupEvent_then_flowInitOauthEvent(): Unit = with(rule) {
         // setup
-        appSettingsRepositoryMock.setupCurrentUserId(null)
+        appSettingRepositoryRule.setupCurrentUserId(null)
 
         // exercise
         dispatcher.postEvent(TimelineEvent.Setup())
@@ -70,7 +72,7 @@ class MainActivityViewStatesTest {
     @Test
     fun updateContainer_dispatchSetupEvent_then_TimelineQueryIsFlowing(): Unit = with(rule) {
         // setup
-        appSettingsRepositoryMock.setupCurrentUserId(authenticatedUserId.value)
+        appSettingRepositoryRule.setupCurrentUserId(authenticatedUserId.value)
 
         // exercise
         dispatcher.postEvent(TimelineEvent.Setup())
@@ -84,7 +86,7 @@ class MainActivityViewStatesTest {
     @Test
     fun setupEventDispatched_then_dispatchNavigateCalled(): Unit = with(rule) {
         // setup
-        appSettingsRepositoryMock.setupCurrentUserId(null)
+        appSettingRepositoryRule.setupCurrentUserId(null)
 
         // exercise
         dispatchEvents(TimelineEvent.Setup())
@@ -112,7 +114,8 @@ internal class MainActivityNavigationDelegateRule(
 
 internal class MainActivityStateModelTestRule : TestWatcher() {
     val dispatcher = EventDispatcher()
-    val appSettingsRepositoryMock = AppSettingRepositoryRule()
+    val appSettingRepositoryRule = AppSettingRepositoryRule()
+    val oauthTokenRepository = OAuthTokenRepositoryRule(appSettingRepositoryRule)
     val selectedItemRepository = SelectedItemRepository()
     val navDelegateRule = MainActivityNavigationDelegateRule()
     private val userRepository = MockVerified.create<UserDataSource>()
@@ -128,8 +131,13 @@ internal class MainActivityStateModelTestRule : TestWatcher() {
     val sut: MainActivityViewStates by lazy {
         MainActivityViewStates(
             MainActivityActions(dispatcher),
+            LoginUseCase(
+                appSettingRepositoryRule.mock,
+                oauthTokenRepository.mock,
+                userRepository.mock
+            ),
             selectedItemRepository,
-            appSettingsRepositoryMock.mock,
+            oauthTokenRepository.appSettingMock,
             tweetInputSharedState.mock,
             ListOwnerGenerator.create(),
             navDelegateRule.state,
@@ -145,8 +153,8 @@ internal class MainActivityStateModelTestRule : TestWatcher() {
 
     override fun starting(description: Description?) {
         super.starting(description)
-        appSettingsRepositoryMock.setupCurrentUserIdSource(executor)
-        appSettingsRepositoryMock.setupRegisteredUserIdsSource()
+        appSettingRepositoryRule.setupCurrentUserIdSource(executor)
+        appSettingRepositoryRule.setupRegisteredUserIdsSource()
         listOf(
             sut.isFabVisible, sut.appBarTitle, sut.navIconType, sut.currentUser
         ).forEach { it.observeForever {} }
@@ -158,7 +166,7 @@ internal class MainActivityStateModelTestRule : TestWatcher() {
             .around(coroutineRule)
             .around(navDelegateRule)
             .around(userRepository)
-            .around(appSettingsRepositoryMock)
+            .around(oauthTokenRepository)
             .around(RxExceptionHandler())
             .apply(super.apply(base, description), description)
     }

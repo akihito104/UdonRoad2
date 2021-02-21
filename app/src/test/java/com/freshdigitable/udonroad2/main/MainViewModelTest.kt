@@ -110,7 +110,7 @@ class MainViewModelTest {
         @Test
         fun initialEvent_withNull_then_dispatchNavigateIsCalledWithOauth(): Unit = with(rule) {
             // setup
-            stateModelRule.appSettingsRepositoryMock.setupCurrentUserId(null)
+            stateModelRule.appSettingRepositoryRule.setupCurrentUserId(null)
 
             // exercise
             sut.initialEvent(null)
@@ -271,8 +271,8 @@ class MainViewModelTest {
             with(stateModelRule) {
                 setupGetUserSource(authenticatedUserId)
                 coroutineRule.runBlockingTest {
-                    appSettingsRepositoryMock.currentUserIdSource.send(authenticatedUserId)
-                    appSettingsRepositoryMock.registeredUserIdsSource.send(setOf(authenticatedUserId))
+                    appSettingRepositoryRule.currentUserIdSource.send(authenticatedUserId)
+                    appSettingRepositoryRule.registeredUserIdsSource.send(setOf(authenticatedUserId))
                 }
             }
         }
@@ -294,7 +294,7 @@ class MainViewModelTest {
                 }
                 setupGetUser(userId, userEntity)
                 coroutineRule.runBlockingTest {
-                    appSettingsRepositoryMock.registeredUserIdsSource.send(
+                    appSettingRepositoryRule.registeredUserIdsSource.send(
                         setOf(authenticatedUserId, userId)
                     )
                 }
