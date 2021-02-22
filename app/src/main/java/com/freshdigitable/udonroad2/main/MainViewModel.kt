@@ -29,7 +29,6 @@ import com.freshdigitable.udonroad2.shortcut.postSelectedItemShortcutEvent
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.merge
-import kotlinx.coroutines.flow.receiveAsFlow
 import timber.log.Timber
 
 internal class MainViewModel(
@@ -46,7 +45,7 @@ internal class MainViewModel(
     internal val navigationEvent: Flow<NavigationEvent> = merge(
         viewStates.initContainer,
         viewStates.navigateToUser,
-        viewStates.navEventChannel.receiveAsFlow()
+        viewStates.navEventChannel
     )
 
     val isDrawerOpened: LiveData<Boolean> = viewStates.isDrawerOpened

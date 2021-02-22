@@ -16,7 +16,6 @@
 
 package com.freshdigitable.udonroad2.main
 
-import com.freshdigitable.udonroad2.main.MainActivityEvent.DrawerEvent
 import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.app.di.ActivityScope
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
@@ -34,17 +33,7 @@ class MainActivityActions @Inject constructor(
 ) {
     internal val showFirstView: AppAction<TimelineEvent.Setup> = dispatcher.toAction()
     internal val showAuth: AppAction<OauthEvent.Init> = dispatcher.toAction()
-    internal val showDrawerMenu: AppAction<DrawerEvent.Opened> = dispatcher.toAction()
-    internal val hideDrawerMenu: AppAction<DrawerEvent.Closed> = dispatcher.toAction()
-    internal val toggleAccountSwitcher: AppAction<DrawerEvent.AccountSwitchClicked> =
-        dispatcher.toAction()
     internal val showCurrentUser: AppAction<MainActivityEvent.CurrentUserIconClicked> =
-        dispatcher.toAction()
-    internal val popToHome: AppAction<DrawerEvent.HomeClicked> = dispatcher.toAction()
-    internal val launchOAuth: AppAction<DrawerEvent.AddUserClicked> = dispatcher.toAction()
-    internal val launchCustomTimelineList: AppAction<DrawerEvent.CustomTimelineClicked> =
-        dispatcher.toAction()
-    internal val switchAccount: AppAction<DrawerEvent.SwitchableAccountClicked> =
         dispatcher.toAction()
 }
 

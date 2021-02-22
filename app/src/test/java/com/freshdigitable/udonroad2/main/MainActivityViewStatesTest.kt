@@ -129,19 +129,26 @@ internal class MainActivityStateModelTestRule : TestWatcher() {
     val executor = AppExecutor(dispatcher = coroutineRule.coroutineContextProvider)
 
     val sut: MainActivityViewStates by lazy {
-        MainActivityViewStates(
-            MainActivityActions(dispatcher),
+        val listGen = ListOwnerGenerator.create()
+        val drawerSource = DrawerViewStateSource(
+            DrawerActions(dispatcher),
             LoginUseCase(
                 appSettingRepositoryRule.mock,
                 oauthTokenRepository.mock,
                 userRepository.mock
             ),
+            listGen,
+            oauthTokenRepository.appSettingMock,
+            userRepository.mock,
+        )
+        MainActivityViewStates(
+            MainActivityActions(dispatcher),
+            drawerSource,
             selectedItemRepository,
             oauthTokenRepository.appSettingMock,
             tweetInputSharedState.mock,
-            ListOwnerGenerator.create(),
+            listGen,
             navDelegateRule.state,
-            userRepository.mock,
             executor,
         )
     }
