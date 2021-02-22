@@ -18,7 +18,6 @@ package com.freshdigitable.udonroad2.main
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.asLiveData
 import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.map
 import androidx.lifecycle.switchMap
@@ -29,22 +28,16 @@ import com.freshdigitable.udonroad2.input.TweetInputSharedState
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
-import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.di.ActivityScope
 import com.freshdigitable.udonroad2.model.app.ext.combineLatest
-import com.freshdigitable.udonroad2.model.app.mainContext
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.AppViewState
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.ViewState
-import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.getTimelineEvent
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.flow.mapNotNull
-import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.rx2.asFlow
 import timber.log.Timber
 import java.io.Serializable
@@ -59,24 +52,9 @@ internal class MainActivityViewStates @Inject constructor(
     private val tweetInputSharedState: TweetInputSharedState,
     listOwnerGenerator: ListOwnerGenerator,
     navDelegate: MainActivityNavState,
-    executor: AppExecutor,
 ) {
-    internal val drawerViewStateSource =
-        drawerStateSource.state.shareIn(executor, started = SharingStarted.Lazily, replay = 1)
-
-    internal val currentUser: AppViewState<TweetUserItem> =
-        drawerViewStateSource.mapNotNull { it.currentUser }
-            .asLiveData(executor.mainContext)
-    internal val switchableRegisteredUsers: AppViewState<Set<TweetUserItem>> =
-        drawerViewStateSource.mapLatest { it.switchableAccounts }
-            .asLiveData(executor.mainContext)
+    internal val drawerViewStateSource = drawerStateSource.state
     internal val navEventChannel = drawerStateSource.navEventSource
-
-    internal val isDrawerOpened: AppViewState<Boolean> =
-        drawerViewStateSource.mapLatest { it.isOpened }.asLiveData(executor.mainContext)
-    internal val isRegisteredUsersOpened: AppViewState<Boolean> =
-        drawerViewStateSource.mapLatest { it.isAccountSwitcherOpened }
-            .asLiveData(executor.mainContext)
 
     internal val initContainer: Flow<NavigationEvent> = AppAction.merge(
         actions.showFirstView.map {

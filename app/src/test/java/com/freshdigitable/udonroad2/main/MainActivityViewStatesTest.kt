@@ -25,7 +25,6 @@ import com.freshdigitable.udonroad2.input.TweetInputSharedState
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.UserId
-import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
@@ -42,6 +41,8 @@ import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.google.common.truth.Truth.assertThat
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.flow
 import org.junit.Rule
 import org.junit.Test
@@ -115,7 +116,7 @@ internal class MainActivityNavigationDelegateRule(
 internal class MainActivityStateModelTestRule : TestWatcher() {
     val dispatcher = EventDispatcher()
     val appSettingRepositoryRule = AppSettingRepositoryRule()
-    val oauthTokenRepository = OAuthTokenRepositoryRule(appSettingRepositoryRule)
+    private val oauthTokenRepository = OAuthTokenRepositoryRule(appSettingRepositoryRule)
     val selectedItemRepository = SelectedItemRepository()
     val navDelegateRule = MainActivityNavigationDelegateRule()
     private val userRepository = MockVerified.create<UserDataSource>()
@@ -126,8 +127,8 @@ internal class MainActivityStateModelTestRule : TestWatcher() {
         every { mock.isExpanded } returns isExpandedSource
     }
     val authenticatedUserId = UserId(10000)
-    val executor = AppExecutor(dispatcher = coroutineRule.coroutineContextProvider)
-
+    val coroutineScope =
+        CoroutineScope(coroutineRule.coroutineContextProvider.mainContext + SupervisorJob())
     val sut: MainActivityViewStates by lazy {
         val listGen = ListOwnerGenerator.create()
         val drawerSource = DrawerViewStateSource(
@@ -149,10 +150,9 @@ internal class MainActivityStateModelTestRule : TestWatcher() {
             tweetInputSharedState.mock,
             listGen,
             navDelegateRule.state,
-            executor,
         )
     }
-    lateinit var navigationEventActual: List<NavigationEvent>
+    private lateinit var navigationEventActual: List<NavigationEvent>
 
     fun dispatchEvents(vararg events: AppEvent) {
         dispatcher.postEvents(*events)
@@ -160,12 +160,13 @@ internal class MainActivityStateModelTestRule : TestWatcher() {
 
     override fun starting(description: Description?) {
         super.starting(description)
-        appSettingRepositoryRule.setupCurrentUserIdSource(executor)
+        appSettingRepositoryRule.setupCurrentUserIdSource(coroutineScope)
         appSettingRepositoryRule.setupRegisteredUserIdsSource()
         listOf(
-            sut.isFabVisible, sut.appBarTitle, sut.navIconType, sut.currentUser
+            sut.isFabVisible, sut.appBarTitle, sut.navIconType
         ).forEach { it.observeForever {} }
-        navigationEventActual = sut.initContainer.testCollect(executor)
+        navigationEventActual = sut.initContainer.testCollect(coroutineScope)
+        sut.drawerViewStateSource.testCollect(coroutineScope)
     }
 
     override fun apply(base: Statement?, description: Description?): Statement {

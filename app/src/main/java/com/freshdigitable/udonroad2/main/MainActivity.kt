@@ -38,6 +38,7 @@ import com.freshdigitable.udonroad2.databinding.ActivityMainBinding
 import com.freshdigitable.udonroad2.databinding.NavHeaderBinding
 import com.freshdigitable.udonroad2.input.TweetInputFragment
 import com.freshdigitable.udonroad2.input.TweetInputFragmentArgs
+import com.google.android.material.navigation.NavigationView
 import dagger.android.AndroidInjection
 import dagger.android.AndroidInjector
 import dagger.android.DispatchingAndroidInjector
@@ -94,6 +95,7 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
                     ?: return@observe
             tweetInputFragment.setMenuVisibility(it)
         }
+
         binding.mainDrawer.addDrawerListener(object : DrawerLayout.SimpleDrawerListener() {
             override fun onDrawerOpened(drawerView: View) {
                 viewModel.onDrawerOpened()
@@ -103,13 +105,6 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
                 viewModel.onDrawerClosed()
             }
         })
-        viewModel.isDrawerOpened.observe(this) {
-            if (it && !binding.mainDrawer.isDrawerOpen(binding.mainGlobalMenu)) {
-                binding.mainDrawer.openDrawer(binding.mainGlobalMenu)
-            } else if (!it && binding.mainDrawer.isDrawerOpen(binding.mainGlobalMenu)) {
-                binding.mainDrawer.closeDrawer(binding.mainGlobalMenu)
-            }
-        }
         binding.mainGlobalMenu.setNavigationItemSelectedListener { item ->
             if (item.groupId != R.id.menu_group_drawer_switchable_accounts) {
                 val handled = navigation.onNavDestinationSelected(item)
@@ -120,22 +115,6 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
             }
             viewModel.onDrawerMenuItemClicked(item.groupId, item.itemId, item.title)
         }
-        viewModel.switchableRegisteredUsers.observe(this) { users ->
-            binding.mainGlobalMenu.menu.apply {
-                removeGroup(R.id.menu_group_drawer_switchable_accounts)
-                users.map { it.account }
-                    .forEachIndexed { i, screenName ->
-                        add(R.id.menu_group_drawer_switchable_accounts, Menu.NONE, i, screenName)
-                    }
-            }
-        }
-        viewModel.isRegisteredUsersListOpened.observe(this) {
-            binding.mainGlobalMenu.menu.apply {
-                setGroupVisible(R.id.menu_group_drawer_switchable_accounts, it)
-                setGroupVisible(R.id.menu_group_drawer_register_account, it)
-                setGroupVisible(R.id.menu_group_drawer_default, !it)
-            }
-        }
         val headerView = binding.mainGlobalMenu.getHeaderView(0)
         val navHeaderBinding: NavHeaderBinding = requireNotNull<NavHeaderBinding>(
             DataBindingUtil.findBinding(headerView) ?: DataBindingUtil.bind(headerView)
@@ -144,7 +123,35 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
             it.viewModel = viewModel
             it.lifecycleOwner = this
         }
+        viewModel.drawerState.observe(this) {
+            binding.mainDrawer.bindOpenState(it.isOpened, binding.mainGlobalMenu)
+            binding.mainGlobalMenu.bindMenuState(it)
+        }
+
         viewModel.initialEvent(savedInstanceState?.savedViewState)
+    }
+
+    private fun DrawerLayout.bindOpenState(isOpened: Boolean, navView: NavigationView) {
+        if (isOpened && !isDrawerOpen(navView)) {
+            openDrawer(navView)
+        } else if (!isOpened && isDrawerOpen(navView)) {
+            closeDrawer(navView)
+        }
+    }
+
+    private fun NavigationView.bindMenuState(state: DrawerViewState) {
+        menu.apply {
+            removeGroup(R.id.menu_group_drawer_switchable_accounts)
+            state.switchableAccounts.map { it.account }
+                .forEachIndexed { i, screenName ->
+                    add(R.id.menu_group_drawer_switchable_accounts, Menu.NONE, i, screenName)
+                }
+
+            val accountSwitcherOpened = state.isAccountSwitcherOpened
+            setGroupVisible(R.id.menu_group_drawer_switchable_accounts, accountSwitcherOpened)
+            setGroupVisible(R.id.menu_group_drawer_register_account, accountSwitcherOpened)
+            setGroupVisible(R.id.menu_group_drawer_default, !accountSwitcherOpened)
+        }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

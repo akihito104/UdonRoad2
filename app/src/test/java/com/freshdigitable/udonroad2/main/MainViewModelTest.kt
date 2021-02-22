@@ -18,14 +18,17 @@ package com.freshdigitable.udonroad2.main
 
 import android.view.MenuItem
 import androidx.annotation.IdRes
+import androidx.lifecycle.LiveData
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.input.TweetInputEvent
+import com.freshdigitable.udonroad2.main.MainViewModelTestRule.Companion.currentUser
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
+import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.model.user.UserEntity
 import com.freshdigitable.udonroad2.shortcut.SelectedItemShortcut
 import com.freshdigitable.udonroad2.test_common.jvm.testCollect
@@ -52,10 +55,7 @@ class MainViewModelTest {
 
         @Test
         fun initialState(): Unit = with(rule) {
-            assertThat(sut.currentUser.value?.id).isEqualTo(null)
-            assertThat(sut.switchableRegisteredUsers.value).isEmpty()
-            assertThat(sut.isRegisteredUsersListOpened.value).isFalse()
-            assertThat(sut.isDrawerOpened.value).isFalse()
+            assertThat(sut.drawerState.value).isEqualTo(DrawerViewState())
         }
 
         @Test
@@ -66,7 +66,7 @@ class MainViewModelTest {
             }
 
             // verify
-            assertThat(sut.isDrawerOpened.value).isTrue()
+            assertThat(sut.drawerState.value?.isOpened).isTrue()
         }
 
         @Test
@@ -80,7 +80,7 @@ class MainViewModelTest {
             }
 
             // verify
-            assertThat(sut.isDrawerOpened.value).isFalse()
+            assertThat(sut.drawerState.value?.isOpened).isFalse()
         }
 
         @Test
@@ -91,7 +91,7 @@ class MainViewModelTest {
             }
 
             // verify
-            assertThat(sut.isRegisteredUsersListOpened.value).isTrue()
+            assertThat(sut.drawerState.value?.isAccountSwitcherOpened).isTrue()
         }
 
         @Test
@@ -104,7 +104,7 @@ class MainViewModelTest {
                 }
 
                 // verify
-                assertThat(sut.isRegisteredUsersListOpened.value).isFalse()
+                assertThat(sut.drawerState.value?.isAccountSwitcherOpened).isFalse()
             }
 
         @Test
@@ -279,8 +279,8 @@ class MainViewModelTest {
 
         @Test
         fun init(): Unit = with(rule) {
-            assertThat(sut.currentUser.value?.id).isEqualTo(stateModelRule.authenticatedUserId)
-            assertThat(sut.switchableRegisteredUsers.value).isEmpty()
+            assertThat(sut.drawerState.currentUser.id).isEqualTo(stateModelRule.authenticatedUserId)
+            assertThat(sut.drawerState.value?.switchableAccounts).isEmpty()
         }
 
         @Test
@@ -301,8 +301,8 @@ class MainViewModelTest {
             }
 
             // verify
-            assertThat(sut.currentUser.value?.id).isEqualTo(stateModelRule.authenticatedUserId)
-            assertThat(sut.switchableRegisteredUsers.value).hasSize(1)
+            assertThat(sut.drawerState.currentUser.id).isEqualTo(stateModelRule.authenticatedUserId)
+            assertThat(sut.drawerState.value?.switchableAccounts).hasSize(1)
         }
 
         @Test
@@ -318,8 +318,8 @@ class MainViewModelTest {
                 }
 
                 // verify
-                assertThat(sut.isDrawerOpened.value).isFalse()
-                assertThat(sut.isRegisteredUsersListOpened.value).isFalse()
+                assertThat(sut.drawerState.value?.isOpened).isFalse()
+                assertThat(sut.drawerState.value?.isAccountSwitcherOpened).isFalse()
             }
 
         @Test
@@ -336,8 +336,8 @@ class MainViewModelTest {
 
             // verify
             assertThat(actualConsumed).isTrue()
-            assertThat(sut.isDrawerOpened.value).isFalse()
-            assertThat(sut.isRegisteredUsersListOpened.value).isFalse()
+            assertThat(sut.drawerState.value?.isOpened).isFalse()
+            assertThat(sut.drawerState.value?.isAccountSwitcherOpened).isFalse()
             assertThat(navigationEventActual.last())
                 .isInstanceOf(TimelineEvent.Navigate.Timeline::class.java)
             val event = navigationEventActual.last() as TimelineEvent.Navigate.Timeline
@@ -374,18 +374,20 @@ internal class MainViewModelTestRule(
                 appBarTitle,
                 isTweetInputMenuVisible,
                 isFabVisible,
-                currentUser,
-                switchableRegisteredUsers,
-                isRegisteredUsersListOpened,
-                isDrawerOpened,
+                drawerState
             ).forEach { it.observeForever { } }
         }
-        navigationEventActual = sut.navigationEvent.testCollect(stateModelRule.executor)
+        navigationEventActual = sut.navigationEvent.testCollect(stateModelRule.coroutineScope)
     }
 
     override fun apply(base: Statement?, description: Description?): Statement {
         return RuleChain.outerRule(stateModelRule)
             .apply(super.apply(base, description), description)
+    }
+
+    companion object {
+        val LiveData<DrawerViewState>.currentUser: TweetUserItem
+            get() = requireNotNull(this.value?.currentUser)
     }
 }
 

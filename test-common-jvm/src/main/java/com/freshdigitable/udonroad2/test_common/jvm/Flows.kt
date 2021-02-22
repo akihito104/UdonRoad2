@@ -18,13 +18,21 @@ package com.freshdigitable.udonroad2.test_common.jvm
 
 import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.mainContext
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import kotlin.coroutines.CoroutineContext
 
-fun <T> Flow<T>.testCollect(executor: AppExecutor): List<T> {
+fun <T> Flow<T>.testCollect(executor: AppExecutor): List<T> =
+    testCollect(executor, executor.mainContext)
+
+fun <T> Flow<T>.testCollect(
+    coroutineScope: CoroutineScope,
+    coroutineContext: CoroutineContext = coroutineScope.coroutineContext
+): List<T> {
     val actual = mutableListOf<T>()
-    executor.launch(executor.mainContext) {
+    coroutineScope.launch(coroutineContext) {
         collect { actual.add(it) }
     }
     return actual

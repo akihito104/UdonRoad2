@@ -18,6 +18,7 @@ package com.freshdigitable.udonroad2.main
 
 import com.freshdigitable.udonroad2.data.UserDataSource
 import com.freshdigitable.udonroad2.data.impl.AppSettingRepository
+import com.freshdigitable.udonroad2.main.DrawerViewState.Companion.toClosedState
 import com.freshdigitable.udonroad2.main.MainActivityEvent.DrawerEvent
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
@@ -50,7 +51,12 @@ internal data class DrawerViewState(
     val isAccountSwitcherOpened: Boolean = false,
     val currentUser: TweetUserItem? = null,
     val switchableAccounts: SortedSet<TweetUserItem> = sortedSetOf()
-) : ViewState, Serializable
+) : ViewState, Serializable {
+    companion object {
+        fun DrawerViewState.toClosedState(): DrawerViewState =
+            copy(isOpened = false, isAccountSwitcherOpened = false)
+    }
+}
 
 internal class DrawerActions @Inject constructor(
     dispatcher: EventDispatcher,
@@ -70,7 +76,7 @@ internal class DrawerActions @Inject constructor(
 internal class DrawerViewStateSource @Inject constructor(
     actions: DrawerActions,
     login: LoginUseCase,
-    listOwnerGenerator: ListOwnerGenerator,
+    private val listOwnerGenerator: ListOwnerGenerator,
     appSettingRepository: AppSettingRepository,
     userRepository: UserDataSource,
 ) {
@@ -89,55 +95,53 @@ internal class DrawerViewStateSource @Inject constructor(
                 a.screenName.compareTo(b.screenName)
             }
     }.onStart { emit(sortedSetOf()) }
-    private val updateSources: Array<Flow<UpdateFun<DrawerViewState>>> = arrayOf(
+    private val updateSources: List<Flow<UpdateFun<DrawerViewState>>> = listOf(
         currentUser.onEvent { state, user -> state.copy(currentUser = user) },
         switchableRegisteredUsers.onEvent { state, account ->
             state.copy(switchableAccounts = account)
         },
         actions.showDrawerMenu.onEvent { state, _ -> state.copy(isOpened = true) },
-        actions.hideDrawerMenu.onEvent { state, _ ->
-            state.copy(isOpened = false, isAccountSwitcherOpened = false)
-        },
+        actions.hideDrawerMenu.onEvent { state, _ -> state.toClosedState() },
 
-        actions.popToHome.onEvent { acc, _ ->
-            acc.copy(isOpened = false, isAccountSwitcherOpened = false)
-        },
-        actions.launchCustomTimelineList.onEvent { acc, _ ->
-            val userId = requireNotNull(acc.currentUser).id
-            val ev = listOwnerGenerator.getTimelineEvent(
+        actions.popToHome.onEvent { state, _ -> state.toClosedState() }, // TODO
+        actions.launchCustomTimelineList.onEvent { state, _ ->
+            val userId = requireNotNull(state.currentUser).id
+            navEventChannel.sendTimelineEvent(
                 QueryType.CustomTimelineListQueryType.Ownership(userId),
                 NavigationEvent.Type.NAVIGATE
             )
-            navEventChannel.send(ev)
-            acc.copy(isOpened = false, isAccountSwitcherOpened = false)
+            state.toClosedState()
         },
 
-        actions.toggleAccountSwitcher.onEvent { acc, _ ->
-            acc.copy(isAccountSwitcherOpened = !acc.isAccountSwitcherOpened)
+        actions.toggleAccountSwitcher.onEvent { state, _ ->
+            state.copy(isAccountSwitcherOpened = !state.isAccountSwitcherOpened)
         },
-        actions.launchOAuth.onEvent { acc, _ ->
-            val timelineEvent = listOwnerGenerator.getTimelineEvent(
-                QueryType.Oauth,
-                NavigationEvent.Type.NAVIGATE
-            )
-            navEventChannel.send(timelineEvent)
-            acc.copy(isOpened = false, isAccountSwitcherOpened = false)
+        actions.launchOAuth.onEvent { state, _ ->
+            navEventChannel.sendTimelineEvent(QueryType.Oauth, NavigationEvent.Type.NAVIGATE)
+            state.toClosedState()
         },
-        actions.switchAccount.onEvent { acc, event ->
+        actions.switchAccount.onEvent { state, event ->
             login(event.userId)
-            val timelineEvent = listOwnerGenerator.getTimelineEvent(
+            navEventChannel.sendTimelineEvent(
                 QueryType.TweetQueryType.Timeline(),
                 NavigationEvent.Type.INIT
             )
-            navEventChannel.send(timelineEvent)
-            acc.copy(isOpened = false, isAccountSwitcherOpened = false)
+            state.toClosedState()
         },
     )
 
-    internal val state: Flow<DrawerViewState> = merge(*updateSources)
+    internal val state: Flow<DrawerViewState> = updateSources.merge()
         .scan(DrawerViewState()) { state, trans -> trans(state) }
 
     private inline fun <reified E> Flow<E>.onEvent(
-        noinline update: ScanFun<DrawerViewState, E>
+        crossinline update: ScanFun<DrawerViewState, E>
     ): Flow<UpdateFun<DrawerViewState>> = onEvent(this, update)
+
+    private suspend fun Channel<NavigationEvent>.sendTimelineEvent(
+        queryType: QueryType,
+        navType: NavigationEvent.Type
+    ) {
+        val timelineEvent = listOwnerGenerator.getTimelineEvent(queryType, navType)
+        send(timelineEvent)
+    }
 }

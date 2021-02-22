@@ -19,6 +19,8 @@ package com.freshdigitable.udonroad2.main
 import android.view.MenuItem
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asLiveData
+import androidx.lifecycle.viewModelScope
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.input.TweetInputEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
@@ -48,11 +50,8 @@ internal class MainViewModel(
         viewStates.navEventChannel
     )
 
-    val isDrawerOpened: LiveData<Boolean> = viewStates.isDrawerOpened
-    val currentUser: LiveData<TweetUserItem> = viewStates.currentUser
-    val isRegisteredUsersListOpened: LiveData<Boolean> = viewStates.isRegisteredUsersOpened
-    val switchableRegisteredUsers: LiveData<Set<TweetUserItem>> =
-        viewStates.switchableRegisteredUsers
+    val drawerState: LiveData<DrawerViewState> =
+        viewStates.drawerViewStateSource.asLiveData(viewModelScope.coroutineContext)
 
     internal fun initialEvent(savedState: MainActivityViewState?) {
         eventDispatcher.postEvent(TimelineEvent.Setup(savedState))
@@ -73,7 +72,7 @@ internal class MainViewModel(
     fun onBackPressed(): Boolean {
         val selectedItem = currentState.selectedItem
         val event = when {
-            isDrawerOpened.value == true -> MainActivityEvent.DrawerEvent.Closed
+            drawerState.value?.isOpened == true -> MainActivityEvent.DrawerEvent.Closed
             isTweetInputExpanded -> TweetInputEvent.Cancel
             selectedItem != null -> TimelineEvent.TweetItemSelection.Unselected(selectedItem.owner)
             else -> return false
@@ -87,7 +86,7 @@ internal class MainViewModel(
     }
 
     fun onCurrentUserIconClicked() {
-        currentUser.value?.let {
+        drawerState.value?.currentUser?.let {
             eventDispatcher.postEvent(MainActivityEvent.CurrentUserIconClicked(it))
         }
     }
@@ -108,7 +107,7 @@ internal class MainViewModel(
             else -> {
                 if (groupId == R.id.menu_group_drawer_switchable_accounts) {
                     val user = requireNotNull(
-                        switchableRegisteredUsers.value?.find { it.account == title }
+                        drawerState.value?.switchableAccounts?.find { it.account == title }
                     )
                     MainActivityEvent.DrawerEvent.SwitchableAccountClicked(user.id)
                 } else {
