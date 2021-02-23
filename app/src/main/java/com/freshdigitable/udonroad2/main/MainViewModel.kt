@@ -20,6 +20,7 @@ import android.view.MenuItem
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
+import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
 import com.freshdigitable.udonroad2.input.TweetInputEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
@@ -38,12 +39,14 @@ internal class MainViewModel(
     private val drawerViewStates: DrawerViewModelSource,
 ) : ViewModel(), ShortcutViewModel, DrawerActionListener by drawerViewStates {
 
-    val navIconType: LiveData<NavigationIconType> = viewStates.navIconType
-    val appBarTitle: LiveData<AppBarTitle> = viewStates.appBarTitle
+    val mainViewModelState = viewStates.states.asLiveData(viewModelScope.coroutineContext)
+    val navIconType: LiveData<NavigationIconType> = mainViewModelState.map { it.navIconType }
+    val appBarTitle: LiveData<AppBarTitle> = mainViewModelState.map { it.appBarTitle }
     val isTweetInputExpanded: Boolean
-        get() = viewStates.isTweetInputExpanded
-    val isTweetInputMenuVisible: LiveData<Boolean> = viewStates.isTweetInputMenuVisible
-    override val isFabVisible: LiveData<Boolean> = viewStates.isFabVisible
+        get() = mainViewModelState.value?.isTweetInputExpanded ?: false
+    val isTweetInputMenuVisible: LiveData<Boolean> =
+        mainViewModelState.map { it.isTweetInputMenuVisible }
+    override val isFabVisible: LiveData<Boolean> = mainViewModelState.map { it.isShortcutVisible }
     internal val navigationEvent: Flow<NavigationEvent> = merge(
         viewStates.initContainer,
         viewStates.navigateToUser,
@@ -90,7 +93,7 @@ internal class MainViewModel(
     }
 
     val currentState: MainActivityViewState
-        get() = viewStates.current
+        get() = mainViewModelState.value ?: throw IllegalStateException()
 }
 
 val TweetUserItem.account: String

@@ -16,11 +16,6 @@
 
 package com.freshdigitable.udonroad2.main
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.distinctUntilChanged
-import androidx.lifecycle.map
-import androidx.lifecycle.switchMap
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.data.impl.AppSettingRepository
 import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
@@ -29,14 +24,16 @@ import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.app.di.ActivityScope
-import com.freshdigitable.udonroad2.model.app.ext.combineLatest
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
-import com.freshdigitable.udonroad2.model.app.navigation.AppViewState
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.ViewState
+import com.freshdigitable.udonroad2.model.app.onEvent
+import com.freshdigitable.udonroad2.model.app.stateSourceBuilder
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.getTimelineEvent
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.rx2.asFlow
 import timber.log.Timber
@@ -48,7 +45,7 @@ internal class MainActivityViewStates @Inject constructor(
     actions: MainActivityActions,
     selectedItemRepository: SelectedItemRepository,
     appSettingRepository: AppSettingRepository,
-    private val tweetInputSharedState: TweetInputSharedState,
+    tweetInputSharedState: TweetInputSharedState,
     listOwnerGenerator: ListOwnerGenerator,
     navDelegate: MainActivityNavState,
 ) {
@@ -69,63 +66,59 @@ internal class MainActivityViewStates @Inject constructor(
             TimelineEvent.Navigate.UserInfo(it.user)
         }
 
-    private val currentNavHost: AppViewState<MainNavHostState> = navDelegate.containerState
-    val isTweetInputMenuVisible: LiveData<Boolean> = currentNavHost.map {
-        !(it is MainNavHostState.Timeline && it.owner.query is QueryType.Oauth)
-    }.distinctUntilChanged()
-    val isTweetInputExpanded: Boolean
-        get() = tweetInputSharedState.isExpanded.value ?: false
+    internal val states: Flow<MainActivityViewState> = stateSourceBuilder(
+        init = MainActivityViewState(),
+        navDelegate.containerState.onEvent { state, container ->
+            state.copy(
+                navHostState = container,
+                selectedItem = when (container) {
+                    is MainNavHostState.Timeline -> selectedItemRepository.find(container.owner)
+                    else -> null
+                }
+            )
+        },
+        navDelegate.containerState.flatMapLatest {
+            when (it) {
+                is MainNavHostState.Timeline -> selectedItemRepository.findSource(it.owner)
+                else -> emptyFlow()
+            }
+        }.onEvent { state, item ->
+            state.copy(selectedItem = item)
+        },
+        tweetInputSharedState.isExpanded.onEvent { state, expanded ->
+            state.copy(isTweetInputExpanded = expanded)
+        },
+        navDelegate.isInTopLevelDest.onEvent { state, isInTopLevel ->
+            state.copy(isInTopLevelDestination = isInTopLevel)
+        }
+    )
+}
 
-    val appBarTitle: AppViewState<AppBarTitle> = combineLatest(
-        tweetInputSharedState.isExpanded,
-        currentNavHost
-    ) { expanded, navHost ->
-        when (expanded) {
+internal data class MainActivityViewState(
+    val isTweetInputExpanded: Boolean = false,
+    val isInTopLevelDestination: Boolean = false,
+    val navHostState: MainNavHostState? = null,
+    val selectedItem: SelectedItemId? = null,
+) : ViewState, Serializable {
+    val isTweetInputMenuVisible: Boolean
+        get() = !(navHostState is MainNavHostState.Timeline && navHostState.owner.query is QueryType.Oauth)
+    val isShortcutVisible: Boolean
+        get() = when {
+            isTweetInputExpanded -> false
+            selectedItem != null -> true
+            else -> false
+        }
+    val appBarTitle: AppBarTitle
+        get() = when (isTweetInputExpanded) {
             true -> {
                 { it.getString(R.string.title_input_send_tweet) }
             }
-            else -> navHost?.appBarTitle ?: { "" }
+            else -> navHostState?.appBarTitle ?: { "" }
         }
-    }
-    val navIconType: AppViewState<NavigationIconType> = combineLatest(
-        tweetInputSharedState.isExpanded,
-        navDelegate.isInTopLevelDest
-    ) { expanded, inTopLevel ->
-        when {
-            expanded == true -> NavigationIconType.CLOSE
-            inTopLevel == false -> NavigationIconType.UP
+    val navIconType: NavigationIconType
+        get() = when {
+            isTweetInputExpanded -> NavigationIconType.CLOSE
+            !isInTopLevelDestination -> NavigationIconType.UP
             else -> NavigationIconType.MENU
         }
-    }
-
-    private val selectedItemId: AppViewState<SelectedItemId?> = currentNavHost.switchMap {
-        when (it) {
-            is MainNavHostState.Timeline -> selectedItemRepository.observe(it.owner)
-            else -> MutableLiveData(null)
-        }
-    }
-
-    val isFabVisible: AppViewState<Boolean> = combineLatest(
-        selectedItemId.map { it != null },
-        tweetInputSharedState.isExpanded
-    ) { selected, expanded ->
-        when {
-            expanded == true -> false
-            selected == true -> true
-            else -> false
-        }
-    }
-
-    val current: MainActivityViewState
-        get() {
-            return MainActivityViewState(
-                selectedItem = selectedItemId.value,
-                fabVisible = isFabVisible.value ?: false
-            )
-        }
 }
-
-data class MainActivityViewState(
-    val selectedItem: SelectedItemId?,
-    val fabVisible: Boolean
-) : ViewState, Serializable

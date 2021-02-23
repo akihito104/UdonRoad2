@@ -16,11 +16,12 @@
 
 package com.freshdigitable.udonroad2.data.impl
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.map
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.SelectedItemId
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -28,7 +29,7 @@ import javax.inject.Singleton
 class SelectedItemRepository @Inject constructor() {
     private val selectedItems: MutableMap<ListOwner<*>, SelectedItemId> = mutableMapOf()
     private val selectedItemsSource =
-        MutableLiveData<Map<ListOwner<*>, SelectedItemId>>(selectedItems)
+        MutableStateFlow<Map<ListOwner<*>, SelectedItemId>>(emptyMap())
 
     fun put(itemId: SelectedItemId) {
         selectedItems[itemId.owner] = itemId
@@ -44,7 +45,7 @@ class SelectedItemRepository @Inject constructor() {
         return selectedItems[owner]
     }
 
-    fun observe(owner: ListOwner<*>): LiveData<SelectedItemId?> {
-        return selectedItemsSource.map { it[owner] }
+    fun findSource(owner: ListOwner<*>): Flow<SelectedItemId?> {
+        return selectedItemsSource.map { it[owner] }.distinctUntilChanged()
     }
 }

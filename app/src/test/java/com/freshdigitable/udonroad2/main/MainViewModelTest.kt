@@ -228,9 +228,10 @@ class MainViewModelTest {
             val dispatcherObserver = dispatcher.emitter.test()
 
             // exercise
-            sut.onBackPressed()
+            val actual = sut.onBackPressed()
 
             // verify
+            assertThat(actual).isTrue()
             dispatcherObserver
                 .assertValueCount(1)
                 .assertValueAt(0) { it is TimelineEvent.TweetItemSelection.Unselected }
