@@ -18,13 +18,19 @@ package com.freshdigitable.udonroad2.model.app
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.scan
 
 typealias UpdateFun<S> = suspend (S) -> S
 typealias ScanFun<S, E> = suspend (S, E) -> S
 
-inline fun <reified E, S> onEvent(
-    source: Flow<E>,
-    crossinline update: ScanFun<S, E>
-): Flow<UpdateFun<S>> {
-    return source.map { e -> { s -> update(s, e) } }
+fun <S> stateSourceBuilder(
+    init: S,
+    vararg updateSource: Flow<UpdateFun<S>>
+): Flow<S> {
+    check(updateSource.isNotEmpty())
+    return merge(*updateSource).scan(init) { state, trans -> trans(state) }
 }
+
+inline fun <E, S> Flow<E>.onEvent(crossinline update: ScanFun<S, E>): Flow<UpdateFun<S>> =
+    this.map { e -> { s -> update(s, e) } }

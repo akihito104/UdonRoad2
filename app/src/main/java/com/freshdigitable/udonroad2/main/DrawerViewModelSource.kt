@@ -23,14 +23,13 @@ import com.freshdigitable.udonroad2.main.DrawerViewState.Companion.toClosedState
 import com.freshdigitable.udonroad2.main.MainActivityEvent.DrawerEvent
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
-import com.freshdigitable.udonroad2.model.app.ScanFun
-import com.freshdigitable.udonroad2.model.app.UpdateFun
 import com.freshdigitable.udonroad2.model.app.di.ActivityScope
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.ViewState
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
 import com.freshdigitable.udonroad2.model.app.onEvent
+import com.freshdigitable.udonroad2.model.app.stateSourceBuilder
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.oauth.LoginUseCase
 import com.freshdigitable.udonroad2.timeline.getTimelineEvent
@@ -39,10 +38,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
-import kotlinx.coroutines.flow.scan
 import kotlinx.coroutines.rx2.asFlow
 import java.io.Serializable
 import java.util.SortedSet
@@ -145,7 +142,9 @@ internal class DrawerViewModelSource @Inject constructor(
                 a.screenName.compareTo(b.screenName)
             }
     }.onStart { emit(sortedSetOf()) }
-    private val updateSources: List<Flow<UpdateFun<DrawerViewState>>> = listOf(
+
+    internal val state: Flow<DrawerViewState> = stateSourceBuilder(
+        init = DrawerViewState(),
         currentUser.onEvent { state, user -> state.copy(currentUser = user) },
         switchableRegisteredUsers.onEvent { state, account ->
             state.copy(switchableAccounts = account)
@@ -181,13 +180,6 @@ internal class DrawerViewModelSource @Inject constructor(
             state.toClosedState()
         },
     )
-
-    internal val state: Flow<DrawerViewState> = updateSources.merge()
-        .scan(DrawerViewState()) { state, trans -> trans(state) }
-
-    private inline fun <reified E> Flow<E>.onEvent(
-        crossinline update: ScanFun<DrawerViewState, E>
-    ): Flow<UpdateFun<DrawerViewState>> = onEvent(this, update)
 
     private suspend fun Channel<NavigationEvent>.sendTimelineEvent(
         queryType: QueryType,
