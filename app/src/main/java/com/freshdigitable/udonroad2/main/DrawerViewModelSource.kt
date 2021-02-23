@@ -16,6 +16,7 @@
 
 package com.freshdigitable.udonroad2.main
 
+import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.data.UserDataSource
 import com.freshdigitable.udonroad2.data.impl.AppSettingRepository
 import com.freshdigitable.udonroad2.main.DrawerViewState.Companion.toClosedState
@@ -24,6 +25,7 @@ import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.app.ScanFun
 import com.freshdigitable.udonroad2.model.app.UpdateFun
+import com.freshdigitable.udonroad2.model.app.di.ActivityScope
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.ViewState
@@ -58,9 +60,56 @@ internal data class DrawerViewState(
     }
 }
 
+interface DrawerActionListener {
+    fun onBackPressed(): Boolean
+    fun onAccountSwitcherClicked()
+    fun onDrawerOpened()
+    fun onDrawerClosed()
+    fun onDrawerMenuItemClicked(groupId: Int, itemId: Int, title: CharSequence): Boolean
+}
+
+@ActivityScope
 internal class DrawerActions @Inject constructor(
-    dispatcher: EventDispatcher,
-) {
+    private val dispatcher: EventDispatcher,
+) : DrawerActionListener {
+    override fun onBackPressed(): Boolean {
+        dispatcher.postEvent(DrawerEvent.Closed)
+        return true
+    }
+
+    override fun onAccountSwitcherClicked() {
+        dispatcher.postEvent(DrawerEvent.AccountSwitchClicked)
+    }
+
+    override fun onDrawerOpened() {
+        dispatcher.postEvent(DrawerEvent.Opened)
+    }
+
+    override fun onDrawerClosed() {
+        dispatcher.postEvent(DrawerEvent.Closed)
+    }
+
+    override fun onDrawerMenuItemClicked(
+        groupId: Int,
+        itemId: Int,
+        title: CharSequence,
+    ): Boolean {
+        val event = when (itemId) {
+//            R.id.menu_item_drawer_home -> MainActivityEvent.DrawerEvent.HomeClicked
+            R.id.menu_item_drawer_add_account -> DrawerEvent.AddUserClicked
+            R.id.menu_item_drawer_lists -> DrawerEvent.CustomTimelineClicked
+            else -> {
+                if (groupId == R.id.menu_group_drawer_switchable_accounts) {
+                    DrawerEvent.SwitchableAccountClicked(title.toString())
+                } else {
+                    null
+                }
+            }
+        }
+        event?.let { dispatcher.postEvent(it) }
+        return event != null
+    }
+
     internal val showDrawerMenu = dispatcher.toAction<DrawerEvent.Opened>().asFlow()
     internal val hideDrawerMenu = dispatcher.toAction<DrawerEvent.Closed>().asFlow()
     internal val toggleAccountSwitcher = dispatcher.toAction<DrawerEvent.AccountSwitchClicked>()
@@ -73,13 +122,14 @@ internal class DrawerActions @Inject constructor(
         dispatcher.toAction<DrawerEvent.SwitchableAccountClicked>().asFlow()
 }
 
-internal class DrawerViewStateSource @Inject constructor(
+@ActivityScope
+internal class DrawerViewModelSource @Inject constructor(
     actions: DrawerActions,
     login: LoginUseCase,
     private val listOwnerGenerator: ListOwnerGenerator,
     appSettingRepository: AppSettingRepository,
     userRepository: UserDataSource,
-) {
+) : DrawerActionListener by actions {
     private val navEventChannel: Channel<NavigationEvent> = Channel()
     internal val navEventSource: Flow<NavigationEvent> = navEventChannel.receiveAsFlow()
 
@@ -121,7 +171,9 @@ internal class DrawerViewStateSource @Inject constructor(
             state.toClosedState()
         },
         actions.switchAccount.onEvent { state, event ->
-            login(event.userId)
+            val user =
+                requireNotNull(state.switchableAccounts.find { it.account == event.accountName })
+            login(user.id)
             navEventChannel.sendTimelineEvent(
                 QueryType.TweetQueryType.Timeline(),
                 NavigationEvent.Type.INIT

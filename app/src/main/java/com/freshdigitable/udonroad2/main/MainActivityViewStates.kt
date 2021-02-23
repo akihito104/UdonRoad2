@@ -46,16 +46,12 @@ import javax.inject.Inject
 @ActivityScope
 internal class MainActivityViewStates @Inject constructor(
     actions: MainActivityActions,
-    drawerStateSource: DrawerViewStateSource,
     selectedItemRepository: SelectedItemRepository,
     appSettingRepository: AppSettingRepository,
     private val tweetInputSharedState: TweetInputSharedState,
     listOwnerGenerator: ListOwnerGenerator,
     navDelegate: MainActivityNavState,
 ) {
-    internal val drawerViewStateSource = drawerStateSource.state
-    internal val navEventChannel = drawerStateSource.navEventSource
-
     internal val initContainer: Flow<NavigationEvent> = AppAction.merge(
         actions.showFirstView.map {
             Timber.tag("MainActivityViewState").d("initContainer.showFirstView: $it")

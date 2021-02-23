@@ -21,7 +21,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
-import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.input.TweetInputEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
@@ -36,7 +35,8 @@ import timber.log.Timber
 internal class MainViewModel(
     private val eventDispatcher: EventDispatcher,
     private val viewStates: MainActivityViewStates,
-) : ViewModel(), ShortcutViewModel {
+    private val drawerViewStates: DrawerViewModelSource,
+) : ViewModel(), ShortcutViewModel, DrawerActionListener by drawerViewStates {
 
     val navIconType: LiveData<NavigationIconType> = viewStates.navIconType
     val appBarTitle: LiveData<AppBarTitle> = viewStates.appBarTitle
@@ -47,11 +47,11 @@ internal class MainViewModel(
     internal val navigationEvent: Flow<NavigationEvent> = merge(
         viewStates.initContainer,
         viewStates.navigateToUser,
-        viewStates.navEventChannel
+        drawerViewStates.navEventSource
     )
 
     val drawerState: LiveData<DrawerViewState> =
-        viewStates.drawerViewStateSource.asLiveData(viewModelScope.coroutineContext)
+        drawerViewStates.state.asLiveData(viewModelScope.coroutineContext)
 
     internal fun initialEvent(savedState: MainActivityViewState?) {
         eventDispatcher.postEvent(TimelineEvent.Setup(savedState))
@@ -69,10 +69,12 @@ internal class MainViewModel(
         eventDispatcher.postEvent(TweetInputEvent.Cancel)
     }
 
-    fun onBackPressed(): Boolean {
+    override fun onBackPressed(): Boolean {
         val selectedItem = currentState.selectedItem
         val event = when {
-            drawerState.value?.isOpened == true -> MainActivityEvent.DrawerEvent.Closed
+            drawerState.value?.isOpened == true -> {
+                return drawerViewStates.onBackPressed()
+            }
             isTweetInputExpanded -> TweetInputEvent.Cancel
             selectedItem != null -> TimelineEvent.TweetItemSelection.Unselected(selectedItem.owner)
             else -> return false
@@ -81,42 +83,10 @@ internal class MainViewModel(
         return true
     }
 
-    fun onAccountSwitcherClicked() {
-        eventDispatcher.postEvent(MainActivityEvent.DrawerEvent.AccountSwitchClicked)
-    }
-
     fun onCurrentUserIconClicked() {
         drawerState.value?.currentUser?.let {
             eventDispatcher.postEvent(MainActivityEvent.CurrentUserIconClicked(it))
         }
-    }
-
-    fun onDrawerOpened() {
-        eventDispatcher.postEvent(MainActivityEvent.DrawerEvent.Opened)
-    }
-
-    fun onDrawerClosed() {
-        eventDispatcher.postEvent(MainActivityEvent.DrawerEvent.Closed)
-    }
-
-    fun onDrawerMenuItemClicked(groupId: Int, itemId: Int, title: CharSequence): Boolean {
-        val event = when (itemId) {
-//            R.id.menu_item_drawer_home -> MainActivityEvent.DrawerEvent.HomeClicked
-            R.id.menu_item_drawer_add_account -> MainActivityEvent.DrawerEvent.AddUserClicked
-            R.id.menu_item_drawer_lists -> MainActivityEvent.DrawerEvent.CustomTimelineClicked
-            else -> {
-                if (groupId == R.id.menu_group_drawer_switchable_accounts) {
-                    val user = requireNotNull(
-                        drawerState.value?.switchableAccounts?.find { it.account == title }
-                    )
-                    MainActivityEvent.DrawerEvent.SwitchableAccountClicked(user.id)
-                } else {
-                    null
-                }
-            }
-        }
-        event?.let { eventDispatcher.postEvent(it) }
-        return event != null
     }
 
     val currentState: MainActivityViewState

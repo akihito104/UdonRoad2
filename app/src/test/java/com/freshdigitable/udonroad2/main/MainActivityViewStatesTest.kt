@@ -18,7 +18,6 @@ package com.freshdigitable.udonroad2.main
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.MutableLiveData
-import com.freshdigitable.udonroad2.data.UserDataSource
 import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
 import com.freshdigitable.udonroad2.data.impl.create
 import com.freshdigitable.udonroad2.input.TweetInputSharedState
@@ -29,8 +28,6 @@ import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.postEvents
-import com.freshdigitable.udonroad2.model.user.UserEntity
-import com.freshdigitable.udonroad2.oauth.LoginUseCase
 import com.freshdigitable.udonroad2.test_common.MockVerified
 import com.freshdigitable.udonroad2.test_common.RxExceptionHandler
 import com.freshdigitable.udonroad2.test_common.jvm.AppSettingRepositoryRule
@@ -40,10 +37,8 @@ import com.freshdigitable.udonroad2.test_common.jvm.testCollect
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.google.common.truth.Truth.assertThat
 import io.mockk.every
-import io.mockk.mockk
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.flow.flow
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
@@ -113,14 +108,16 @@ internal class MainActivityNavigationDelegateRule(
     }
 }
 
-internal class MainActivityStateModelTestRule : TestWatcher() {
-    val dispatcher = EventDispatcher()
-    val appSettingRepositoryRule = AppSettingRepositoryRule()
-    private val oauthTokenRepository = OAuthTokenRepositoryRule(appSettingRepositoryRule)
+internal class MainActivityStateModelTestRule(
+    val dispatcher: EventDispatcher = EventDispatcher(),
+    val appSettingRepositoryRule: AppSettingRepositoryRule = AppSettingRepositoryRule(),
+    val oauthTokenRepository: OAuthTokenRepositoryRule = OAuthTokenRepositoryRule(
+        appSettingRepositoryRule
+    ),
+    val coroutineRule: CoroutineTestRule = CoroutineTestRule(),
+) : TestWatcher() {
     val selectedItemRepository = SelectedItemRepository()
     val navDelegateRule = MainActivityNavigationDelegateRule()
-    private val userRepository = MockVerified.create<UserDataSource>()
-    val coroutineRule = CoroutineTestRule()
 
     val isExpandedSource = MutableLiveData<Boolean>()
     private val tweetInputSharedState = MockVerified.create<TweetInputSharedState>().apply {
@@ -131,20 +128,8 @@ internal class MainActivityStateModelTestRule : TestWatcher() {
         CoroutineScope(coroutineRule.coroutineContextProvider.mainContext + SupervisorJob())
     val sut: MainActivityViewStates by lazy {
         val listGen = ListOwnerGenerator.create()
-        val drawerSource = DrawerViewStateSource(
-            DrawerActions(dispatcher),
-            LoginUseCase(
-                appSettingRepositoryRule.mock,
-                oauthTokenRepository.mock,
-                userRepository.mock
-            ),
-            listGen,
-            oauthTokenRepository.appSettingMock,
-            userRepository.mock,
-        )
         MainActivityViewStates(
             MainActivityActions(dispatcher),
-            drawerSource,
             selectedItemRepository,
             oauthTokenRepository.appSettingMock,
             tweetInputSharedState.mock,
@@ -160,38 +145,19 @@ internal class MainActivityStateModelTestRule : TestWatcher() {
 
     override fun starting(description: Description?) {
         super.starting(description)
-        appSettingRepositoryRule.setupCurrentUserIdSource(coroutineScope)
-        appSettingRepositoryRule.setupRegisteredUserIdsSource()
         listOf(
             sut.isFabVisible, sut.appBarTitle, sut.navIconType
         ).forEach { it.observeForever {} }
         navigationEventActual = sut.initContainer.testCollect(coroutineScope)
-        sut.drawerViewStateSource.testCollect(coroutineScope)
     }
 
     override fun apply(base: Statement?, description: Description?): Statement {
         return RuleChain.outerRule(InstantTaskExecutorRule())
             .around(coroutineRule)
             .around(navDelegateRule)
-            .around(userRepository)
             .around(oauthTokenRepository)
             .around(RxExceptionHandler())
             .apply(super.apply(base, description), description)
-    }
-
-    fun setupGetUserSource(userId: UserId) {
-        val userEntity = mockk<UserEntity>().also {
-            every { it.id } returns userId
-        }
-        userRepository.run {
-            setupResponseWithVerify({ mock.getUserSource(userId) }, flow { emit(userEntity) })
-        }
-    }
-
-    fun setupGetUser(userId: UserId, userEntity: UserEntity) {
-        userRepository.run {
-            coSetupResponseWithVerify({ mock.getUser(userId) }, userEntity)
-        }
     }
 
     fun assertThatNavigationEventOfTimeline(

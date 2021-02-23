@@ -16,7 +16,6 @@
 
 package com.freshdigitable.udonroad2.main
 
-import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.app.di.ActivityScope
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
@@ -45,7 +44,7 @@ sealed class MainActivityEvent : AppEvent {
         object HomeClicked : DrawerEvent()
         object AddUserClicked : DrawerEvent()
         object CustomTimelineClicked : DrawerEvent()
-        data class SwitchableAccountClicked(val userId: UserId) : DrawerEvent()
+        data class SwitchableAccountClicked(val accountName: String) : DrawerEvent()
     }
 
     data class CurrentUserIconClicked(val user: TweetUserItem) : MainActivityEvent()
