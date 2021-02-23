@@ -21,7 +21,7 @@ import com.freshdigitable.udonroad2.di.AppComponent
 import com.freshdigitable.udonroad2.di.DaggerAppComponent
 import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.oauth.LoginUseCase
-import com.freshdigitable.udonroad2.oauth.LoginUseCase.Companion.invokeIfCan
+import com.freshdigitable.udonroad2.oauth.LoginUseCase.Companion.invokeOnLaunchApp
 import com.jakewharton.threetenabp.AndroidThreeTen
 import dagger.Module
 import dagger.Provides
@@ -69,7 +69,7 @@ object AppSetupModule {
         executor: AppExecutor,
     ): AppSetup = {
         executor.launch {
-            login.invokeIfCan()
+            login.invokeOnLaunchApp()
         }
     }
 }
