@@ -25,10 +25,13 @@ import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.app.di.ActivityScope
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
+import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.ViewState
+import com.freshdigitable.udonroad2.model.app.navigation.toAction
 import com.freshdigitable.udonroad2.model.app.onEvent
 import com.freshdigitable.udonroad2.model.app.stateSourceBuilder
+import com.freshdigitable.udonroad2.oauth.OauthEvent
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.getTimelineEvent
 import kotlinx.coroutines.flow.Flow
@@ -36,11 +39,20 @@ import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.rx2.asFlow
-import timber.log.Timber
 import javax.inject.Inject
 
 @ActivityScope
-internal class MainActivityViewStates @Inject constructor(
+class MainActivityActions @Inject constructor(
+    dispatcher: EventDispatcher,
+) {
+    internal val showFirstView: AppAction<TimelineEvent.Setup> = dispatcher.toAction()
+    internal val showAuth: AppAction<OauthEvent.Init> = dispatcher.toAction()
+    internal val showCurrentUser: AppAction<MainActivityEvent.CurrentUserIconClicked> =
+        dispatcher.toAction()
+}
+
+@ActivityScope
+internal class MainViewModelSource @Inject constructor(
     actions: MainActivityActions,
     selectedItemRepository: SelectedItemRepository,
     appSettingRepository: AppSettingRepository,
@@ -50,7 +62,6 @@ internal class MainActivityViewStates @Inject constructor(
 ) {
     internal val initContainer: Flow<NavigationEvent> = AppAction.merge(
         actions.showFirstView.map {
-            Timber.tag("MainActivityViewState").d("initContainer.showFirstView: $it")
             when {
                 appSettingRepository.currentUserId != null -> QueryType.TweetQueryType.Timeline()
                 else -> QueryType.Oauth
@@ -65,6 +76,12 @@ internal class MainActivityViewStates @Inject constructor(
             TimelineEvent.Navigate.UserInfo(it.user)
         }
 
+    private val selectedItem = navDelegate.containerState.flatMapLatest {
+        when (it) {
+            is MainNavHostState.Timeline -> selectedItemRepository.getSource(it.owner)
+            else -> emptyFlow()
+        }
+    }
     internal val states: Flow<MainActivityViewState> = stateSourceBuilder(
         init = MainActivityViewState(),
         navDelegate.containerState.onEvent { state, container ->
@@ -76,12 +93,7 @@ internal class MainActivityViewStates @Inject constructor(
                 }
             )
         },
-        navDelegate.containerState.flatMapLatest {
-            when (it) {
-                is MainNavHostState.Timeline -> selectedItemRepository.getSource(it.owner)
-                else -> emptyFlow()
-            }
-        }.onEvent { state, item ->
+        selectedItem.onEvent { state, item ->
             state.copy(selectedItem = item)
         },
         tweetInputSharedState.isExpanded.onEvent { state, expanded ->

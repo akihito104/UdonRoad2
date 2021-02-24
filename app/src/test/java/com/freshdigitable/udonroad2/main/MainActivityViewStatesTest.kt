@@ -126,14 +126,13 @@ internal class MainActivityStateModelTestRule(
     val authenticatedUserId = UserId(10000)
     val coroutineScope =
         CoroutineScope(coroutineRule.coroutineContextProvider.mainContext + SupervisorJob())
-    val sut: MainActivityViewStates by lazy {
-        val listGen = ListOwnerGenerator.create()
-        MainActivityViewStates(
+    val sut: MainViewModelSource by lazy {
+        MainViewModelSource(
             MainActivityActions(dispatcher),
             selectedItemRepository,
             oauthTokenRepository.appSettingMock,
             tweetInputSharedState.mock,
-            listGen,
+            ListOwnerGenerator.create(),
             navDelegateRule.state,
         )
     }

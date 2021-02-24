@@ -22,8 +22,8 @@ import com.freshdigitable.udonroad2.input.di.TweetInputFragmentModule
 import com.freshdigitable.udonroad2.main.DrawerViewModelSource
 import com.freshdigitable.udonroad2.main.MainActivity
 import com.freshdigitable.udonroad2.main.MainActivityNavigationDelegate
-import com.freshdigitable.udonroad2.main.MainActivityViewStates
 import com.freshdigitable.udonroad2.main.MainViewModel
+import com.freshdigitable.udonroad2.main.MainViewModelSource
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
@@ -56,7 +56,7 @@ internal interface MainActivityModule {
         @ViewModelKey(MainViewModel::class)
         fun provideMainViewModel(
             navigator: EventDispatcher,
-            viewState: MainActivityViewStates,
+            viewState: MainViewModelSource,
             drawerViewModelSource: DrawerViewModelSource,
         ): ViewModel = MainViewModel(navigator, viewState, drawerViewModelSource)
     }

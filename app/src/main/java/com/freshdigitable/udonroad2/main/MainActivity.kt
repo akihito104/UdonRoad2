@@ -155,7 +155,7 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (viewModel.isTweetInputExpanded) {
+        if (viewModel.currentState.isTweetInputExpanded) {
             when (item.itemId) {
                 android.R.id.home -> {
                     viewModel.collapseTweetInput()

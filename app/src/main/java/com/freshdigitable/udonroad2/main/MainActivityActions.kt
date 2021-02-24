@@ -16,25 +16,8 @@
 
 package com.freshdigitable.udonroad2.main
 
-import com.freshdigitable.udonroad2.model.app.di.ActivityScope
-import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
-import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
-import com.freshdigitable.udonroad2.model.app.navigation.toAction
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
-import com.freshdigitable.udonroad2.oauth.OauthEvent
-import com.freshdigitable.udonroad2.timeline.TimelineEvent
-import javax.inject.Inject
-
-@ActivityScope
-class MainActivityActions @Inject constructor(
-    dispatcher: EventDispatcher,
-) {
-    internal val showFirstView: AppAction<TimelineEvent.Setup> = dispatcher.toAction()
-    internal val showAuth: AppAction<OauthEvent.Init> = dispatcher.toAction()
-    internal val showCurrentUser: AppAction<MainActivityEvent.CurrentUserIconClicked> =
-        dispatcher.toAction()
-}
 
 sealed class MainActivityEvent : AppEvent {
     sealed class DrawerEvent : MainActivityEvent() {

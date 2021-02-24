@@ -20,6 +20,7 @@ import android.view.MenuItem
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
+import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
 import com.freshdigitable.udonroad2.input.TweetInputEvent
@@ -35,26 +36,27 @@ import timber.log.Timber
 
 internal class MainViewModel(
     private val eventDispatcher: EventDispatcher,
-    private val viewStates: MainActivityViewStates,
+    viewStates: MainViewModelSource,
     private val drawerViewStates: DrawerViewModelSource,
 ) : ViewModel(), ShortcutViewModel, DrawerActionListener by drawerViewStates {
 
-    val mainViewModelState = viewStates.states.asLiveData(viewModelScope.coroutineContext)
-    val navIconType: LiveData<NavigationIconType> = mainViewModelState.map { it.navIconType }
-    val appBarTitle: LiveData<AppBarTitle> = mainViewModelState.map { it.appBarTitle }
-    val isTweetInputExpanded: Boolean
-        get() = mainViewModelState.value?.isTweetInputExpanded ?: false
-    val isTweetInputMenuVisible: LiveData<Boolean> =
-        mainViewModelState.map { it.isTweetInputMenuVisible }
-    override val isFabVisible: LiveData<Boolean> = mainViewModelState.map { it.isShortcutVisible }
+    val mainState: LiveData<MainActivityViewState> =
+        viewStates.states.asLiveData(viewModelScope.coroutineContext)
+    internal val appBarTitle: LiveData<AppBarTitle> =
+        mainState.map { it.appBarTitle }.distinctUntilChanged()
+    internal val isTweetInputMenuVisible: LiveData<Boolean> =
+        mainState.map { it.isTweetInputMenuVisible }.distinctUntilChanged()
+    override val isFabVisible: LiveData<Boolean> =
+        mainState.map { it.isShortcutVisible }.distinctUntilChanged()
+
+    val drawerState: LiveData<DrawerViewState> =
+        drawerViewStates.state.asLiveData(viewModelScope.coroutineContext)
+
     internal val navigationEvent: Flow<NavigationEvent> = merge(
         viewStates.initContainer,
         viewStates.navigateToUser,
         drawerViewStates.navEventSource
     )
-
-    val drawerState: LiveData<DrawerViewState> =
-        drawerViewStates.state.asLiveData(viewModelScope.coroutineContext)
 
     internal fun initialEvent() {
         eventDispatcher.postEvent(TimelineEvent.Setup())
@@ -68,7 +70,7 @@ internal class MainViewModel(
     }
 
     fun collapseTweetInput() {
-        check(isTweetInputExpanded)
+        check(currentState.isTweetInputExpanded)
         eventDispatcher.postEvent(TweetInputEvent.Cancel)
     }
 
@@ -78,7 +80,7 @@ internal class MainViewModel(
             drawerState.value?.isOpened == true -> {
                 return drawerViewStates.onBackPressed()
             }
-            isTweetInputExpanded -> TweetInputEvent.Cancel
+            currentState.isTweetInputExpanded -> TweetInputEvent.Cancel
             selectedItem != null -> TimelineEvent.TweetItemSelection.Unselected(selectedItem.owner)
             else -> return false
         }
@@ -92,8 +94,8 @@ internal class MainViewModel(
         }
     }
 
-    val currentState: MainActivityViewState
-        get() = mainViewModelState.value ?: throw IllegalStateException()
+    internal val currentState: MainActivityViewState
+        get() = mainState.value ?: throw IllegalStateException()
 }
 
 val TweetUserItem.account: String
