@@ -128,7 +128,7 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
             binding.mainGlobalMenu.bindMenuState(it)
         }
 
-        viewModel.initialEvent(savedInstanceState?.savedViewState)
+        viewModel.initialEvent()
     }
 
     private fun DrawerLayout.bindOpenState(isOpened: Boolean, navView: NavigationView) {
@@ -166,11 +166,6 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
         return super.onOptionsItemSelected(item)
     }
 
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        outState.saveViewState(viewModel.currentState)
-    }
-
     override fun onBackPressed() {
         if (!viewModel.onBackPressed()) super.onBackPressed()
     }
@@ -183,17 +178,6 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
     lateinit var androidInjector: DispatchingAndroidInjector<Any>
 
     override fun androidInjector(): AndroidInjector<Any> = androidInjector
-
-    companion object {
-        private const val KEY_VIEW_STATE: String = "main_activity_view_state"
-
-        private val Bundle?.savedViewState: MainActivityViewState?
-            get() = this?.getSerializable(KEY_VIEW_STATE) as? MainActivityViewState
-
-        private fun Bundle.saveViewState(viewState: MainActivityViewState?) {
-            putSerializable(KEY_VIEW_STATE, viewState)
-        }
-    }
 }
 
 @BindingAdapter("appBarNavigationIcon")

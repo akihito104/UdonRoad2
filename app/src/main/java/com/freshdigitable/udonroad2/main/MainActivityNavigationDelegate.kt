@@ -36,7 +36,6 @@ import com.freshdigitable.udonroad2.user.UserActivityDirections
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.filterNotNull
-import java.io.Serializable
 import javax.inject.Inject
 
 @ActivityScope
@@ -160,7 +159,7 @@ internal class MainActivityNavigationDelegate @Inject constructor(
 
 typealias AppBarTitle = (Context) -> CharSequence
 
-sealed class MainNavHostState : FragmentContainerState, Serializable {
+sealed class MainNavHostState : FragmentContainerState {
     data class Timeline(
         val owner: ListOwner<*>,
         override val appBarTitle: AppBarTitle = { "" },

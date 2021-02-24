@@ -56,8 +56,8 @@ internal class MainViewModel(
     val drawerState: LiveData<DrawerViewState> =
         drawerViewStates.state.asLiveData(viewModelScope.coroutineContext)
 
-    internal fun initialEvent(savedState: MainActivityViewState?) {
-        eventDispatcher.postEvent(TimelineEvent.Setup(savedState))
+    internal fun initialEvent() {
+        eventDispatcher.postEvent(TimelineEvent.Setup())
     }
 
     override fun onFabMenuSelected(item: MenuItem) {

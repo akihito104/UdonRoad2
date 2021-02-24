@@ -37,7 +37,6 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.rx2.asFlow
 import timber.log.Timber
-import java.io.Serializable
 import javax.inject.Inject
 
 @ActivityScope
@@ -99,9 +98,12 @@ internal data class MainActivityViewState(
     val isInTopLevelDestination: Boolean = false,
     val navHostState: MainNavHostState? = null,
     val selectedItem: SelectedItemId? = null,
-) : ViewState, Serializable {
+) : ViewState {
     val isTweetInputMenuVisible: Boolean
-        get() = !(navHostState is MainNavHostState.Timeline && navHostState.owner.query is QueryType.Oauth)
+        get() {
+            return !(navHostState is MainNavHostState.Timeline &&
+                navHostState.owner.query is QueryType.Oauth)
+        }
     val isShortcutVisible: Boolean
         get() = when {
             isTweetInputExpanded -> false
