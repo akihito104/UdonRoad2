@@ -79,7 +79,7 @@ internal class MainActivityViewStates @Inject constructor(
         },
         navDelegate.containerState.flatMapLatest {
             when (it) {
-                is MainNavHostState.Timeline -> selectedItemRepository.findSource(it.owner)
+                is MainNavHostState.Timeline -> selectedItemRepository.getSource(it.owner)
                 else -> emptyFlow()
             }
         }.onEvent { state, item ->

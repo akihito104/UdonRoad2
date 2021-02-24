@@ -27,25 +27,21 @@ import javax.inject.Singleton
 
 @Singleton
 class SelectedItemRepository @Inject constructor() {
-    private val selectedItems: MutableMap<ListOwner<*>, SelectedItemId> = mutableMapOf()
     private val selectedItemsSource =
         MutableStateFlow<Map<ListOwner<*>, SelectedItemId>>(emptyMap())
 
     fun put(itemId: SelectedItemId) {
-        selectedItems[itemId.owner] = itemId
-        selectedItemsSource.value = selectedItems
+        val newItems = selectedItemsSource.value.plus(itemId.owner to itemId)
+        selectedItemsSource.value = newItems
     }
 
     fun remove(owner: ListOwner<*>) {
-        selectedItems.remove(owner)
-        selectedItemsSource.value = selectedItems
+        val newItems = selectedItemsSource.value.minus(owner)
+        selectedItemsSource.value = newItems
     }
 
-    fun find(owner: ListOwner<*>): SelectedItemId? {
-        return selectedItems[owner]
-    }
+    fun find(owner: ListOwner<*>): SelectedItemId? = selectedItemsSource.value[owner]
 
-    fun findSource(owner: ListOwner<*>): Flow<SelectedItemId?> {
-        return selectedItemsSource.map { it[owner] }.distinctUntilChanged()
-    }
+    fun getSource(owner: ListOwner<*>): Flow<SelectedItemId?> =
+        selectedItemsSource.map { it[owner] }.distinctUntilChanged()
 }

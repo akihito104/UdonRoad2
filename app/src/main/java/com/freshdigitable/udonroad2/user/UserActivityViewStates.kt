@@ -116,7 +116,7 @@ class UserActivityViewStates @Inject constructor(
             emit(p[current])
         }
     }.flatMapLatest {
-        selectedItemRepository.findSource(requireNotNull(it))
+        selectedItemRepository.getSource(requireNotNull(it))
     }.asLiveData(executor.mainContext)
     val fabVisible: AppViewState<Boolean> = selectedItemId
         .map { it != null }
