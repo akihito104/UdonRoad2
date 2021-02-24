@@ -24,14 +24,12 @@ import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.app.di.ActivityScope
-import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.ViewState
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
 import com.freshdigitable.udonroad2.model.app.onEvent
 import com.freshdigitable.udonroad2.model.app.stateSourceBuilder
-import com.freshdigitable.udonroad2.oauth.OauthEvent
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.getTimelineEvent
 import kotlinx.coroutines.flow.Flow
@@ -42,13 +40,10 @@ import kotlinx.coroutines.rx2.asFlow
 import javax.inject.Inject
 
 @ActivityScope
-class MainActivityActions @Inject constructor(
+internal class MainActivityActions @Inject constructor(
     dispatcher: EventDispatcher,
 ) {
-    internal val showFirstView: AppAction<TimelineEvent.Setup> = dispatcher.toAction()
-    internal val showAuth: AppAction<OauthEvent.Init> = dispatcher.toAction()
-    internal val showCurrentUser: AppAction<MainActivityEvent.CurrentUserIconClicked> =
-        dispatcher.toAction()
+    internal val showFirstView = dispatcher.toAction<TimelineEvent.Setup>().asFlow()
 }
 
 @ActivityScope
@@ -60,21 +55,13 @@ internal class MainViewModelSource @Inject constructor(
     listOwnerGenerator: ListOwnerGenerator,
     navDelegate: MainActivityNavState,
 ) {
-    internal val initContainer: Flow<NavigationEvent> = AppAction.merge(
-        actions.showFirstView.map {
-            when {
-                appSettingRepository.currentUserId != null -> QueryType.TweetQueryType.Timeline()
-                else -> QueryType.Oauth
-            }
-        },
-        actions.showAuth.map { QueryType.Oauth },
-    ).asFlow().mapLatest {
-        listOwnerGenerator.getTimelineEvent(it, NavigationEvent.Type.INIT)
-    }
-    internal val navigateToUser: Flow<NavigationEvent> =
-        actions.showCurrentUser.asFlow().mapLatest {
-            TimelineEvent.Navigate.UserInfo(it.user)
+    internal val initContainer: Flow<NavigationEvent> = actions.showFirstView.mapLatest {
+        val type = when {
+            appSettingRepository.currentUserId != null -> QueryType.TweetQueryType.Timeline()
+            else -> QueryType.Oauth
         }
+        listOwnerGenerator.getTimelineEvent(type, NavigationEvent.Type.INIT)
+    }
 
     private val selectedItem = navDelegate.containerState.flatMapLatest {
         when (it) {

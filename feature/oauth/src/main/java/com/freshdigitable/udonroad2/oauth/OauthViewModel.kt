@@ -46,7 +46,6 @@ class OauthViewModel(
 }
 
 sealed class OauthEvent : AppEvent {
-    object Init : OauthEvent()
     object LoginClicked : OauthEvent()
     data class PinTextChanged(val text: CharSequence) : OauthEvent()
     object SendPinClicked : OauthEvent()

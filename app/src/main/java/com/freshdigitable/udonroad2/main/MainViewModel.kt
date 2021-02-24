@@ -54,7 +54,6 @@ internal class MainViewModel(
 
     internal val navigationEvent: Flow<NavigationEvent> = merge(
         viewStates.initContainer,
-        viewStates.navigateToUser,
         drawerViewStates.navEventSource
     )
 
@@ -86,12 +85,6 @@ internal class MainViewModel(
         }
         eventDispatcher.postEvent(event)
         return true
-    }
-
-    fun onCurrentUserIconClicked() {
-        drawerState.value?.currentUser?.let {
-            eventDispatcher.postEvent(MainActivityEvent.CurrentUserIconClicked(it))
-        }
     }
 
     internal val currentState: MainActivityViewState

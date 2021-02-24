@@ -20,10 +20,10 @@ import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.data.UserDataSource
 import com.freshdigitable.udonroad2.data.impl.AppSettingRepository
 import com.freshdigitable.udonroad2.main.DrawerViewState.Companion.toClosedState
-import com.freshdigitable.udonroad2.main.MainActivityEvent.DrawerEvent
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.app.di.ActivityScope
+import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.ViewState
@@ -32,6 +32,7 @@ import com.freshdigitable.udonroad2.model.app.onEvent
 import com.freshdigitable.udonroad2.model.app.stateSourceBuilder
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.oauth.LoginUseCase
+import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.getTimelineEvent
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -57,12 +58,24 @@ internal data class DrawerViewState(
     }
 }
 
+internal sealed class DrawerEvent : AppEvent {
+    object Opened : DrawerEvent()
+    object Closed : DrawerEvent()
+    object AccountSwitchClicked : DrawerEvent()
+    object HomeClicked : DrawerEvent()
+    object AddUserClicked : DrawerEvent()
+    object CustomTimelineClicked : DrawerEvent()
+    data class SwitchableAccountClicked(val accountName: String) : DrawerEvent()
+    object CurrentUserIconClicked : DrawerEvent()
+}
+
 interface DrawerActionListener {
     fun onBackPressed(): Boolean
     fun onAccountSwitcherClicked()
     fun onDrawerOpened()
     fun onDrawerClosed()
     fun onDrawerMenuItemClicked(groupId: Int, itemId: Int, title: CharSequence): Boolean
+    fun onCurrentUserIconClicked()
 }
 
 @ActivityScope
@@ -107,6 +120,10 @@ internal class DrawerActions @Inject constructor(
         return event != null
     }
 
+    override fun onCurrentUserIconClicked() {
+        dispatcher.postEvent(DrawerEvent.CurrentUserIconClicked)
+    }
+
     internal val showDrawerMenu = dispatcher.toAction<DrawerEvent.Opened>().asFlow()
     internal val hideDrawerMenu = dispatcher.toAction<DrawerEvent.Closed>().asFlow()
     internal val toggleAccountSwitcher = dispatcher.toAction<DrawerEvent.AccountSwitchClicked>()
@@ -117,6 +134,8 @@ internal class DrawerActions @Inject constructor(
         dispatcher.toAction<DrawerEvent.CustomTimelineClicked>().asFlow()
     internal val switchAccount =
         dispatcher.toAction<DrawerEvent.SwitchableAccountClicked>().asFlow()
+    internal val showCurrentUser =
+        dispatcher.toAction<DrawerEvent.CurrentUserIconClicked>().asFlow()
 }
 
 @ActivityScope
@@ -162,6 +181,12 @@ internal class DrawerViewModelSource @Inject constructor(
             state.toClosedState()
         },
 
+        actions.showCurrentUser.onEvent { state, _ ->
+            state.currentUser?.let {
+                navEventChannel.send(TimelineEvent.Navigate.UserInfo(it))
+            }
+            state
+        },
         actions.toggleAccountSwitcher.onEvent { state, _ ->
             state.copy(isAccountSwitcherOpened = !state.isAccountSwitcherOpened)
         },
