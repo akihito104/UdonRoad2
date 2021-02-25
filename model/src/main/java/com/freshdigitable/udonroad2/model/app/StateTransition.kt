@@ -16,6 +16,7 @@
 
 package com.freshdigitable.udonroad2.model.app
 
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.collect
@@ -115,30 +116,31 @@ class UpdaterFlowBuilderScope<S, E>(
             }
 
             override suspend fun invoke(flowCollector: FlowCollector<UpdateFun<S>>, event: E) {
-                var res: Result<R>? = null
+                val channel: Channel<Result<R>> = Channel()
                 val firstOnSuccess = onSuccess.firstOrNull()
                 val firstOnError = onError.firstOrNull()
-                val u: UpdateFun<S> = { s ->
+                val updater: UpdateFun<S> = { s ->
                     val r = result(s, event)
-                    res = r
-                    when {
+                    val updated = when {
                         r.isSuccess -> firstOnSuccess?.invoke(s, r.getOrThrow())
                         else -> firstOnError?.invoke(s, requireNotNull(r.exceptionOrNull()))
                     } ?: s
+                    channel.send(r)
+                    updated
                 }
-                flowCollector.emit(u)
+                flowCollector.emit(updater)
 
-                val rr = checkNotNull(res) // FIXME: use Channel
-                if (rr.isSuccess) {
-                    onSuccess.drop(1).forEach {
-                        val uu: UpdateFun<S> = { s -> it(s, rr.getOrThrow()) }
-                        flowCollector.emit(uu)
+                val res = channel.receive()
+                if (res.isSuccess) {
+                    val afterOnSuccessTasks = onSuccess.drop(1)
+                    if (afterOnSuccessTasks.isNotEmpty()) {
+                        Scan(afterOnSuccessTasks).invoke(flowCollector, res.getOrThrow())
                     }
-                } else if (rr.isFailure) {
-                    val exception = requireNotNull(rr.exceptionOrNull())
-                    onError.drop(1).forEach {
-                        val uu: UpdateFun<S> = { s -> it(s, exception) }
-                        flowCollector.emit(uu)
+                } else if (res.isFailure) {
+                    val afterOnErrorTasks = onError.drop(1)
+                    if (afterOnErrorTasks.isNotEmpty()) {
+                        val exception = requireNotNull(res.exceptionOrNull())
+                        Scan(afterOnErrorTasks).invoke(flowCollector, exception)
                     }
                 }
             }
