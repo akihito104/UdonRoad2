@@ -585,7 +585,7 @@ class TweetInputViewModelRule(
                 TweetInputActions(eventDispatcher),
                 createReplyTextUseCaseRule.mock,
                 createQuoteTextUseCaseRule.mock,
-                TweetInputSharedState(executor),
+                TweetInputSharedState(),
                 repository.mock,
                 appSettingRepositoryRule.mock,
                 userRepositoryRule.mock,
@@ -626,7 +626,7 @@ class TweetInputViewModelRule(
     ) {
         when (withError) {
             null -> repository.coSetupResponseWithVerify(
-                { repository.mock.post(text, mediaIds, replyTo) }, Unit
+                { repository.mock.post(text, mediaIds, replyTo) }, mockk()
             )
             else -> repository.coSetupThrowWithVerify(
                 { repository.mock.post(text, mediaIds, replyTo) }, withError
@@ -636,7 +636,7 @@ class TweetInputViewModelRule(
 
     fun setupPost(text: MatcherScopedBlock<String>) {
         repository.coSetupResponseWithVerify(
-            { repository.mock.post(text(), any(), any()) }, Unit
+            { repository.mock.post(text(), any(), any()) }, mockk()
         )
     }
 
