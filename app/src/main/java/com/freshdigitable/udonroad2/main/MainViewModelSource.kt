@@ -27,7 +27,7 @@ import com.freshdigitable.udonroad2.model.app.di.ActivityScope
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.ViewState
-import com.freshdigitable.udonroad2.model.app.navigation.toAction
+import com.freshdigitable.udonroad2.model.app.navigation.toActionFlow
 import com.freshdigitable.udonroad2.model.app.onEvent
 import com.freshdigitable.udonroad2.model.app.stateSourceBuilder
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
@@ -36,14 +36,13 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.rx2.asFlow
 import javax.inject.Inject
 
 @ActivityScope
 internal class MainActivityActions @Inject constructor(
     dispatcher: EventDispatcher,
 ) {
-    internal val showFirstView = dispatcher.toAction<TimelineEvent.Setup>().asFlow()
+    internal val showFirstView = dispatcher.toActionFlow<TimelineEvent.Setup>()
 }
 
 @ActivityScope

@@ -577,10 +577,10 @@ class TweetInputViewModelRule(
     val executor = AppExecutor(dispatcher = coroutineTestRule.coroutineContextProvider)
     private val eventDispatcher = EventDispatcher()
 
-    val sut: TweetInputViewModel by lazy {
+    internal val sut: TweetInputViewModel by lazy {
         TweetInputViewModel(
             eventDispatcher,
-            TweetInputViewState(
+            TweetInputViewModelSource(
                 collapsible,
                 TweetInputActions(eventDispatcher),
                 createReplyTextUseCaseRule.mock,

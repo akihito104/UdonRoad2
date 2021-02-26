@@ -20,6 +20,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.scan
@@ -32,7 +33,7 @@ fun <S> stateSourceBuilder(
     vararg updateSource: Flow<UpdateFun<S>>
 ): Flow<S> {
     check(updateSource.isNotEmpty())
-    return merge(*updateSource).scan(init) { state, trans -> trans(state) }
+    return merge(*updateSource).scan(init) { state, trans -> trans(state) }.distinctUntilChanged()
 }
 
 fun <E, S> Flow<E>.onEvent(update: ScanFun<S, E>): Flow<UpdateFun<S>> =

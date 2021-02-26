@@ -1,8 +1,8 @@
 package com.freshdigitable.udonroad2.model.app.navigation
 
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.disposables.Disposable
 import io.reactivex.subjects.PublishSubject
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.rx2.asFlow
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -29,6 +29,6 @@ inline fun <reified T> EventDispatcher.toAction(
     }
 }
 
-fun Disposable.addTo(compositeDisposable: CompositeDisposable) {
-    compositeDisposable.add(this)
-}
+inline fun <reified T : AppEvent> EventDispatcher.toActionFlow(
+    block: PublishSubject<AppEvent>.() -> AppAction<T> = { filterByType() }
+): Flow<T> = this.toAction(block).asFlow()

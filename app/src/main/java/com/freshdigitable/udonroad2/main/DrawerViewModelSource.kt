@@ -27,7 +27,7 @@ import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.ViewState
-import com.freshdigitable.udonroad2.model.app.navigation.toAction
+import com.freshdigitable.udonroad2.model.app.navigation.toActionFlow
 import com.freshdigitable.udonroad2.model.app.onEvent
 import com.freshdigitable.udonroad2.model.app.stateSourceBuilder
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
@@ -41,7 +41,6 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
-import kotlinx.coroutines.rx2.asFlow
 import java.io.Serializable
 import java.util.SortedSet
 import javax.inject.Inject
@@ -124,18 +123,15 @@ internal class DrawerActions @Inject constructor(
         dispatcher.postEvent(DrawerEvent.CurrentUserIconClicked)
     }
 
-    internal val showDrawerMenu = dispatcher.toAction<DrawerEvent.Opened>().asFlow()
-    internal val hideDrawerMenu = dispatcher.toAction<DrawerEvent.Closed>().asFlow()
-    internal val toggleAccountSwitcher = dispatcher.toAction<DrawerEvent.AccountSwitchClicked>()
-        .asFlow()
-    internal val popToHome = dispatcher.toAction<DrawerEvent.HomeClicked>().asFlow()
-    internal val launchOAuth = dispatcher.toAction<DrawerEvent.AddUserClicked>().asFlow()
+    internal val showDrawerMenu = dispatcher.toActionFlow<DrawerEvent.Opened>()
+    internal val hideDrawerMenu = dispatcher.toActionFlow<DrawerEvent.Closed>()
+    internal val toggleAccountSwitcher = dispatcher.toActionFlow<DrawerEvent.AccountSwitchClicked>()
+    internal val popToHome = dispatcher.toActionFlow<DrawerEvent.HomeClicked>()
+    internal val launchOAuth = dispatcher.toActionFlow<DrawerEvent.AddUserClicked>()
     internal val launchCustomTimelineList =
-        dispatcher.toAction<DrawerEvent.CustomTimelineClicked>().asFlow()
-    internal val switchAccount =
-        dispatcher.toAction<DrawerEvent.SwitchableAccountClicked>().asFlow()
-    internal val showCurrentUser =
-        dispatcher.toAction<DrawerEvent.CurrentUserIconClicked>().asFlow()
+        dispatcher.toActionFlow<DrawerEvent.CustomTimelineClicked>()
+    internal val switchAccount = dispatcher.toActionFlow<DrawerEvent.SwitchableAccountClicked>()
+    internal val showCurrentUser = dispatcher.toActionFlow<DrawerEvent.CurrentUserIconClicked>()
 }
 
 @ActivityScope
