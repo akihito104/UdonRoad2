@@ -29,10 +29,13 @@ import io.mockk.mockk
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.junit.runner.Description
 
 class TimelineViewModelTest {
     @get:Rule
-    val viewStatesTestRule = TimelineViewStatesTestRule()
+    val viewStatesTestRule = object : TimelineViewStatesTestRule() {
+        override fun starting(description: Description?) = Unit
+    }
 
     val sut: TimelineViewModel by lazy {
         TimelineViewModel(

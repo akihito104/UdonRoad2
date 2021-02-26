@@ -14,19 +14,13 @@ import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
+import com.freshdigitable.udonroad2.model.app.onEvent
+import com.freshdigitable.udonroad2.model.app.stateSourceBuilder
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.flow.merge
-import kotlinx.coroutines.flow.scan
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx2.asFlow
 import javax.inject.Inject
@@ -37,7 +31,8 @@ abstract class ListItemLoadableViewModel<Q : QueryType>(
     private val viewState: ListItemLoadableViewState,
     activityEventStream: ActivityEventStream = viewState,
 ) : ViewModel(), ActivityEventStream by activityEventStream {
-    val isHeadingEnabled: Flow<Boolean> = viewState.isHeadingEnabled
+    val isHeadingEnabled: Flow<Boolean> =
+        viewState.state.mapLatest { it.isHeadingEnabled }.distinctUntilChanged()
     val timeline: Flow<PagingData<Any>> = viewState.pagedList.cachedIn(viewModelScope)
 
     fun onRefresh() {
@@ -77,9 +72,13 @@ interface ListItemLoadableActions {
 
 interface ListItemLoadableViewState : ActivityEventStream {
     val pagedList: Flow<PagingData<Any>>
-    val isHeadingEnabled: Flow<Boolean>
+    val state: Flow<State>
 
     suspend fun clear() {}
+
+    interface State {
+        val isHeadingEnabled: Boolean
+    }
 }
 
 internal class ListItemLoadableActionsImpl @Inject constructor(
@@ -93,62 +92,60 @@ internal class ListItemLoadableActionsImpl @Inject constructor(
 internal class ListItemLoadableViewStateImpl(
     private val owner: ListOwner<QueryType>,
     actions: ListItemLoadableActions,
-    private val listRepository: ListRepository<QueryType, *>,
+    private val listRepository: ListRepository<QueryType, Any>,
     pagedListProvider: PagedListProvider<QueryType, Any>,
 ) : ListItemLoadableViewState, ActivityEventStream by ActivityEventStream.EmptyStream {
 
-    private val scope: CoroutineScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
     override val pagedList: Flow<PagingData<Any>> = pagedListProvider.getList(owner.query, owner.id)
+    private val channel = Channel<NavigationEvent>()
 
-    private val snapshot: StateFlow<Snapshot> = merge(
-        actions.scrollList.asFlow(),
-        actions.prependList.asFlow(),
-    ).scan(Snapshot()) { acc, value ->
-        when (value) {
-            is TimelineEvent.ListScrolled.Started -> {
-                Snapshot(
-                    firstVisibleItemPosition = acc.firstVisibleItemPosition,
-                    isHeadingEnabled = true
-                )
+    override val state: Flow<Snapshot> = stateSourceBuilder(
+        init = Snapshot(),
+        actions.scrollList.asFlow().onEvent { s, e ->
+            when (e) {
+                is TimelineEvent.ListScrolled.Started -> {
+                    Snapshot(
+                        firstVisibleItemPosition = s.firstVisibleItemPosition,
+                        isHeadingEnabled = true
+                    )
+                }
+                is TimelineEvent.ListScrolled.Stopped -> {
+                    Snapshot(
+                        firstVisibleItemPosition = e.firstVisibleItemPosition,
+                        isHeadingEnabled = isHeadingEnabled(e.firstVisibleItemPosition)
+                    )
+                }
             }
-            is TimelineEvent.ListScrolled.Stopped -> {
-                Snapshot(
-                    firstVisibleItemPosition = value.firstVisibleItemPosition,
-                    isHeadingEnabled = isHeadingEnabled(value.firstVisibleItemPosition)
-                )
+        },
+        actions.prependList.asFlow().onEvent { state, _ ->
+            val items = listRepository.prependList(owner.query, owner.id)
+            val firstVisibleItemPosition = state.firstVisibleItemPosition + items.size
+            Snapshot(
+                firstVisibleItemPosition = firstVisibleItemPosition,
+                isHeadingEnabled = isHeadingEnabled(firstVisibleItemPosition)
+            )
+        },
+        actions.heading.asFlow().onEvent { s, _ ->
+            if (s.firstVisibleItemPosition > 0) {
+                val needsSkip = s.firstVisibleItemPosition >= 4
+                channel.send(TimelineEvent.Navigate.ToTopOfList(needsSkip))
             }
-            is TimelineEvent.SwipedToRefresh -> {
-                val items = listRepository.prependList(owner.query, owner.id)
-                val firstVisibleItemPosition = acc.firstVisibleItemPosition + items.size
-                Snapshot(
-                    firstVisibleItemPosition = firstVisibleItemPosition,
-                    isHeadingEnabled = isHeadingEnabled(firstVisibleItemPosition)
-                )
-            }
-            else -> throw IllegalStateException()
-        }
-    }
+            s
+        },
+    )
         .distinctUntilChanged()
-        .stateIn(scope, SharingStarted.Eagerly, Snapshot())
 
-    override val isHeadingEnabled: Flow<Boolean> = snapshot.mapLatest { it.isHeadingEnabled }
-        .distinctUntilChanged()
-    override val navigationEvent: Flow<NavigationEvent> = actions.heading.asFlow()
-        .filter { snapshot.value.firstVisibleItemPosition > 0 }
-        .mapLatest {
-            val needsSkip = snapshot.value.firstVisibleItemPosition >= 4
-            TimelineEvent.Navigate.ToTopOfList(needsSkip)
-        }
+    override val navigationEvent: Flow<NavigationEvent> = channel.receiveAsFlow()
 
     override suspend fun clear() {
-        scope.cancel()
+        channel.close()
         listRepository.clear(owner.id)
     }
 
-    private data class Snapshot(
+    internal data class Snapshot(
         val firstVisibleItemPosition: Int = RecyclerView.NO_POSITION,
-        val isHeadingEnabled: Boolean = false
-    )
+        override val isHeadingEnabled: Boolean = false,
+    ) : ListItemLoadableViewState.State
 
     companion object {
         private fun isHeadingEnabled(firstVisibleItemPosition: Int): Boolean =

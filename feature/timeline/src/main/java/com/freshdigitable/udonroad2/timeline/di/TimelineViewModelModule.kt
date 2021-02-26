@@ -51,13 +51,36 @@ import kotlin.reflect.KClass
 
 @Module(
     includes = [
+        ListItemLoadableViewModelSourceModule::class,
         TimelineViewModelModule::class,
         UserListViewModelModule::class,
         CustomTimelineListViewModelModule::class,
-        ListRepositoryComponentModule::class
+        ListRepositoryComponentModule::class,
     ]
 )
 interface TimelineViewModelModules
+
+@Module
+internal interface ListItemLoadableViewModelSourceModule {
+    companion object {
+        @Provides
+        fun provideListItemLoadableViewState(
+            owner: ListOwner<*>,
+            actions: ListItemLoadableActionsImpl,
+            listRepositoryFactory: ListRepositoryComponent.Factory,
+        ): ListItemLoadableViewState = provideViewState<QueryType, ListItemLoadableViewStateImpl>(
+            owner,
+            listRepositoryFactory
+        ) { o, repository, pagedListProvider ->
+            ListItemLoadableViewStateImpl(
+                o,
+                actions,
+                repository,
+                pagedListProvider
+            )
+        }
+    }
+}
 
 @Module
 internal interface TimelineViewModelModule {
@@ -89,24 +112,18 @@ internal interface TimelineViewModelModule {
             tweetRepository: TweetRepository,
             appSettingRepository: AppSettingRepository,
             listOwnerGenerator: ListOwnerGenerator,
-            listRepositoryFactory: ListRepositoryComponent.Factory,
             executor: AppExecutor,
-        ): TimelineViewState = provideViewState<QueryType.TweetQueryType, TimelineViewState>(
-            owner,
-            listRepositoryFactory
-        ) { o, repository, listProvider ->
-            return TimelineViewState(
-                o,
-                actions,
-                selectedItemRepository,
-                tweetRepository,
-                appSettingRepository,
-                repository,
-                listProvider,
-                listOwnerGenerator,
-                executor,
-            )
-        }
+            viewState: ListItemLoadableViewState,
+        ): TimelineViewState = TimelineViewState(
+            owner as ListOwner<QueryType.TweetQueryType>,
+            actions,
+            selectedItemRepository,
+            tweetRepository,
+            appSettingRepository,
+            listOwnerGenerator,
+            executor,
+            viewState,
+        )
 
         @Provides
         fun provideTimelineActions(dispatcher: EventDispatcher): TimelineActions {
@@ -125,30 +142,12 @@ internal interface UserListViewModelModule {
         fun provideUserListViewModel(
             owner: ListOwner<*>,
             eventDispatcher: EventDispatcher,
-            viewState: ListItemLoadableViewStateImpl,
+            viewState: ListItemLoadableViewState,
         ): ViewModel = UserListViewModel(
             owner as ListOwner<QueryType.UserQueryType>,
             eventDispatcher,
             viewState
         )
-
-        @Provides
-        fun provideListItemLoadableViewState(
-            owner: ListOwner<*>,
-            actions: ListItemLoadableActionsImpl,
-            listRepositoryFactory: ListRepositoryComponent.Factory,
-        ): ListItemLoadableViewStateImpl =
-            provideViewState<QueryType, ListItemLoadableViewStateImpl>(
-                owner,
-                listRepositoryFactory
-            ) { o, repository, pagedListProvider ->
-                ListItemLoadableViewStateImpl(
-                    o,
-                    actions,
-                    repository,
-                    pagedListProvider
-                )
-            }
 
         @Provides
         @IntoMap
@@ -168,7 +167,7 @@ internal interface CustomTimelineListViewModelModule {
             owner: ListOwner<*>,
             eventDispatcher: EventDispatcher,
             actions: CustomTimelineListActions,
-            viewState: ListItemLoadableViewStateImpl,
+            viewState: ListItemLoadableViewState,
             listOwnerGenerator: ListOwnerGenerator,
         ): ViewModel = CustomTimelineListViewModel(
             owner as ListOwner<QueryType.CustomTimelineListQueryType>,

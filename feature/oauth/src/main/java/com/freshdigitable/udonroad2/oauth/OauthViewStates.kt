@@ -89,7 +89,10 @@ class OauthViewStates(
         pagingSourceFactory = { dataSource }
     ).flow as Flow<PagingData<Any>>
 
-    override val isHeadingEnabled: Flow<Boolean> = flowOf(false)
+    override val state: Flow<ListItemLoadableViewState.State> =
+        flowOf(object : ListItemLoadableViewState.State {
+            override val isHeadingEnabled: Boolean = false
+        })
     override val navigationEvent: Flow<NavigationEvent> =
         merge(launchTwitterOauth, completeAuthProcess)
     override val feedbackMessage: Flow<FeedbackMessage> = emptyFlow()

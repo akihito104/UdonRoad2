@@ -178,7 +178,7 @@ class TimelineViewStateTest {
         }
 }
 
-class TimelineViewStatesTestRule : TestWatcher() {
+open class TimelineViewStatesTestRule : TestWatcher() {
     internal val actionsRule: TimelineActionsTestRule = TimelineActionsTestRule()
     val tweetRepositoryMock = TweetRepositoryRule()
     val owner: ListOwner<QueryType.TweetQueryType> =
@@ -208,10 +208,14 @@ class TimelineViewStatesTestRule : TestWatcher() {
             SelectedItemRepository(),
             tweetRepositoryMock.mock,
             appSettingRepository.mock,
-            listRepositoryRule.mock,
-            listProviderRule.mock,
             ListOwnerGenerator.create(AtomicInteger(1)),
-            executor
+            executor,
+            ListItemLoadableViewStateImpl(
+                owner as ListOwner<QueryType>,
+                actionsRule.sut,
+                listRepositoryRule.mock as ListRepository<QueryType, Any>,
+                listProviderRule.mock as PagedListProvider<QueryType, Any>,
+            )
         )
     }
     lateinit var navEvents: List<NavigationEvent>
@@ -232,6 +236,7 @@ class TimelineViewStatesTestRule : TestWatcher() {
         super.starting(description)
         navEvents = sut.navigationEvent.testCollect(executor)
         messageEvents = sut.updateTweet.test()
+        sut.state.testCollect(executor)
         sut.selectedItemId.observeForever { }
     }
 

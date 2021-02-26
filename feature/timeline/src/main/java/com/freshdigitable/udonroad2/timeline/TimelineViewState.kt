@@ -18,9 +18,6 @@ package com.freshdigitable.udonroad2.timeline
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.asLiveData
-import androidx.paging.PagingData
-import com.freshdigitable.udonroad2.data.ListRepository
-import com.freshdigitable.udonroad2.data.PagedListProvider
 import com.freshdigitable.udonroad2.data.impl.AppSettingRepository
 import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
@@ -32,25 +29,22 @@ import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.mainContext
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventStream
-import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.AppViewState
 import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
-import com.freshdigitable.udonroad2.model.app.navigation.StateHolder
+import com.freshdigitable.udonroad2.model.app.onEvent
+import com.freshdigitable.udonroad2.model.app.stateSourceBuilder
 import com.freshdigitable.udonroad2.shortcut.ShortcutViewStates
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentEventDelegate
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
-import kotlinx.coroutines.flow.shareIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.rx2.asFlow
 import javax.inject.Inject
 
@@ -60,55 +54,45 @@ class TimelineViewState(
     selectedItemRepository: SelectedItemRepository,
     tweetRepository: TweetRepository,
     appSettingRepository: AppSettingRepository,
-    listRepository: ListRepository<QueryType.TweetQueryType, Any>,
-    pagedListProvider: PagedListProvider<QueryType.TweetQueryType, Any>,
     listOwnerGenerator: ListOwnerGenerator,
     executor: AppExecutor,
-) : ListItemLoadableViewState,
+    baseViewState: ListItemLoadableViewState,
+) : ListItemLoadableViewState by baseViewState,
     TweetMediaViewStates,
     ActivityEventStream,
     ShortcutViewStates by ShortcutViewStates.create(actions, tweetRepository, executor) {
     private val coroutineScope = CoroutineScope(executor.mainContext + SupervisorJob())
-    private val baseViewState = ListItemLoadableViewStateImpl(
-        owner as ListOwner<QueryType>,
-        actions,
-        listRepository as ListRepository<QueryType, *>,
-        pagedListProvider as PagedListProvider<QueryType, Any>
-    )
     private val mediaViewStates =
         TweetMediaViewStates.create(actions, appSettingRepository, coroutineScope)
-    override val pagedList: Flow<PagingData<Any>> = baseViewState.pagedList
 
-    private val _selectedItemId: Flow<StateHolder<out SelectedItemId>> = AppAction.merge(
-        AppAction.just(owner).map {
-            StateHolder(selectedItemRepository.find(it))
+    override val state: Flow<TimelineState> = stateSourceBuilder(
+        init = TimelineState(
+            selectedItemId = selectedItemRepository.find(owner)
+        ),
+        baseViewState.state.onEvent { s, e -> s.copy(baseState = e) },
+        actions.selectItem.filter { owner == it.owner }.asFlow().onEvent { s, e ->
+            s.copy(selectedItemId = e.selectedItemId)
         },
-        actions.selectItem
-            .filter { owner == it.owner }
-            .map {
-                selectedItemRepository.put(it.selectedItemId)
-                StateHolder(selectedItemRepository.find(it.owner))
-            },
-        actions.unselectItem
-            .filter { owner == it.owner }
-            .map {
-                selectedItemRepository.remove(it.owner)
-                StateHolder(null)
-            },
-        actions.toggleItem
-            .filter { owner == it.owner }
-            .map {
-                val current = selectedItemRepository.find(it.item.owner)
-                when (it.item) {
-                    current -> selectedItemRepository.remove(it.item.owner)
-                    else -> selectedItemRepository.put(it.item)
-                }
-                StateHolder(selectedItemRepository.find(it.owner))
-            },
-    ).asFlow().shareIn(coroutineScope, SharingStarted.Eagerly, 1)
+        actions.unselectItem.filter { owner == it.owner }.asFlow().onEvent { s, _ ->
+            s.copy(selectedItemId = null)
+        },
+        actions.toggleItem.filter { owner == it.owner }.asFlow().onEvent { s, e ->
+            if (s.selectedItemId == e.item) {
+                s.copy(selectedItemId = null)
+            } else {
+                s.copy(selectedItemId = e.item)
+            }
+        },
+    ).onEach {
+        if (it.selectedItemId != null) {
+            selectedItemRepository.put(it.selectedItemId)
+        } else {
+            selectedItemRepository.remove(owner)
+        }
+    }
 
-    val selectedItemId: AppViewState<SelectedItemId?> = _selectedItemId.map { it.value }
-        .asLiveData(executor.mainContext)
+    val selectedItemId: AppViewState<SelectedItemId?> =
+        selectedItemRepository.getSource(owner).asLiveData(executor.mainContext)
 
     private val userInfoNavigation = UserIconClickedNavigation.create(actions)
     override val navigationEvent: Flow<NavigationEvent> = merge(
@@ -133,19 +117,20 @@ class TimelineViewState(
     )
     override val feedbackMessage: Flow<FeedbackMessage> = updateTweet.asFlow()
 
-    override val isHeadingEnabled: Flow<Boolean> = combine(
-        baseViewState.isHeadingEnabled,
-        _selectedItemId.map { it.value != null }
-    ) { sinceListPosition, sinceItemSelected ->
-        sinceListPosition || sinceItemSelected
-    }.distinctUntilChanged()
-
     override val isPossiblySensitiveHidden: LiveData<Boolean> =
         mediaViewStates.isPossiblySensitiveHidden
 
     override suspend fun clear() {
         coroutineScope.cancel()
     }
+}
+
+data class TimelineState(
+    val baseState: ListItemLoadableViewState.State? = null,
+    val selectedItemId: SelectedItemId? = null,
+) : ListItemLoadableViewState.State {
+    override val isHeadingEnabled: Boolean
+        get() = baseState?.isHeadingEnabled == true || selectedItemId != null
 }
 
 class TimelineNavigationDelegate @Inject constructor(

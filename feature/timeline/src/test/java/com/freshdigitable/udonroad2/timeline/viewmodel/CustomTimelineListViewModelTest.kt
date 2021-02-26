@@ -108,7 +108,7 @@ class ListItemLoadableViewStateRule(
     val eventDispatcher: EventDispatcher = EventDispatcher(),
 ) : TestRule {
     val coroutineTestRule = CoroutineTestRule()
-    private val listRepository = MockVerified.create<ListRepository<QueryType, *>>()
+    private val listRepository = MockVerified.create<ListRepository<QueryType, Any>>()
     private val pagedListProvider = MockVerified.create<PagedListProvider<QueryType, Any>>().apply {
         setupResponseWithVerify({ mock.getList(owner.query, owner.id) }, emptyFlow())
     }
