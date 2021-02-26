@@ -20,11 +20,19 @@ import android.text.Editable
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
+import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.map
+import androidx.lifecycle.viewModelScope
 import com.freshdigitable.udonroad2.data.UserDataSource
 import com.freshdigitable.udonroad2.data.impl.AppSettingRepository
 import com.freshdigitable.udonroad2.data.impl.TweetInputRepository
 import com.freshdigitable.udonroad2.input.CameraApp.Companion.transition
+import com.freshdigitable.udonroad2.input.InputViewState.Companion.toCanceled
+import com.freshdigitable.udonroad2.input.InputViewState.Companion.toFailed
+import com.freshdigitable.udonroad2.input.InputViewState.Companion.toIdling
+import com.freshdigitable.udonroad2.input.InputViewState.Companion.toOpened
+import com.freshdigitable.udonroad2.input.InputViewState.Companion.toSending
+import com.freshdigitable.udonroad2.input.InputViewState.Companion.toSucceeded
 import com.freshdigitable.udonroad2.input.MediaChooserResultContract.MediaChooserResult
 import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.app.AppExecutor
@@ -33,9 +41,7 @@ import com.freshdigitable.udonroad2.model.app.AppTwitterException
 import com.freshdigitable.udonroad2.model.app.UpdaterFlowBuilderScope
 import com.freshdigitable.udonroad2.model.app.di.ActivityScope
 import com.freshdigitable.udonroad2.model.app.ioContext
-import com.freshdigitable.udonroad2.model.app.mainContext
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
-import com.freshdigitable.udonroad2.model.app.navigation.AppViewState
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
 import com.freshdigitable.udonroad2.model.app.onEvent
@@ -55,21 +61,18 @@ import javax.inject.Inject
 
 class TweetInputViewModel @Inject constructor(
     private val eventDispatcher: EventDispatcher,
-    private val viewState: TweetInputViewState,
+    viewState: TweetInputViewState,
 ) : ViewModel() {
 
-    val isExpanded: LiveData<Boolean> = viewState.isExpanded
-    val text: LiveData<String> = viewState.text
-    val reply: LiveData<Boolean> = viewState.reply
-    val quote: LiveData<Boolean> = viewState.quote
-    val media: LiveData<List<AppFilePath>> = viewState.media
-    val menuItem: LiveData<InputMenuItem> = viewState.menuItem
-    val inputTask: LiveData<InputTaskState> = viewState.taskState
+    val state = viewState.state.asLiveData(viewModelScope.coroutineContext)
+    val isExpanded: LiveData<Boolean> =
+        viewState.isExpanded.asLiveData(viewModelScope.coroutineContext)
+    val user: LiveData<UserEntity?> = viewState.user.asLiveData(viewModelScope.coroutineContext)
+    internal val menuItem = state.map { it.menuItem }.distinctUntilChanged()
+
     val expandAnimationEvent: Flow<TweetInputEvent.Opened> =
         eventDispatcher.toAction<TweetInputEvent.Opened>().asFlow()
     internal val chooserForCameraApp = viewState.chooserForCameraApp.asFlow()
-
-    val user: LiveData<UserEntity?> = viewState.user
 
     fun onWriteClicked() {
         eventDispatcher.postEvent(TweetInputEvent.Open)
@@ -80,9 +83,8 @@ class TweetInputViewModel @Inject constructor(
     }
 
     fun onSendClicked() {
-        eventDispatcher.postEvent(
-            TweetInputEvent.Send(checkNotNull(text.value), checkNotNull(media.value))
-        )
+        val current = requireNotNull(state.value)
+        eventDispatcher.postEvent(TweetInputEvent.Send(current.text, current.media))
     }
 
     fun onCancelClicked() {
@@ -121,7 +123,7 @@ class TweetInputSharedState @Inject constructor() {
         .distinctUntilChanged()
 }
 
-internal data class InputViewState(
+data class InputViewState(
     val taskState: InputTaskState,
     val text: String = "",
     val reply: TweetId? = null,
@@ -130,6 +132,10 @@ internal data class InputViewState(
 ) {
     val isExpanded: Boolean
         get() = taskState.isExpanded
+    val hasReply: Boolean
+        get() = reply != null
+    val hasQuote: Boolean
+        get() = quote != null
     private val hasContent: Boolean
         get() = text.isNotBlank() || media.isNotEmpty()
     val menuItem: InputMenuItem
@@ -143,6 +149,34 @@ internal data class InputViewState(
             InputTaskState.SUCCEEDED,
             InputTaskState.CANCELED -> InputMenuItem.SEND_DISABLED
         }
+
+    internal companion object {
+        fun InputViewState.toIdling(idling: InputTaskState): InputViewState = this.copy(
+            taskState = idling,
+            text = "",
+            reply = null,
+            quote = null,
+            media = emptyList()
+        )
+
+        fun InputViewState.toOpened(
+            withText: String = this.text,
+            withReply: TweetId? = this.reply,
+            withQuote: TweetId? = this.quote,
+        ): InputViewState = this.copy(
+            taskState = InputTaskState.OPENED,
+            text = withText,
+            reply = withReply,
+            quote = withQuote
+        )
+
+        fun InputViewState.toCanceled(): InputViewState = copy(taskState = InputTaskState.CANCELED)
+        fun InputViewState.toSending(): InputViewState = copy(taskState = InputTaskState.SENDING)
+        fun InputViewState.toSucceeded(): InputViewState =
+            copy(taskState = InputTaskState.SUCCEEDED)
+
+        fun InputViewState.toFailed(): InputViewState = copy(taskState = InputTaskState.FAILED)
+    }
 }
 
 class TweetInputViewState @Inject constructor(
@@ -160,19 +194,15 @@ class TweetInputViewState @Inject constructor(
 
     internal val state: Flow<InputViewState> = stateSourceBuilder(
         init = InputViewState(taskState = idlingState),
-        actions.openInput.asFlow().onEvent { state, _ ->
-            state.copy(taskState = InputTaskState.OPENED)
-        },
+        actions.openInput.asFlow().onEvent { state, _ -> state.toOpened() },
         actions.reply.asFlow().onEvent { state, event ->
             val replyText = createReplyText(event.tweetId)
-            state.copy(text = replyText, reply = event.tweetId, taskState = InputTaskState.OPENED)
+            state.toOpened(withText = replyText, withReply = event.tweetId)
         },
         actions.quote.asFlow().onEvent { state, event ->
-            state.copy(quote = event.tweetId, taskState = InputTaskState.OPENED)
+            state.toOpened(withQuote = event.tweetId)
         },
-        actions.updateText.asFlow().onEvent { state, event ->
-            state.copy(text = event.text)
-        },
+        actions.updateText.asFlow().onEvent { state, event -> state.copy(text = event.text) },
         actions.updateMedia.asFlow().onEvent { state, event ->
             when (val result = event.result) {
                 is MediaChooserResult.Replace -> state.copy(media = result.paths)
@@ -183,23 +213,11 @@ class TweetInputViewState @Inject constructor(
             }
         },
         actions.cancelInput.asFlow().onEvent(
-            atFirst = UpdaterFlowBuilderScope.onEvent { state, _ ->
-                state.copy(taskState = InputTaskState.CANCELED)
-            }) {
-            onNext { state, _ ->
-                state.copy(
-                    taskState = idlingState,
-                    text = "",
-                    reply = null,
-                    quote = null,
-                    media = emptyList()
-                )
-            }
+            atFirst = UpdaterFlowBuilderScope.onEvent { state, _ -> state.toCanceled() }) {
+            onNext { state, _ -> state.toIdling(idlingState) }
         },
         actions.sendTweet.asFlow().onEvent(
-            UpdaterFlowBuilderScope.onEvent { state, _ ->
-                state.copy(taskState = InputTaskState.SENDING)
-            }) {
+            UpdaterFlowBuilderScope.onEvent { state, _ -> state.toSending() }) {
             onNext(
                 withResult = { state, event ->
                     val mediaIds = event.media.map { repository.uploadMedia(it) }
@@ -209,22 +227,11 @@ class TweetInputViewState @Inject constructor(
                         repository.post(text, mediaIds, state.reply)
                     }
                 },
-                onSuccess = listOf({ state, _ ->
-                    state.copy(taskState = InputTaskState.SUCCEEDED)
-                }, { state, _ ->
-                    state.copy(
-                        taskState = idlingState,
-                        text = "",
-                        reply = null,
-                        quote = null,
-                        media = emptyList()
-                    )
-                }),
+                onSuccess = listOf({ state, _ -> state.toSucceeded() },
+                    { state, _ -> state.toIdling(idlingState) }),
                 onError = listOf { state, exception ->
-                    if (exception is AppTwitterException ||
-                        exception is IOException
-                    ) {
-                        state.copy(taskState = InputTaskState.FAILED)
+                    if (exception is AppTwitterException || exception is IOException) {
+                        state.toFailed()
                     } else {
                         throw exception
                     }
@@ -236,29 +243,16 @@ class TweetInputViewState @Inject constructor(
     }
 
     @ExperimentalCoroutinesApi
-    internal val user: AppViewState<UserEntity?> = oauthRepository.currentUserIdSource
+    internal val user: Flow<UserEntity?> = oauthRepository.currentUserIdSource
         .flatMapLatest { id ->
             userRepository.getUserSource(id)
                 .mapLatest { it ?: userRepository.getUser(id) }
         }
         .flowOn(executor.ioContext)
-        .asLiveDataWithMain(executor)
 
     internal val chooserForCameraApp: AppAction<CameraApp.State> = actions.cameraApp
         .scan<CameraApp.State>(CameraApp.State.Idling) { state, event -> state.transition(event) }
         .distinctUntilChanged()
 
-    private val stateLiveData = state.asLiveDataWithMain(executor)
-    internal val isExpanded: AppViewState<Boolean> =
-        sharedState.isExpanded.asLiveDataWithMain(executor)
-    internal val menuItem: AppViewState<InputMenuItem> = stateLiveData.map { it.menuItem }
-    internal val taskState: AppViewState<InputTaskState> = stateLiveData.map { it.taskState }
-    internal val text: AppViewState<String> = stateLiveData.map { it.text }
-    internal val reply: AppViewState<Boolean> = stateLiveData.map { it.reply != null }
-    internal val quote: AppViewState<Boolean> = stateLiveData.map { it.quote != null }
-    internal val media: AppViewState<List<AppFilePath>> = stateLiveData.map { it.media }
-}
-
-private fun <T> Flow<T>.asLiveDataWithMain(executor: AppExecutor): AppViewState<T> {
-    return asLiveData(executor.mainContext)
+    internal val isExpanded: Flow<Boolean> = sharedState.isExpanded
 }
