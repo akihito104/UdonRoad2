@@ -38,13 +38,13 @@ import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.AppFilePath
 import com.freshdigitable.udonroad2.model.app.AppTwitterException
-import com.freshdigitable.udonroad2.model.app.UpdaterFlowBuilderScope
 import com.freshdigitable.udonroad2.model.app.di.ActivityScope
 import com.freshdigitable.udonroad2.model.app.ioContext
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
 import com.freshdigitable.udonroad2.model.app.onEvent
+import com.freshdigitable.udonroad2.model.app.scanSource
 import com.freshdigitable.udonroad2.model.app.stateSourceBuilder
 import com.freshdigitable.udonroad2.model.user.UserEntity
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -213,11 +213,11 @@ class TweetInputViewState @Inject constructor(
             }
         },
         actions.cancelInput.asFlow().onEvent(
-            atFirst = UpdaterFlowBuilderScope.onEvent { state, _ -> state.toCanceled() }) {
+            atFirst = scanSource { state, _ -> state.toCanceled() }) {
             onNext { state, _ -> state.toIdling(idlingState) }
         },
         actions.sendTweet.asFlow().onEvent(
-            UpdaterFlowBuilderScope.onEvent { state, _ -> state.toSending() }) {
+            atFirst = scanSource { state, _ -> state.toSending() }) {
             onNext(
                 withResult = { state, event ->
                     val mediaIds = event.media.map { repository.uploadMedia(it) }

@@ -36,7 +36,7 @@ fun <S> stateSourceBuilder(
 }
 
 fun <E, S> Flow<E>.onEvent(update: ScanFun<S, E>): Flow<UpdateFun<S>> =
-    onEvent(*arrayOf(update))
+    onEvent(scanSource(update)) {}
 
 fun <S, E> Flow<E>.onEvent(
     atFirst: UpdaterFlowBuilderScope.SourceElement<S, E>,
@@ -47,27 +47,18 @@ fun <S, E> Flow<E>.onEvent(
     return builder.build()
 }
 
-fun <E, S> Flow<E>.onEvent(
-    vararg update: ScanFun<S, E>,
-): Flow<UpdateFun<S>> {
-    val onEvent = UpdaterFlowBuilderScope.onEvent(*update)
-    return flow {
-        this@onEvent.collect { e -> onEvent(this, e) }
-    }
-}
+fun <S, E> scanSource(scan: ScanFun<S, E>): UpdaterFlowBuilderScope.SourceElement<S, E> =
+    UpdaterFlowBuilderScope.SourceElement.Scan(listOf(scan))
 
 class UpdaterFlowBuilderScope<S, E>(
     private val eventSource: Flow<E>,
     onEvent: SourceElement<S, E>
 ) {
     companion object {
-        fun <S, E> onEvent(scan: ScanFun<S, E>): SourceElement<S, E> =
+        internal fun <S, E> onEvent(scan: ScanFun<S, E>): SourceElement<S, E> =
             SourceElement.Scan(listOf(scan))
 
-        fun <S, E> onEvent(vararg scan: ScanFun<S, E>): SourceElement<S, E> =
-            SourceElement.Scan(scan.toList())
-
-        fun <S, E, R> onEvent(
+        internal fun <S, E, R> onEvent(
             withResult: suspend (S, E) -> Result<R>,
             onSuccess: List<ScanFun<S, R>> = emptyList(),
             onError: List<ScanFun<S, Throwable>> = emptyList(),
