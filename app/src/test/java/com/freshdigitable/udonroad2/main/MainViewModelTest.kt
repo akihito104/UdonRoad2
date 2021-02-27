@@ -18,14 +18,17 @@ package com.freshdigitable.udonroad2.main
 
 import android.view.MenuItem
 import androidx.annotation.IdRes
+import androidx.lifecycle.LiveData
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.input.TweetInputEvent
+import com.freshdigitable.udonroad2.main.MainViewModelTestRule.Companion.currentUser
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
+import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.model.user.UserEntity
 import com.freshdigitable.udonroad2.shortcut.SelectedItemShortcut
 import com.freshdigitable.udonroad2.test_common.jvm.testCollect
@@ -52,26 +55,23 @@ class MainViewModelTest {
 
         @Test
         fun initialState(): Unit = with(rule) {
-            assertThat(sut.currentUser.value?.id).isEqualTo(null)
-            assertThat(sut.switchableRegisteredUsers.value).isEmpty()
-            assertThat(sut.isRegisteredUsersListOpened.value).isFalse()
-            assertThat(sut.isDrawerOpened.value).isFalse()
+            assertThat(sut.drawerState.value).isEqualTo(DrawerViewState())
         }
 
         @Test
         fun onDrawerOpened_then_isDrawerOpenedIsTrue(): Unit = with(rule) {
-            stateModelRule.coroutineRule.runBlockingTest {
+            coroutineRule.runBlockingTest {
                 // exercise
                 sut.onDrawerOpened()
             }
 
             // verify
-            assertThat(sut.isDrawerOpened.value).isTrue()
+            assertThat(sut.drawerState.value?.isOpened).isTrue()
         }
 
         @Test
         fun onDrawerClosed_then_isDrawerOpenedIsFalse(): Unit = with(rule) {
-            stateModelRule.coroutineRule.runBlockingTest {
+            coroutineRule.runBlockingTest {
                 // setup
                 sut.onDrawerOpened()
 
@@ -80,37 +80,37 @@ class MainViewModelTest {
             }
 
             // verify
-            assertThat(sut.isDrawerOpened.value).isFalse()
+            assertThat(sut.drawerState.value?.isOpened).isFalse()
         }
 
         @Test
         fun onAccountSwitcherClicked_isRegisteredUsersListOpenedIsTrue(): Unit = with(rule) {
-            stateModelRule.coroutineRule.runBlockingTest {
+            coroutineRule.runBlockingTest {
                 // exercise
                 sut.onAccountSwitcherClicked()
             }
 
             // verify
-            assertThat(sut.isRegisteredUsersListOpened.value).isTrue()
+            assertThat(sut.drawerState.value?.isAccountSwitcherOpened).isTrue()
         }
 
         @Test
         fun onAccountSwitcherClicked_calledTwice_then_isRegisteredUsersListOpenedIsFalse(): Unit =
             with(rule) {
-                stateModelRule.coroutineRule.runBlockingTest {
+                coroutineRule.runBlockingTest {
                     // exercise
                     sut.onAccountSwitcherClicked()
                     sut.onAccountSwitcherClicked()
                 }
 
                 // verify
-                assertThat(sut.isRegisteredUsersListOpened.value).isFalse()
+                assertThat(sut.drawerState.value?.isAccountSwitcherOpened).isFalse()
             }
 
         @Test
         fun initialEvent_withNull_then_dispatchNavigateIsCalledWithOauth(): Unit = with(rule) {
             // setup
-            stateModelRule.oauthTokenRepositoryMock.setupCurrentUserId(null)
+            appSettingRepositoryRule.setupCurrentUserId(null)
 
             // exercise
             sut.initialEvent(null)
@@ -167,7 +167,7 @@ class MainViewModelTest {
         fun collapseTweetInput_whenTweetInputIsExpanded_then_dispatchCancelEvent(): Unit =
             with(rule) {
                 // setup
-                val eventObserver = stateModelRule.dispatcher.emitter.test()
+                val eventObserver = dispatcher.emitter.test()
                 stateModelRule.isExpandedSource.value = true
 
                 // exercise
@@ -210,7 +210,7 @@ class MainViewModelTest {
         @Test
         fun onFabMenuSelected_selectedFav_then_favDispatched(): Unit = with(rule) {
             // setup
-            val dispatcherObserver = stateModelRule.dispatcher.emitter.test()
+            val dispatcherObserver = dispatcher.emitter.test()
 
             // exercise
             sut.onFabMenuSelected(menuItem(R.id.iffabMenu_main_fav))
@@ -225,7 +225,7 @@ class MainViewModelTest {
         @Test
         fun onBackPressed_then_dispatchUnselectedEvent(): Unit = with(rule) {
             // setup
-            val dispatcherObserver = stateModelRule.dispatcher.emitter.test()
+            val dispatcherObserver = dispatcher.emitter.test()
 
             // exercise
             sut.onBackPressed()
@@ -240,7 +240,7 @@ class MainViewModelTest {
         fun onBackPressed_whenTweetInputIsExpanded_then_dispatchInputCancelEvent(): Unit =
             with(rule) {
                 // setup
-                val dispatcherObserver = stateModelRule.dispatcher.emitter.test()
+                val dispatcherObserver = dispatcher.emitter.test()
                 stateModelRule.isExpandedSource.value = true
 
                 // exercise
@@ -268,47 +268,43 @@ class MainViewModelTest {
 
         @Before
         fun setup(): Unit = with(rule) {
-            with(stateModelRule) {
-                setupGetUserSource(authenticatedUserId)
-                coroutineRule.runBlockingTest {
-                    oauthTokenRepositoryMock.currentUserIdSource.send(authenticatedUserId)
-                    oauthTokenRepositoryMock.registeredUserIdsSource.send(setOf(authenticatedUserId))
-                }
+            drawerViewStateRule.setupGetUserSource(authenticatedUserId)
+            coroutineRule.runBlockingTest {
+                appSettingRepositoryRule.currentUserIdSource.send(authenticatedUserId)
+                appSettingRepositoryRule.registeredUserIdsSource.send(setOf(authenticatedUserId))
             }
         }
 
         @Test
         fun init(): Unit = with(rule) {
-            assertThat(sut.currentUser.value?.id).isEqualTo(stateModelRule.authenticatedUserId)
-            assertThat(sut.switchableRegisteredUsers.value).isEmpty()
+            assertThat(sut.drawerState.currentUser.id).isEqualTo(authenticatedUserId)
+            assertThat(sut.drawerState.value?.switchableAccounts).isEmpty()
         }
 
         @Test
         fun switchableRegisteredUsers_addedNewUser_then_switchableTo1User(): Unit = with(rule) {
             // setup
-            with(stateModelRule) {
-                val userId = UserId(30000)
-                val userEntity = mockk<UserEntity>().also {
-                    every { it.id } returns userId
-                    every { it.screenName } returns "user30000"
-                }
-                setupGetUser(userId, userEntity)
-                coroutineRule.runBlockingTest {
-                    oauthTokenRepositoryMock.registeredUserIdsSource.send(
-                        setOf(authenticatedUserId, userId)
-                    )
-                }
+            val userId = UserId(30000)
+            val userEntity = mockk<UserEntity>().also {
+                every { it.id } returns userId
+                every { it.screenName } returns "user30000"
+            }
+            drawerViewStateRule.setupGetUser(userId, userEntity)
+            coroutineRule.runBlockingTest {
+                appSettingRepositoryRule.registeredUserIdsSource.send(
+                    setOf(authenticatedUserId, userId)
+                )
             }
 
             // verify
-            assertThat(sut.currentUser.value?.id).isEqualTo(stateModelRule.authenticatedUserId)
-            assertThat(sut.switchableRegisteredUsers.value).hasSize(1)
+            assertThat(sut.drawerState.currentUser.id).isEqualTo(authenticatedUserId)
+            assertThat(sut.drawerState.value?.switchableAccounts).hasSize(1)
         }
 
         @Test
         fun onDrawerClosed_accountSwitcherIsOpened_then_isRegisteredUserListOpenedIsFalse(): Unit =
             with(rule) {
-                stateModelRule.coroutineRule.runBlockingTest {
+                coroutineRule.runBlockingTest {
                     // setup
                     sut.onDrawerOpened()
                     sut.onAccountSwitcherClicked()
@@ -318,8 +314,8 @@ class MainViewModelTest {
                 }
 
                 // verify
-                assertThat(sut.isDrawerOpened.value).isFalse()
-                assertThat(sut.isRegisteredUsersListOpened.value).isFalse()
+                assertThat(sut.drawerState.value?.isOpened).isFalse()
+                assertThat(sut.drawerState.value?.isAccountSwitcherOpened).isFalse()
             }
 
         @Test
@@ -336,14 +332,14 @@ class MainViewModelTest {
 
             // verify
             assertThat(actualConsumed).isTrue()
-            assertThat(sut.isDrawerOpened.value).isFalse()
-            assertThat(sut.isRegisteredUsersListOpened.value).isFalse()
+            assertThat(sut.drawerState.value?.isOpened).isFalse()
+            assertThat(sut.drawerState.value?.isAccountSwitcherOpened).isFalse()
             assertThat(navigationEventActual.last())
                 .isInstanceOf(TimelineEvent.Navigate.Timeline::class.java)
             val event = navigationEventActual.last() as TimelineEvent.Navigate.Timeline
             assertThat(event.owner.query)
                 .isInstanceOf(QueryType.CustomTimelineListQueryType.Ownership::class.java)
-            assertThat(event.owner.query.userId).isEqualTo(stateModelRule.authenticatedUserId)
+            assertThat(event.owner.query.userId).isEqualTo(authenticatedUserId)
         }
 
         @Test
@@ -355,15 +351,27 @@ class MainViewModelTest {
             assertThat(navigationEventActual.last())
                 .isInstanceOf(TimelineEvent.Navigate.UserInfo::class.java)
             val actualEvent = navigationEventActual.last() as TimelineEvent.Navigate.UserInfo
-            assertThat(actualEvent.tweetUserItem.id).isEqualTo(stateModelRule.authenticatedUserId)
+            assertThat(actualEvent.tweetUserItem.id).isEqualTo(authenticatedUserId)
         }
     }
 }
 
-internal class MainViewModelTestRule(
+internal class MainViewModelTestRule : TestWatcher() {
     val stateModelRule: MainActivityStateModelTestRule = MainActivityStateModelTestRule()
-) : TestWatcher() {
-    val sut: MainViewModel by lazy { MainViewModel(stateModelRule.dispatcher, stateModelRule.sut) }
+    val dispatcher = stateModelRule.dispatcher
+    val coroutineRule = stateModelRule.coroutineRule
+    val appSettingRepositoryRule = stateModelRule.appSettingRepositoryRule
+    val authenticatedUserId = stateModelRule.authenticatedUserId
+    val drawerViewStateRule = DrawerViewStateSourceTestRule(
+        dispatcher,
+        appSettingRepositoryRule,
+        stateModelRule.oauthTokenRepository,
+        coroutineRule
+    )
+
+    val sut: MainViewModel by lazy {
+        MainViewModel(dispatcher, stateModelRule.sut, drawerViewStateRule.sut)
+    }
     lateinit var navigationEventActual: List<NavigationEvent>
 
     override fun starting(description: Description?) {
@@ -374,18 +382,20 @@ internal class MainViewModelTestRule(
                 appBarTitle,
                 isTweetInputMenuVisible,
                 isFabVisible,
-                currentUser,
-                switchableRegisteredUsers,
-                isRegisteredUsersListOpened,
-                isDrawerOpened,
+                drawerState
             ).forEach { it.observeForever { } }
         }
-        navigationEventActual = sut.navigationEvent.testCollect(stateModelRule.executor)
+        navigationEventActual = sut.navigationEvent.testCollect(stateModelRule.coroutineScope)
     }
 
-    override fun apply(base: Statement?, description: Description?): Statement {
-        return RuleChain.outerRule(stateModelRule)
+    override fun apply(base: Statement?, description: Description?): Statement =
+        RuleChain.outerRule(stateModelRule)
+            .around(drawerViewStateRule)
             .apply(super.apply(base, description), description)
+
+    companion object {
+        val LiveData<DrawerViewState>.currentUser: TweetUserItem
+            get() = requireNotNull(this.value?.currentUser)
     }
 }
 

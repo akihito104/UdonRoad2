@@ -46,7 +46,7 @@
             android:background="@drawable/s_rounded_mask_default"
             app:backgroundTint="@color/layer_white_transparent"
             android:onClick="@{v -> viewModel.onCurrentUserIconClicked()}"
-            app:bindUserIcon="@{viewModel.currentUser.iconUrl}"
+            app:bindUserIcon="@{viewModel.drawerState.currentUser.iconUrl}"
             />
 
         <TextView
@@ -58,8 +58,8 @@
             android:textSize="@dimen/nav_drawer_header_text"
             android:textColor="@color/text_primary_inverse"
             app:drawableRightCompat="@drawable/s_arrow_drop"
-            app:bindNames="@{viewModel.currentUser}"
-            app:selected="@{viewModel.isRegisteredUsersListOpened}"
+            app:bindNames="@{viewModel.drawerState.currentUser}"
+            app:selected="@{viewModel.drawerState.isAccountSwitcherOpened}"
             android:onClick="@{v -> viewModel.onAccountSwitcherClicked()}"
             tools:text="name\n\@screen_name"
             />

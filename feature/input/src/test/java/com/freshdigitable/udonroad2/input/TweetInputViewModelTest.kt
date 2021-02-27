@@ -33,8 +33,8 @@ import com.freshdigitable.udonroad2.model.user.UserEntity
 import com.freshdigitable.udonroad2.shortcut.SelectedItemShortcut
 import com.freshdigitable.udonroad2.test_common.MatcherScopedBlock
 import com.freshdigitable.udonroad2.test_common.MockVerified
+import com.freshdigitable.udonroad2.test_common.jvm.AppSettingRepositoryRule
 import com.freshdigitable.udonroad2.test_common.jvm.CoroutineTestRule
-import com.freshdigitable.udonroad2.test_common.jvm.OAuthTokenRepositoryRule
 import com.freshdigitable.udonroad2.test_common.jvm.testCollect
 import com.google.common.truth.Subject
 import com.google.common.truth.Truth.assertThat
@@ -570,7 +570,7 @@ class TweetInputViewModelRule(
     val inputTaskObserver: Observer<InputTaskState> = spyk<Observer<InputTaskState>>().apply {
         every { onChanged(any()) } just runs
     }
-    private val oAuthTokenRepositoryRule = OAuthTokenRepositoryRule()
+    private val appSettingRepositoryRule = AppSettingRepositoryRule()
     private val userRepositoryRule = MockVerified.create<UserDataSource>()
     private val createReplyTextUseCaseRule = MockVerified.create<CreateReplyTextUseCase>()
     private val createQuoteTextUseCaseRule = MockVerified.create<CreateQuoteTextUseCase>()
@@ -587,7 +587,7 @@ class TweetInputViewModelRule(
                 createQuoteTextUseCaseRule.mock,
                 TweetInputSharedState(executor),
                 repository.mock,
-                oAuthTokenRepositoryRule.appSettingMock,
+                appSettingRepositoryRule.mock,
                 userRepositoryRule.mock,
                 executor,
             ),
@@ -605,7 +605,7 @@ class TweetInputViewModelRule(
             every { name } returns "user1"
             every { screenName } returns "User1"
         }
-        oAuthTokenRepositoryRule.setupCurrentUserIdSource(executor, userId.value)
+        appSettingRepositoryRule.setupCurrentUserIdSource(executor, userId.value)
         userRepositoryRule.setupResponseWithVerify(
             { userRepositoryRule.mock.getUserSource(userId) },
             flow { emit(authenticatedUser) }
@@ -670,7 +670,7 @@ class TweetInputViewModelRule(
             .around(coroutineTestRule)
             .around(InstantTaskExecutorRule())
             .around(repository)
-            .around(oAuthTokenRepositoryRule)
+            .around(appSettingRepositoryRule)
             .around(userRepositoryRule)
             .around(createReplyTextUseCaseRule)
             .apply(super.apply(base, description), description)

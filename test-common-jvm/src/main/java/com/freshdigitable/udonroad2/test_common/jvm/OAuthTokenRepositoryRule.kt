@@ -24,65 +24,25 @@ import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.user.UserEntity
 import com.freshdigitable.udonroad2.test_common.MockVerified
 import io.mockk.mockk
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.onStart
-import kotlinx.coroutines.flow.receiveAsFlow
-import kotlinx.coroutines.flow.shareIn
+import org.junit.rules.RuleChain
 import org.junit.rules.TestRule
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
 import java.io.Serializable
 
 class OAuthTokenRepositoryRule(
-    private val mockVerified: MockVerified<OAuthTokenDataSource> = MockVerified.create(),
-    private val appSettingRepository: MockVerified<AppSettingRepository> = MockVerified.create(),
+    private val appSettingRule: AppSettingRepositoryRule = AppSettingRepositoryRule(),
 ) : TestRule {
+    private val mockVerified: MockVerified<OAuthTokenDataSource> = MockVerified.create()
     val mock: OAuthTokenDataSource = mockVerified.mock
-    val appSettingMock: AppSettingRepository = appSettingRepository.mock
-
-    fun setupCurrentUserId(userId: Long?, needLogin: Boolean = true) {
-        val id = UserId.create(userId)
-        with(appSettingRepository) {
-            setupResponseWithVerify({ mock.currentUserId }, id)
-        }
-        if (id != null && needLogin) {
-            setupLogin(id)
-        }
-    }
-
-    val currentUserIdSource: Channel<UserId> = Channel()
-    fun setupCurrentUserIdSource(coroutineScope: CoroutineScope, userId: Long? = null) {
-        appSettingRepository.run {
-            setupResponseWithVerify(
-                { mock.currentUserIdSource },
-                currentUserIdSource.receiveAsFlow()
-                    .onStart { userId?.let { emit(UserId(it)) } }
-                    .shareIn(coroutineScope, SharingStarted.Lazily, 1)
-            )
-        }
-    }
-
-    val registeredUserIdsSource = Channel<Set<UserId>>()
-    fun setupRegisteredUserIdsSource(userIds: Set<UserId> = emptySet()) {
-        appSettingRepository.run {
-            setupResponseWithVerify(
-                { mock.registeredUserIdsSource },
-                registeredUserIdsSource.receiveAsFlow().onStart { emit(userIds) }
-            )
-        }
-    }
+    val appSettingMock: AppSettingRepository = appSettingRule.rule.mock
 
     fun setupLogin(userId: UserId) {
         val token = mockk<AccessTokenEntity>()
         mockVerified.run {
             coSetupResponseWithVerify({ mock.findUserAccessTokenEntity(userId) }, token)
         }
-        appSettingRepository.run {
-            coSetupResponseWithVerify({ mock.updateCurrentUser(token) }, Unit)
-        }
+        appSettingRule.setupUpdateCurrentUserId(token)
     }
 
     fun setupGetRequestTokenItem(token: RequestTokenItem = requestTokenItem) {
@@ -100,16 +60,10 @@ class OAuthTokenRepositoryRule(
         mockVerified.coSetupResponseWithVerify({ mock.verifyCredentials() }, user)
     }
 
-    fun setupIsPossiblySensitiveHidden() {
-        appSettingRepository.setupResponseWithVerify(
-            { appSettingMock.isPossiblySensitiveHidden },
-            flowOf(true)
-        )
-    }
-
-    override fun apply(base: Statement, description: Description): Statement {
-        return appSettingRepository.apply(mockVerified.apply(base, description), description)
-    }
+    override fun apply(base: Statement, description: Description): Statement =
+        RuleChain.outerRule(mockVerified)
+            .around(appSettingRule)
+            .apply(base, description)
 
     companion object {
         val requestTokenItem = object : RequestTokenItem {
