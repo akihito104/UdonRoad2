@@ -53,7 +53,6 @@ import kotlin.reflect.KClass
 
 @Module(
     includes = [
-        ListItemLoadableViewModelSourceModule::class,
         TimelineViewModelModule::class,
         UserListViewModelModule::class,
         CustomTimelineListViewModelModule::class,
@@ -77,7 +76,12 @@ internal interface ListItemLoadableViewModelSourceModule {
             ) { o, repository, pagedListProvider ->
                 ListItemLoadableViewStateImpl(o, actions, repository, pagedListProvider)
             }
+    }
+}
 
+@Module
+internal interface TweetMediaViewModelModule {
+    companion object {
         @Provides
         fun provideTweetMediaViewModelSource(
             actions: LaunchMediaViewerAction,
@@ -88,7 +92,7 @@ internal interface ListItemLoadableViewModelSourceModule {
     }
 }
 
-@Module
+@Module(includes = [TweetMediaViewModelModule::class])
 internal interface TimelineViewModelModule {
     companion object {
         @Provides
@@ -118,7 +122,7 @@ internal interface TimelineViewModelModule {
             tweetRepository: TweetRepository,
             listOwnerGenerator: ListOwnerGenerator,
             executor: AppExecutor,
-            viewModelSource: ListItemLoadableViewStateImpl,
+            viewModelSource: ListItemLoadableViewModelSource,
             mediaViewModelSource: TweetMediaViewModelSource,
         ): TimelineViewModelSource = TimelineViewModelSource(
             owner as ListOwner<QueryType.TweetQueryType>,
@@ -132,6 +136,19 @@ internal interface TimelineViewModelModule {
         )
 
         @Provides
+        fun provideListItemLoadableViewModelSource(
+            owner: ListOwner<*>,
+            actions: TimelineActions,
+            listRepositoryFactory: ListRepositoryComponent.Factory,
+        ): ListItemLoadableViewModelSource =
+            provideViewState<QueryType, ListItemLoadableViewModelSource>(
+                owner,
+                listRepositoryFactory
+            ) { o, repository, pagedListProvider ->
+                ListItemLoadableViewStateImpl(o, actions, repository, pagedListProvider)
+            }
+
+        @Provides
         fun provideTimelineActions(
             owner: ListOwner<*>,
             dispatcher: EventDispatcher,
@@ -140,7 +157,7 @@ internal interface TimelineViewModelModule {
     }
 }
 
-@Module
+@Module(includes = [ListItemLoadableViewModelSourceModule::class])
 internal interface UserListViewModelModule {
     companion object {
         @Provides
@@ -159,7 +176,7 @@ internal interface UserListViewModelModule {
     }
 }
 
-@Module
+@Module(includes = [ListItemLoadableViewModelSourceModule::class])
 internal interface CustomTimelineListViewModelModule {
     companion object {
         @Provides

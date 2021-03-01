@@ -51,7 +51,7 @@ interface TweetDetailViewModelModule {
 @Subcomponent(
     modules = [
         TweetDetailViewModelModule::class,
-        ListItemLoadableViewModelSourceModule::class
+        TweetMediaViewModelModule::class
     ]
 )
 interface TweetDetailViewModelComponent {
