@@ -28,6 +28,7 @@ import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventStream
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
+import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.tweet.TweetElement
 import com.freshdigitable.udonroad2.timeline.ListItemLoadableEventListener
 import com.freshdigitable.udonroad2.timeline.ListItemLoadableViewModel
@@ -36,17 +37,22 @@ import com.freshdigitable.udonroad2.timeline.TimelineViewModelSource
 import com.freshdigitable.udonroad2.timeline.TweetListItemEventListener
 import com.freshdigitable.udonroad2.timeline.TweetListItemViewModel
 import com.freshdigitable.udonroad2.timeline.TweetMediaItemViewModel
+import com.freshdigitable.udonroad2.timeline.UserIconClickListener
+import com.freshdigitable.udonroad2.timeline.UserIconViewModelSource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.shareIn
 
 internal class TimelineViewModel(
     private val owner: ListOwner<TweetQueryType>,
     private val eventDispatcher: EventDispatcher,
     viewModelSource: TimelineViewModelSource,
+    userIconViewModelSource: UserIconViewModelSource,
 ) : ListItemLoadableViewModel<TweetQueryType>, ListItemLoadableEventListener by viewModelSource,
+    UserIconClickListener by userIconViewModelSource,
     TweetListItemViewModel, TweetListItemEventListener by viewModelSource,
     TweetMediaItemViewModel, ActivityEventStream by viewModelSource,
     ViewModel() {
@@ -63,6 +69,10 @@ internal class TimelineViewModel(
             .asLiveData(viewModelScope.coroutineContext)
     override val timeline: Flow<PagingData<Any>> = viewModelSource.pagedList
         .cachedIn(viewModelScope)
+    override val navigationEvent: Flow<NavigationEvent> = merge(
+        viewModelSource.navigationEvent,
+        userIconViewModelSource.navEvent
+    )
 
     override fun onMediaItemClicked(
         originalId: TweetId,

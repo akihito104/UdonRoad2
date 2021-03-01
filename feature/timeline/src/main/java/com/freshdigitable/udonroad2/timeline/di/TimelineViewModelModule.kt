@@ -41,6 +41,7 @@ import com.freshdigitable.udonroad2.timeline.ListItemLoadableViewStateImpl
 import com.freshdigitable.udonroad2.timeline.TimelineActions
 import com.freshdigitable.udonroad2.timeline.TimelineViewModelSource
 import com.freshdigitable.udonroad2.timeline.TweetMediaViewModelSource
+import com.freshdigitable.udonroad2.timeline.UserIconViewModelSource
 import com.freshdigitable.udonroad2.timeline.viewmodel.CustomTimelineListActions
 import com.freshdigitable.udonroad2.timeline.viewmodel.CustomTimelineListItemLoadableViewState
 import com.freshdigitable.udonroad2.timeline.viewmodel.CustomTimelineListViewModel
@@ -103,10 +104,12 @@ internal interface TimelineViewModelModule {
             owner: ListOwner<*>,
             eventDispatcher: EventDispatcher,
             viewStates: TimelineViewModelSource,
+            userIconViewModelSource: UserIconViewModelSource,
         ): ViewModel = TimelineViewModel(
             owner as ListOwner<QueryType.TweetQueryType>,
             eventDispatcher,
-            viewStates
+            viewStates,
+            userIconViewModelSource
         )
 
         @Provides
@@ -152,7 +155,7 @@ internal interface TimelineViewModelModule {
         fun provideTimelineActions(
             owner: ListOwner<*>,
             dispatcher: EventDispatcher,
-            listItemLoadableActions: ListItemLoadableActions
+            listItemLoadableActions: ListItemLoadableActions,
         ): TimelineActions = TimelineActions(owner, dispatcher, listItemLoadableActions)
     }
 }
@@ -167,7 +170,9 @@ internal interface UserListViewModelModule {
         fun provideUserListViewModel(
             eventDispatcher: EventDispatcher,
             viewModelSource: ListItemLoadableViewStateImpl,
-        ): ViewModel = UserListViewModel(eventDispatcher, viewModelSource)
+            userIconViewModelSource: UserIconViewModelSource,
+        ): ViewModel =
+            UserListViewModel(eventDispatcher, viewModelSource, userIconViewModelSource)
 
         @Provides
         @IntoMap
@@ -184,13 +189,17 @@ internal interface CustomTimelineListViewModelModule {
         @ViewModelKey(CustomTimelineListViewModel::class)
         @IntoFactory
         fun provideCustomTimelineListViewModel(
-            eventDispatcher: EventDispatcher,
             actions: CustomTimelineListActions,
             viewModelSource: ListItemLoadableViewStateImpl,
             listOwnerGenerator: ListOwnerGenerator,
+            userIconViewModelSource: UserIconViewModelSource,
         ): ViewModel = CustomTimelineListViewModel(
-            CustomTimelineListItemLoadableViewState(actions, viewModelSource, listOwnerGenerator),
-            eventDispatcher,
+            CustomTimelineListItemLoadableViewState(
+                actions,
+                viewModelSource,
+                listOwnerGenerator,
+            ),
+            userIconViewModelSource
         )
 
         @Provides

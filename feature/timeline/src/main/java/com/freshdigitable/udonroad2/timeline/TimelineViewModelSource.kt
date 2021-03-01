@@ -80,7 +80,6 @@ internal class TimelineViewModelSource(
 
     internal val selectedItemId: Flow<SelectedItemId?> = selectedItemRepository.getSource(owner)
 
-    private val userInfoNavigation = UserIconClickedNavigation.create(actions)
     override val navigationEvent: Flow<NavigationEvent> = merge(
         actions.showTimeline.asFlow().map {
             listOwnerGenerator.getTimelineEvent(
@@ -95,7 +94,6 @@ internal class TimelineViewModelSource(
                 NavigationEvent.Type.NAVIGATE
             )
         },
-        userInfoNavigation.navEvent,
         mediaViewModelSource.navigationEvent
             .filterIsInstance<TimelineEvent.Navigate.MediaViewer>()
             .filter { it.selectedItemId?.owner == owner },

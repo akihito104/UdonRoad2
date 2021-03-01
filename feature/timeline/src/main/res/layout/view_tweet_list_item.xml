@@ -30,6 +30,11 @@
             />
 
         <variable
+            name="userIconClickListener"
+            type="com.freshdigitable.udonroad2.timeline.UserIconClickListener"
+            />
+
+        <variable
             name="itemViewModel"
             type="com.freshdigitable.udonroad2.timeline.TweetListItemViewModel"
             />
@@ -79,7 +84,7 @@
             app:layout_constraintHorizontal_chainStyle="packed"
             app:layout_constraintHorizontal_bias="0"
             app:bindUserIcon="@{tweet.body.user.iconUrl}"
-            android:onClick="@{v -> itemViewModel.onUserIconClicked(tweet.body.user)}"
+            android:onClick="@{v -> userIconClickListener.onUserIconClicked(tweet.body.user)}"
             />
 
         <TextView

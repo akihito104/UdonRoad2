@@ -12,12 +12,14 @@ import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import com.freshdigitable.udonroad2.timeline.R
 import com.freshdigitable.udonroad2.timeline.TweetListItemViewModel
 import com.freshdigitable.udonroad2.timeline.TweetMediaItemViewModel
+import com.freshdigitable.udonroad2.timeline.UserIconClickListener
 import com.freshdigitable.udonroad2.timeline.databinding.ViewTweetListItemBinding
 import com.freshdigitable.udonroad2.timeline.databinding.ViewTweetListQuotedItemBinding
 
 class TimelineAdapter(
     private val itemViewModel: TweetListItemViewModel,
     private val mediaViewModel: TweetMediaItemViewModel,
+    private val userIconClickListener: UserIconClickListener,
     private val lifecycleOwner: LifecycleOwner
 ) : PagingDataAdapter<TweetListItem, TimelineAdapter.ViewHolder>(diffUtil) {
 
@@ -50,6 +52,7 @@ class TimelineAdapter(
         holder.binding.apply {
             itemViewModel = this@TimelineAdapter.itemViewModel
             mediaViewModel = this@TimelineAdapter.mediaViewModel
+            userIconClickListener = this@TimelineAdapter.userIconClickListener
         }
         holder.quotedView?.apply {
             itemViewModel = this@TimelineAdapter.itemViewModel
@@ -62,6 +65,7 @@ class TimelineAdapter(
         holder.binding.apply {
             itemViewModel = null
             mediaViewModel = null
+            userIconClickListener = null
         }
         holder.quotedView?.apply {
             itemViewModel = null

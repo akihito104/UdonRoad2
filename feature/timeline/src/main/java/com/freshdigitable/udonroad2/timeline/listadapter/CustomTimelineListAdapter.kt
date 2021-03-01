@@ -10,7 +10,7 @@ import com.freshdigitable.udonroad2.timeline.R
 import com.freshdigitable.udonroad2.timeline.databinding.ViewCustomTimelineItemBinding
 import com.freshdigitable.udonroad2.timeline.viewmodel.CustomTimelineListViewModel
 
-class CustomTimelineListAdapter(
+internal class CustomTimelineListAdapter(
     private val viewModel: CustomTimelineListViewModel
 ) : PagingDataAdapter<CustomTimelineItem, CustomTimelineViewHolder>(diffUtil) {
 

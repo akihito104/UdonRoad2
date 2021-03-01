@@ -20,19 +20,13 @@ import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
-import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
 import com.freshdigitable.udonroad2.model.app.navigation.toActionFlow
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
-import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.shortcut.ShortcutActions
 import com.freshdigitable.udonroad2.timeline.TimelineEvent.Init
 import com.freshdigitable.udonroad2.timeline.TimelineEvent.TweetItemSelection
-import com.freshdigitable.udonroad2.timeline.TimelineEvent.UserIconClicked
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.rx2.asFlow
 import timber.log.Timber
 
 internal class TimelineActions(
@@ -40,7 +34,6 @@ internal class TimelineActions(
     private val dispatcher: EventDispatcher,
     listItemLoadableActions: ListItemLoadableAction,
 ) : ListItemLoadableAction by listItemLoadableActions,
-    UserIconClickedAction by UserIconClickedAction.create(dispatcher),
     ShortcutActions by ShortcutActions.create(dispatcher),
     TweetListItemEventListener {
 
@@ -64,34 +57,5 @@ internal class TimelineActions(
 
     private fun updateSelectedItem(selected: SelectedItemId) {
         dispatcher.postEvent(TweetItemSelection.Toggle(selected))
-    }
-
-    override fun onUserIconClicked(user: TweetUserItem) {
-        dispatcher.postEvent(UserIconClicked(user))
-    }
-}
-
-interface UserIconClickedAction {
-    val launchUserInfo: AppAction<UserIconClicked>
-
-    companion object {
-        fun create(
-            eventDispatcher: EventDispatcher
-        ): UserIconClickedAction = object : UserIconClickedAction {
-            override val launchUserInfo: AppAction<UserIconClicked> = eventDispatcher.toAction()
-        }
-    }
-}
-
-interface UserIconClickedNavigation {
-    val navEvent: Flow<NavigationEvent>
-
-    companion object {
-        fun create(actions: UserIconClickedAction): UserIconClickedNavigation {
-            return object : UserIconClickedNavigation {
-                override val navEvent: Flow<NavigationEvent> = actions.launchUserInfo.asFlow()
-                    .map { TimelineEvent.Navigate.UserInfo(it.user) }
-            }
-        }
     }
 }

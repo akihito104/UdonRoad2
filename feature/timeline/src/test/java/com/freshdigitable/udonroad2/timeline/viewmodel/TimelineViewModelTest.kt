@@ -23,6 +23,8 @@ import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import com.freshdigitable.udonroad2.test_common.jvm.testCollect
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.TimelineViewStatesTestRule
+import com.freshdigitable.udonroad2.timeline.UserIconClickedAction
+import com.freshdigitable.udonroad2.timeline.UserIconViewModelSource
 import com.google.common.truth.Truth.assertThat
 import io.mockk.every
 import io.mockk.mockk
@@ -38,10 +40,12 @@ class TimelineViewModelTest {
     }
 
     internal val sut: TimelineViewModel by lazy {
+        val eventDispatcher = viewStatesTestRule.actionsRule.dispatcher
         TimelineViewModel(
             viewStatesTestRule.owner,
-            viewStatesTestRule.actionsRule.dispatcher,
+            eventDispatcher,
             viewStatesTestRule.sut,
+            UserIconViewModelSource(UserIconClickedAction(eventDispatcher))
         )
     }
 

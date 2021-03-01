@@ -36,6 +36,8 @@ import com.freshdigitable.udonroad2.timeline.ListItemLoadableActions
 import com.freshdigitable.udonroad2.timeline.ListItemLoadableViewModelSource
 import com.freshdigitable.udonroad2.timeline.ListItemLoadableViewStateImpl
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
+import com.freshdigitable.udonroad2.timeline.UserIconClickedAction
+import com.freshdigitable.udonroad2.timeline.UserIconViewModelSource
 import com.google.common.truth.Truth.assertThat
 import io.mockk.every
 import io.mockk.mockk
@@ -55,12 +57,13 @@ class CustomTimelineListViewModelTest {
     val rule = ListItemLoadableViewStateRule(owner)
 
     private val sut: CustomTimelineListViewModel by lazy {
+        val userIconClickedAction = UserIconClickedAction(rule.eventDispatcher)
         val viewState = CustomTimelineListItemLoadableViewState(
             CustomTimelineListActions(rule.eventDispatcher),
             rule.viewModelSource,
-            ListOwnerGenerator.create()
+            ListOwnerGenerator.create(),
         )
-        CustomTimelineListViewModel(viewState, rule.eventDispatcher)
+        CustomTimelineListViewModel(viewState, UserIconViewModelSource(userIconClickedAction))
     }
 
     @Test
