@@ -19,7 +19,6 @@ package com.freshdigitable.udonroad2.timeline
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
-import com.freshdigitable.udonroad2.model.app.navigation.filterByType
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
 import com.freshdigitable.udonroad2.shortcut.ShortcutActions
 import com.freshdigitable.udonroad2.timeline.TimelineEvent.Init
@@ -29,28 +28,17 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.rx2.asFlow
 
-class TimelineActions(
+internal class TimelineActions(
     dispatcher: EventDispatcher,
-) : ListItemLoadableActions by ListItemLoadableActions.create(dispatcher),
+    listItemLoadableActions: ListItemLoadableAction,
+) : ListItemLoadableAction by listItemLoadableActions,
     UserIconClickedAction by UserIconClickedAction.create(dispatcher),
-    LaunchMediaViewerAction by LaunchMediaViewerAction.create(dispatcher),
     ShortcutActions by ShortcutActions.create(dispatcher) {
 
     val showTimeline: AppAction<Init> = dispatcher.toAction()
-
-    val selectItem: AppAction<TweetItemSelection.Selected> = dispatcher.toAction {
-        AppAction.merge(
-            filterByType<TweetItemSelection.Selected>(),
-            launchMediaViewer
-                .filter { it.selectedItemId != null }
-                .map { TweetItemSelection.Selected(requireNotNull(it.selectedItemId)) }
-        )
-    }
+    val selectItem: AppAction<TweetItemSelection.Selected> = dispatcher.toAction()
     val toggleItem: AppAction<TweetItemSelection.Toggle> = dispatcher.toAction()
-    val unselectItem: AppAction<TweetItemSelection.Unselected> = AppAction.merge(
-        dispatcher.toAction(),
-        heading.map { TweetItemSelection.Unselected(it.owner) }
-    )
+    val unselectItem: AppAction<TweetItemSelection.Unselected> = dispatcher.toAction()
 }
 
 interface UserIconClickedAction {

@@ -17,18 +17,30 @@
 package com.freshdigitable.udonroad2.oauth
 
 import androidx.lifecycle.LiveData
-import com.freshdigitable.udonroad2.model.ListOwner
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asLiveData
+import androidx.lifecycle.viewModelScope
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import com.freshdigitable.udonroad2.model.QueryType
+import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventStream
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
+import com.freshdigitable.udonroad2.timeline.ListItemLoadableEventListener
 import com.freshdigitable.udonroad2.timeline.ListItemLoadableViewModel
+import kotlinx.coroutines.flow.Flow
 
 class OauthViewModel(
-    owner: ListOwner<QueryType.Oauth>,
     private val eventDispatcher: EventDispatcher,
     viewStates: OauthViewStates,
-) : ListItemLoadableViewModel<QueryType.Oauth>(owner, eventDispatcher, viewStates) {
+) : ListItemLoadableViewModel<QueryType.Oauth>, ListItemLoadableEventListener by viewStates,
+    ActivityEventStream by viewStates,
+    ViewModel() {
+    override val listState: LiveData<ListItemLoadableViewModel.State> =
+        viewStates.state.asLiveData(viewModelScope.coroutineContext)
+    override val timeline: Flow<PagingData<Any>> = viewStates.pagedList.cachedIn(viewModelScope)
+
     val pin: LiveData<CharSequence> = viewStates.pinText
     val sendPinButtonEnabled: LiveData<Boolean> = viewStates.sendPinEnabled
 

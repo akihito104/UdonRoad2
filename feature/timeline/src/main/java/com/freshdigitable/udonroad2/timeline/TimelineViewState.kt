@@ -16,9 +16,7 @@
 
 package com.freshdigitable.udonroad2.timeline
 
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.asLiveData
-import com.freshdigitable.udonroad2.data.impl.AppSettingRepository
 import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
 import com.freshdigitable.udonroad2.model.ListOwner
@@ -36,9 +34,6 @@ import com.freshdigitable.udonroad2.model.app.onEvent
 import com.freshdigitable.udonroad2.model.app.stateSourceBuilder
 import com.freshdigitable.udonroad2.shortcut.ShortcutViewStates
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentEventDelegate
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterIsInstance
@@ -48,32 +43,30 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.rx2.asFlow
 import javax.inject.Inject
 
-class TimelineViewState(
+internal class TimelineViewState(
     owner: ListOwner<QueryType.TweetQueryType>,
     actions: TimelineActions,
     selectedItemRepository: SelectedItemRepository,
     tweetRepository: TweetRepository,
-    appSettingRepository: AppSettingRepository,
     listOwnerGenerator: ListOwnerGenerator,
     executor: AppExecutor,
-    baseViewState: ListItemLoadableViewState,
-) : ListItemLoadableViewState by baseViewState,
-    TweetMediaViewStates,
+    private val baseViewModelSource: ListItemLoadableViewModelSource,
+    mediaViewModelSource: TweetMediaViewModelSource,
+) : ListItemLoadableViewModelSource by baseViewModelSource,
+    TweetMediaViewModelSource by mediaViewModelSource,
     ActivityEventStream,
     ShortcutViewStates by ShortcutViewStates.create(actions, tweetRepository, executor) {
-    private val coroutineScope = CoroutineScope(executor.mainContext + SupervisorJob())
-    private val mediaViewStates =
-        TweetMediaViewStates.create(actions, appSettingRepository, coroutineScope)
 
     override val state: Flow<TimelineState> = stateSourceBuilder(
         init = TimelineState(
             selectedItemId = selectedItemRepository.find(owner)
         ),
-        baseViewState.state.onEvent { s, e -> s.copy(baseState = e) },
+        baseViewModelSource.state.onEvent { s, e -> s.copy(baseState = e) },
+        mediaViewModelSource.state.onEvent { s, e -> s.copy(mediaState = e) },
         actions.selectItem.filter { owner == it.owner }.asFlow().onEvent { s, e ->
             s.copy(selectedItemId = e.selectedItemId)
         },
-        actions.unselectItem.filter { owner == it.owner }.asFlow().onEvent { s, _ ->
+        actions.unselectItem.filter { owner == it.owner }.asFlow().onEvent { s, e ->
             s.copy(selectedItemId = null)
         },
         actions.toggleItem.filter { owner == it.owner }.asFlow().onEvent { s, e ->
@@ -82,6 +75,9 @@ class TimelineViewState(
             } else {
                 s.copy(selectedItemId = e.item)
             }
+        },
+        actions.heading.filter { it.owner == owner }.onEvent { s, e ->
+            s.copy(selectedItemId = null)
         },
     ).onEach {
         if (it.selectedItemId != null) {
@@ -110,27 +106,28 @@ class TimelineViewState(
             )
         },
         userInfoNavigation.navEvent,
-        mediaViewStates.navigationEvent
+        mediaViewModelSource.navigationEvent
             .filterIsInstance<TimelineEvent.Navigate.MediaViewer>()
             .filter { it.selectedItemId?.owner == owner },
-        baseViewState.navigationEvent,
+        baseViewModelSource.navigationEvent,
     )
     override val feedbackMessage: Flow<FeedbackMessage> = updateTweet.asFlow()
 
-    override val isPossiblySensitiveHidden: LiveData<Boolean> =
-        mediaViewStates.isPossiblySensitiveHidden
-
     override suspend fun clear() {
-        coroutineScope.cancel()
+        super.clear()
+        baseViewModelSource.clear()
     }
 }
 
 data class TimelineState(
-    val baseState: ListItemLoadableViewState.State? = null,
+    val baseState: ListItemLoadableViewModel.State? = null,
+    val mediaState: TweetMediaItemViewModel.State? = null,
     val selectedItemId: SelectedItemId? = null,
-) : ListItemLoadableViewState.State {
+) : ListItemLoadableViewModel.State, TweetMediaItemViewModel.State {
     override val isHeadingEnabled: Boolean
         get() = baseState?.isHeadingEnabled == true || selectedItemId != null
+    override val isPossiblySensitiveHidden: Boolean
+        get() = mediaState?.isPossiblySensitiveHidden ?: false
 }
 
 class TimelineNavigationDelegate @Inject constructor(

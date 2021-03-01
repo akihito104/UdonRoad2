@@ -33,7 +33,7 @@ import com.freshdigitable.udonroad2.test_common.MockVerified
 import com.freshdigitable.udonroad2.test_common.jvm.CoroutineTestRule
 import com.freshdigitable.udonroad2.test_common.jvm.testCollect
 import com.freshdigitable.udonroad2.timeline.ListItemLoadableActions
-import com.freshdigitable.udonroad2.timeline.ListItemLoadableViewState
+import com.freshdigitable.udonroad2.timeline.ListItemLoadableViewModelSource
 import com.freshdigitable.udonroad2.timeline.ListItemLoadableViewStateImpl
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.google.common.truth.Truth.assertThat
@@ -57,10 +57,10 @@ class CustomTimelineListViewModelTest {
     private val sut: CustomTimelineListViewModel by lazy {
         val viewState = CustomTimelineListItemLoadableViewState(
             CustomTimelineListActions(rule.eventDispatcher),
-            rule.viewState,
+            rule.viewModelSource,
             ListOwnerGenerator.create()
         )
-        CustomTimelineListViewModel(owner, viewState, rule.eventDispatcher)
+        CustomTimelineListViewModel(viewState, rule.eventDispatcher)
     }
 
     @Test
@@ -112,10 +112,10 @@ class ListItemLoadableViewStateRule(
     private val pagedListProvider = MockVerified.create<PagedListProvider<QueryType, Any>>().apply {
         setupResponseWithVerify({ mock.getList(owner.query, owner.id) }, emptyFlow())
     }
-    val viewState: ListItemLoadableViewState by lazy {
+    val viewModelSource: ListItemLoadableViewModelSource by lazy {
         ListItemLoadableViewStateImpl(
             owner as ListOwner<QueryType>,
-            ListItemLoadableActions.create(eventDispatcher),
+            ListItemLoadableActions(owner, eventDispatcher),
             listRepository.mock,
             pagedListProvider.mock,
         )

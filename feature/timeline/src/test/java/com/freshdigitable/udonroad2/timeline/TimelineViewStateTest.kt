@@ -182,9 +182,11 @@ open class TimelineViewStatesTestRule : TestWatcher() {
     internal val actionsRule: TimelineActionsTestRule = TimelineActionsTestRule()
     val tweetRepositoryMock = TweetRepositoryRule()
     val owner: ListOwner<QueryType.TweetQueryType> =
-        ListOwner(0, QueryType.TweetQueryType.Timeline())
+        actionsRule.owner as ListOwner<QueryType.TweetQueryType>
     private val listRepositoryRule =
-        MockVerified.create<ListRepository<QueryType.TweetQueryType, Any>>()
+        MockVerified.create<ListRepository<QueryType.TweetQueryType, Any>>().apply {
+            coSetupResponseWithVerify({ mock.clear(any()) }, Unit)
+        }
     private val listProviderRule =
         MockVerified.create<PagedListProvider<QueryType.TweetQueryType, Any>>().apply {
             setupResponseWithVerify(
@@ -201,13 +203,13 @@ open class TimelineViewStatesTestRule : TestWatcher() {
 
     @ExperimentalCoroutinesApi
     internal val executor = AppExecutor(dispatcher = coroutineTestRule.coroutineContextProvider)
-    val sut: TimelineViewState by lazy {
+    internal val sut: TimelineViewState by lazy {
+        val selectedItemRepository = SelectedItemRepository()
         TimelineViewState(
             owner,
             actionsRule.sut,
-            SelectedItemRepository(),
+            selectedItemRepository,
             tweetRepositoryMock.mock,
-            appSettingRepository.mock,
             ListOwnerGenerator.create(AtomicInteger(1)),
             executor,
             ListItemLoadableViewStateImpl(
@@ -215,6 +217,11 @@ open class TimelineViewStatesTestRule : TestWatcher() {
                 actionsRule.sut,
                 listRepositoryRule.mock as ListRepository<QueryType, Any>,
                 listProviderRule.mock as PagedListProvider<QueryType, Any>,
+            ),
+            TweetMediaViewModelSource.create(
+                LaunchMediaViewerAction(actionsRule.dispatcher),
+                appSettingRepository.mock,
+                selectedItemRepository
             )
         )
     }
@@ -250,5 +257,12 @@ open class TimelineViewStatesTestRule : TestWatcher() {
             .around(RxExceptionHandler())
             .around(coroutineTestRule)
             .apply(super.apply(base, description), description)
+    }
+
+    override fun finished(description: Description?) {
+        super.finished(description)
+        coroutineTestRule.runBlockingTest {
+            sut.clear()
+        }
     }
 }

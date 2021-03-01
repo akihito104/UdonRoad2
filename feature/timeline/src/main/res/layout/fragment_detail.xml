@@ -135,7 +135,7 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     android:visibility="@{viewModel.tweetItem.body.media.isEmpty() ? View.GONE : View.VISIBLE}"
                     app:bindMedia="@{viewModel.tweetItem.body.media}"
-                    app:hideForPossiblySensitive="@{viewModel.isPossiblySensitiveHidden &amp;&amp; viewModel.tweetItem.body.possiblySensitive}"
+                    app:hideForPossiblySensitive="@{viewModel.mediaState.isPossiblySensitiveHidden &amp;&amp; viewModel.tweetItem.body.possiblySensitive}"
                     app:itemClickListener="@{(v, i) -> viewModel.onMediaItemClicked(viewModel.tweetItem.originalId, viewModel.tweetItem.body, i)}"
                     tools:visibility="visible"
                     />

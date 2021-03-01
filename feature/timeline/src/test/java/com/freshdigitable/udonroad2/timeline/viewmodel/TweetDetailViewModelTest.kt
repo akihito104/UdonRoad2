@@ -17,6 +17,7 @@
 package com.freshdigitable.udonroad2.timeline.viewmodel
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
 import com.freshdigitable.udonroad2.data.impl.create
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.TweetId
@@ -32,7 +33,9 @@ import com.freshdigitable.udonroad2.test_common.jvm.AppSettingRepositoryRule
 import com.freshdigitable.udonroad2.test_common.jvm.CoroutineTestRule
 import com.freshdigitable.udonroad2.test_common.jvm.TweetRepositoryRule
 import com.freshdigitable.udonroad2.test_common.jvm.testCollect
+import com.freshdigitable.udonroad2.timeline.LaunchMediaViewerAction
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
+import com.freshdigitable.udonroad2.timeline.TweetMediaViewModelSource
 import com.google.common.truth.Truth.assertThat
 import io.mockk.every
 import io.mockk.mockk
@@ -88,7 +91,12 @@ class TweetDetailViewModelTest {
                 tweetRepositoryRule.mock,
                 appSettingRepositoryRule.mock,
                 ListOwnerGenerator.create(),
-                executor
+                executor,
+                TweetMediaViewModelSource.create(
+                    LaunchMediaViewerAction(eventDispatcher),
+                    appSettingRepositoryRule.mock,
+                    SelectedItemRepository()
+                )
             ),
             executor.dispatcher.mainContext
         )
@@ -102,7 +110,7 @@ class TweetDetailViewModelTest {
         appSettingRepositoryRule.setupIsPossiblySensitiveHidden()
         sut.tweetItem.observeForever { }
         sut.menuItemStates.observeForever { }
-        sut.isPossiblySensitiveHidden.observeForever { }
+        sut.mediaState.observeForever { }
         navigationEvents = sut.navigationEvent.testCollect(executor)
     }
 

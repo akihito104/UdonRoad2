@@ -34,7 +34,8 @@ import com.freshdigitable.udonroad2.model.app.navigation.AppViewState
 import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.toViewState
-import com.freshdigitable.udonroad2.timeline.ListItemLoadableViewState
+import com.freshdigitable.udonroad2.timeline.ListItemLoadableViewModel
+import com.freshdigitable.udonroad2.timeline.ListItemLoadableViewModelSource
 import com.freshdigitable.udonroad2.timeline.getTimelineEvent
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
@@ -51,7 +52,7 @@ class OauthViewStates(
     repository: OAuthTokenDataSource,
     listOwnerGenerator: ListOwnerGenerator,
     savedState: OauthSavedStates,
-) : ListItemLoadableViewState, ActivityEventStream {
+) : ListItemLoadableViewModelSource, ActivityEventStream {
     private val launchTwitterOauth: Flow<NavigationEvent> = actions.authApp.asFlow().mapLatest {
         val token = repository.getRequestTokenItem()
         savedState.setToken(token)
@@ -89,13 +90,17 @@ class OauthViewStates(
         pagingSourceFactory = { dataSource }
     ).flow as Flow<PagingData<Any>>
 
-    override val state: Flow<ListItemLoadableViewState.State> =
-        flowOf(object : ListItemLoadableViewState.State {
+    override val state: Flow<ListItemLoadableViewModel.State> =
+        flowOf(object : ListItemLoadableViewModel.State {
             override val isHeadingEnabled: Boolean = false
         })
     override val navigationEvent: Flow<NavigationEvent> =
         merge(launchTwitterOauth, completeAuthProcess)
     override val feedbackMessage: Flow<FeedbackMessage> = emptyFlow()
+    override fun onRefresh() = Unit
+    override fun onListScrollStarted() = Unit
+    override fun onListScrollStopped(firstVisibleItemPosition: Int) = Unit
+    override fun onHeadingClicked() = Unit
 }
 
 class OauthSavedStates(

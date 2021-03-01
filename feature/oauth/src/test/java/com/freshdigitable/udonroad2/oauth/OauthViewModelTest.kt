@@ -22,8 +22,6 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.freshdigitable.udonroad2.data.UserDataSource
 import com.freshdigitable.udonroad2.data.impl.create
-import com.freshdigitable.udonroad2.model.ListId
-import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.UserId
@@ -124,7 +122,6 @@ class OauthViewModelTestRule : TestWatcher() {
     private val dispatcher = EventDispatcher()
 
     val sut = OauthViewModel(
-        ListOwner(ListId(-1), QueryType.Oauth),
         dispatcher,
         OauthViewStates(
             OauthAction(dispatcher),

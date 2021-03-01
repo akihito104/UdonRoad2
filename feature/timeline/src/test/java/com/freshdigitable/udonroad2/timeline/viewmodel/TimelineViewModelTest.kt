@@ -37,7 +37,7 @@ class TimelineViewModelTest {
         override fun starting(description: Description?) = Unit
     }
 
-    val sut: TimelineViewModel by lazy {
+    internal val sut: TimelineViewModel by lazy {
         TimelineViewModel(
             viewStatesTestRule.owner,
             viewStatesTestRule.actionsRule.dispatcher,
@@ -50,19 +50,21 @@ class TimelineViewModelTest {
 
     @Before
     fun setup() {
-        isHeadingEnabledFlow = sut.isHeadingEnabled.testCollect(viewStatesTestRule.executor)
+        val isHeadingEnabled = mutableListOf<Boolean>()
+        isHeadingEnabledFlow = isHeadingEnabled
+        sut.listState.observeForever { isHeadingEnabled.add(it.isHeadingEnabled) }
         navigationEvents = sut.navigationEvent.testCollect(viewStatesTestRule.executor)
         sut.timeline.testCollect(viewStatesTestRule.executor)
         sut.selectedItemId.observeForever { }
         sut.feedbackMessage.testCollect(viewStatesTestRule.executor)
-        sut.isPossiblySensitiveHidden.observeForever { }
+        sut.mediaState.observeForever { }
     }
 
     @Test
     fun init() {
         assertThat(sut.selectedItemId.value).isNull()
-        assertThat(isHeadingEnabledFlow.first()).isFalse()
-        assertThat(sut.isPossiblySensitiveHidden.value).isTrue()
+        assertThat(sut.listState.value?.isHeadingEnabled).isFalse()
+        assertThat(sut.mediaState.value?.isPossiblySensitiveHidden).isTrue()
     }
 
     @Test
@@ -73,7 +75,7 @@ class TimelineViewModelTest {
         }
 
         // verify
-        assertThat(isHeadingEnabledFlow.last()).isTrue()
+        assertThat(sut.listState.value?.isHeadingEnabled).isTrue()
     }
 
     @Test
@@ -87,7 +89,7 @@ class TimelineViewModelTest {
         }
 
         // verify
-        assertThat(isHeadingEnabledFlow.last()).isTrue()
+        assertThat(sut.listState.value?.isHeadingEnabled).isTrue()
     }
 
     @Test
@@ -122,7 +124,7 @@ class TimelineViewModelTest {
 
         // verify
         assertThat(sut.selectedItemId.value?.originalId).isEqualTo(TweetId(1000))
-        assertThat(isHeadingEnabledFlow.last()).isTrue()
+        assertThat(sut.listState.value?.isHeadingEnabled).isTrue()
     }
 
     @Test
@@ -200,7 +202,7 @@ class TimelineViewModelTest {
         }
 
         // verify
-        assertThat(isHeadingEnabledFlow.last()).isFalse()
+        assertThat(sut.listState.value?.isHeadingEnabled).isFalse()
     }
 
     @Test
@@ -216,7 +218,7 @@ class TimelineViewModelTest {
         }
 
         // verify
-        assertThat(isHeadingEnabledFlow.last()).isTrue()
+        assertThat(sut.listState.value?.isHeadingEnabled).isTrue()
     }
 
     @Test
@@ -236,6 +238,6 @@ class TimelineViewModelTest {
         }
 
         // verify
-        assertThat(isHeadingEnabledFlow.last()).isTrue()
+        assertThat(sut.listState.value?.isHeadingEnabled).isTrue()
     }
 }
