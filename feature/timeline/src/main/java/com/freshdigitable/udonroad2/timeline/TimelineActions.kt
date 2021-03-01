@@ -18,10 +18,12 @@ package com.freshdigitable.udonroad2.timeline
 
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.SelectedItemId
+import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
 import com.freshdigitable.udonroad2.model.app.navigation.toActionFlow
+import com.freshdigitable.udonroad2.model.tweet.TweetElement
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import com.freshdigitable.udonroad2.shortcut.ShortcutActions
 import com.freshdigitable.udonroad2.timeline.TimelineEvent.Init
@@ -33,8 +35,10 @@ internal class TimelineActions(
     private val owner: ListOwner<*>,
     private val dispatcher: EventDispatcher,
     listItemLoadableActions: ListItemLoadableAction,
+    mediaViewerAction: LaunchMediaViewerAction,
 ) : ListItemLoadableAction by listItemLoadableActions,
     ShortcutActions by ShortcutActions.create(dispatcher),
+    TweetMediaAction by mediaViewerAction,
     TweetListItemEventListener {
 
     val showTimeline: AppAction<Init> = dispatcher.toAction()
@@ -57,5 +61,15 @@ internal class TimelineActions(
 
     private fun updateSelectedItem(selected: SelectedItemId) {
         dispatcher.postEvent(TweetItemSelection.Toggle(selected))
+    }
+
+    override fun onMediaItemClicked(
+        originalId: TweetId,
+        quotedId: TweetId?,
+        item: TweetElement,
+        index: Int
+    ) {
+        val selected = SelectedItemId(owner, originalId, quotedId)
+        dispatcher.postEvent(TimelineEvent.MediaItemClicked(item.id, index, selected))
     }
 }

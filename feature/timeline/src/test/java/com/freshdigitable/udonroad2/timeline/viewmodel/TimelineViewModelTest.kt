@@ -42,8 +42,6 @@ class TimelineViewModelTest {
     internal val sut: TimelineViewModel by lazy {
         val eventDispatcher = viewStatesTestRule.actionsRule.dispatcher
         TimelineViewModel(
-            viewStatesTestRule.owner,
-            eventDispatcher,
             viewStatesTestRule.sut,
             UserIconViewModelSource(UserIconClickedAction(eventDispatcher))
         )

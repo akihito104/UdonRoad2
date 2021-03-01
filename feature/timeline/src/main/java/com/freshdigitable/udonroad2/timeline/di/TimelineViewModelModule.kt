@@ -87,13 +87,12 @@ internal interface TweetMediaViewModelModule {
         fun provideTweetMediaViewModelSource(
             actions: LaunchMediaViewerAction,
             appSettingRepository: AppSettingRepository,
-            selectedItemRepository: SelectedItemRepository,
         ): TweetMediaViewModelSource =
-            TweetMediaViewModelSource.create(actions, appSettingRepository, selectedItemRepository)
+            TweetMediaViewModelSource.create(actions, appSettingRepository)
     }
 }
 
-@Module(includes = [TweetMediaViewModelModule::class])
+@Module
 internal interface TimelineViewModelModule {
     companion object {
         @Provides
@@ -101,16 +100,9 @@ internal interface TimelineViewModelModule {
         @ViewModelKey(TimelineViewModel::class)
         @IntoFactory
         fun provideTimelineViewModel(
-            owner: ListOwner<*>,
-            eventDispatcher: EventDispatcher,
             viewStates: TimelineViewModelSource,
             userIconViewModelSource: UserIconViewModelSource,
-        ): ViewModel = TimelineViewModel(
-            owner as ListOwner<QueryType.TweetQueryType>,
-            eventDispatcher,
-            viewStates,
-            userIconViewModelSource
-        )
+        ): ViewModel = TimelineViewModel(viewStates, userIconViewModelSource)
 
         @Provides
         @IntoMap
@@ -122,11 +114,11 @@ internal interface TimelineViewModelModule {
             owner: ListOwner<*>,
             actions: TimelineActions,
             selectedItemRepository: SelectedItemRepository,
+            appSettingRepository: AppSettingRepository,
             tweetRepository: TweetRepository,
             listOwnerGenerator: ListOwnerGenerator,
             executor: AppExecutor,
             viewModelSource: ListItemLoadableViewModelSource,
-            mediaViewModelSource: TweetMediaViewModelSource,
         ): TimelineViewModelSource = TimelineViewModelSource(
             owner as ListOwner<QueryType.TweetQueryType>,
             actions,
@@ -135,7 +127,7 @@ internal interface TimelineViewModelModule {
             listOwnerGenerator,
             executor,
             viewModelSource,
-            mediaViewModelSource,
+            TweetMediaViewModelSource.create(actions, appSettingRepository),
         )
 
         @Provides
@@ -156,7 +148,9 @@ internal interface TimelineViewModelModule {
             owner: ListOwner<*>,
             dispatcher: EventDispatcher,
             listItemLoadableActions: ListItemLoadableActions,
-        ): TimelineActions = TimelineActions(owner, dispatcher, listItemLoadableActions)
+            mediaViewerAction: LaunchMediaViewerAction,
+        ): TimelineActions =
+            TimelineActions(owner, dispatcher, listItemLoadableActions, mediaViewerAction)
     }
 }
 

@@ -17,7 +17,6 @@
 package com.freshdigitable.udonroad2.timeline.viewmodel
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
 import com.freshdigitable.udonroad2.data.impl.create
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.TweetId
@@ -98,7 +97,6 @@ class TweetDetailViewModelTest {
                 TweetMediaViewModelSource.create(
                     LaunchMediaViewerAction(eventDispatcher),
                     appSettingRepositoryRule.mock,
-                    SelectedItemRepository()
                 ),
                 UserIconViewModelSource(userIconClickedAction)
             ),

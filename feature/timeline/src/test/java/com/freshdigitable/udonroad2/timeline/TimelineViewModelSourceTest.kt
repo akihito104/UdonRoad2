@@ -219,9 +219,8 @@ open class TimelineViewStatesTestRule : TestWatcher() {
                 listProviderRule.mock as PagedListProvider<QueryType, Any>,
             ),
             TweetMediaViewModelSource.create(
-                LaunchMediaViewerAction(actionsRule.dispatcher),
+                actionsRule.sut,
                 appSettingRepository.mock,
-                selectedItemRepository
             )
         )
     }

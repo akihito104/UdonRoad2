@@ -70,6 +70,9 @@ internal class TimelineViewModelSource(
             }
         },
         actions.heading.onEvent { s, _ -> s.copy(selectedItemId = null) },
+        actions.launchMediaViewer.filter { it.selectedItemId?.owner == owner }.onEvent { s, e ->
+            e.selectedItemId?.let { s.copy(selectedItemId = it) } ?: s
+        },
     ).onEach {
         if (it.selectedItemId != null) {
             selectedItemRepository.put(it.selectedItemId)
