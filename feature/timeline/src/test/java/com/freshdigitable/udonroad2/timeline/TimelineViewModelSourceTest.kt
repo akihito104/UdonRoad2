@@ -55,7 +55,7 @@ import org.junit.runners.model.Statement
 import java.util.concurrent.atomic.AtomicInteger
 
 @ExperimentalCoroutinesApi
-class TimelineViewStateTest {
+class TimelineViewModelSourceTest {
     @get:Rule
     val rule = TimelineViewStatesTestRule()
 
@@ -73,7 +73,7 @@ class TimelineViewStateTest {
             )
 
             // verify
-            assertThat(sut.selectedItemId.value?.originalId).isEqualTo(TweetId(1000L))
+            assertThat(selectedItems.last()?.originalId).isEqualTo(TweetId(1000L))
             assertThat(navEvents[0]).isInstanceOf(TimelineEvent.Navigate.MediaViewer::class.java)
         }
 
@@ -85,7 +85,7 @@ class TimelineViewStateTest {
         )
 
         // verify
-        assertThat(sut.selectedItemId.value?.originalId).isEqualTo(TweetId(200L))
+        assertThat(selectedItems.last()?.originalId).isEqualTo(TweetId(200L))
     }
 
     @Test
@@ -97,7 +97,7 @@ class TimelineViewStateTest {
         )
 
         // verify
-        assertThat(sut.selectedItemId.value).isNull()
+        assertThat(selectedItems.last()).isNull()
     }
 
     @Test
@@ -114,7 +114,7 @@ class TimelineViewStateTest {
         )
 
         // verify
-        assertThat(sut.selectedItemId.value?.originalId).isEqualTo(TweetId(200L))
+        assertThat(selectedItems.last()?.originalId).isEqualTo(TweetId(200L))
         messageEvents.assertValueAt(0) { it.messageRes == R.string.msg_fav_create_success }
     }
 
@@ -134,7 +134,7 @@ class TimelineViewStateTest {
         )
 
         // verify
-        assertThat(sut.selectedItemId.value?.originalId).isEqualTo(TweetId(200L))
+        assertThat(selectedItems.last()?.originalId).isEqualTo(TweetId(200L))
         messageEvents.assertValueAt(0) { it.messageRes == R.string.msg_already_fav }
     }
 
@@ -152,7 +152,7 @@ class TimelineViewStateTest {
         )
 
         // verify
-        assertThat(sut.selectedItemId.value?.originalId).isEqualTo(TweetId(200L))
+        assertThat(selectedItems.last()?.originalId).isEqualTo(TweetId(200L))
         messageEvents.assertValueAt(0) { it.messageRes == R.string.msg_rt_create_success }
     }
 
@@ -173,7 +173,7 @@ class TimelineViewStateTest {
             )
 
             // verify
-            assertThat(sut.selectedItemId.value?.originalId).isEqualTo(TweetId(200L))
+            assertThat(selectedItems.last()?.originalId).isEqualTo(TweetId(200L))
             messageEvents.assertValueAt(0) { it.messageRes == R.string.msg_already_rt }
         }
 }
@@ -203,9 +203,9 @@ open class TimelineViewStatesTestRule : TestWatcher() {
 
     @ExperimentalCoroutinesApi
     internal val executor = AppExecutor(dispatcher = coroutineTestRule.coroutineContextProvider)
-    internal val sut: TimelineViewState by lazy {
+    internal val sut: TimelineViewModelSource by lazy {
         val selectedItemRepository = SelectedItemRepository()
-        TimelineViewState(
+        TimelineViewModelSource(
             owner,
             actionsRule.sut,
             selectedItemRepository,
@@ -227,6 +227,7 @@ open class TimelineViewStatesTestRule : TestWatcher() {
     }
     lateinit var navEvents: List<NavigationEvent>
     lateinit var messageEvents: TestObserver<FeedbackMessage>
+    lateinit var selectedItems: List<SelectedItemId?>
 
     fun setupPrependListResponse(res: List<TweetEntity> = emptyList()) = with(listRepositoryRule) {
         coSetupResponseWithVerify(
@@ -244,7 +245,7 @@ open class TimelineViewStatesTestRule : TestWatcher() {
         navEvents = sut.navigationEvent.testCollect(executor)
         messageEvents = sut.updateTweet.test()
         sut.state.testCollect(executor)
-        sut.selectedItemId.observeForever { }
+        selectedItems = sut.selectedItemId.testCollect(executor)
     }
 
     override fun apply(base: Statement?, description: Description?): Statement {

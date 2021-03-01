@@ -39,7 +39,7 @@ import com.freshdigitable.udonroad2.timeline.ListItemLoadableActions
 import com.freshdigitable.udonroad2.timeline.ListItemLoadableViewModelSource
 import com.freshdigitable.udonroad2.timeline.ListItemLoadableViewStateImpl
 import com.freshdigitable.udonroad2.timeline.TimelineActions
-import com.freshdigitable.udonroad2.timeline.TimelineViewState
+import com.freshdigitable.udonroad2.timeline.TimelineViewModelSource
 import com.freshdigitable.udonroad2.timeline.TweetMediaViewModelSource
 import com.freshdigitable.udonroad2.timeline.viewmodel.CustomTimelineListActions
 import com.freshdigitable.udonroad2.timeline.viewmodel.CustomTimelineListItemLoadableViewState
@@ -98,7 +98,7 @@ internal interface TimelineViewModelModule {
         fun provideTimelineViewModel(
             owner: ListOwner<*>,
             eventDispatcher: EventDispatcher,
-            viewStates: TimelineViewState,
+            viewStates: TimelineViewModelSource,
         ): ViewModel = TimelineViewModel(
             owner as ListOwner<QueryType.TweetQueryType>,
             eventDispatcher,
@@ -111,7 +111,7 @@ internal interface TimelineViewModelModule {
         fun provideTimelineViewModelKClass(): KClass<out ViewModel> = TimelineViewModel::class
 
         @Provides
-        fun provideTimelineViewState(
+        fun provideTimelineViewModelSource(
             owner: ListOwner<*>,
             actions: TimelineActions,
             selectedItemRepository: SelectedItemRepository,
@@ -120,7 +120,7 @@ internal interface TimelineViewModelModule {
             executor: AppExecutor,
             viewModelSource: ListItemLoadableViewStateImpl,
             mediaViewModelSource: TweetMediaViewModelSource,
-        ): TimelineViewState = TimelineViewState(
+        ): TimelineViewModelSource = TimelineViewModelSource(
             owner as ListOwner<QueryType.TweetQueryType>,
             actions,
             selectedItemRepository,
@@ -133,9 +133,10 @@ internal interface TimelineViewModelModule {
 
         @Provides
         fun provideTimelineActions(
+            owner: ListOwner<*>,
             dispatcher: EventDispatcher,
             listItemLoadableActions: ListItemLoadableActions
-        ): TimelineActions = TimelineActions(dispatcher, listItemLoadableActions)
+        ): TimelineActions = TimelineActions(owner, dispatcher, listItemLoadableActions)
     }
 }
 

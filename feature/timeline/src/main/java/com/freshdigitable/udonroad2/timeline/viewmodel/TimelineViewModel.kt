@@ -29,12 +29,11 @@ import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventStream
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.tweet.TweetElement
-import com.freshdigitable.udonroad2.model.tweet.TweetListItem
-import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.timeline.ListItemLoadableEventListener
 import com.freshdigitable.udonroad2.timeline.ListItemLoadableViewModel
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
-import com.freshdigitable.udonroad2.timeline.TimelineViewState
+import com.freshdigitable.udonroad2.timeline.TimelineViewModelSource
+import com.freshdigitable.udonroad2.timeline.TweetListItemEventListener
 import com.freshdigitable.udonroad2.timeline.TweetListItemViewModel
 import com.freshdigitable.udonroad2.timeline.TweetMediaItemViewModel
 import kotlinx.coroutines.flow.Flow
@@ -42,17 +41,19 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.shareIn
-import timber.log.Timber
 
 internal class TimelineViewModel(
     private val owner: ListOwner<TweetQueryType>,
     private val eventDispatcher: EventDispatcher,
-    viewStates: TimelineViewState,
-) : ListItemLoadableViewModel<TweetQueryType>, ListItemLoadableEventListener by viewStates,
-    TweetListItemViewModel, TweetMediaItemViewModel, ActivityEventStream by viewStates,
+    viewModelSource: TimelineViewModelSource,
+) : ListItemLoadableViewModel<TweetQueryType>, ListItemLoadableEventListener by viewModelSource,
+    TweetListItemViewModel, TweetListItemEventListener by viewModelSource,
+    TweetMediaItemViewModel, ActivityEventStream by viewModelSource,
     ViewModel() {
-    private val state = viewStates.state.shareIn(viewModelScope, SharingStarted.Lazily, replay = 1)
-    override val selectedItemId: LiveData<SelectedItemId?> = viewStates.selectedItemId
+    private val state = viewModelSource.state
+        .shareIn(viewModelScope, SharingStarted.Lazily, replay = 1)
+    override val selectedItemId: LiveData<SelectedItemId?> = viewModelSource.selectedItemId
+        .asLiveData(viewModelScope.coroutineContext)
     override val mediaState: LiveData<TweetMediaItemViewModel.State> =
         state.distinctUntilChangedBy { it.mediaState }
             .filterNotNull()
@@ -60,25 +61,8 @@ internal class TimelineViewModel(
     override val listState: LiveData<ListItemLoadableViewModel.State> =
         state.distinctUntilChangedBy { it.isHeadingEnabled }
             .asLiveData(viewModelScope.coroutineContext)
-    override val timeline: Flow<PagingData<Any>> = viewStates.pagedList.cachedIn(viewModelScope)
-
-    override fun onBodyItemClicked(item: TweetListItem) {
-        Timber.tag("TimelineViewModel").d("onBodyItemClicked: ${item.body.id}")
-        updateSelectedItem(SelectedItemId(owner, item.originalId))
-    }
-
-    override fun onQuoteItemClicked(item: TweetListItem) {
-        Timber.tag("TimelineViewModel").d("onQuoteItemClicked: ${item.quoted?.id}")
-        updateSelectedItem(SelectedItemId(owner, item.originalId, item.quoted?.id))
-    }
-
-    private fun updateSelectedItem(selected: SelectedItemId) {
-        eventDispatcher.postEvent(TimelineEvent.TweetItemSelection.Toggle(selected))
-    }
-
-    override fun onUserIconClicked(user: TweetUserItem) {
-        eventDispatcher.postEvent(TimelineEvent.UserIconClicked(user))
-    }
+    override val timeline: Flow<PagingData<Any>> = viewModelSource.pagedList
+        .cachedIn(viewModelScope)
 
     override fun onMediaItemClicked(
         originalId: TweetId,

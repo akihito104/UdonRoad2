@@ -10,7 +10,12 @@ interface ListItemClickListener<I> {
     fun onUserIconClicked(user: TweetUserItem) {}
 }
 
-interface TweetListItemViewModel : ListItemClickListener<TweetListItem> {
-    val selectedItemId: LiveData<SelectedItemId?>
+interface TweetListItemEventListener : ListItemClickListener<TweetListItem> {
+    override fun onBodyItemClicked(item: TweetListItem)
+    override fun onUserIconClicked(user: TweetUserItem)
     fun onQuoteItemClicked(item: TweetListItem)
+}
+
+interface TweetListItemViewModel : TweetListItemEventListener {
+    val selectedItemId: LiveData<SelectedItemId?>
 }

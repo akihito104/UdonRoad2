@@ -83,7 +83,7 @@ class TimelineActionsTestRule : TestWatcher() {
     val owner = ListOwner(1, QueryType.TweetQueryType.Timeline())
     val dispatcher = EventDispatcher()
     internal val actions = ListItemLoadableActions(owner, dispatcher)
-    internal val sut: TimelineActions = TimelineActions(dispatcher, actions)
+    internal val sut: TimelineActions = TimelineActions(owner, dispatcher, actions)
 
     val favTweetObserver: TestObserver<SelectedItemShortcut.Like> = sut.favTweet.test()
     val retweetObserver: TestObserver<SelectedItemShortcut.Retweet> = sut.retweet.test()

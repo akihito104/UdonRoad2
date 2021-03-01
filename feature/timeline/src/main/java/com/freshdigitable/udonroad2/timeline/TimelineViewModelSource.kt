@@ -16,7 +16,6 @@
 
 package com.freshdigitable.udonroad2.timeline
 
-import androidx.lifecycle.asLiveData
 import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
 import com.freshdigitable.udonroad2.model.ListOwner
@@ -24,10 +23,8 @@ import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.app.AppExecutor
-import com.freshdigitable.udonroad2.model.app.mainContext
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventStream
-import com.freshdigitable.udonroad2.model.app.navigation.AppViewState
 import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.onEvent
@@ -43,7 +40,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.rx2.asFlow
 import javax.inject.Inject
 
-internal class TimelineViewState(
+internal class TimelineViewModelSource(
     owner: ListOwner<QueryType.TweetQueryType>,
     actions: TimelineActions,
     selectedItemRepository: SelectedItemRepository,
@@ -55,30 +52,24 @@ internal class TimelineViewState(
 ) : ListItemLoadableViewModelSource by baseViewModelSource,
     TweetMediaViewModelSource by mediaViewModelSource,
     ActivityEventStream,
-    ShortcutViewStates by ShortcutViewStates.create(actions, tweetRepository, executor) {
+    ShortcutViewStates by ShortcutViewStates.create(actions, tweetRepository, executor),
+    TweetListItemEventListener by actions {
 
     override val state: Flow<TimelineState> = stateSourceBuilder(
         init = TimelineState(
             selectedItemId = selectedItemRepository.find(owner)
         ),
-        baseViewModelSource.state.onEvent { s, e -> s.copy(baseState = e) },
-        mediaViewModelSource.state.onEvent { s, e -> s.copy(mediaState = e) },
-        actions.selectItem.filter { owner == it.owner }.asFlow().onEvent { s, e ->
-            s.copy(selectedItemId = e.selectedItemId)
-        },
-        actions.unselectItem.filter { owner == it.owner }.asFlow().onEvent { s, e ->
-            s.copy(selectedItemId = null)
-        },
-        actions.toggleItem.filter { owner == it.owner }.asFlow().onEvent { s, e ->
-            if (s.selectedItemId == e.item) {
-                s.copy(selectedItemId = null)
-            } else {
-                s.copy(selectedItemId = e.item)
+        baseViewModelSource.state.onEvent { s, base -> s.copy(baseState = base) },
+        mediaViewModelSource.state.onEvent { s, media -> s.copy(mediaState = media) },
+        actions.selectItem.onEvent { s, e -> s.copy(selectedItemId = e.selectedItemId) },
+        actions.unselectItem.onEvent { s, _ -> s.copy(selectedItemId = null) },
+        actions.toggleItem.onEvent { s, e ->
+            when (s.selectedItemId) {
+                e.item -> s.copy(selectedItemId = null)
+                else -> s.copy(selectedItemId = e.item)
             }
         },
-        actions.heading.filter { it.owner == owner }.onEvent { s, e ->
-            s.copy(selectedItemId = null)
-        },
+        actions.heading.onEvent { s, _ -> s.copy(selectedItemId = null) },
     ).onEach {
         if (it.selectedItemId != null) {
             selectedItemRepository.put(it.selectedItemId)
@@ -87,8 +78,7 @@ internal class TimelineViewState(
         }
     }
 
-    val selectedItemId: AppViewState<SelectedItemId?> =
-        selectedItemRepository.getSource(owner).asLiveData(executor.mainContext)
+    internal val selectedItemId: Flow<SelectedItemId?> = selectedItemRepository.getSource(owner)
 
     private val userInfoNavigation = UserIconClickedNavigation.create(actions)
     override val navigationEvent: Flow<NavigationEvent> = merge(
