@@ -20,6 +20,7 @@ import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
+import com.freshdigitable.udonroad2.test_common.jvm.createMock
 import com.freshdigitable.udonroad2.test_common.jvm.testCollect
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.TimelineViewStatesTestRule
@@ -114,10 +115,10 @@ class TimelineViewModelTest {
     fun onBodyClicked() {
         viewStatesTestRule.coroutineTestRule.runBlockingTest {
             // setup
-            val item = mockk<TweetListItem>().also {
-                every { it.originalId } returns TweetId(1000)
-                every { it.body } returns mockk(relaxed = true)
-            }
+            val item = TweetListItem.createMock(
+                originalTweetId = TweetId(1000),
+                body = mockk(relaxed = true)
+            )
             sut.onListScrollStopped(0)
 
             // exercise
@@ -148,10 +149,10 @@ class TimelineViewModelTest {
         viewStatesTestRule.coroutineTestRule.runBlockingTest {
             // setup
             sut.onListScrollStopped(0)
-            val item = mockk<TweetListItem>().also {
-                every { it.originalId } returns TweetId(1000)
-                every { it.body } returns mockk(relaxed = true)
-            }
+            val item = TweetListItem.createMock(
+                originalTweetId = TweetId(1000),
+                body = mockk(relaxed = true)
+            )
             sut.onBodyItemClicked(item)
 
             // exercise

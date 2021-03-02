@@ -33,12 +33,15 @@ import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.postEvents
+import com.freshdigitable.udonroad2.model.tweet.TweetElement
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
+import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import com.freshdigitable.udonroad2.shortcut.SelectedItemShortcut
 import com.freshdigitable.udonroad2.test_common.MockVerified
 import com.freshdigitable.udonroad2.test_common.RxExceptionHandler
 import com.freshdigitable.udonroad2.test_common.jvm.CoroutineTestRule
 import com.freshdigitable.udonroad2.test_common.jvm.TweetRepositoryRule
+import com.freshdigitable.udonroad2.test_common.jvm.createMock
 import com.freshdigitable.udonroad2.test_common.jvm.testCollect
 import com.freshdigitable.udonroad2.timeline.TimelineEvent.TweetItemSelection
 import com.google.common.truth.Truth.assertThat
@@ -63,13 +66,13 @@ class TimelineViewModelSourceTest {
     fun selectedItemId_dispatchMediaItemClickedEvent_then_selectedItemIdHasValue(): Unit =
         with(rule) {
             // setup
+            dispatchEvents(TimelineEvent.Setup())
 
             // exercise
-            dispatchEvents(
-                TimelineEvent.Setup(),
-                TimelineEvent.MediaItemClicked(
-                    TweetId(1000), 0, SelectedItemId(owner, TweetId(1000))
-                )
+            sut.onMediaItemClicked(
+                TweetId(1000),
+                index = 0,
+                item = TweetElement.createMock(TweetId(1000))
             )
 
             // verify
@@ -104,9 +107,7 @@ class TimelineViewModelSourceTest {
     fun updateTweet_dispatchLikeIsSuccess_then_likeDispatched(): Unit = with(rule) {
         // setup
         tweetRepositoryMock.setupPostLikeForSuccess(TweetId(200))
-        dispatchEvents(
-            TweetItemSelection.Selected(SelectedItemId(owner, TweetId(200)))
-        )
+        sut.onBodyItemClicked(TweetListItem.createMock(TweetId(200)))
 
         // exercise
         dispatchEvents(
@@ -124,9 +125,7 @@ class TimelineViewModelSourceTest {
         tweetRepositoryMock.setupPostLikeForFailure(
             TweetId(200), AppTwitterException.ErrorType.ALREADY_FAVORITED
         )
-        dispatchEvents(
-            TweetItemSelection.Selected(SelectedItemId(owner, TweetId(200)))
-        )
+        sut.onBodyItemClicked(TweetListItem.createMock(TweetId(200)))
 
         // exercise
         dispatchEvents(
@@ -142,9 +141,7 @@ class TimelineViewModelSourceTest {
     fun updateTweet_dispatchRetweetEvent_then_retweetDispatched(): Unit = with(rule) {
         // setup
         tweetRepositoryMock.setupPostRetweetForSuccess(TweetId(200))
-        dispatchEvents(
-            TweetItemSelection.Selected(SelectedItemId(owner, TweetId(200)))
-        )
+        sut.onBodyItemClicked(TweetListItem.createMock(TweetId(200)))
 
         // exercise
         dispatchEvents(
@@ -163,9 +160,7 @@ class TimelineViewModelSourceTest {
             tweetRepositoryMock.setupPostRetweetForFailure(
                 TweetId(200), AppTwitterException.ErrorType.ALREADY_RETWEETED
             )
-            dispatchEvents(
-                TweetItemSelection.Selected(SelectedItemId(owner, TweetId(200)))
-            )
+            sut.onBodyItemClicked(TweetListItem.createMock(TweetId(200)))
 
             // exercise
             dispatchEvents(
@@ -204,11 +199,10 @@ open class TimelineViewStatesTestRule : TestWatcher() {
     @ExperimentalCoroutinesApi
     internal val executor = AppExecutor(dispatcher = coroutineTestRule.coroutineContextProvider)
     internal val sut: TimelineViewModelSource by lazy {
-        val selectedItemRepository = SelectedItemRepository()
         TimelineViewModelSource(
             owner,
             actionsRule.sut,
-            selectedItemRepository,
+            SelectedItemRepository(),
             tweetRepositoryMock.mock,
             ListOwnerGenerator.create(AtomicInteger(1)),
             executor,

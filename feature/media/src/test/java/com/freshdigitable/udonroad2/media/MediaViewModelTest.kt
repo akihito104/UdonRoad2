@@ -27,8 +27,8 @@ import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import com.freshdigitable.udonroad2.test_common.MockVerified
 import com.freshdigitable.udonroad2.test_common.jvm.CoroutineTestRule
 import com.freshdigitable.udonroad2.test_common.jvm.TweetRepositoryRule
+import com.freshdigitable.udonroad2.test_common.jvm.createMock
 import com.google.common.truth.Truth.assertThat
-import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
@@ -52,14 +52,10 @@ class MediaViewModelTest {
         .around(mediaRepositoryRule)
 
     private val mediaEntitySource: Channel<List<MediaEntity>> = Channel()
-    private val tweetListItem: TweetListItem = mockk<TweetListItem>().apply {
-        val tweetId = TweetId(1000)
-        every { originalId } returns tweetId
-        every { body } returns mockk<TweetElement>().apply {
-            every { id } returns tweetId
-            every { media } returns listOf(mockk())
-        }
-    }
+    private val tweetListItem: TweetListItem = TweetListItem.createMock(
+        originalTweetId = TweetId(1000),
+        body = TweetElement.createMock(TweetId(1000), media = listOf(mockk())),
+    )
     private val sut: MediaViewModel by lazy {
         val eventDispatcher = EventDispatcher()
         val viewStates = MediaViewModelViewStates(
