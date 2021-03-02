@@ -11,10 +11,9 @@ import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.QueryType.CustomTimelineListQueryType
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventStream
-import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
-import com.freshdigitable.udonroad2.model.app.navigation.toAction
+import com.freshdigitable.udonroad2.model.app.navigation.toActionFlow
 import com.freshdigitable.udonroad2.timeline.ListItemClickListener
 import com.freshdigitable.udonroad2.timeline.ListItemLoadableEventListener
 import com.freshdigitable.udonroad2.timeline.ListItemLoadableViewModel
@@ -26,7 +25,6 @@ import com.freshdigitable.udonroad2.timeline.getTimelineEvent
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.merge
-import kotlinx.coroutines.rx2.asFlow
 import javax.inject.Inject
 
 internal class CustomTimelineListViewModel(
@@ -50,8 +48,8 @@ internal class CustomTimelineListViewModel(
 internal class CustomTimelineListActions @Inject constructor(
     private val eventDispatcher: EventDispatcher,
 ) : ListItemClickListener<CustomTimelineItem> {
-    internal val launchCustomTimeline: AppAction<TimelineEvent.CustomTimelineClicked> =
-        eventDispatcher.toAction()
+    internal val launchCustomTimeline: Flow<TimelineEvent.CustomTimelineClicked> =
+        eventDispatcher.toActionFlow()
 
     override fun onBodyItemClicked(item: CustomTimelineItem) {
         eventDispatcher.postEvent(TimelineEvent.CustomTimelineClicked(item))
@@ -66,7 +64,7 @@ internal class CustomTimelineListItemLoadableViewState(
     ListItemClickListener<CustomTimelineItem> by actions {
     override val navigationEvent: Flow<NavigationEvent> = merge(
         viewModelSource.navigationEvent,
-        actions.launchCustomTimeline.asFlow().mapLatest {
+        actions.launchCustomTimeline.mapLatest {
             val queryType = QueryType.TweetQueryType.CustomTimeline(
                 it.customTimeline.id,
                 it.customTimeline.name

@@ -121,9 +121,8 @@ class OauthViewModelTestRule : TestWatcher() {
     val userRepository = MockVerified.create<UserDataSource>()
     private val dispatcher = EventDispatcher()
 
-    val sut = OauthViewModel(
-        dispatcher,
-        OauthViewStates(
+    internal val sut = OauthViewModel(
+        OauthViewModelSource(
             OauthAction(dispatcher),
             LoginUseCase(oauthRepository.appSettingMock, oauthRepository.mock, userRepository.mock),
             OauthDataSource(ApplicationProvider.getApplicationContext()),
@@ -139,8 +138,8 @@ class OauthViewModelTestRule : TestWatcher() {
 
     override fun starting(description: Description?) {
         super.starting(description)
+        sut.state.observeForever { }
         sut.sendPinButtonEnabled.observeForever { }
-        sut.pin.observeForever { }
     }
 
     fun runBlockingTest(block: suspend OauthViewModelTestRule.() -> Unit) {

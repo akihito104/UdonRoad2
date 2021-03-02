@@ -37,7 +37,7 @@ import com.freshdigitable.udonroad2.oauth.OauthItem
 import com.freshdigitable.udonroad2.oauth.OauthNavigationDelegate
 import com.freshdigitable.udonroad2.oauth.OauthSavedStates
 import com.freshdigitable.udonroad2.oauth.OauthViewModel
-import com.freshdigitable.udonroad2.oauth.OauthViewStates
+import com.freshdigitable.udonroad2.oauth.OauthViewModelSource
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragment
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentEventDelegate
 import dagger.Binds
@@ -53,7 +53,7 @@ interface OauthViewModelModule {
 
     companion object {
         @Provides
-        fun provideOauthAction(dispatcher: EventDispatcher): OauthAction {
+        internal fun provideOauthAction(dispatcher: EventDispatcher): OauthAction {
             return OauthAction(dispatcher)
         }
 
@@ -77,15 +77,15 @@ interface OauthViewModelModule {
             OauthSavedStates(handle)
 
         @Provides
-        fun provideOauthViewStates(
+        internal fun provideOauthViewStates(
             actions: OauthAction,
             login: LoginUseCase,
             dataSource: PagingSource<Int, OauthItem>,
             repository: OAuthTokenDataSource,
             listOwnerGenerator: ListOwnerGenerator,
             savedState: OauthSavedStates,
-        ): OauthViewStates {
-            return OauthViewStates(
+        ): OauthViewModelSource {
+            return OauthViewModelSource(
                 actions,
                 login,
                 dataSource,
@@ -99,10 +99,8 @@ interface OauthViewModelModule {
         @IntoMap
         @ViewModelKey(OauthViewModel::class)
         @IntoSavedStateFactory
-        fun provideOauthViewModel(
-            eventDispatcher: EventDispatcher,
-            viewStates: OauthViewStates,
-        ): ViewModel = OauthViewModel(eventDispatcher, viewStates)
+        internal fun provideOauthViewModel(viewModelSource: OauthViewModelSource): ViewModel =
+            OauthViewModel(viewModelSource)
 
         @Provides
         @IntoMap

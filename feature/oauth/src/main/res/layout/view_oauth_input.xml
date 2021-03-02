@@ -88,7 +88,7 @@
                 android:inputType="numberDecimal"
                 android:nextFocusUp="@id/oauth_pin"
                 android:nextFocusLeft="@id/oauth_pin"
-                android:text="@{viewModel.pin}"
+                android:text="@{viewModel.state.pinText}"
                 android:afterTextChanged="@{(t) -> viewModel.onAfterPinTextChanged(t)}"
                 />
         </com.google.android.material.textfield.TextInputLayout>
