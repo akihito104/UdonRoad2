@@ -98,10 +98,10 @@ internal data class MainActivityViewState(
     val selectedItem: SelectedItemId? = null,
 ) : ViewState {
     val isTweetInputMenuVisible: Boolean
-        get() {
-            return !(navHostState is MainNavHostState.Timeline &&
-                navHostState.owner.query is QueryType.Oauth)
-        }
+        get() = !(
+            navHostState is MainNavHostState.Timeline &&
+                navHostState.owner.query is QueryType.Oauth
+            )
     val isShortcutVisible: Boolean
         get() = when {
             isTweetInputExpanded -> false

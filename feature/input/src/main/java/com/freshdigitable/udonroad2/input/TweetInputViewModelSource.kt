@@ -115,7 +115,8 @@ internal class TweetInputViewModelSource @Inject constructor(
         actions.updateText.onEvent { state, event -> state.copy(text = event.text) },
         actions.updateMedia.onEvent { state, event ->
             when (val result = event.result) {
-                is MediaChooserResultContract.MediaChooserResult.Replace -> state.copy(media = result.paths)
+                is MediaChooserResultContract.MediaChooserResult.Replace ->
+                    state.copy(media = result.paths)
                 is MediaChooserResultContract.MediaChooserResult.Add -> {
                     state.copy(media = state.media + result.paths)
                 }
@@ -123,11 +124,13 @@ internal class TweetInputViewModelSource @Inject constructor(
             }
         },
         actions.cancelInput.onEvent(
-            atFirst = scanSource { state, _ -> state.toCanceled() }) {
+            atFirst = scanSource { state, _ -> state.toCanceled() }
+        ) {
             onNext { state, _ -> state.toIdling(idlingState) }
         },
         actions.sendTweet.onEvent(
-            atFirst = scanSource { state, _ -> state.toSending() }) {
+            atFirst = scanSource { state, _ -> state.toSending() }
+        ) {
             onNext(
                 withResult = { state, _ ->
                     val mediaIds = state.media.map { repository.uploadMedia(it) }
@@ -137,8 +140,10 @@ internal class TweetInputViewModelSource @Inject constructor(
                         repository.post(text, mediaIds, state.reply)
                     }
                 },
-                onSuccess = listOf({ state, _ -> state.toSucceeded() },
-                    { state, _ -> state.toIdling(idlingState) }),
+                onSuccess = listOf(
+                    { state, _ -> state.toSucceeded() },
+                    { state, _ -> state.toIdling(idlingState) }
+                ),
                 onError = listOf { state, exception ->
                     if (exception is AppTwitterException || exception is IOException) {
                         state.toFailed()

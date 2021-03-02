@@ -60,7 +60,8 @@ class TweetDetailViewModel(
     private val viewStates: TweetDetailViewStates,
     coroutineContext: CoroutineContext? = null
 ) : TweetDetailEventListener by viewStates,
-    TweetMediaItemViewModel, TweetMediaEventListener by viewStates,
+    TweetMediaItemViewModel,
+    TweetMediaEventListener by viewStates,
     ViewModel() {
     private val coroutineContext: CoroutineContext =
         coroutineContext ?: viewModelScope.coroutineContext
@@ -133,7 +134,8 @@ interface TweetDetailEventListener : UserIconClickListener {
 class TweetDetailActions @Inject constructor(
     private val eventDispatcher: EventDispatcher,
     private val userIconClickedAction: UserIconClickedAction,
-) : TweetDetailEventListener, LaunchUserInfoAction by userIconClickedAction,
+) : TweetDetailEventListener,
+    LaunchUserInfoAction by userIconClickedAction,
     ShortcutActions by ShortcutActions.create(eventDispatcher) {
     val launchOriginalTweetUserInfo =
         eventDispatcher.toActionFlow<TimelineEvent.RetweetUserClicked>()

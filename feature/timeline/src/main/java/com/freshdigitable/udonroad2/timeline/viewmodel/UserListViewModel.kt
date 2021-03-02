@@ -26,8 +26,10 @@ class UserListViewModel(
     userIconViewModelSource: UserIconViewModelSource,
 ) : ListItemLoadableViewModel<QueryType.UserQueryType>,
     ListItemLoadableEventListener by viewModelSource,
-    ListItemClickListener<UserListItem>, UserIconClickListener by userIconViewModelSource,
-    ActivityEventStream by viewModelSource, ViewModel() {
+    ListItemClickListener<UserListItem>,
+    UserIconClickListener by userIconViewModelSource,
+    ActivityEventStream by viewModelSource,
+    ViewModel() {
 
     override val listState: LiveData<ListItemLoadableViewModel.State> =
         viewModelSource.state.asLiveData(viewModelScope.coroutineContext)

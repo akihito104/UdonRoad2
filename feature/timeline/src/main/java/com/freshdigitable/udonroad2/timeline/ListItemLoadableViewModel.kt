@@ -19,7 +19,8 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.receiveAsFlow
 import javax.inject.Inject
 
-interface ListItemLoadableViewModel<Q : QueryType> : ListItemLoadableEventListener,
+interface ListItemLoadableViewModel<Q : QueryType> :
+    ListItemLoadableEventListener,
     ActivityEventStream {
     val listState: LiveData<State>
     val timeline: Flow<PagingData<Any>>
@@ -81,7 +82,8 @@ internal class ListItemLoadableViewStateImpl(
     actions: ListItemLoadableAction,
     private val listRepository: ListRepository<QueryType, Any>,
     pagedListProvider: PagedListProvider<QueryType, Any>,
-) : ListItemLoadableViewModelSource, ListItemLoadableEventListener by actions,
+) : ListItemLoadableViewModelSource,
+    ListItemLoadableEventListener by actions,
     ActivityEventStream by ActivityEventStream.EmptyStream {
 
     override val pagedList: Flow<PagingData<Any>> = pagedListProvider.getList(owner.query, owner.id)

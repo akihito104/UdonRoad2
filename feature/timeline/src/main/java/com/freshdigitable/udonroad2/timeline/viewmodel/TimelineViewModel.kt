@@ -45,10 +45,13 @@ import kotlinx.coroutines.flow.shareIn
 internal class TimelineViewModel(
     viewModelSource: TimelineViewModelSource,
     userIconViewModelSource: UserIconViewModelSource,
-) : ListItemLoadableViewModel<TweetQueryType>, ListItemLoadableEventListener by viewModelSource,
+) : ListItemLoadableViewModel<TweetQueryType>,
+    ListItemLoadableEventListener by viewModelSource,
     UserIconClickListener by userIconViewModelSource,
-    TweetListItemViewModel, TweetListItemEventListener by viewModelSource,
-    TweetMediaItemViewModel, TweetMediaEventListener by viewModelSource,
+    TweetListItemViewModel,
+    TweetListItemEventListener by viewModelSource,
+    TweetMediaItemViewModel,
+    TweetMediaEventListener by viewModelSource,
     ActivityEventStream by viewModelSource,
     ViewModel() {
     private val state = viewModelSource.state

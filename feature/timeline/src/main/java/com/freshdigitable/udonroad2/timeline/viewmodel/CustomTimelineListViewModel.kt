@@ -34,7 +34,8 @@ internal class CustomTimelineListViewModel(
     ListItemLoadableEventListener by viewModelSource,
     ListItemClickListener<CustomTimelineItem> by viewModelSource,
     UserIconClickListener by userIconViewModelSource,
-    ActivityEventStream by viewModelSource, ViewModel() {
+    ActivityEventStream by viewModelSource,
+    ViewModel() {
     override val listState: LiveData<ListItemLoadableViewModel.State> =
         viewModelSource.state.asLiveData(viewModelScope.coroutineContext)
     override val timeline: Flow<PagingData<Any>> =

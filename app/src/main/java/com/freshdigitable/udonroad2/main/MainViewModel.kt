@@ -92,4 +92,4 @@ internal class MainViewModel(
 }
 
 val TweetUserItem.account: String
-    get() = "@${screenName}"
+    get() = "@$screenName"
