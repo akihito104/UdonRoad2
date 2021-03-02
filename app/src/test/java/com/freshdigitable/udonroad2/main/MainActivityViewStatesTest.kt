@@ -17,7 +17,6 @@
 package com.freshdigitable.udonroad2.main
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import androidx.lifecycle.MutableLiveData
 import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
 import com.freshdigitable.udonroad2.data.impl.create
 import com.freshdigitable.udonroad2.input.TweetInputSharedState
@@ -39,6 +38,7 @@ import com.google.common.truth.Truth.assertThat
 import io.mockk.every
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
@@ -119,21 +119,20 @@ internal class MainActivityStateModelTestRule(
     val selectedItemRepository = SelectedItemRepository()
     val navDelegateRule = MainActivityNavigationDelegateRule()
 
-    val isExpandedSource = MutableLiveData<Boolean>()
+    val isExpandedSource = MutableStateFlow(false)
     private val tweetInputSharedState = MockVerified.create<TweetInputSharedState>().apply {
         every { mock.isExpanded } returns isExpandedSource
     }
     val authenticatedUserId = UserId(10000)
     val coroutineScope =
         CoroutineScope(coroutineRule.coroutineContextProvider.mainContext + SupervisorJob())
-    val sut: MainActivityViewStates by lazy {
-        val listGen = ListOwnerGenerator.create()
-        MainActivityViewStates(
+    val sut: MainViewModelSource by lazy {
+        MainViewModelSource(
             MainActivityActions(dispatcher),
             selectedItemRepository,
             oauthTokenRepository.appSettingMock,
             tweetInputSharedState.mock,
-            listGen,
+            ListOwnerGenerator.create(),
             navDelegateRule.state,
         )
     }
@@ -145,10 +144,8 @@ internal class MainActivityStateModelTestRule(
 
     override fun starting(description: Description?) {
         super.starting(description)
-        listOf(
-            sut.isFabVisible, sut.appBarTitle, sut.navIconType
-        ).forEach { it.observeForever {} }
         navigationEventActual = sut.initContainer.testCollect(coroutineScope)
+        sut.states.testCollect(coroutineScope)
     }
 
     override fun apply(base: Statement?, description: Description?): Statement {

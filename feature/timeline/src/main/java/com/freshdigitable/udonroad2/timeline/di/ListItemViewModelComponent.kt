@@ -57,7 +57,7 @@ interface ListItemAdapterComponent {
 interface ListItemFragmentEventDelegateComponent {
     interface Factory {
         fun create(
-            viewModel: ListItemLoadableViewModel<*>
+            viewModel: ViewModel
         ): ListItemFragmentEventDelegateComponent
     }
 

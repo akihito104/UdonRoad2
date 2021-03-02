@@ -31,7 +31,7 @@ import dagger.android.ContributesAndroidInjector
 import dagger.multibindings.IntoMap
 
 @Module
-interface TweetInputViewModelModule {
+internal interface TweetInputViewModelModule {
     @Binds
     @IntoMap
     @ViewModelKey(TweetInputViewModel::class)

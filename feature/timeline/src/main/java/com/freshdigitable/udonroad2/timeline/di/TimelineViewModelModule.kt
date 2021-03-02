@@ -34,11 +34,14 @@ import com.freshdigitable.udonroad2.model.app.di.IntoFactory
 import com.freshdigitable.udonroad2.model.app.di.QueryTypeKey
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
-import com.freshdigitable.udonroad2.timeline.ListItemLoadableActionsImpl
-import com.freshdigitable.udonroad2.timeline.ListItemLoadableViewState
+import com.freshdigitable.udonroad2.timeline.LaunchMediaViewerAction
+import com.freshdigitable.udonroad2.timeline.ListItemLoadableActions
+import com.freshdigitable.udonroad2.timeline.ListItemLoadableViewModelSource
 import com.freshdigitable.udonroad2.timeline.ListItemLoadableViewStateImpl
 import com.freshdigitable.udonroad2.timeline.TimelineActions
-import com.freshdigitable.udonroad2.timeline.TimelineViewState
+import com.freshdigitable.udonroad2.timeline.TimelineViewModelSource
+import com.freshdigitable.udonroad2.timeline.TweetMediaViewModelSource
+import com.freshdigitable.udonroad2.timeline.UserIconViewModelSource
 import com.freshdigitable.udonroad2.timeline.viewmodel.CustomTimelineListActions
 import com.freshdigitable.udonroad2.timeline.viewmodel.CustomTimelineListItemLoadableViewState
 import com.freshdigitable.udonroad2.timeline.viewmodel.CustomTimelineListViewModel
@@ -54,10 +57,40 @@ import kotlin.reflect.KClass
         TimelineViewModelModule::class,
         UserListViewModelModule::class,
         CustomTimelineListViewModelModule::class,
-        ListRepositoryComponentModule::class
+        ListRepositoryComponentModule::class,
     ]
 )
 interface TimelineViewModelModules
+
+@Module
+internal interface ListItemLoadableViewModelSourceModule {
+    companion object {
+        @Provides
+        fun provideListItemLoadableViewState(
+            owner: ListOwner<*>,
+            actions: ListItemLoadableActions,
+            listRepositoryFactory: ListRepositoryComponent.Factory,
+        ): ListItemLoadableViewStateImpl =
+            provideViewState<QueryType, ListItemLoadableViewStateImpl>(
+                owner,
+                listRepositoryFactory
+            ) { o, repository, pagedListProvider ->
+                ListItemLoadableViewStateImpl(o, actions, repository, pagedListProvider)
+            }
+    }
+}
+
+@Module
+internal interface TweetMediaViewModelModule {
+    companion object {
+        @Provides
+        fun provideTweetMediaViewModelSource(
+            actions: LaunchMediaViewerAction,
+            appSettingRepository: AppSettingRepository,
+        ): TweetMediaViewModelSource =
+            TweetMediaViewModelSource.create(actions, appSettingRepository)
+    }
+}
 
 @Module
 internal interface TimelineViewModelModule {
@@ -67,14 +100,9 @@ internal interface TimelineViewModelModule {
         @ViewModelKey(TimelineViewModel::class)
         @IntoFactory
         fun provideTimelineViewModel(
-            owner: ListOwner<*>,
-            eventDispatcher: EventDispatcher,
-            viewStates: TimelineViewState,
-        ): ViewModel = TimelineViewModel(
-            owner as ListOwner<QueryType.TweetQueryType>,
-            eventDispatcher,
-            viewStates
-        )
+            viewStates: TimelineViewModelSource,
+            userIconViewModelSource: UserIconViewModelSource,
+        ): ViewModel = TimelineViewModel(viewStates, userIconViewModelSource)
 
         @Provides
         @IntoMap
@@ -82,40 +110,51 @@ internal interface TimelineViewModelModule {
         fun provideTimelineViewModelKClass(): KClass<out ViewModel> = TimelineViewModel::class
 
         @Provides
-        fun provideTimelineViewState(
+        fun provideTimelineViewModelSource(
             owner: ListOwner<*>,
             actions: TimelineActions,
             selectedItemRepository: SelectedItemRepository,
-            tweetRepository: TweetRepository,
             appSettingRepository: AppSettingRepository,
+            tweetRepository: TweetRepository,
             listOwnerGenerator: ListOwnerGenerator,
-            listRepositoryFactory: ListRepositoryComponent.Factory,
             executor: AppExecutor,
-        ): TimelineViewState = provideViewState<QueryType.TweetQueryType, TimelineViewState>(
-            owner,
-            listRepositoryFactory
-        ) { o, repository, listProvider ->
-            return TimelineViewState(
-                o,
-                actions,
-                selectedItemRepository,
-                tweetRepository,
-                appSettingRepository,
-                repository,
-                listProvider,
-                listOwnerGenerator,
-                executor,
-            )
-        }
+            viewModelSource: ListItemLoadableViewModelSource,
+        ): TimelineViewModelSource = TimelineViewModelSource(
+            owner as ListOwner<QueryType.TweetQueryType>,
+            actions,
+            selectedItemRepository,
+            tweetRepository,
+            listOwnerGenerator,
+            executor,
+            viewModelSource,
+            TweetMediaViewModelSource.create(actions, appSettingRepository),
+        )
 
         @Provides
-        fun provideTimelineActions(dispatcher: EventDispatcher): TimelineActions {
-            return TimelineActions(dispatcher)
-        }
+        fun provideListItemLoadableViewModelSource(
+            owner: ListOwner<*>,
+            actions: TimelineActions,
+            listRepositoryFactory: ListRepositoryComponent.Factory,
+        ): ListItemLoadableViewModelSource =
+            provideViewState<QueryType, ListItemLoadableViewModelSource>(
+                owner,
+                listRepositoryFactory
+            ) { o, repository, pagedListProvider ->
+                ListItemLoadableViewStateImpl(o, actions, repository, pagedListProvider)
+            }
+
+        @Provides
+        fun provideTimelineActions(
+            owner: ListOwner<*>,
+            dispatcher: EventDispatcher,
+            listItemLoadableActions: ListItemLoadableActions,
+            mediaViewerAction: LaunchMediaViewerAction,
+        ): TimelineActions =
+            TimelineActions(owner, dispatcher, listItemLoadableActions, mediaViewerAction)
     }
 }
 
-@Module
+@Module(includes = [ListItemLoadableViewModelSourceModule::class])
 internal interface UserListViewModelModule {
     companion object {
         @Provides
@@ -123,32 +162,11 @@ internal interface UserListViewModelModule {
         @ViewModelKey(UserListViewModel::class)
         @IntoFactory
         fun provideUserListViewModel(
-            owner: ListOwner<*>,
             eventDispatcher: EventDispatcher,
-            viewState: ListItemLoadableViewStateImpl,
-        ): ViewModel = UserListViewModel(
-            owner as ListOwner<QueryType.UserQueryType>,
-            eventDispatcher,
-            viewState
-        )
-
-        @Provides
-        fun provideListItemLoadableViewState(
-            owner: ListOwner<*>,
-            actions: ListItemLoadableActionsImpl,
-            listRepositoryFactory: ListRepositoryComponent.Factory,
-        ): ListItemLoadableViewStateImpl =
-            provideViewState<QueryType, ListItemLoadableViewStateImpl>(
-                owner,
-                listRepositoryFactory
-            ) { o, repository, pagedListProvider ->
-                ListItemLoadableViewStateImpl(
-                    o,
-                    actions,
-                    repository,
-                    pagedListProvider
-                )
-            }
+            viewModelSource: ListItemLoadableViewStateImpl,
+            userIconViewModelSource: UserIconViewModelSource,
+        ): ViewModel =
+            UserListViewModel(eventDispatcher, viewModelSource, userIconViewModelSource)
 
         @Provides
         @IntoMap
@@ -157,7 +175,7 @@ internal interface UserListViewModelModule {
     }
 }
 
-@Module
+@Module(includes = [ListItemLoadableViewModelSourceModule::class])
 internal interface CustomTimelineListViewModelModule {
     companion object {
         @Provides
@@ -165,15 +183,17 @@ internal interface CustomTimelineListViewModelModule {
         @ViewModelKey(CustomTimelineListViewModel::class)
         @IntoFactory
         fun provideCustomTimelineListViewModel(
-            owner: ListOwner<*>,
-            eventDispatcher: EventDispatcher,
             actions: CustomTimelineListActions,
-            viewState: ListItemLoadableViewStateImpl,
+            viewModelSource: ListItemLoadableViewStateImpl,
             listOwnerGenerator: ListOwnerGenerator,
+            userIconViewModelSource: UserIconViewModelSource,
         ): ViewModel = CustomTimelineListViewModel(
-            owner as ListOwner<QueryType.CustomTimelineListQueryType>,
-            CustomTimelineListItemLoadableViewState(actions, viewState, listOwnerGenerator),
-            eventDispatcher,
+            CustomTimelineListItemLoadableViewState(
+                actions,
+                viewModelSource,
+                listOwnerGenerator,
+            ),
+            userIconViewModelSource
         )
 
         @Provides
@@ -184,7 +204,7 @@ internal interface CustomTimelineListViewModelModule {
     }
 }
 
-private inline fun <Q : QueryType, VS : ListItemLoadableViewState> provideViewState(
+private inline fun <Q : QueryType, VS : ListItemLoadableViewModelSource> provideViewState(
     owner: ListOwner<*>,
     listRepositoryFactory: ListRepositoryComponent.Factory,
     block: (ListOwner<Q>, ListRepository<Q, Any>, PagedListProvider<Q, Any>) -> VS

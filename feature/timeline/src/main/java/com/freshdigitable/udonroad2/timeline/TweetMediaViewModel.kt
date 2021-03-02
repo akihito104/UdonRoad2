@@ -17,68 +17,41 @@
 package com.freshdigitable.udonroad2.timeline
 
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.asLiveData
 import com.freshdigitable.udonroad2.data.impl.AppSettingRepository
 import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventStream
-import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
-import com.freshdigitable.udonroad2.model.app.navigation.toAction
+import com.freshdigitable.udonroad2.model.app.navigation.toActionFlow
+import com.freshdigitable.udonroad2.model.app.onEvent
+import com.freshdigitable.udonroad2.model.app.stateSourceBuilder
 import com.freshdigitable.udonroad2.model.tweet.TweetElement
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.rx2.asFlow
+import javax.inject.Inject
 
-interface TweetMediaItemViewModel {
-    val isPossiblySensitiveHidden: LiveData<Boolean>
+interface TweetMediaItemViewModel : TweetMediaEventListener {
+    val mediaState: LiveData<State>
 
+    interface State {
+        val isPossiblySensitiveHidden: Boolean
+    }
+}
+
+interface TweetMediaEventListener {
     fun onMediaItemClicked(originalId: TweetId, item: TweetElement, index: Int) {
         onMediaItemClicked(originalId, null, item, index)
     }
 
     fun onMediaItemClicked(originalId: TweetId, quotedId: TweetId?, item: TweetElement, index: Int)
-
-    companion object {
-        fun create(
-            eventDispatcher: EventDispatcher,
-            viewStates: TweetMediaViewStates
-        ): TweetMediaItemViewModel = TweetMediaItemViewModelImpl(eventDispatcher, viewStates)
-    }
 }
 
-interface LaunchMediaViewerAction {
-    val launchMediaViewer: AppAction<TimelineEvent.MediaItemClicked>
-
-    companion object {
-        fun create(
-            eventDispatcher: EventDispatcher
-        ): LaunchMediaViewerAction = object : LaunchMediaViewerAction {
-            override val launchMediaViewer: AppAction<TimelineEvent.MediaItemClicked> =
-                eventDispatcher.toAction()
-        }
-    }
+internal interface TweetMediaAction : TweetMediaEventListener {
+    val launchMediaViewer: Flow<TimelineEvent.MediaItemClicked>
 }
 
-interface TweetMediaViewStates : ActivityEventStream {
-    val isPossiblySensitiveHidden: LiveData<Boolean>
-
-    companion object {
-        fun create(
-            actions: LaunchMediaViewerAction,
-            appSettingRepository: AppSettingRepository,
-            coroutineScope: CoroutineScope
-        ): TweetMediaViewStates =
-            TweetMediaViewStatesImpl(actions, appSettingRepository, coroutineScope)
-    }
-}
-
-private class TweetMediaItemViewModelImpl(
+internal class LaunchMediaViewerAction @Inject constructor(
     private val eventDispatcher: EventDispatcher,
-    viewStates: TweetMediaViewStates,
-) : TweetMediaItemViewModel {
-    override val isPossiblySensitiveHidden: LiveData<Boolean> = viewStates.isPossiblySensitiveHidden
-
+) : TweetMediaAction {
     override fun onMediaItemClicked(
         originalId: TweetId,
         quotedId: TweetId?,
@@ -87,17 +60,40 @@ private class TweetMediaItemViewModelImpl(
     ) {
         eventDispatcher.postEvent(TimelineEvent.MediaItemClicked(item.id, index))
     }
+
+    override val launchMediaViewer: Flow<TimelineEvent.MediaItemClicked> =
+        eventDispatcher.toActionFlow()
 }
 
-private class TweetMediaViewStatesImpl(
-    actions: LaunchMediaViewerAction,
-    appSettingRepository: AppSettingRepository,
-    coroutineScope: CoroutineScope,
-) : TweetMediaViewStates, ActivityEventStream by ActivityEventStream.EmptyStream {
+interface TweetMediaViewModelSource : TweetMediaEventListener, ActivityEventStream {
+    val state: Flow<TweetMediaItemViewModel.State>
 
-    override val isPossiblySensitiveHidden: LiveData<Boolean> =
-        appSettingRepository.isPossiblySensitiveHidden.asLiveData(coroutineScope.coroutineContext)
+    companion object {
+        internal fun create(
+            actions: TweetMediaAction,
+            appSettingRepository: AppSettingRepository,
+        ): TweetMediaViewModelSource = TweetMediaViewModelSourceImpl(actions, appSettingRepository)
+    }
+}
+
+private class TweetMediaViewModelSourceImpl(
+    actions: TweetMediaAction,
+    appSettingRepository: AppSettingRepository,
+) : TweetMediaViewModelSource,
+    TweetMediaEventListener by actions,
+    ActivityEventStream by ActivityEventStream.EmptyStream {
+
+    override val state: Flow<TweetMediaItemViewModel.State> = stateSourceBuilder(
+        init = Snapshot(),
+        appSettingRepository.isPossiblySensitiveHidden.onEvent { s, e ->
+            s.copy(isPossiblySensitiveHidden = e)
+        },
+    )
 
     override val navigationEvent: Flow<TimelineEvent.Navigate.MediaViewer> =
-        actions.launchMediaViewer.asFlow().map { TimelineEvent.Navigate.MediaViewer(it) }
+        actions.launchMediaViewer.map { TimelineEvent.Navigate.MediaViewer(it) }
+
+    data class Snapshot(
+        override val isPossiblySensitiveHidden: Boolean = false
+    ) : TweetMediaItemViewModel.State
 }

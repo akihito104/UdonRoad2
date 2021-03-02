@@ -30,6 +30,11 @@
             />
 
         <variable
+            name="userIconClickListener"
+            type="com.freshdigitable.udonroad2.timeline.UserIconClickListener"
+            />
+
+        <variable
             name="itemViewModel"
             type="com.freshdigitable.udonroad2.timeline.TweetListItemViewModel"
             />
@@ -79,7 +84,7 @@
             app:layout_constraintHorizontal_chainStyle="packed"
             app:layout_constraintHorizontal_bias="0"
             app:bindUserIcon="@{tweet.body.user.iconUrl}"
-            android:onClick="@{v -> itemViewModel.onUserIconClicked(tweet.body.user)}"
+            android:onClick="@{v -> userIconClickListener.onUserIconClicked(tweet.body.user)}"
             />
 
         <TextView
@@ -175,7 +180,7 @@
             app:layout_constraintBottom_toTopOf="@id/tweetItem_via"
             android:visibility="@{tweet.body.media.isEmpty() ? View.GONE : View.VISIBLE}"
             app:bindMedia="@{tweet.body.media}"
-            app:hideForPossiblySensitive="@{mediaViewModel.isPossiblySensitiveHidden &amp;&amp; tweet.body.possiblySensitive}"
+            app:hideForPossiblySensitive="@{mediaViewModel.mediaState.isPossiblySensitiveHidden &amp;&amp; tweet.body.possiblySensitive}"
             app:itemClickListener="@{(v, i) -> mediaViewModel.onMediaItemClicked(tweet.originalId, tweet.body, i)}"
             tools:visibility="visible"
             />

@@ -49,7 +49,7 @@ internal object TimelineAdapterModule {
         lifecycleOwner: LifecycleOwner
     ): PagingDataAdapter<out Any, *> {
         val vm = viewModel as TimelineViewModel
-        return TimelineAdapter(vm, vm, lifecycleOwner)
+        return TimelineAdapter(vm, vm, vm, lifecycleOwner)
     }
 }
 
@@ -60,7 +60,7 @@ internal object UserListAdapterModule {
     @ViewModelKey(UserListViewModel::class)
     fun provideTimelineAdapter(viewModel: ViewModel): PagingDataAdapter<out Any, *> {
         val vm = viewModel as UserListViewModel
-        return UserListAdapter(vm)
+        return UserListAdapter(vm, vm)
     }
 }
 

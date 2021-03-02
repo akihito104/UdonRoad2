@@ -93,7 +93,7 @@
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintHorizontal_chainStyle="packed"
             android:text="\@"
-            android:visibility="@{viewModel.reply ? View.VISIBLE : View.GONE}"
+            android:visibility="@{viewModel.state.hasReply ? View.VISIBLE : View.GONE}"
             tools:visibility="visible"
             />
 
@@ -111,7 +111,7 @@
             app:layout_goneMarginStart="0dp"
             app:layout_goneMarginLeft="0dp"
             android:text="QT"
-            android:visibility="@{viewModel.quote ? View.VISIBLE : View.GONE}"
+            android:visibility="@{viewModel.state.hasQuote ? View.VISIBLE : View.GONE}"
             tools:visibility="visible"
             />
 
@@ -125,7 +125,7 @@
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintRight_toRightOf="parent"
-            android:text="@{viewModel.text}"
+            android:text="@{viewModel.state.text}"
             android:afterTextChanged="@{viewModel::onTweetTextChanged}"
             android:inputType="textImeMultiLine|textMultiLine"
             android:maxLines="5"
@@ -159,7 +159,7 @@
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintBottom_toBottomOf="@id/tw_append_image"
             app:layout_constraintHorizontal_chainStyle="spread_inside"
-            app:bindMediaByUri="@{viewModel.media}"
+            app:bindMediaByUri="@{viewModel.state.media}"
             />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

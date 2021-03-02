@@ -13,24 +13,28 @@ import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.AppTwitterException
 import com.freshdigitable.udonroad2.model.app.mainContext
-import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventStream
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.suspendMap
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
+import com.freshdigitable.udonroad2.model.app.navigation.toActionFlow
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
+import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.shortcut.SelectedItemShortcut
 import com.freshdigitable.udonroad2.shortcut.ShortcutActions
 import com.freshdigitable.udonroad2.shortcut.ShortcutViewStates
 import com.freshdigitable.udonroad2.shortcut.TweetContextMenuEvent
-import com.freshdigitable.udonroad2.timeline.LaunchMediaViewerAction
+import com.freshdigitable.udonroad2.timeline.LaunchUserInfoAction
 import com.freshdigitable.udonroad2.timeline.R
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
+import com.freshdigitable.udonroad2.timeline.TweetMediaEventListener
 import com.freshdigitable.udonroad2.timeline.TweetMediaItemViewModel
-import com.freshdigitable.udonroad2.timeline.TweetMediaViewStates
+import com.freshdigitable.udonroad2.timeline.TweetMediaViewModelSource
+import com.freshdigitable.udonroad2.timeline.UserIconClickListener
 import com.freshdigitable.udonroad2.timeline.UserIconClickedAction
+import com.freshdigitable.udonroad2.timeline.UserIconViewModelSource
 import com.freshdigitable.udonroad2.timeline.getTimelineEvent
 import io.reactivex.disposables.CompositeDisposable
 import kotlinx.coroutines.CoroutineScope
@@ -55,7 +59,9 @@ class TweetDetailViewModel(
     private val eventDispatcher: EventDispatcher,
     private val viewStates: TweetDetailViewStates,
     coroutineContext: CoroutineContext? = null
-) : TweetMediaItemViewModel by TweetMediaItemViewModel.create(eventDispatcher, viewStates),
+) : TweetDetailEventListener by viewStates,
+    TweetMediaItemViewModel,
+    TweetMediaEventListener by viewStates,
     ViewModel() {
     private val coroutineContext: CoroutineContext =
         coroutineContext ?: viewModelScope.coroutineContext
@@ -64,18 +70,18 @@ class TweetDetailViewModel(
         .asLiveData(this.coroutineContext)
     val menuItemStates: LiveData<TweetDetailViewStates.MenuItemState> = viewStates.menuItemState
         .asLiveData(this.coroutineContext)
+    override val mediaState: LiveData<TweetMediaItemViewModel.State> =
+        viewStates.state.asLiveData(this.coroutineContext)
     internal val navigationEvent: Flow<NavigationEvent> = viewStates.navigationEvent
 
     fun onOriginalUserClicked() {
         val user = tweetItem.value?.originalUser ?: return
-        eventDispatcher.postEvent(
-            TimelineEvent.RetweetUserClicked(user)
-        )
+        onOriginalUserClicked(user)
     }
 
     fun onBodyUserClicked() {
         val user = tweetItem.value?.body?.user ?: return
-        eventDispatcher.postEvent(TimelineEvent.UserIconClicked(user))
+        onBodyUserClicked(user)
     }
 
     fun onMenuItemClicked(@IdRes itemId: Int) {
@@ -120,16 +126,34 @@ sealed class DetailMenuEvent : TweetContextMenuEvent {
     data class DeleteTweet(override val tweetId: TweetId) : DetailMenuEvent()
 }
 
+interface TweetDetailEventListener : UserIconClickListener {
+    fun onOriginalUserClicked(user: TweetUserItem)
+    fun onBodyUserClicked(user: TweetUserItem)
+}
+
 class TweetDetailActions @Inject constructor(
-    eventDispatcher: EventDispatcher
-) : UserIconClickedAction by UserIconClickedAction.create(eventDispatcher),
-    LaunchMediaViewerAction by LaunchMediaViewerAction.create(eventDispatcher),
+    private val eventDispatcher: EventDispatcher,
+    private val userIconClickedAction: UserIconClickedAction,
+) : TweetDetailEventListener,
+    LaunchUserInfoAction by userIconClickedAction,
     ShortcutActions by ShortcutActions.create(eventDispatcher) {
-    val launchOriginalTweetUserInfo: AppAction<TimelineEvent.RetweetUserClicked> =
-        eventDispatcher.toAction()
-    val unlikeTweet: AppAction<DetailMenuEvent.Unlike> = eventDispatcher.toAction()
+    val launchOriginalTweetUserInfo =
+        eventDispatcher.toActionFlow<TimelineEvent.RetweetUserClicked>()
+    val unlikeTweet = eventDispatcher.toAction<DetailMenuEvent.Unlike>()
     val unretweetTweet: AppAction<DetailMenuEvent.Unretweet> = eventDispatcher.toAction()
     val deleteTweet: AppAction<DetailMenuEvent.DeleteTweet> = eventDispatcher.toAction()
+
+    override fun onOriginalUserClicked(user: TweetUserItem) {
+        eventDispatcher.postEvent(TimelineEvent.RetweetUserClicked(user))
+    }
+
+    override fun onBodyUserClicked(user: TweetUserItem) {
+        onUserIconClicked(user)
+    }
+
+    override fun onUserIconClicked(user: TweetUserItem) {
+        userIconClickedAction.onUserIconClicked(user)
+    }
 }
 
 class TweetDetailViewStates @Inject constructor(
@@ -138,13 +162,13 @@ class TweetDetailViewStates @Inject constructor(
     repository: TweetRepository,
     appSettingRepository: AppSettingRepository,
     listOwnerGenerator: ListOwnerGenerator,
-    executor: AppExecutor
-) : TweetMediaViewStates,
-    ActivityEventStream by ActivityEventStream.EmptyStream,
+    executor: AppExecutor,
+    mediaViewModelSource: TweetMediaViewModelSource,
+    userIconViewModelSource: UserIconViewModelSource,
+) : TweetDetailEventListener by actions,
+    TweetMediaViewModelSource by mediaViewModelSource,
     ShortcutViewStates by ShortcutViewStates.create(actions, repository, executor) {
     private val coroutineScope = CoroutineScope(context = executor.mainContext)
-    private val mediaViewStates =
-        TweetMediaViewStates.create(actions, appSettingRepository, coroutineScope)
 
     internal val tweetItem: StateFlow<TweetListItem?> = repository.getDetailTweetItemSource(tweetId)
         .transformLatest {
@@ -184,11 +208,9 @@ class TweetDetailViewStates @Inject constructor(
     }.distinctUntilChanged()
 
     override val navigationEvent: Flow<NavigationEvent> = merge(
-        actions.launchUserInfo.asFlow().mapLatest { TimelineEvent.Navigate.UserInfo(it.user) },
-        actions.launchOriginalTweetUserInfo.asFlow().mapLatest {
-            TimelineEvent.Navigate.UserInfo(it.user)
-        },
-        mediaViewStates.navigationEvent,
+        userIconViewModelSource.navEvent,
+        actions.launchOriginalTweetUserInfo.mapLatest { TimelineEvent.Navigate.UserInfo(it.user) },
+        mediaViewModelSource.navigationEvent,
         actions.showConversation.asFlow().mapLatest {
             listOwnerGenerator.getTimelineEvent(
                 QueryType.TweetQueryType.Conversation(it.tweetId),
@@ -196,9 +218,6 @@ class TweetDetailViewStates @Inject constructor(
             )
         }
     )
-
-    override val isPossiblySensitiveHidden: LiveData<Boolean> =
-        mediaViewStates.isPossiblySensitiveHidden
 
     data class MenuItemState(
         val isMainGroupEnabled: Boolean = false,

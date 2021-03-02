@@ -16,14 +16,31 @@
 
 package com.freshdigitable.udonroad2.oauth
 
-import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
-import com.freshdigitable.udonroad2.model.app.navigation.toAction
+import com.freshdigitable.udonroad2.model.app.navigation.toActionFlow
+import com.freshdigitable.udonroad2.timeline.ListItemLoadableEventListener
 
-class OauthAction(
-    dispatcher: EventDispatcher
-) {
-    internal val authApp: AppAction<OauthEvent.LoginClicked> = dispatcher.toAction()
-    internal val inputPin: AppAction<OauthEvent.PinTextChanged> = dispatcher.toAction()
-    internal val sendPin: AppAction<OauthEvent.SendPinClicked> = dispatcher.toAction()
+internal class OauthAction(
+    private val dispatcher: EventDispatcher
+) : ListItemLoadableEventListener, OauthEventListener {
+    override fun onLoginClicked() {
+        dispatcher.postEvent(OauthEvent.LoginClicked)
+    }
+
+    override fun onAfterPinTextChanged(pin: CharSequence) {
+        dispatcher.postEvent(OauthEvent.PinTextChanged(pin))
+    }
+
+    override fun onSendPinClicked() {
+        dispatcher.postEvent(OauthEvent.SendPinClicked)
+    }
+
+    internal val authApp = dispatcher.toActionFlow<OauthEvent.LoginClicked>()
+    internal val inputPin = dispatcher.toActionFlow<OauthEvent.PinTextChanged>()
+    internal val sendPin = dispatcher.toActionFlow<OauthEvent.SendPinClicked>()
+
+    override fun onRefresh() = Unit
+    override fun onListScrollStarted() = Unit
+    override fun onListScrollStopped(firstVisibleItemPosition: Int) = Unit
+    override fun onHeadingClicked() = Unit
 }

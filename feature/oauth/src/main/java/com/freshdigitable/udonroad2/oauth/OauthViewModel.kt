@@ -17,36 +17,51 @@
 package com.freshdigitable.udonroad2.oauth
 
 import androidx.lifecycle.LiveData
-import com.freshdigitable.udonroad2.model.ListOwner
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asLiveData
+import androidx.lifecycle.distinctUntilChanged
+import androidx.lifecycle.map
+import androidx.lifecycle.viewModelScope
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import com.freshdigitable.udonroad2.model.QueryType
+import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventStream
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
-import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
+import com.freshdigitable.udonroad2.timeline.ListItemLoadableEventListener
 import com.freshdigitable.udonroad2.timeline.ListItemLoadableViewModel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.launch
 
-class OauthViewModel(
-    owner: ListOwner<QueryType.Oauth>,
-    private val eventDispatcher: EventDispatcher,
-    viewStates: OauthViewStates,
-) : ListItemLoadableViewModel<QueryType.Oauth>(owner, eventDispatcher, viewStates) {
-    val pin: LiveData<CharSequence> = viewStates.pinText
-    val sendPinButtonEnabled: LiveData<Boolean> = viewStates.sendPinEnabled
+internal class OauthViewModel(
+    private val viewModelSource: OauthViewModelSource,
+) : OauthEventListener by viewModelSource,
+    ListItemLoadableViewModel<QueryType.Oauth>,
+    ListItemLoadableEventListener by viewModelSource,
+    ActivityEventStream by viewModelSource,
+    ViewModel() {
+    val state = viewModelSource.state.asLiveData(viewModelScope.coroutineContext)
+    override val listState: LiveData<ListItemLoadableViewModel.State> = state.map { it }
+    override val timeline: Flow<PagingData<Any>> = viewModelSource.pagedList
+        .cachedIn(viewModelScope)
+    val sendPinButtonEnabled: LiveData<Boolean> = state.map { it.sendPinEnabled }
+        .distinctUntilChanged()
 
-    fun onLoginClicked() {
-        eventDispatcher.postEvent(OauthEvent.LoginClicked)
-    }
-
-    fun onAfterPinTextChanged(pin: CharSequence) {
-        eventDispatcher.postEvent(OauthEvent.PinTextChanged(pin))
-    }
-
-    fun onSendPinClicked() {
-        eventDispatcher.postEvent(OauthEvent.SendPinClicked)
+    override fun onCleared() {
+        super.onCleared()
+        viewModelScope.launch {
+            viewModelSource.clear()
+        }
     }
 }
 
+internal interface OauthEventListener {
+    fun onLoginClicked()
+    fun onAfterPinTextChanged(pin: CharSequence)
+    fun onSendPinClicked()
+}
+
 sealed class OauthEvent : AppEvent {
-    object Init : OauthEvent()
     object LoginClicked : OauthEvent()
     data class PinTextChanged(val text: CharSequence) : OauthEvent()
     object SendPinClicked : OauthEvent()

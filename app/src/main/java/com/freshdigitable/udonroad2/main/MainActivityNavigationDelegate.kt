@@ -8,8 +8,6 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.findNavController
@@ -35,7 +33,9 @@ import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentDirections
 import com.freshdigitable.udonroad2.timeline.fragment.TweetDetailFragmentArgs
 import com.freshdigitable.udonroad2.timeline.fragment.TweetDetailFragmentDirections
 import com.freshdigitable.udonroad2.user.UserActivityDirections
-import java.io.Serializable
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.filterNotNull
 import javax.inject.Inject
 
 @ActivityScope
@@ -99,7 +99,7 @@ internal class MainActivityNavigationDelegate @Inject constructor(
     }
 
     private fun AppCompatActivity.navigateTo(nextState: NavigationEvent) {
-        if (state.containerState.value?.isDestinationEqualTo(nextState) == true) {
+        if (state._containerState.value?.isDestinationEqualTo(nextState) == true) {
             return
         }
         when (nextState) {
@@ -121,7 +121,7 @@ internal class MainActivityNavigationDelegate @Inject constructor(
                 )
             }
             NavigationEvent.Type.NAVIGATE -> {
-                val dir = when (val container = state.containerState.value) {
+                val dir = when (val container = state._containerState.value) {
                     is MainNavHostState.Timeline -> {
                         ListItemFragmentDirections.actionTimelineToTimeline(
                             nextState.owner.query,
@@ -159,7 +159,7 @@ internal class MainActivityNavigationDelegate @Inject constructor(
 
 typealias AppBarTitle = (Context) -> CharSequence
 
-sealed class MainNavHostState : FragmentContainerState, Serializable {
+sealed class MainNavHostState : FragmentContainerState {
     data class Timeline(
         val owner: ListOwner<*>,
         override val appBarTitle: AppBarTitle = { "" },
@@ -241,15 +241,15 @@ enum class NavigationIconType { MENU, UP, CLOSE }
 
 @ActivityScope
 internal class MainActivityNavState @Inject constructor() {
-    private val _isInTopLevelDest = MutableLiveData<Boolean>()
-    val isInTopLevelDest: LiveData<Boolean> = _isInTopLevelDest
+    private val _isInTopLevelDest = MutableStateFlow(false)
+    val isInTopLevelDest: Flow<Boolean> = _isInTopLevelDest
 
     fun setIsInTopLevelDest(isInTop: Boolean) {
         _isInTopLevelDest.value = isInTop
     }
 
-    private val _containerState = MutableLiveData<MainNavHostState>()
-    val containerState: LiveData<MainNavHostState> = _containerState
+    internal val _containerState = MutableStateFlow<MainNavHostState?>(null)
+    val containerState: Flow<MainNavHostState> = _containerState.filterNotNull()
     fun setContainerState(navHostState: MainNavHostState) {
         _containerState.value = navHostState
     }

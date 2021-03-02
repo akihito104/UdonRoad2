@@ -70,7 +70,7 @@ class TweetInputViewModelTest {
         fun initialValue(): Unit = with(rule) {
             // verify
             assertThat(sut).isNotNull()
-            assertThat(sut.text.value).isEmpty()
+            assertThat(sut.state.value?.text).isEmpty()
             assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.WRITE_ENABLED)
             assertThat(sut.isExpanded.value).isFalse()
             assertThat(sut.user.value).isNotNull()
@@ -84,7 +84,7 @@ class TweetInputViewModelTest {
             }
 
             // verify
-            assertThat(sut.text.value).isEmpty()
+            assertThat(sut.state.value?.text).isEmpty()
             assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.WRITE_ENABLED)
             assertThat(sut.isExpanded.value).isFalse()
         }
@@ -97,7 +97,7 @@ class TweetInputViewModelTest {
             }
 
             // verify
-            assertThat(sut.text.value).isEmpty()
+            assertThat(sut.state.value?.text).isEmpty()
             assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.SEND_DISABLED)
             assertThat(sut.isExpanded.value).isTrue()
         }
@@ -113,7 +113,7 @@ class TweetInputViewModelTest {
             }
 
             // verify
-            assertThat(sut.text.value).isEmpty()
+            assertThat(sut.state.value?.text).isEmpty()
             assertThat(sut.isExpanded.value).isFalse()
             assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.WRITE_ENABLED)
         }
@@ -129,7 +129,7 @@ class TweetInputViewModelTest {
             }
 
             // verify
-            assertThat(sut.text.value).isEqualTo("a")
+            assertThat(sut.state.value?.text).isEqualTo("a")
             assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.SEND_ENABLED)
             assertThat(sut.isExpanded.value).isTrue()
         }
@@ -146,8 +146,8 @@ class TweetInputViewModelTest {
             }
 
             // verify
-            assertThat(sut.text.value).isEmpty()
-            assertThat(sut.media.value).isEmpty()
+            assertThat(sut.state.value?.text).isEmpty()
+            assertThat(sut.state.value?.media).isEmpty()
             assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.WRITE_ENABLED)
             assertThat(sut.isExpanded.value).isFalse()
         }
@@ -164,7 +164,7 @@ class TweetInputViewModelTest {
             }
 
             // verify
-            assertThat(sut.text.value).isEmpty()
+            assertThat(sut.state.value?.text).isEmpty()
             assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.SEND_DISABLED)
             assertThat(sut.isExpanded.value).isTrue()
         }
@@ -245,7 +245,7 @@ class TweetInputViewModelTest {
             assertThat(actual[1]).isInstanceOf<CameraApp.State.WaitingForChosen>()
             assertThat(actual[2]).isInstanceOf<CameraApp.State.Selected>()
             assertThat(actual[3]).isInstanceOf<CameraApp.State.Finished>()
-            assertThat(sut.media.value).hasSize(1)
+            assertThat(sut.state.value?.media).hasSize(1)
             assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.SEND_ENABLED)
         }
 
@@ -269,7 +269,7 @@ class TweetInputViewModelTest {
             assertThat(actual[1]).isInstanceOf<CameraApp.State.WaitingForChosen>()
             assertThat(actual[2]).isInstanceOf<CameraApp.State.Selected>()
             assertThat(actual[3]).isInstanceOf<CameraApp.State.Finished>()
-            assertThat(sut.media.value).isEmpty()
+            assertThat(sut.state.value?.media).isEmpty()
         }
 
         @Test
@@ -289,7 +289,7 @@ class TweetInputViewModelTest {
             assertThat(actual[0]).isInstanceOf<CameraApp.State.Idling>()
             assertThat(actual[1]).isInstanceOf<CameraApp.State.WaitingForChosen>()
             assertThat(actual[2]).isInstanceOf<CameraApp.State.Idling>()
-            assertThat(sut.media.value).hasSize(0)
+            assertThat(sut.state.value?.media).hasSize(0)
         }
 
         @Test
@@ -305,17 +305,17 @@ class TweetInputViewModelTest {
             }
 
             // verify
-            inputTaskObserver.verifyOrderOfOnChanged(
+            inputTaskObserver.verifyInputTaskOrderOfOnChanged(
                 InputTaskState.IDLING,
                 InputTaskState.OPENED,
                 InputTaskState.SENDING,
                 InputTaskState.SUCCEEDED,
                 InputTaskState.IDLING
             )
-            assertThat(sut.inputTask.value).isEqualTo(InputTaskState.IDLING)
+            assertThat(sut.state.value?.taskState).isEqualTo(InputTaskState.IDLING)
             assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.WRITE_ENABLED)
-            assertThat(sut.text.value).isEmpty()
-            assertThat(sut.media.value).isEmpty()
+            assertThat(sut.state.value?.text).isEmpty()
+            assertThat(sut.state.value?.media).isEmpty()
             assertThat(sut.isExpanded.value).isFalse()
         }
 
@@ -339,17 +339,17 @@ class TweetInputViewModelTest {
                 }
 
                 // verify
-                inputTaskObserver.verifyOrderOfOnChanged(
+                inputTaskObserver.verifyInputTaskOrderOfOnChanged(
                     InputTaskState.IDLING,
                     InputTaskState.OPENED,
                     InputTaskState.SENDING,
                     InputTaskState.SUCCEEDED,
                     InputTaskState.IDLING
                 )
-                assertThat(sut.inputTask.value).isEqualTo(InputTaskState.IDLING)
+                assertThat(sut.state.value?.taskState).isEqualTo(InputTaskState.IDLING)
                 assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.WRITE_ENABLED)
-                assertThat(sut.text.value).isEmpty()
-                assertThat(sut.media.value).isEmpty()
+                assertThat(sut.state.value?.text).isEmpty()
+                assertThat(sut.state.value?.media).isEmpty()
                 assertThat(sut.isExpanded.value).isFalse()
             }
 
@@ -366,16 +366,16 @@ class TweetInputViewModelTest {
             }
 
             // verify
-            inputTaskObserver.verifyOrderOfOnChanged(
+            inputTaskObserver.verifyInputTaskOrderOfOnChanged(
                 InputTaskState.IDLING,
                 InputTaskState.OPENED,
                 InputTaskState.SENDING,
                 InputTaskState.FAILED
             )
-            assertThat(sut.inputTask.value).isEqualTo(InputTaskState.FAILED)
+            assertThat(sut.state.value?.taskState).isEqualTo(InputTaskState.FAILED)
             assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.RETRY_ENABLED)
-            assertThat(sut.text.value).isEqualTo("a")
-            assertThat(sut.media.value).isEmpty()
+            assertThat(sut.state.value?.text).isEqualTo("a")
+            assertThat(sut.state.value?.media).isEmpty()
             assertThat(sut.isExpanded.value).isFalse()
         }
 
@@ -393,7 +393,7 @@ class TweetInputViewModelTest {
             // verify
             assertThat(sut.isExpanded.value).isTrue()
             assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.SEND_ENABLED)
-            assertThat(sut.text.value).isEqualTo("@user200 ")
+            assertThat(sut.state.value?.text).isEqualTo("@user200 ")
         }
 
         @Test
@@ -410,7 +410,7 @@ class TweetInputViewModelTest {
             // verify
             assertThat(sut.isExpanded.value).isTrue()
             assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.SEND_DISABLED)
-            assertThat(sut.text.value).isEmpty()
+            assertThat(sut.state.value?.text).isEmpty()
         }
 
         @Test
@@ -426,8 +426,8 @@ class TweetInputViewModelTest {
             // verify
             assertThat(sut.isExpanded.value).isTrue()
             assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.SEND_DISABLED)
-            assertThat(sut.text.value).isEmpty()
-            assertThat(sut.quote.value).isTrue()
+            assertThat(sut.state.value?.text).isEmpty()
+            assertThat(sut.state.value?.hasQuote).isTrue()
         }
     }
 
@@ -446,8 +446,8 @@ class TweetInputViewModelTest {
 
             assertThat(sut.isExpanded.value).isTrue()
             assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.SEND_ENABLED)
-            assertThat(sut.text.value).isEqualTo("@user200 ")
-            assertThat(sut.reply.value).isTrue()
+            assertThat(sut.state.value?.text).isEqualTo("@user200 ")
+            assertThat(sut.state.value?.hasReply).isTrue()
         }
 
         @Test
@@ -461,7 +461,7 @@ class TweetInputViewModelTest {
             }
 
             // verify
-            inputTaskObserver.verifyOrderOfOnChanged(
+            inputTaskObserver.verifyInputTaskOrderOfOnChanged(
                 InputTaskState.IDLING,
                 InputTaskState.OPENED,
                 InputTaskState.SENDING,
@@ -470,8 +470,8 @@ class TweetInputViewModelTest {
             )
             assertThat(sut.isExpanded.value).isFalse()
             assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.WRITE_ENABLED)
-            assertThat(sut.text.value).isEmpty()
-            assertThat(sut.reply.value).isFalse()
+            assertThat(sut.state.value?.text).isEmpty()
+            assertThat(sut.state.value?.hasReply).isFalse()
         }
 
         @Test
@@ -482,8 +482,8 @@ class TweetInputViewModelTest {
 
             assertThat(sut.isExpanded.value).isFalse()
             assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.WRITE_ENABLED)
-            assertThat(sut.text.value).isEmpty()
-            assertThat(sut.reply.value).isFalse()
+            assertThat(sut.state.value?.text).isEmpty()
+            assertThat(sut.state.value?.hasReply).isFalse()
         }
     }
 
@@ -500,9 +500,9 @@ class TweetInputViewModelTest {
 
             assertThat(sut.isExpanded.value).isTrue()
             assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.SEND_DISABLED)
-            assertThat(sut.text.value).isEmpty()
-            assertThat(sut.reply.value).isFalse()
-            assertThat(sut.quote.value).isTrue()
+            assertThat(sut.state.value?.text).isEmpty()
+            assertThat(sut.state.value?.hasReply).isFalse()
+            assertThat(sut.state.value?.hasQuote).isTrue()
         }
 
         @Test
@@ -515,7 +515,7 @@ class TweetInputViewModelTest {
             // verify
             assertThat(sut.isExpanded.value).isFalse()
             assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.WRITE_ENABLED)
-            assertThat(sut.quote.value).isFalse()
+            assertThat(sut.state.value?.hasQuote).isFalse()
         }
 
         @Test
@@ -531,7 +531,7 @@ class TweetInputViewModelTest {
             }
 
             // verify
-            inputTaskObserver.verifyOrderOfOnChanged(
+            inputTaskObserver.verifyInputTaskOrderOfOnChanged(
                 InputTaskState.IDLING,
                 InputTaskState.OPENED,
                 InputTaskState.SENDING,
@@ -541,7 +541,7 @@ class TweetInputViewModelTest {
             verifyPost("aaa https://twitter.com/user200/status/2000")
             assertThat(sut.isExpanded.value).isFalse()
             assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.WRITE_ENABLED)
-            assertThat(sut.quote.value).isFalse()
+            assertThat(sut.state.value?.hasQuote).isFalse()
         }
     }
 
@@ -553,7 +553,7 @@ class TweetInputViewModelTest {
         fun initialValue(): Unit = with(rule) {
             // verify
             assertThat(sut).isNotNull()
-            assertThat(sut.text.value).isEmpty()
+            assertThat(sut.state.value?.text).isEmpty()
             assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.SEND_DISABLED)
             assertThat(sut.isExpanded.value).isTrue()
         }
@@ -567,7 +567,7 @@ class TweetInputViewModelRule(
     val expectedException: ExpectedException = ExpectedException.none()
     val coroutineTestRule = CoroutineTestRule()
     private val repository = MockVerified.create<TweetInputRepository>()
-    val inputTaskObserver: Observer<InputTaskState> = spyk<Observer<InputTaskState>>().apply {
+    val inputTaskObserver: Observer<InputViewState> = spyk<Observer<InputViewState>>().apply {
         every { onChanged(any()) } just runs
     }
     private val appSettingRepositoryRule = AppSettingRepositoryRule()
@@ -577,15 +577,15 @@ class TweetInputViewModelRule(
     val executor = AppExecutor(dispatcher = coroutineTestRule.coroutineContextProvider)
     private val eventDispatcher = EventDispatcher()
 
-    val sut: TweetInputViewModel by lazy {
+    internal val sut: TweetInputViewModel by lazy {
         TweetInputViewModel(
             eventDispatcher,
-            TweetInputViewState(
+            TweetInputViewModelSource(
                 collapsible,
                 TweetInputActions(eventDispatcher),
                 createReplyTextUseCaseRule.mock,
                 createQuoteTextUseCaseRule.mock,
-                TweetInputSharedState(executor),
+                TweetInputSharedState(),
                 repository.mock,
                 appSettingRepositoryRule.mock,
                 userRepositoryRule.mock,
@@ -611,9 +611,9 @@ class TweetInputViewModelRule(
             flow { emit(authenticatedUser) }
         )
         with(sut) {
-            inputTask.observeForever(inputTaskObserver)
+            state.observeForever(inputTaskObserver)
             listOf(
-                isExpanded, menuItem, text, reply, quote, media, user
+                isExpanded, menuItem, user
             ).forEach { it.observeForever { } }
         }
     }
@@ -626,7 +626,7 @@ class TweetInputViewModelRule(
     ) {
         when (withError) {
             null -> repository.coSetupResponseWithVerify(
-                { repository.mock.post(text, mediaIds, replyTo) }, Unit
+                { repository.mock.post(text, mediaIds, replyTo) }, mockk()
             )
             else -> repository.coSetupThrowWithVerify(
                 { repository.mock.post(text, mediaIds, replyTo) }, withError
@@ -636,7 +636,7 @@ class TweetInputViewModelRule(
 
     fun setupPost(text: MatcherScopedBlock<String>) {
         repository.coSetupResponseWithVerify(
-            { repository.mock.post(text(), any(), any()) }, Unit
+            { repository.mock.post(text(), any(), any()) }, mockk()
         )
     }
 
@@ -655,9 +655,9 @@ class TweetInputViewModelRule(
         )
     }
 
-    fun Observer<InputTaskState>.verifyOrderOfOnChanged(vararg state: InputTaskState) {
+    fun Observer<InputViewState>.verifyInputTaskOrderOfOnChanged(vararg state: InputTaskState) {
         verifyOrder {
-            state.forEach { onChanged(it) }
+            state.forEach { s -> onChanged(match { it.taskState == s }) }
         }
     }
 

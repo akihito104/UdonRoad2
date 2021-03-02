@@ -128,7 +128,7 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
             binding.mainGlobalMenu.bindMenuState(it)
         }
 
-        viewModel.initialEvent(savedInstanceState?.savedViewState)
+        viewModel.initialEvent()
     }
 
     private fun DrawerLayout.bindOpenState(isOpened: Boolean, navView: NavigationView) {
@@ -155,7 +155,7 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (viewModel.isTweetInputExpanded) {
+        if (viewModel.currentState.isTweetInputExpanded) {
             when (item.itemId) {
                 android.R.id.home -> {
                     viewModel.collapseTweetInput()
@@ -164,11 +164,6 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
             }
         }
         return super.onOptionsItemSelected(item)
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        outState.saveViewState(viewModel.currentState)
     }
 
     override fun onBackPressed() {
@@ -183,17 +178,6 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
     lateinit var androidInjector: DispatchingAndroidInjector<Any>
 
     override fun androidInjector(): AndroidInjector<Any> = androidInjector
-
-    companion object {
-        private const val KEY_VIEW_STATE: String = "main_activity_view_state"
-
-        private val Bundle?.savedViewState: MainActivityViewState?
-            get() = this?.getSerializable(KEY_VIEW_STATE) as? MainActivityViewState
-
-        private fun Bundle.saveViewState(viewState: MainActivityViewState?) {
-            putSerializable(KEY_VIEW_STATE, viewState)
-        }
-    }
 }
 
 @BindingAdapter("appBarNavigationIcon")

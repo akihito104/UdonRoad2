@@ -18,37 +18,13 @@ package com.freshdigitable.udonroad2.input
 
 import com.freshdigitable.udonroad2.model.app.AppFilePath
 import com.freshdigitable.udonroad2.model.app.StateGraph
-import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
-import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
-import com.freshdigitable.udonroad2.model.app.navigation.toAction
-import com.freshdigitable.udonroad2.shortcut.SelectedItemShortcut
-import javax.inject.Inject
-
-class TweetInputActions @Inject constructor(
-    eventDispatcher: EventDispatcher
-) {
-    internal val openInput: AppAction<TweetInputEvent.Open> = eventDispatcher.toAction()
-    internal val reply: AppAction<SelectedItemShortcut.Reply> = eventDispatcher.toAction()
-    internal val quote: AppAction<SelectedItemShortcut.Quote> = eventDispatcher.toAction()
-    internal val sendTweet: AppAction<TweetInputEvent.Send> = eventDispatcher.toAction()
-    internal val cancelInput: AppAction<TweetInputEvent.Cancel> = eventDispatcher.toAction()
-    internal val updateText: AppAction<TweetInputEvent.TextUpdated> = eventDispatcher.toAction()
-    internal val cameraApp: AppAction<CameraApp.Event> = eventDispatcher.toAction()
-
-    internal val updateMedia: AppAction<CameraApp.Event.OnFinish> = eventDispatcher.toAction()
-}
 
 sealed class TweetInputEvent : AppEvent {
     object Open : TweetInputEvent()
     object Opened : TweetInputEvent()
-    data class Send(
-        val text: String,
-        val media: List<AppFilePath> = emptyList()
-    ) : TweetInputEvent()
-
+    object Send : TweetInputEvent()
     object Cancel : TweetInputEvent()
-
     data class TextUpdated(val text: String) : TweetInputEvent()
 }
 

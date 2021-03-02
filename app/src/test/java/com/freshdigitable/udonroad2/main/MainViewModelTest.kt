@@ -113,7 +113,7 @@ class MainViewModelTest {
             appSettingRepositoryRule.setupCurrentUserId(null)
 
             // exercise
-            sut.initialEvent(null)
+            sut.initialEvent()
 
             // verify
             stateModelRule.assertThatNavigationEventOfTimeline(0) {
@@ -128,7 +128,7 @@ class MainViewModelTest {
                 stateModelRule.navDelegateRule.setIsInTopLevelDestination(true)
 
                 // verify
-                assertThat(sut.navIconType.value).isEqualTo(NavigationIconType.MENU)
+                assertThat(sut.mainState.value?.navIconType).isEqualTo(NavigationIconType.MENU)
             }
 
         @Test
@@ -138,7 +138,7 @@ class MainViewModelTest {
                 stateModelRule.navDelegateRule.setIsInTopLevelDestination(false)
 
                 // verify
-                assertThat(sut.navIconType.value).isEqualTo(NavigationIconType.UP)
+                assertThat(sut.mainState.value?.navIconType).isEqualTo(NavigationIconType.UP)
             }
 
         @Test
@@ -149,7 +149,7 @@ class MainViewModelTest {
                 stateModelRule.isExpandedSource.value = true
 
                 // verify
-                assertThat(sut.navIconType.value).isEqualTo(NavigationIconType.CLOSE)
+                assertThat(sut.mainState.value?.navIconType).isEqualTo(NavigationIconType.CLOSE)
             }
 
         @Test
@@ -160,7 +160,7 @@ class MainViewModelTest {
                 stateModelRule.isExpandedSource.value = true
 
                 // verify
-                assertThat(sut.navIconType.value).isEqualTo(NavigationIconType.CLOSE)
+                assertThat(sut.mainState.value?.navIconType).isEqualTo(NavigationIconType.CLOSE)
             }
 
         @Test
@@ -228,9 +228,10 @@ class MainViewModelTest {
             val dispatcherObserver = dispatcher.emitter.test()
 
             // exercise
-            sut.onBackPressed()
+            val actual = sut.onBackPressed()
 
             // verify
+            assertThat(actual).isTrue()
             dispatcherObserver
                 .assertValueCount(1)
                 .assertValueAt(0) { it is TimelineEvent.TweetItemSelection.Unselected }
@@ -378,7 +379,7 @@ internal class MainViewModelTestRule : TestWatcher() {
         super.starting(description)
         with(sut) {
             listOf(
-                navIconType,
+                mainState,
                 appBarTitle,
                 isTweetInputMenuVisible,
                 isFabVisible,

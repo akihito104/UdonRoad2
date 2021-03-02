@@ -22,8 +22,6 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.freshdigitable.udonroad2.data.UserDataSource
 import com.freshdigitable.udonroad2.data.impl.create
-import com.freshdigitable.udonroad2.model.ListId
-import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.UserId
@@ -123,10 +121,8 @@ class OauthViewModelTestRule : TestWatcher() {
     val userRepository = MockVerified.create<UserDataSource>()
     private val dispatcher = EventDispatcher()
 
-    val sut = OauthViewModel(
-        ListOwner(ListId(-1), QueryType.Oauth),
-        dispatcher,
-        OauthViewStates(
+    internal val sut = OauthViewModel(
+        OauthViewModelSource(
             OauthAction(dispatcher),
             LoginUseCase(oauthRepository.appSettingMock, oauthRepository.mock, userRepository.mock),
             OauthDataSource(ApplicationProvider.getApplicationContext()),
@@ -142,8 +138,8 @@ class OauthViewModelTestRule : TestWatcher() {
 
     override fun starting(description: Description?) {
         super.starting(description)
+        sut.state.observeForever { }
         sut.sendPinButtonEnabled.observeForever { }
-        sut.pin.observeForever { }
     }
 
     fun runBlockingTest(block: suspend OauthViewModelTestRule.() -> Unit) {

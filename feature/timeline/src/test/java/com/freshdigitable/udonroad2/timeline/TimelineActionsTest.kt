@@ -16,6 +16,8 @@
 
 package com.freshdigitable.udonroad2.timeline
 
+import com.freshdigitable.udonroad2.model.ListOwner
+import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.postEvents
@@ -78,8 +80,11 @@ class TimelineActionsTest {
 }
 
 class TimelineActionsTestRule : TestWatcher() {
+    val owner = ListOwner(1, QueryType.TweetQueryType.Timeline())
     val dispatcher = EventDispatcher()
-    val sut: TimelineActions = TimelineActions(dispatcher)
+    internal val actions = ListItemLoadableActions(owner, dispatcher)
+    internal val sut: TimelineActions =
+        TimelineActions(owner, dispatcher, actions, LaunchMediaViewerAction(dispatcher))
 
     val favTweetObserver: TestObserver<SelectedItemShortcut.Like> = sut.favTweet.test()
     val retweetObserver: TestObserver<SelectedItemShortcut.Retweet> = sut.retweet.test()

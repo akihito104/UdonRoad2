@@ -32,7 +32,11 @@ import com.freshdigitable.udonroad2.test_common.jvm.AppSettingRepositoryRule
 import com.freshdigitable.udonroad2.test_common.jvm.CoroutineTestRule
 import com.freshdigitable.udonroad2.test_common.jvm.TweetRepositoryRule
 import com.freshdigitable.udonroad2.test_common.jvm.testCollect
+import com.freshdigitable.udonroad2.timeline.LaunchMediaViewerAction
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
+import com.freshdigitable.udonroad2.timeline.TweetMediaViewModelSource
+import com.freshdigitable.udonroad2.timeline.UserIconClickedAction
+import com.freshdigitable.udonroad2.timeline.UserIconViewModelSource
 import com.google.common.truth.Truth.assertThat
 import io.mockk.every
 import io.mockk.mockk
@@ -79,7 +83,8 @@ class TweetDetailViewModelTest {
 
     private val sut: TweetDetailViewModel by lazy {
         val eventDispatcher = EventDispatcher()
-        val actions = TweetDetailActions(eventDispatcher)
+        val userIconClickedAction = UserIconClickedAction(eventDispatcher)
+        val actions = TweetDetailActions(eventDispatcher, userIconClickedAction)
         TweetDetailViewModel(
             eventDispatcher,
             TweetDetailViewStates(
@@ -88,7 +93,12 @@ class TweetDetailViewModelTest {
                 tweetRepositoryRule.mock,
                 appSettingRepositoryRule.mock,
                 ListOwnerGenerator.create(),
-                executor
+                executor,
+                TweetMediaViewModelSource.create(
+                    LaunchMediaViewerAction(eventDispatcher),
+                    appSettingRepositoryRule.mock,
+                ),
+                UserIconViewModelSource(userIconClickedAction)
             ),
             executor.dispatcher.mainContext
         )
@@ -102,7 +112,7 @@ class TweetDetailViewModelTest {
         appSettingRepositoryRule.setupIsPossiblySensitiveHidden()
         sut.tweetItem.observeForever { }
         sut.menuItemStates.observeForever { }
-        sut.isPossiblySensitiveHidden.observeForever { }
+        sut.mediaState.observeForever { }
         navigationEvents = sut.navigationEvent.testCollect(executor)
     }
 

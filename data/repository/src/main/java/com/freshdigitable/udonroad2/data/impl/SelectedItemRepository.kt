@@ -16,35 +16,32 @@
 
 package com.freshdigitable.udonroad2.data.impl
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.map
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.SelectedItemId
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class SelectedItemRepository @Inject constructor() {
-    private val selectedItems: MutableMap<ListOwner<*>, SelectedItemId> = mutableMapOf()
     private val selectedItemsSource =
-        MutableLiveData<Map<ListOwner<*>, SelectedItemId>>(selectedItems)
+        MutableStateFlow<Map<ListOwner<*>, SelectedItemId>>(emptyMap())
 
     fun put(itemId: SelectedItemId) {
-        selectedItems[itemId.owner] = itemId
-        selectedItemsSource.value = selectedItems
+        val newItems = selectedItemsSource.value.plus(itemId.owner to itemId)
+        selectedItemsSource.value = newItems
     }
 
     fun remove(owner: ListOwner<*>) {
-        selectedItems.remove(owner)
-        selectedItemsSource.value = selectedItems
+        val newItems = selectedItemsSource.value.minus(owner)
+        selectedItemsSource.value = newItems
     }
 
-    fun find(owner: ListOwner<*>): SelectedItemId? {
-        return selectedItems[owner]
-    }
+    fun find(owner: ListOwner<*>): SelectedItemId? = selectedItemsSource.value[owner]
 
-    fun observe(owner: ListOwner<*>): LiveData<SelectedItemId?> {
-        return selectedItemsSource.map { it[owner] }
-    }
+    fun getSource(owner: ListOwner<*>): Flow<SelectedItemId?> =
+        selectedItemsSource.map { it[owner] }.distinctUntilChanged()
 }

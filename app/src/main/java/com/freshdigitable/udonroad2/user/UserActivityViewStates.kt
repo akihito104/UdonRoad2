@@ -20,7 +20,6 @@ import androidx.annotation.Keep
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.map
-import androidx.lifecycle.switchMap
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.data.UserDataSource
 import com.freshdigitable.udonroad2.data.impl.RelationshipRepository
@@ -116,9 +115,9 @@ class UserActivityViewStates @Inject constructor(
         if (p.isNotEmpty()) {
             emit(p[current])
         }
-    }.asLiveData(executor.mainContext).switchMap {
-        selectedItemRepository.observe(requireNotNull(it))
-    }
+    }.flatMapLatest {
+        selectedItemRepository.getSource(requireNotNull(it))
+    }.asLiveData(executor.mainContext)
     val fabVisible: AppViewState<Boolean> = selectedItemId
         .map { it != null }
 

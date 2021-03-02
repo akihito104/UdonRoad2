@@ -33,6 +33,11 @@
             name="viewModel"
             type="com.freshdigitable.udonroad2.timeline.ListItemClickListener"
             />
+
+        <variable
+            name="userIconClickListener"
+            type="com.freshdigitable.udonroad2.timeline.UserIconClickListener"
+            />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -53,7 +58,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@id/userItem_names"
             app:bindUserIcon="@{user.iconUrl}"
-            android:onClick="@{v -> viewModel.onUserIconClicked(user)}"
+            android:onClick="@{v -> userIconClickListener.onUserIconClicked(user)}"
             tools:background="#888"
             />
 

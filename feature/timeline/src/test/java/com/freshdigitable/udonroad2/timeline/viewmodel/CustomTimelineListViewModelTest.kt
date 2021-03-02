@@ -33,9 +33,11 @@ import com.freshdigitable.udonroad2.test_common.MockVerified
 import com.freshdigitable.udonroad2.test_common.jvm.CoroutineTestRule
 import com.freshdigitable.udonroad2.test_common.jvm.testCollect
 import com.freshdigitable.udonroad2.timeline.ListItemLoadableActions
-import com.freshdigitable.udonroad2.timeline.ListItemLoadableViewState
+import com.freshdigitable.udonroad2.timeline.ListItemLoadableViewModelSource
 import com.freshdigitable.udonroad2.timeline.ListItemLoadableViewStateImpl
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
+import com.freshdigitable.udonroad2.timeline.UserIconClickedAction
+import com.freshdigitable.udonroad2.timeline.UserIconViewModelSource
 import com.google.common.truth.Truth.assertThat
 import io.mockk.every
 import io.mockk.mockk
@@ -55,12 +57,13 @@ class CustomTimelineListViewModelTest {
     val rule = ListItemLoadableViewStateRule(owner)
 
     private val sut: CustomTimelineListViewModel by lazy {
+        val userIconClickedAction = UserIconClickedAction(rule.eventDispatcher)
         val viewState = CustomTimelineListItemLoadableViewState(
             CustomTimelineListActions(rule.eventDispatcher),
-            rule.viewState,
-            ListOwnerGenerator.create()
+            rule.viewModelSource,
+            ListOwnerGenerator.create(),
         )
-        CustomTimelineListViewModel(owner, viewState, rule.eventDispatcher)
+        CustomTimelineListViewModel(viewState, UserIconViewModelSource(userIconClickedAction))
     }
 
     @Test
@@ -108,14 +111,14 @@ class ListItemLoadableViewStateRule(
     val eventDispatcher: EventDispatcher = EventDispatcher(),
 ) : TestRule {
     val coroutineTestRule = CoroutineTestRule()
-    private val listRepository = MockVerified.create<ListRepository<QueryType, *>>()
+    private val listRepository = MockVerified.create<ListRepository<QueryType, Any>>()
     private val pagedListProvider = MockVerified.create<PagedListProvider<QueryType, Any>>().apply {
         setupResponseWithVerify({ mock.getList(owner.query, owner.id) }, emptyFlow())
     }
-    val viewState: ListItemLoadableViewState by lazy {
+    val viewModelSource: ListItemLoadableViewModelSource by lazy {
         ListItemLoadableViewStateImpl(
             owner as ListOwner<QueryType>,
-            ListItemLoadableActions.create(eventDispatcher),
+            ListItemLoadableActions(owner, eventDispatcher),
             listRepository.mock,
             pagedListProvider.mock,
         )

@@ -20,30 +20,27 @@ import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.data.UserDataSource
 import com.freshdigitable.udonroad2.data.impl.AppSettingRepository
 import com.freshdigitable.udonroad2.main.DrawerViewState.Companion.toClosedState
-import com.freshdigitable.udonroad2.main.MainActivityEvent.DrawerEvent
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
-import com.freshdigitable.udonroad2.model.app.ScanFun
-import com.freshdigitable.udonroad2.model.app.UpdateFun
 import com.freshdigitable.udonroad2.model.app.di.ActivityScope
+import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.ViewState
-import com.freshdigitable.udonroad2.model.app.navigation.toAction
+import com.freshdigitable.udonroad2.model.app.navigation.toActionFlow
 import com.freshdigitable.udonroad2.model.app.onEvent
+import com.freshdigitable.udonroad2.model.app.stateSourceBuilder
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.oauth.LoginUseCase
+import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.getTimelineEvent
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
-import kotlinx.coroutines.flow.scan
-import kotlinx.coroutines.rx2.asFlow
 import java.io.Serializable
 import java.util.SortedSet
 import javax.inject.Inject
@@ -60,12 +57,24 @@ internal data class DrawerViewState(
     }
 }
 
+internal sealed class DrawerEvent : AppEvent {
+    object Opened : DrawerEvent()
+    object Closed : DrawerEvent()
+    object AccountSwitchClicked : DrawerEvent()
+    object HomeClicked : DrawerEvent()
+    object AddUserClicked : DrawerEvent()
+    object CustomTimelineClicked : DrawerEvent()
+    data class SwitchableAccountClicked(val accountName: String) : DrawerEvent()
+    object CurrentUserIconClicked : DrawerEvent()
+}
+
 interface DrawerActionListener {
     fun onBackPressed(): Boolean
     fun onAccountSwitcherClicked()
     fun onDrawerOpened()
     fun onDrawerClosed()
     fun onDrawerMenuItemClicked(groupId: Int, itemId: Int, title: CharSequence): Boolean
+    fun onCurrentUserIconClicked()
 }
 
 @ActivityScope
@@ -110,16 +119,19 @@ internal class DrawerActions @Inject constructor(
         return event != null
     }
 
-    internal val showDrawerMenu = dispatcher.toAction<DrawerEvent.Opened>().asFlow()
-    internal val hideDrawerMenu = dispatcher.toAction<DrawerEvent.Closed>().asFlow()
-    internal val toggleAccountSwitcher = dispatcher.toAction<DrawerEvent.AccountSwitchClicked>()
-        .asFlow()
-    internal val popToHome = dispatcher.toAction<DrawerEvent.HomeClicked>().asFlow()
-    internal val launchOAuth = dispatcher.toAction<DrawerEvent.AddUserClicked>().asFlow()
+    override fun onCurrentUserIconClicked() {
+        dispatcher.postEvent(DrawerEvent.CurrentUserIconClicked)
+    }
+
+    internal val showDrawerMenu = dispatcher.toActionFlow<DrawerEvent.Opened>()
+    internal val hideDrawerMenu = dispatcher.toActionFlow<DrawerEvent.Closed>()
+    internal val toggleAccountSwitcher = dispatcher.toActionFlow<DrawerEvent.AccountSwitchClicked>()
+    internal val popToHome = dispatcher.toActionFlow<DrawerEvent.HomeClicked>()
+    internal val launchOAuth = dispatcher.toActionFlow<DrawerEvent.AddUserClicked>()
     internal val launchCustomTimelineList =
-        dispatcher.toAction<DrawerEvent.CustomTimelineClicked>().asFlow()
-    internal val switchAccount =
-        dispatcher.toAction<DrawerEvent.SwitchableAccountClicked>().asFlow()
+        dispatcher.toActionFlow<DrawerEvent.CustomTimelineClicked>()
+    internal val switchAccount = dispatcher.toActionFlow<DrawerEvent.SwitchableAccountClicked>()
+    internal val showCurrentUser = dispatcher.toActionFlow<DrawerEvent.CurrentUserIconClicked>()
 }
 
 @ActivityScope
@@ -145,7 +157,9 @@ internal class DrawerViewModelSource @Inject constructor(
                 a.screenName.compareTo(b.screenName)
             }
     }.onStart { emit(sortedSetOf()) }
-    private val updateSources: List<Flow<UpdateFun<DrawerViewState>>> = listOf(
+
+    internal val state: Flow<DrawerViewState> = stateSourceBuilder(
+        init = DrawerViewState(),
         currentUser.onEvent { state, user -> state.copy(currentUser = user) },
         switchableRegisteredUsers.onEvent { state, account ->
             state.copy(switchableAccounts = account)
@@ -163,6 +177,12 @@ internal class DrawerViewModelSource @Inject constructor(
             state.toClosedState()
         },
 
+        actions.showCurrentUser.onEvent { state, _ ->
+            state.currentUser?.let {
+                navEventChannel.send(TimelineEvent.Navigate.UserInfo(it))
+            }
+            state
+        },
         actions.toggleAccountSwitcher.onEvent { state, _ ->
             state.copy(isAccountSwitcherOpened = !state.isAccountSwitcherOpened)
         },
@@ -181,13 +201,6 @@ internal class DrawerViewModelSource @Inject constructor(
             state.toClosedState()
         },
     )
-
-    internal val state: Flow<DrawerViewState> = updateSources.merge()
-        .scan(DrawerViewState()) { state, trans -> trans(state) }
-
-    private inline fun <reified E> Flow<E>.onEvent(
-        crossinline update: ScanFun<DrawerViewState, E>
-    ): Flow<UpdateFun<DrawerViewState>> = onEvent(this, update)
 
     private suspend fun Channel<NavigationEvent>.sendTimelineEvent(
         queryType: QueryType,

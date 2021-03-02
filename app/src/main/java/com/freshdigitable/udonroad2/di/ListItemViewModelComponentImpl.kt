@@ -30,7 +30,6 @@ import com.freshdigitable.udonroad2.model.app.di.ViewModelScope
 import com.freshdigitable.udonroad2.model.app.valueByAssignableClassObject
 import com.freshdigitable.udonroad2.oauth.di.OauthListAdapterModule
 import com.freshdigitable.udonroad2.oauth.di.OauthViewModelModule
-import com.freshdigitable.udonroad2.timeline.ListItemLoadableViewModel
 import com.freshdigitable.udonroad2.timeline.di.ListItemAdapterComponent
 import com.freshdigitable.udonroad2.timeline.di.ListItemFragmentEventDelegateComponent
 import com.freshdigitable.udonroad2.timeline.di.ListItemViewModelComponent
@@ -159,7 +158,7 @@ interface ListItemFragmentEventDelegateComponentImpl : ListItemFragmentEventDele
     @Subcomponent.Factory
     interface Factory : ListItemFragmentEventDelegateComponent.Factory {
         override fun create(
-            @BindsInstance viewModel: ListItemLoadableViewModel<*>
+            @BindsInstance viewModel: ViewModel
         ): ListItemFragmentEventDelegateComponentImpl
     }
 }
@@ -168,7 +167,7 @@ interface ListItemFragmentEventDelegateComponentImpl : ListItemFragmentEventDele
 object ListItemFragmentEventDelegateProvider {
     @Provides
     fun ClassKeyMap<ViewModel, Provider<ListItemFragmentEventDelegate>>.provideEventDelegate(
-        viewModel: ListItemLoadableViewModel<*>
+        viewModel: ViewModel
     ): ListItemFragmentEventDelegate = this.valueByAssignableClassObject(viewModel).get()
 }
 

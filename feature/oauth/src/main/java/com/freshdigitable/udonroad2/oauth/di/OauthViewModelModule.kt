@@ -23,7 +23,6 @@ import androidx.paging.PagingSource
 import androidx.savedstate.SavedStateRegistryOwner
 import com.freshdigitable.udonroad2.data.OAuthTokenDataSource
 import com.freshdigitable.udonroad2.data.impl.di.ListRepositoryComponentModule
-import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.app.di.IntoSavedStateFactory
@@ -38,7 +37,7 @@ import com.freshdigitable.udonroad2.oauth.OauthItem
 import com.freshdigitable.udonroad2.oauth.OauthNavigationDelegate
 import com.freshdigitable.udonroad2.oauth.OauthSavedStates
 import com.freshdigitable.udonroad2.oauth.OauthViewModel
-import com.freshdigitable.udonroad2.oauth.OauthViewStates
+import com.freshdigitable.udonroad2.oauth.OauthViewModelSource
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragment
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentEventDelegate
 import dagger.Binds
@@ -54,7 +53,7 @@ interface OauthViewModelModule {
 
     companion object {
         @Provides
-        fun provideOauthAction(dispatcher: EventDispatcher): OauthAction {
+        internal fun provideOauthAction(dispatcher: EventDispatcher): OauthAction {
             return OauthAction(dispatcher)
         }
 
@@ -78,15 +77,15 @@ interface OauthViewModelModule {
             OauthSavedStates(handle)
 
         @Provides
-        fun provideOauthViewStates(
+        internal fun provideOauthViewStates(
             actions: OauthAction,
             login: LoginUseCase,
             dataSource: PagingSource<Int, OauthItem>,
             repository: OAuthTokenDataSource,
             listOwnerGenerator: ListOwnerGenerator,
             savedState: OauthSavedStates,
-        ): OauthViewStates {
-            return OauthViewStates(
+        ): OauthViewModelSource {
+            return OauthViewModelSource(
                 actions,
                 login,
                 dataSource,
@@ -100,17 +99,8 @@ interface OauthViewModelModule {
         @IntoMap
         @ViewModelKey(OauthViewModel::class)
         @IntoSavedStateFactory
-        fun provideOauthViewModel(
-            owner: ListOwner<*>,
-            eventDispatcher: EventDispatcher,
-            viewStates: OauthViewStates,
-        ): ViewModel {
-            return OauthViewModel(
-                owner as ListOwner<QueryType.Oauth>,
-                eventDispatcher,
-                viewStates
-            )
-        }
+        internal fun provideOauthViewModel(viewModelSource: OauthViewModelSource): ViewModel =
+            OauthViewModel(viewModelSource)
 
         @Provides
         @IntoMap

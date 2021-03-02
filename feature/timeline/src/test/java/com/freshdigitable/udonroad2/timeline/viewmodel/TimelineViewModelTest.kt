@@ -20,25 +20,31 @@ import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
+import com.freshdigitable.udonroad2.test_common.jvm.createMock
 import com.freshdigitable.udonroad2.test_common.jvm.testCollect
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.TimelineViewStatesTestRule
+import com.freshdigitable.udonroad2.timeline.UserIconClickedAction
+import com.freshdigitable.udonroad2.timeline.UserIconViewModelSource
 import com.google.common.truth.Truth.assertThat
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.junit.runner.Description
 
 class TimelineViewModelTest {
     @get:Rule
-    val viewStatesTestRule = TimelineViewStatesTestRule()
+    val viewStatesTestRule = object : TimelineViewStatesTestRule() {
+        override fun starting(description: Description?) = Unit
+    }
 
-    val sut: TimelineViewModel by lazy {
+    internal val sut: TimelineViewModel by lazy {
+        val eventDispatcher = viewStatesTestRule.actionsRule.dispatcher
         TimelineViewModel(
-            viewStatesTestRule.owner,
-            viewStatesTestRule.actionsRule.dispatcher,
             viewStatesTestRule.sut,
+            UserIconViewModelSource(UserIconClickedAction(eventDispatcher))
         )
     }
 
@@ -47,19 +53,21 @@ class TimelineViewModelTest {
 
     @Before
     fun setup() {
-        isHeadingEnabledFlow = sut.isHeadingEnabled.testCollect(viewStatesTestRule.executor)
+        val isHeadingEnabled = mutableListOf<Boolean>()
+        isHeadingEnabledFlow = isHeadingEnabled
+        sut.listState.observeForever { isHeadingEnabled.add(it.isHeadingEnabled) }
         navigationEvents = sut.navigationEvent.testCollect(viewStatesTestRule.executor)
         sut.timeline.testCollect(viewStatesTestRule.executor)
         sut.selectedItemId.observeForever { }
         sut.feedbackMessage.testCollect(viewStatesTestRule.executor)
-        sut.isPossiblySensitiveHidden.observeForever { }
+        sut.mediaState.observeForever { }
     }
 
     @Test
     fun init() {
         assertThat(sut.selectedItemId.value).isNull()
-        assertThat(isHeadingEnabledFlow.first()).isFalse()
-        assertThat(sut.isPossiblySensitiveHidden.value).isTrue()
+        assertThat(sut.listState.value?.isHeadingEnabled).isFalse()
+        assertThat(sut.mediaState.value?.isPossiblySensitiveHidden).isTrue()
     }
 
     @Test
@@ -70,7 +78,7 @@ class TimelineViewModelTest {
         }
 
         // verify
-        assertThat(isHeadingEnabledFlow.last()).isTrue()
+        assertThat(sut.listState.value?.isHeadingEnabled).isTrue()
     }
 
     @Test
@@ -84,7 +92,7 @@ class TimelineViewModelTest {
         }
 
         // verify
-        assertThat(isHeadingEnabledFlow.last()).isTrue()
+        assertThat(sut.listState.value?.isHeadingEnabled).isTrue()
     }
 
     @Test
@@ -107,10 +115,10 @@ class TimelineViewModelTest {
     fun onBodyClicked() {
         viewStatesTestRule.coroutineTestRule.runBlockingTest {
             // setup
-            val item = mockk<TweetListItem>().also {
-                every { it.originalId } returns TweetId(1000)
-                every { it.body } returns mockk(relaxed = true)
-            }
+            val item = TweetListItem.createMock(
+                originalTweetId = TweetId(1000),
+                body = mockk(relaxed = true)
+            )
             sut.onListScrollStopped(0)
 
             // exercise
@@ -119,7 +127,7 @@ class TimelineViewModelTest {
 
         // verify
         assertThat(sut.selectedItemId.value?.originalId).isEqualTo(TweetId(1000))
-        assertThat(isHeadingEnabledFlow.last()).isTrue()
+        assertThat(sut.listState.value?.isHeadingEnabled).isTrue()
     }
 
     @Test
@@ -141,10 +149,10 @@ class TimelineViewModelTest {
         viewStatesTestRule.coroutineTestRule.runBlockingTest {
             // setup
             sut.onListScrollStopped(0)
-            val item = mockk<TweetListItem>().also {
-                every { it.originalId } returns TweetId(1000)
-                every { it.body } returns mockk(relaxed = true)
-            }
+            val item = TweetListItem.createMock(
+                originalTweetId = TweetId(1000),
+                body = mockk(relaxed = true)
+            )
             sut.onBodyItemClicked(item)
 
             // exercise
@@ -197,7 +205,7 @@ class TimelineViewModelTest {
         }
 
         // verify
-        assertThat(isHeadingEnabledFlow.last()).isFalse()
+        assertThat(sut.listState.value?.isHeadingEnabled).isFalse()
     }
 
     @Test
@@ -213,7 +221,7 @@ class TimelineViewModelTest {
         }
 
         // verify
-        assertThat(isHeadingEnabledFlow.last()).isTrue()
+        assertThat(sut.listState.value?.isHeadingEnabled).isTrue()
     }
 
     @Test
@@ -233,6 +241,6 @@ class TimelineViewModelTest {
         }
 
         // verify
-        assertThat(isHeadingEnabledFlow.last()).isTrue()
+        assertThat(sut.listState.value?.isHeadingEnabled).isTrue()
     }
 }

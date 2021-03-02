@@ -16,64 +16,64 @@
 
 package com.freshdigitable.udonroad2.timeline
 
+import com.freshdigitable.udonroad2.model.ListOwner
+import com.freshdigitable.udonroad2.model.SelectedItemId
+import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
-import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
-import com.freshdigitable.udonroad2.model.app.navigation.filterByType
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
+import com.freshdigitable.udonroad2.model.app.navigation.toActionFlow
+import com.freshdigitable.udonroad2.model.tweet.TweetElement
+import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import com.freshdigitable.udonroad2.shortcut.ShortcutActions
 import com.freshdigitable.udonroad2.timeline.TimelineEvent.Init
 import com.freshdigitable.udonroad2.timeline.TimelineEvent.TweetItemSelection
-import com.freshdigitable.udonroad2.timeline.TimelineEvent.UserIconClicked
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.rx2.asFlow
+import kotlinx.coroutines.flow.filter
+import timber.log.Timber
 
-class TimelineActions(
-    dispatcher: EventDispatcher,
-) : ListItemLoadableActions by ListItemLoadableActions.create(dispatcher),
-    UserIconClickedAction by UserIconClickedAction.create(dispatcher),
-    LaunchMediaViewerAction by LaunchMediaViewerAction.create(dispatcher),
-    ShortcutActions by ShortcutActions.create(dispatcher) {
+internal class TimelineActions(
+    private val owner: ListOwner<*>,
+    private val dispatcher: EventDispatcher,
+    listItemLoadableActions: ListItemLoadableAction,
+    mediaViewerAction: LaunchMediaViewerAction,
+) : ListItemLoadableAction by listItemLoadableActions,
+    ShortcutActions by ShortcutActions.create(dispatcher),
+    TweetMediaAction by mediaViewerAction,
+    TweetListItemEventListener {
 
     val showTimeline: AppAction<Init> = dispatcher.toAction()
+    val selectItem = dispatcher.toActionFlow<TweetItemSelection.Selected>()
+        .filter { it.owner == owner }
+    val toggleItem = dispatcher.toActionFlow<TweetItemSelection.Toggle>()
+        .filter { it.owner == owner }
+    val unselectItem = dispatcher.toActionFlow<TweetItemSelection.Unselected>()
+        .filter { it.owner == owner }
 
-    val selectItem: AppAction<TweetItemSelection.Selected> = dispatcher.toAction {
-        AppAction.merge(
-            filterByType<TweetItemSelection.Selected>(),
-            launchMediaViewer
-                .filter { it.selectedItemId != null }
-                .map { TweetItemSelection.Selected(requireNotNull(it.selectedItemId)) }
-        )
+    override fun onBodyItemClicked(item: TweetListItem) {
+        Timber.tag("TimelineViewModel").d("onBodyItemClicked: ${item.body.id}")
+        updateSelectedItem(SelectedItemId(owner, item.originalId))
     }
-    val toggleItem: AppAction<TweetItemSelection.Toggle> = dispatcher.toAction()
-    val unselectItem: AppAction<TweetItemSelection.Unselected> = AppAction.merge(
-        dispatcher.toAction(),
-        heading.map { TweetItemSelection.Unselected(it.owner) }
-    )
-}
 
-interface UserIconClickedAction {
-    val launchUserInfo: AppAction<UserIconClicked>
-
-    companion object {
-        fun create(
-            eventDispatcher: EventDispatcher
-        ): UserIconClickedAction = object : UserIconClickedAction {
-            override val launchUserInfo: AppAction<UserIconClicked> = eventDispatcher.toAction()
-        }
+    override fun onQuoteItemClicked(item: TweetListItem) {
+        Timber.tag("TimelineViewModel").d("onQuoteItemClicked: ${item.quoted?.id}")
+        updateSelectedItem(SelectedItemId(owner, item.originalId, item.quoted?.id))
     }
-}
 
-interface UserIconClickedNavigation {
-    val navEvent: Flow<NavigationEvent>
+    private fun updateSelectedItem(selected: SelectedItemId) {
+        dispatcher.postEvent(TweetItemSelection.Toggle(selected))
+    }
 
-    companion object {
-        fun create(actions: UserIconClickedAction): UserIconClickedNavigation {
-            return object : UserIconClickedNavigation {
-                override val navEvent: Flow<NavigationEvent> = actions.launchUserInfo.asFlow()
-                    .map { TimelineEvent.Navigate.UserInfo(it.user) }
-            }
-        }
+    override fun onMediaItemClicked(
+        originalId: TweetId,
+        quotedId: TweetId?,
+        item: TweetElement,
+        index: Int
+    ) {
+        val selected = SelectedItemId(owner, originalId, quotedId)
+        dispatcher.postEvent(TimelineEvent.MediaItemClicked(item.id, index, selected))
+    }
+
+    override fun onMediaItemClicked(originalId: TweetId, item: TweetElement, index: Int) {
+        onMediaItemClicked(originalId, null, item, index)
     }
 }

@@ -11,6 +11,7 @@ import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.navArgs
 import androidx.paging.LoadState
@@ -72,7 +73,7 @@ class ListItemFragment : Fragment() {
             .viewModel("_$ownerId")
         binding.viewModel = viewModel
 
-        val adapter = listItemAdapterFactory.create(viewModel, viewLifecycleOwner)
+        val adapter = listItemAdapterFactory.create(viewModel as ViewModel, viewLifecycleOwner)
             .adapter as PagingDataAdapter<Any, *>
         binding.mainList.setup(adapter, viewModel)
 
@@ -85,7 +86,7 @@ class ListItemFragment : Fragment() {
             }
         }
 
-        val eventDelegate = eventDelegate.create(viewModel).eventDelegate
+        val eventDelegate = eventDelegate.create(viewModel as ViewModel).eventDelegate
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.navigationEvent.collect {
                 when (it) {
@@ -135,8 +136,8 @@ class ListItemFragment : Fragment() {
 
         val headingItem = menu.findItem(R.id.action_heading)
         viewLifecycleOwner.lifecycleScope.launchWhenResumed {
-            viewModel.isHeadingEnabled.collect {
-                headingItem.isEnabled = it
+            viewModel.listState.observe(viewLifecycleOwner) {
+                headingItem.isEnabled = it.isHeadingEnabled
             }
         }
     }

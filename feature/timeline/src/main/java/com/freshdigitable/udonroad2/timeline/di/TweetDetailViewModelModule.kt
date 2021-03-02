@@ -48,7 +48,12 @@ interface TweetDetailViewModelModule {
 }
 
 @ViewModelScope
-@Subcomponent(modules = [TweetDetailViewModelModule::class])
+@Subcomponent(
+    modules = [
+        TweetDetailViewModelModule::class,
+        TweetMediaViewModelModule::class
+    ]
+)
 interface TweetDetailViewModelComponent {
     @Subcomponent.Factory
     interface Factory {
