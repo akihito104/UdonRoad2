@@ -3,16 +3,21 @@
 class Activity
 class Fragment
 class ViewModel {
-  dispatcher: EventDispatcher
-  states: ViewStates
+  viewModelSource: ViewModelSource
+  state: LiveData<State>
 }
 
-class EventDispatcher 
-class Actions {
+class EventDispatcher
+interface EventListener
+interface Actions {
+  action: Flow<AppEvent>
+}
+class ConcreteActions {
   dispatcher: EventDispatcher
 }
-class ViewStates {
-  actions: Actions
+class ViewModelSource {
+  actions: ConcreteActions
+  stateSource: Flow<State>
 }
 class NavigationDelegate {
   navController: NavController
@@ -20,17 +25,23 @@ class NavigationDelegate {
 
 Activity *- Fragment
 Activity -- ViewModel
-Activity o- NavigationDelegate
+Activity *- NavigationDelegate
 
 Fragment -- ViewModel
-Fragment o- NavigationDelegate
+Fragment *- NavigationDelegate
 
-EventDispatcher - ViewModel
-EventDispatcher -- Actions : < observe
+ViewModel *-- ViewModelSource : > delegate
 
-ViewModel o-- ViewStates : > observe
+EventListener <|- ViewModel
+EventListener <|-- Actions
+EventListener <|-- ViewModelSource
 
-ViewStates - Actions : > observe
-'ViewStates *-- NavigationDelegate
-ViewStates -- Repository
+Actions <|-- ConcreteActions
+ConcreteActions - EventDispatcher
+
+ViewModelSource *- ConcreteActions : > delegate
+ViewModelSource - UseCase
+ViewModelSource - Repository
+
+UseCase -- Repository
 @enduml
