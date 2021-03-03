@@ -5,55 +5,49 @@ import androidx.annotation.IdRes
 import androidx.annotation.Keep
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asFlow
 import androidx.lifecycle.asLiveData
+import androidx.lifecycle.distinctUntilChanged
+import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.model.ListOwner
+import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
 import com.freshdigitable.udonroad2.model.user.Relationship
-import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.model.user.UserEntity
 import com.freshdigitable.udonroad2.shortcut.postSelectedItemShortcutEvent
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.user.UserActivityEvent.Relationships
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import timber.log.Timber
 import java.util.EnumSet
 
 class UserViewModel(
-    private val tweetUserItem: TweetUserItem,
     private val eventDispatcher: EventDispatcher,
-    private val viewState: UserActivityViewStates,
-) : ViewModel() {
-    val user: LiveData<UserEntity?> = viewState.user.asLiveData(viewModelScope.coroutineContext)
-    val relationship: LiveData<Relationship?> = viewState.relationship
-        .asLiveData(viewModelScope.coroutineContext)
-    val titleAlpha: LiveData<Float> = viewState.titleAlpha
-    val fabVisible: LiveData<Boolean> = viewState.fabVisible
-    val relationshipMenuItems: LiveData<Set<RelationshipMenu>> = viewState.relationshipMenuItems
-        .asLiveData(viewModelScope.coroutineContext)
-    internal val pages: Flow<Map<UserPage, ListOwner<*>>> = viewState.pages
+    private val viewState: UserViewModelSource,
+) : UserViewEventListener by viewState,
+    ViewModel() {
+    val state: LiveData<UserViewState> = viewState.state.asLiveData(viewModelScope.coroutineContext)
+    val relationshipMenuItems: LiveData<Set<RelationshipMenu>> =
+        state.map { it.relationshipMenuItems }.distinctUntilChanged()
+    internal val pages: Flow<Map<UserPage, ListOwner<*>>> = state.map { it.pages }
+        .asFlow()
+        .distinctUntilChanged()
     internal val feedbackMessage: Flow<FeedbackMessage> = viewState.feedbackMessage
-
-    fun setAppBarScrollRate(rate: Float) {
-        eventDispatcher.postEvent(UserActivityEvent.AppbarScrolled(rate))
-    }
-
-    fun setCurrentPage(index: Int) {
-        eventDispatcher.postEvent(UserActivityEvent.PageChanged(UserPage.values()[index]))
-    }
 
     fun onFabMenuSelected(item: MenuItem) {
         Timber.tag("UserViewModel").d("onFabSelected: $item")
         val selected =
-            requireNotNull(viewState.selectedItemId.value) { "selectedItem should not be null." }
+            requireNotNull(state.value?.selectedItemId) { "selectedItem should not be null." }
         eventDispatcher.postSelectedItemShortcutEvent(item, selected)
     }
 
-    internal fun onBackPressed(): Boolean {
-        val selectedItem = viewState.selectedItemId.value
+    override fun onBackPressed(): Boolean {
+        val selectedItem = state.value?.selectedItemId
         val event = if (selectedItem != null) {
             TimelineEvent.TweetItemSelection.Unselected(selectedItem.owner)
         } else {
@@ -63,20 +57,27 @@ class UserViewModel(
         return true
     }
 
-    fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return eventDispatcher.postRelationshipEvent(tweetUserItem.id, item)
-    }
-
     override fun onCleared() {
         super.onCleared()
         viewState.clear()
     }
 }
 
-private fun EventDispatcher.postRelationshipEvent(userId: UserId, item: MenuItem): Boolean {
-    val menuItem = RelationshipMenu.findById(item.itemId) ?: return false
-    postEvent(menuItem.event(userId))
-    return true
+interface UserViewEventListener {
+    fun onAppBarScrolled(rate: Float)
+    fun onCurrentPageChanged(index: Int)
+    fun onOptionsItemSelected(item: MenuItem): Boolean
+    fun onBackPressed(): Boolean
+}
+
+interface UserViewState {
+    val user: UserEntity?
+    val relationship: Relationship?
+    val relationshipMenuItems: Set<RelationshipMenu>
+    val titleAlpha: Float
+    val pages: Map<UserPage, ListOwner<*>>
+    val isShortcutVisible: Boolean
+    val selectedItemId: SelectedItemId?
 }
 
 @Keep

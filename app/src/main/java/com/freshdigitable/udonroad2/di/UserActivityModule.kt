@@ -24,8 +24,8 @@ import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.user.UserActivity
 import com.freshdigitable.udonroad2.user.UserActivityNavigationDelegate
-import com.freshdigitable.udonroad2.user.UserActivityViewStates
 import com.freshdigitable.udonroad2.user.UserViewModel
+import com.freshdigitable.udonroad2.user.UserViewModelSource
 import dagger.Binds
 import dagger.BindsInstance
 import dagger.Module
@@ -62,8 +62,8 @@ interface UserViewModelModule {
         fun provideUserViewModel(
             user: TweetUserItem,
             eventDispatcher: EventDispatcher,
-            viewState: UserActivityViewStates,
-        ): ViewModel = UserViewModel(user, eventDispatcher, viewState)
+            viewState: UserViewModelSource,
+        ): ViewModel = UserViewModel(eventDispatcher, viewState)
     }
 }
 

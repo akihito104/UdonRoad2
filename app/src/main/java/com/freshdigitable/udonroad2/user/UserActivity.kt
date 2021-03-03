@@ -73,7 +73,7 @@ class UserActivity : HasAndroidInjector, AppCompatActivity() {
         userToolbar.title = ""
         userAppBar.addOnOffsetChangedListener(
             AppBarLayout.OnOffsetChangedListener { appBar, offset ->
-                viewModel.setAppBarScrollRate(
+                viewModel.onAppBarScrolled(
                     abs(offset).toFloat() / appBar.totalScrollRange.toFloat()
                 )
             }
@@ -82,11 +82,11 @@ class UserActivity : HasAndroidInjector, AppCompatActivity() {
         userPager.apply {
             addOnPageChangeListener(object : ViewPager.SimpleOnPageChangeListener() {
                 override fun onPageSelected(position: Int) {
-                    viewModel.setCurrentPage(position)
+                    viewModel.onCurrentPageChanged(position)
                 }
             })
             this.adapter = adapter
-            viewModel.setCurrentPage(currentItem)
+            viewModel.onCurrentPageChanged(currentItem)
         }
         userTabContainer.setupWithViewPager(userPager)
     }
