@@ -435,7 +435,8 @@ class UserViewModelTestRule(
             coSetupResponseWithVerify(
                 { mock.getUser(targetId) },
                 res,
-                alsoOnAnswer = { userSource.value = res })
+                alsoOnAnswer = { userSource.value = res }
+            )
         }
     }
 
