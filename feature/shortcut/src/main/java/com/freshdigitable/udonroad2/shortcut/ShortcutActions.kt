@@ -27,15 +27,19 @@ interface ShortcutActions {
     val showConversation: AppAction<SelectedItemShortcut.Conversation>
 
     companion object {
-        fun create(dispatcher: EventDispatcher): ShortcutActions = object : ShortcutActions {
-            override val showTweetDetail: AppAction<SelectedItemShortcut.TweetDetail> =
-                dispatcher.toAction()
-            override val favTweet: AppAction<SelectedItemShortcut.Like> =
-                dispatcher.toAction()
-            override val retweet: AppAction<SelectedItemShortcut.Retweet> =
-                dispatcher.toAction()
-            override val showConversation: AppAction<SelectedItemShortcut.Conversation> =
-                dispatcher.toAction()
-        }
+        fun create(dispatcher: EventDispatcher): ShortcutActions = TweetShortcutActions(dispatcher)
     }
+}
+
+private class TweetShortcutActions(
+    dispatcher: EventDispatcher,
+) : ShortcutActions {
+    override val showTweetDetail: AppAction<SelectedItemShortcut.TweetDetail> =
+        dispatcher.toAction()
+    override val favTweet: AppAction<SelectedItemShortcut.Like> =
+        dispatcher.toAction()
+    override val retweet: AppAction<SelectedItemShortcut.Retweet> =
+        dispatcher.toAction()
+    override val showConversation: AppAction<SelectedItemShortcut.Conversation> =
+        dispatcher.toAction()
 }

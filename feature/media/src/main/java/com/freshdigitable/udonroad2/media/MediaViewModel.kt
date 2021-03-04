@@ -17,7 +17,6 @@
 package com.freshdigitable.udonroad2.media
 
 import android.os.Build
-import android.view.MenuItem
 import android.view.View
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
@@ -41,9 +40,9 @@ import com.freshdigitable.udonroad2.model.app.navigation.toAction
 import com.freshdigitable.udonroad2.model.app.navigation.toViewState
 import com.freshdigitable.udonroad2.model.app.weakRef
 import com.freshdigitable.udonroad2.shortcut.ShortcutActions
+import com.freshdigitable.udonroad2.shortcut.ShortcutEventListener
 import com.freshdigitable.udonroad2.shortcut.ShortcutViewModel
 import com.freshdigitable.udonroad2.shortcut.ShortcutViewStates
-import com.freshdigitable.udonroad2.shortcut.postSelectedItemShortcutEvent
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.rx2.asFlow
@@ -51,11 +50,14 @@ import javax.inject.Inject
 import kotlin.math.min
 
 class MediaViewModel @Inject constructor(
-    private val tweetId: TweetId,
+    val tweetId: TweetId,
     private val eventDispatcher: EventDispatcher,
     viewStates: MediaViewModelViewStates,
-) : ViewModel(), ShortcutViewModel {
+) : ShortcutViewModel,
+    ShortcutEventListener by ShortcutEventListener.create(eventDispatcher),
+    ViewModel() {
     val mediaItems: LiveData<List<MediaEntity>> = viewStates.mediaItems
+    override val isFabVisible: LiveData<Boolean> = viewStates.isFabVisible
     internal val systemUiVisibility: LiveData<SystemUiVisibility> = viewStates.systemUiVisibility
     internal val messageEvent: Flow<FeedbackMessage> = viewStates.updateTweet.asFlow()
 
@@ -75,12 +77,6 @@ class MediaViewModel @Inject constructor(
 
     fun setCurrentPosition(pos: Int) {
         eventDispatcher.postEvent(MediaViewerEvent.CurrentPositionChanged(pos))
-    }
-
-    override val isFabVisible: LiveData<Boolean> = viewStates.isFabVisible
-
-    override fun onFabMenuSelected(item: MenuItem) {
-        eventDispatcher.postSelectedItemShortcutEvent(item, tweetId)
     }
 }
 
