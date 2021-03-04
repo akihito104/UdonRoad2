@@ -23,6 +23,6 @@ object BuildLibs {
         "androidx.navigation:navigation-safe-args-gradle-plugin:${Versions.ANDROIDX_NAVIGATION}"
     const val SCABBARD_PLUGIN =
         "gradle.plugin.dev.arunkumar:scabbard-gradle-plugin:${Versions.SCABBARD}"
-    const val RELEASES_HUB = "com.releaseshub:releases-hub-gradle-plugin:${Versions.RELEASES_HUB}"
+    const val RELEASES_HUB = "com.dipien:releases-hub-gradle-plugin:${Versions.RELEASES_HUB}"
     const val LICENSE_TOOL = "com.cookpad.android.plugin.license-tools${Versions.LICENSE_TOOL}"
 }

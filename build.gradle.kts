@@ -4,6 +4,7 @@ buildscript {
     repositories {
         google()
         jcenter()
+        mavenCentral()
         maven { url = uri("https://oss.sonatype.org/content/repositories/snapshots") }
         maven { url = uri("https://kotlin.bintray.com/kotlin-eap") }
         maven { url = uri("https://plugins.gradle.org/m2/") }
@@ -14,12 +15,13 @@ buildscript {
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
         classpath(BuildLibs.ANDROIDX_NAVIGATION_SAFEARGS_PLUGIN)
+        classpath(BuildLibs.RELEASES_HUB)
     }
 }
 
 plugins {
     id("scabbard.gradle") version Versions.SCABBARD
-    id("com.releaseshub.gradle.plugin") version Versions.RELEASES_HUB
+    id("com.dipien.releaseshub.gradle.plugin") version Versions.RELEASES_HUB
     id("org.jlleitschuh.gradle.ktlint") version Versions.KTLINT_PLUGIN
     id("com.cookpad.android.plugin.license-tools") version Versions.LICENSE_TOOL
 }
