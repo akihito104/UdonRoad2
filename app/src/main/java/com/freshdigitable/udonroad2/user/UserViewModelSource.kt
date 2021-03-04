@@ -17,126 +17,127 @@
 package com.freshdigitable.udonroad2.user
 
 import androidx.annotation.Keep
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.asLiveData
-import androidx.lifecycle.map
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.data.UserDataSource
 import com.freshdigitable.udonroad2.data.impl.RelationshipRepository
 import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
+import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.app.AppExecutor
+import com.freshdigitable.udonroad2.model.app.AppTwitterException
 import com.freshdigitable.udonroad2.model.app.mainContext
-import com.freshdigitable.udonroad2.model.app.navigation.AppViewState
 import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
-import com.freshdigitable.udonroad2.model.app.navigation.toViewState
+import com.freshdigitable.udonroad2.model.app.onEvent
+import com.freshdigitable.udonroad2.model.app.stateSourceBuilder
 import com.freshdigitable.udonroad2.model.user.Relationship
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.model.user.UserEntity
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combineTransform
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.shareIn
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.rx2.asFlow
+import java.io.IOException
 import javax.inject.Inject
 import kotlin.math.min
 
-class UserActivityViewStates @Inject constructor(
+class UserViewModelSource @Inject constructor(
     tweetUserItem: TweetUserItem,
-    actions: UserActivityActions,
+    actions: UserActions,
     userRepository: UserDataSource,
     relationshipRepository: RelationshipRepository,
     selectedItemRepository: SelectedItemRepository,
     ownerGenerator: ListOwnerGenerator,
     executor: AppExecutor,
-) {
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+) : UserViewEventListener by actions {
+    private val scope = CoroutineScope(SupervisorJob() + executor.mainContext)
+    private val feedbackChannel = Channel<FeedbackMessage>()
 
-    private val _user: Flow<Result<UserEntity>> = userRepository.getUserSource(tweetUserItem.id)
-        .map { user ->
-            when (user) {
-                null -> {
-                    kotlin.runCatching { userRepository.getUser(tweetUserItem.id) }
-                        .onFailure { if (it is RuntimeException) throw it }
-                }
-                else -> Result.success(user)
+    private val pages: Flow<State> = stateSourceBuilder(
+        init = State(),
+        flowOf(UserPage.values()).onEvent { s, p ->
+            val pages = p.map {
+                it to ownerGenerator.generate(it.createQuery(tweetUserItem))
+            }.toMap()
+            s.copy(pages = pages)
+        },
+        actions.currentPageChanged.asFlow().onEvent { s, e ->
+            val listOwner = s.pages[e.page] ?: return@onEvent s.copy(currentPage = e.page)
+            s.copy(currentPage = e.page, selectedItemId = selectedItemRepository.find(listOwner))
+        },
+    ).shareIn(scope, SharingStarted.Lazily, replay = 1)
+    private val selectedItemId: Flow<SelectedItemId?> = pages.mapNotNull { it.currentOwner }
+        .flatMapLatest { selectedItemRepository.getSource(it) }
+    internal val state: Flow<State> = stateSourceBuilder(
+        init = State(),
+        actions.scrollAppbar.asFlow().onEvent { s, r ->
+            val a = if (r.scrollRate >= 0.9f) {
+                min((r.scrollRate - 0.9f) * 10, 1f)
+            } else {
+                0f
             }
-        }
-        .shareIn(scope, SharingStarted.Eagerly)
-    internal val user: Flow<UserEntity> = _user.filter { it.isSuccess }
-        .map { it.getOrThrow() }
-        .shareIn(scope, SharingStarted.Lazily)
-
-    private val _relationship: Flow<Result<Relationship?>> = user.map { it.id }
-        .filter { it == tweetUserItem.id }
-        .distinctUntilChanged()
-        .map {
-            kotlin.runCatching {
-                relationshipRepository.findRelationship(tweetUserItem.id)
-            }.onFailure { if (it is RuntimeException) throw it }
-        }.shareIn(scope, SharingStarted.Eagerly)
-    internal val relationship: Flow<Relationship?> = merge(
-        _relationship.filter { it.isSuccess }.map { it.getOrThrow() },
-        _relationship.filter { it.isSuccess }.flatMapLatest {
-            relationshipRepository.getRelationshipSource(tweetUserItem.id)
+            s.copy(titleAlpha = a)
+        },
+        pages.onEvent { s, p ->
+            s.copy(
+                pages = p.pages,
+                currentPage = p.currentPage,
+                selectedItemId = p.selectedItemId,
+            )
+        },
+        selectedItemId.onEvent { s, e -> s.copy(selectedItemId = e) },
+        userRepository.getUserSource(tweetUserItem.id).onEvent { s, u ->
+            if (u != null) {
+                if (s.relationship != null) {
+                    s.copy(user = u)
+                } else {
+                    val relationshipRes = relationshipRepository.runCatching {
+                        findRelationship(tweetUserItem.id)
+                    }.onFailure {
+                        if (it !is AppTwitterException && it !is IOException) {
+                            throw it
+                        }
+                    }
+                    if (relationshipRes.isFailure) {
+                        feedbackChannel.send(UserResourceFeedbackMessage.FAILED_FETCH)
+                    }
+                    s.copy(user = u, relationship = relationshipRes.getOrNull())
+                }
+            } else {
+                val res = userRepository.runCatching {
+                    getUser(tweetUserItem.id)
+                }.onFailure {
+                    if (it !is AppTwitterException && it !is IOException) {
+                        throw it
+                    }
+                }
+                if (res.isFailure) {
+                    feedbackChannel.send(UserResourceFeedbackMessage.FAILED_FETCH)
+                }
+                s.copy(user = res.getOrNull())
+            }
+        },
+        relationshipRepository.getRelationshipSource(tweetUserItem.id).onEvent { s, r ->
+            s.copy(relationship = r)
         }
     )
-        .shareIn(scope, SharingStarted.Lazily)
-    internal val relationshipMenuItems: Flow<Set<RelationshipMenu>> = relationship.map {
-        RelationshipMenu.availableItems(it)
-    }
-
-    // TODO: save to state handle
-    val pages: StateFlow<Map<UserPage, ListOwner<*>>> = flowOf(UserPage.values()).map {
-        it.map { p -> p to ownerGenerator.generate(p.createQuery(tweetUserItem)) }.toMap()
-    }.stateIn(scope, SharingStarted.Eagerly, emptyMap())
-
-    val selectedItemId = combineTransform(
-        pages,
-        actions.currentPageChanged.asFlow()
-            .map { it.page }
-            .stateIn(scope, SharingStarted.Eagerly, UserPage.TWEET)
-    ) { p, current ->
-        if (p.isNotEmpty()) {
-            emit(p[current])
-        }
-    }.flatMapLatest {
-        selectedItemRepository.getSource(requireNotNull(it))
-    }.asLiveData(executor.mainContext)
-    val fabVisible: AppViewState<Boolean> = selectedItemId
-        .map { it != null }
-
-    val titleAlpha: LiveData<Float> = actions.scrollAppbar.map { r ->
-        if (r.scrollRate >= 0.9f) {
-            min((r.scrollRate - 0.9f) * 10, 1f)
-        } else {
-            0f
-        }
-    }
-        .distinctUntilChanged()
-        .toViewState()
 
     @ExperimentalCoroutinesApi
     internal val feedbackMessage: Flow<FeedbackMessage> = merge(
-        _user.filter { it.isFailure }.map { UserResourceFeedbackMessage.FAILED_FETCH },
-        _relationship.filter { it.isFailure }.map { UserResourceFeedbackMessage.FAILED_FETCH },
+        feedbackChannel.receiveAsFlow(),
         actions.changeRelationships.asFlow().mapLatest { event ->
-            kotlin.runCatching { relationshipRepository.updateStatus(event) }.fold(
+            relationshipRepository.runCatching { updateStatus(event) }.fold(
                 onSuccess = { findSuccessFeedbackMessage(event) },
                 onFailure = { findFailureFeedbackMessage(event) }
             )
@@ -211,6 +212,22 @@ class UserActivityViewStates @Inject constructor(
             is UserActivityEvent.Relationships.ReportSpam ->
                 RelationshipFeedbackMessage.REPORT_SPAM_FAILURE
         }
+    }
+
+    internal data class State(
+        override val user: UserEntity? = null,
+        override val relationship: Relationship? = null,
+        override val titleAlpha: Float = 0f,
+        override val pages: Map<UserPage, ListOwner<*>> = emptyMap(),
+        val currentPage: UserPage = UserPage.TWEET,
+        override val selectedItemId: SelectedItemId? = null,
+    ) : UserViewState {
+        override val isShortcutVisible: Boolean
+            get() = selectedItemId != null
+        val currentOwner: ListOwner<*>?
+            get() = pages[currentPage]
+        override val relationshipMenuItems: Set<RelationshipMenu>
+            get() = RelationshipMenu.availableItems(relationship)
     }
 }
 

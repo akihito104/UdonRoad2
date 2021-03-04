@@ -34,8 +34,8 @@
 
                 <include
                     layout="@layout/view_user_header"
-                    app:item="@{viewModel.user}"
-                    app:relationship="@{viewModel.relationship}"
+                    app:item="@{viewModel.state.user}"
+                    app:relationship="@{viewModel.state.relationship}"
                     />
 
                 <androidx.appcompat.widget.Toolbar
@@ -53,8 +53,8 @@
                         android:ellipsize="end"
                         android:textSize="20sp"
                         android:textStyle="bold"
-                        android:text="@{'@' + viewModel.user.screenName}"
-                        android:alpha="@{viewModel.titleAlpha}"
+                        android:text="@{'@' + viewModel.state.user.screenName}"
+                        android:alpha="@{viewModel.state.titleAlpha}"
                         tools:text="\@screen_name"
                         />
                 </androidx.appcompat.widget.Toolbar>
@@ -65,7 +65,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:tabMode="scrollable"
-                app:updateTabTexts="@{viewModel.user}"
+                app:updateTabTexts="@{viewModel.state.user}"
                 />
         </com.google.android.material.appbar.AppBarLayout>
 
@@ -84,7 +84,7 @@
             android:layout_marginBottom="@dimen/shortcut_marginBottom"
             app:menu="@menu/shortcut_main"
             style="@style/Widget.FlingFAB"
-            app:isVisible="@{viewModel.fabVisible}"
+            app:isVisible="@{viewModel.state.shortcutVisible}"
             app:menuListener="@{viewModel::onFabMenuSelected}"
             />
     </androidx.coordinatorlayout.widget.CoordinatorLayout>

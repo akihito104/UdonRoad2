@@ -53,9 +53,7 @@ import com.google.common.truth.Truth.assertThat
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.sendBlocking
-import kotlinx.coroutines.flow.consumeAsFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -71,33 +69,34 @@ import java.io.IOException
 @ExperimentalCoroutinesApi
 @RunWith(Enclosed::class)
 class UserViewModelTest {
-    class Init {
+    class WhenInitWithCachedUserEntity {
         @get:Rule
         val rule = UserViewModelTestRule()
 
         @Test
         fun initialValue(): Unit = with(rule) {
             // verify
-            assertThat(sut.user.value).isNull()
-            assertThat(sut.relationship.value).isNull()
-            assertThat(sut.relationshipMenuItems.value).isNull()
-            assertThat(sut.fabVisible.value).isFalse()
-            assertThat(sut.titleAlpha.value).isEqualTo(0)
+            assertThat(sut.state.value?.user).isEqualTo(user)
+            assertThat(sut.state.value?.relationship).isEqualTo(relationship)
+            assertThat(sut.relationshipMenuItems.value)
+                .isEqualTo(setOf(FOLLOW, BLOCK, MUTE, REPORT_SPAM))
+            assertThat(sut.state.value?.isShortcutVisible).isFalse()
+            assertThat(sut.state.value?.titleAlpha).isEqualTo(0)
         }
 
         @Test
         fun setAppbarScrollRate(): Unit = with(rule) {
             // exercise
-            sut.setAppBarScrollRate(1f)
+            sut.onAppBarScrolled(1f)
 
             // verify
-            assertThat(sut.titleAlpha.value).isEqualTo(1f)
+            assertThat(sut.state.value?.titleAlpha).isEqualTo(1f)
         }
 
         @Test
         fun fabVisible_dispatchedSelectedEvent_then_fabVisibleIsTrue(): Unit = with(rule) {
             // setup
-            sut.setCurrentPage(0)
+            sut.onCurrentPageChanged(0)
 
             // exercise
             selectedItemRepository.put(
@@ -107,36 +106,44 @@ class UserViewModelTest {
             )
 
             // verify
-            assertThat(sut.fabVisible.value).isTrue()
+            assertThat(sut.state.value?.isShortcutVisible).isTrue()
         }
+    }
+
+    class WhenInitWithFetchingUserEntity {
+        @get:Rule
+        val rule = UserViewModelTestRule(
+            beforeSut = {
+                setupUserSource()
+                setupGetUser(targetId, user)
+                setupRelationshipSource()
+                setupFindRelationship(relationship())
+            }
+        )
 
         @Test
-        fun user_whenNotFoundInLocal_then_getUserIsCalled(): Unit = with(rule) {
-            // setup
-            with(userRepositoryMock) {
-                coSetupResponseWithVerify({ mock.getUser(targetId) }, user)
-            }
-            setupRelation(targetId, relationship())
-
-            // exercise
-            userSource.sendBlocking(null)
-
+        fun getUserIsCalledOnInit(): Unit = with(rule) {
             // verify
-            assertThat(sut.user.value).isNotNull()
+            assertThat(sut.state.value?.user).isEqualTo(user)
         }
+    }
+
+    class WhenInitWithException {
+        @get:Rule
+        val rule = UserViewModelTestRule(
+            beforeSut = {
+                setupUserSource()
+                userRepositoryMock.run {
+                    coSetupThrowWithVerify({ mock.getUser(targetId) }, IOException())
+                }
+                setupRelationshipSource()
+            }
+        )
 
         @Test
-        fun user_whenNotFoundInLocal_then_getUserIsCalledWithException(): Unit = with(rule) {
-            // setup
-            with(userRepositoryMock) {
-                coSetupThrowWithVerify({ mock.getUser(targetId) }, IOException())
-            }
-
-            // exercise
-            userSource.sendBlocking(null)
-
+        fun flowFeedbackMessageOnInit(): Unit = with(rule) {
             // verify
-            assertThat(sut.user.value).isNull()
+            assertThat(sut.state.value?.user).isNull()
             assertThat(feedbackMessages).hasSize(1)
         }
     }
@@ -147,7 +154,7 @@ class UserViewModelTest {
 
         @Before
         fun setup(): Unit = with(rule) {
-            sut.setCurrentPage(0)
+            sut.onCurrentPageChanged(0)
             selectedItemRepository.put(
                 SelectedItemId(
                     ListOwner(0, QueryType.TweetQueryType.Timeline(targetId)), TweetId(10000)
@@ -159,22 +166,22 @@ class UserViewModelTest {
         fun fabVisible_changeCurrentPage_then_fabVisibleIsFalse(): Unit = with(rule) {
             // exercise
             coroutineRule.runBlockingTest {
-                sut.setCurrentPage(1)
+                sut.onCurrentPageChanged(1)
             }
             // verify
-            assertThat(sut.fabVisible.value).isFalse()
+            assertThat(sut.state.value?.isShortcutVisible).isFalse()
         }
 
         @Test
         fun fabVisible_returnToPage_then_fabVisibleIsTrue(): Unit = with(rule) {
             // setup
-            sut.setCurrentPage(1)
+            sut.onCurrentPageChanged(1)
 
             // exercise
-            sut.setCurrentPage(0)
+            sut.onCurrentPageChanged(0)
 
             // verify
-            assertThat(sut.fabVisible.value).isTrue()
+            assertThat(sut.state.value?.isShortcutVisible).isTrue()
         }
     }
 
@@ -341,11 +348,8 @@ class UserViewModelTest {
 
         @Test
         fun test(): Unit = with(rule) {
-            // setup
-            setupRelation(targetId, param.givenRelationship)
-
             // exercise
-            userSource.sendBlocking(user)
+            relationshipSource.value = param.givenRelationship
 
             // verify
             assertThat(sut.relationshipMenuItems.value).containsExactlyElementsIn(param.menuSet)
@@ -354,8 +358,15 @@ class UserViewModelTest {
 }
 
 @ExperimentalCoroutinesApi
-class UserViewModelTestRule : TestWatcher() {
+class UserViewModelTestRule(
+    private val beforeSut: UserViewModelTestRule.() -> Unit = {
+        setupUserSource(user)
+        setupRelationshipSource()
+        setupFindRelationship(relationship)
+    }
+) : TestWatcher() {
     val targetId = UserId(1000)
+    val relationship = relationship()
     private val targetUser: TweetUserItem = mockk<TweetUserItem>().apply {
         every { id } returns targetId
         every { screenName } returns "user1"
@@ -372,32 +383,31 @@ class UserViewModelTestRule : TestWatcher() {
 
     val sut: UserViewModel by lazy {
         val eventDispatcher = EventDispatcher()
-        val viewStates = UserActivityViewStates(
+        val viewStates = UserViewModelSource(
             targetUser,
-            UserActivityActions(eventDispatcher),
+            UserActions(targetUser, eventDispatcher),
             userRepositoryMock.mock,
             relationshipRepository,
             selectedItemRepository,
             ListOwnerGenerator.create(),
             executor
         )
-        UserViewModel(targetUser, eventDispatcher, viewStates)
+        UserViewModel(eventDispatcher, viewStates)
     }
     lateinit var feedbackMessages: List<FeedbackMessage>
 
     override fun starting(description: Description?) {
         super.starting(description)
-        setupUserSource(targetId)
+        beforeSut()
+        setupSut()
+    }
 
-        sut.setCurrentPage(0)
-        sut.setAppBarScrollRate(0f)
-        listOf(
-            sut.user,
-            sut.relationship,
-            sut.fabVisible,
-            sut.titleAlpha,
-            sut.relationshipMenuItems,
-        ).forEach { it.observeForever {} }
+    private fun setupSut() {
+        sut.onCurrentPageChanged(0)
+        sut.onAppBarScrolled(0f)
+        listOf(sut.state, sut.relationshipMenuItems).forEach {
+            it.observeForever {}
+        }
         sut.pages.testCollect(executor)
         feedbackMessages = sut.feedbackMessage.testCollect(executor)
     }
@@ -410,22 +420,43 @@ class UserViewModelTestRule : TestWatcher() {
             .apply(super.apply(base, description), description)
     }
 
-    val userSource = Channel<UserEntity?>()
+    val userSource: MutableStateFlow<UserEntity?> = MutableStateFlow(null)
+    val relationshipSource: MutableStateFlow<Relationship?> = MutableStateFlow(null)
 
-    private fun setupUserSource(targetId: UserId) = with(userRepositoryMock) {
-        setupResponseWithVerify({ mock.getUserSource(targetId) }, userSource.consumeAsFlow())
+    fun setupUserSource(init: UserEntity? = null) {
+        userRepositoryMock.run {
+            userSource.value = init
+            setupResponseWithVerify({ mock.getUserSource(targetId) }, userSource)
+        }
     }
 
-    private val relationshipSource = Channel<Relationship?>()
+    fun setupGetUser(targetId: UserId, res: UserEntity) {
+        userRepositoryMock.run {
+            coSetupResponseWithVerify(
+                { mock.getUser(targetId) },
+                res,
+                alsoOnAnswer = { userSource.value = res }
+            )
+        }
+    }
 
-    fun setupRelation(targetId: UserId, response: Relationship? = null) {
-        relationshipRepositoryMock.setupResponseWithVerify(
-            { relationshipRepository.getRelationshipSource(targetId) },
-            relationshipSource.consumeAsFlow()
-        )
-        relationshipRepositoryMock.coSetupResponseWithVerify(
-            { relationshipRepository.findRelationship(targetId) }, response
-        )
+    fun setupRelationshipSource(init: Relationship? = null) {
+        relationshipRepositoryMock.run {
+            relationshipSource.value = init
+            setupResponseWithVerify(
+                { mock.getRelationshipSource(targetId) }, relationshipSource
+            )
+        }
+    }
+
+    fun setupFindRelationship(relationship: Relationship? = null) {
+        relationshipRepositoryMock.run {
+            coSetupResponseWithVerify(
+                { mock.findRelationship(targetId) },
+                relationship,
+                alsoOnAnswer = { relationshipSource.value = relationship }
+            )
+        }
     }
 }
 
