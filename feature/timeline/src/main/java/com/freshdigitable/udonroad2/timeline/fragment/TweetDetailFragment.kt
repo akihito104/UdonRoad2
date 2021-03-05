@@ -20,8 +20,8 @@ import com.freshdigitable.udonroad2.shortcut.TweetDetailContextMenuView
 import com.freshdigitable.udonroad2.timeline.R
 import com.freshdigitable.udonroad2.timeline.databinding.FragmentDetailBinding
 import com.freshdigitable.udonroad2.timeline.di.TweetDetailViewModelComponent
+import com.freshdigitable.udonroad2.timeline.viewmodel.MenuItemState
 import com.freshdigitable.udonroad2.timeline.viewmodel.TweetDetailViewModel
-import com.freshdigitable.udonroad2.timeline.viewmodel.TweetDetailViewStates
 import dagger.android.support.AndroidSupportInjection
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
@@ -96,7 +96,7 @@ class TweetDetailFragment : Fragment() {
 }
 
 @BindingAdapter("menuItemState")
-fun TweetDetailContextMenuView.updateMenuItemState(item: TweetDetailViewStates.MenuItemState?) {
+fun TweetDetailContextMenuView.updateMenuItemState(item: MenuItemState?) {
     updateMenuItem {
         changeGroupEnabled(R.id.menuGroup_detailMain, item?.isMainGroupEnabled ?: false)
         onMenuItem(R.id.detail_main_rt) {

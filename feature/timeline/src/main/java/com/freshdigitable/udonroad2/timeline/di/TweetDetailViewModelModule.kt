@@ -33,7 +33,7 @@ import dagger.Subcomponent
 import dagger.multibindings.IntoMap
 
 @Module
-interface TweetDetailViewModelModule {
+internal interface TweetDetailViewModelModule {
     companion object {
         @Provides
         @IntoMap

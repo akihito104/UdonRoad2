@@ -14,12 +14,10 @@ import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.app.AppTwitterException.ErrorType
 import com.freshdigitable.udonroad2.model.app.isTwitterExceptionOf
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventStream
-import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
-import com.freshdigitable.udonroad2.model.app.navigation.toAction
 import com.freshdigitable.udonroad2.model.app.navigation.toActionFlow
 import com.freshdigitable.udonroad2.model.app.onEvent
 import com.freshdigitable.udonroad2.model.app.stateSourceBuilder
@@ -40,13 +38,12 @@ import com.freshdigitable.udonroad2.timeline.getTimelineEvent
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.merge
-import kotlinx.coroutines.rx2.asFlow
 import java.io.IOException
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 
-class TweetDetailViewModel(
-    private val viewStates: TweetDetailViewStates,
+internal class TweetDetailViewModel(
+    viewStates: TweetDetailViewStates,
     userIconViewModelSource: UserIconViewModelSource,
     mediaViewModelSource: TweetMediaViewModelSource,
     coroutineContext: CoroutineContext? = null
@@ -70,11 +67,11 @@ class TweetDetailViewModel(
 
     interface State {
         val tweetItem: TweetListItem?
-        val menuItemState: TweetDetailViewStates.MenuItemState
+        val menuItemState: MenuItemState
     }
 }
 
-sealed class DetailMenuEvent : TweetContextMenuEvent {
+internal sealed class DetailMenuEvent : TweetContextMenuEvent {
     data class Unlike(override val tweetId: TweetId) : DetailMenuEvent()
     data class Unretweet(override val tweetId: TweetId) : DetailMenuEvent()
     data class DeleteTweet(override val tweetId: TweetId) : DetailMenuEvent()
@@ -86,15 +83,15 @@ interface TweetDetailEventListener {
     fun onMenuItemClicked(item: MenuItem, tweetItem: TweetListItem)
 }
 
-class TweetDetailActions @Inject constructor(
+internal class TweetDetailActions @Inject constructor(
     private val eventDispatcher: EventDispatcher,
 ) : TweetDetailEventListener,
     ShortcutActions by ShortcutActions.create(eventDispatcher) {
     val launchOriginalTweetUserInfo =
         eventDispatcher.toActionFlow<TimelineEvent.RetweetUserClicked>()
-    val unlikeTweet = eventDispatcher.toAction<DetailMenuEvent.Unlike>()
-    val unretweetTweet: AppAction<DetailMenuEvent.Unretweet> = eventDispatcher.toAction()
-    val deleteTweet: AppAction<DetailMenuEvent.DeleteTweet> = eventDispatcher.toAction()
+    val unlikeTweet = eventDispatcher.toActionFlow<DetailMenuEvent.Unlike>()
+    val unretweetTweet = eventDispatcher.toActionFlow<DetailMenuEvent.Unretweet>()
+    val deleteTweet = eventDispatcher.toActionFlow<DetailMenuEvent.DeleteTweet>()
 
     override fun onOriginalUserClicked(user: TweetUserItem) {
         eventDispatcher.postEvent(TimelineEvent.RetweetUserClicked(user))
@@ -133,7 +130,7 @@ class TweetDetailActions @Inject constructor(
     }
 }
 
-class TweetDetailViewStates @Inject constructor(
+internal class TweetDetailViewStates @Inject constructor(
     tweetId: TweetId,
     actions: TweetDetailActions,
     repository: TweetRepository,
@@ -168,15 +165,15 @@ class TweetDetailViewStates @Inject constructor(
             }
         },
         appSettingRepository.currentUserIdSource.onEvent { s, id -> s.copy(currentUserId = id) },
-        actions.unlikeTweet.asFlow().onEvent { s, e ->
+        actions.unlikeTweet.onEvent { s, e ->
             repository.updateLike(e.tweetId, false)
             s
         },
-        actions.unretweetTweet.asFlow().onEvent { s, e ->
+        actions.unretweetTweet.onEvent { s, e ->
             repository.updateRetweet(e.tweetId, false)
             s
         },
-        actions.deleteTweet.asFlow().onEvent { s, e ->
+        actions.deleteTweet.onEvent { s, e ->
             repository.deleteTweet(e.tweetId)
             s.copy(isTweetItemDeleted = true)
         },
@@ -210,11 +207,11 @@ class TweetDetailViewStates @Inject constructor(
                 )
             }
     }
-
-    data class MenuItemState(
-        val isMainGroupEnabled: Boolean = false,
-        val isRetweetChecked: Boolean = false,
-        val isFavChecked: Boolean = false,
-        val isDeleteVisible: Boolean = false
-    )
 }
+
+data class MenuItemState(
+    val isMainGroupEnabled: Boolean = false,
+    val isRetweetChecked: Boolean = false,
+    val isFavChecked: Boolean = false,
+    val isDeleteVisible: Boolean = false
+)

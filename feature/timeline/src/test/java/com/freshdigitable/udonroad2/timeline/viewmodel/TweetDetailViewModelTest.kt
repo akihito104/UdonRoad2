@@ -119,7 +119,7 @@ class TweetDetailViewModelTest {
         // verify
         assertThat(sut).isNotNull()
         assertThat(sut.state.value?.tweetItem).isNull()
-        assertThat(sut.state.value?.menuItemState).isEqualTo(TweetDetailViewStates.MenuItemState())
+        assertThat(sut.state.value?.menuItemState).isEqualTo(MenuItemState())
     }
 
     @Test
@@ -131,9 +131,7 @@ class TweetDetailViewModelTest {
 
         // verify
         assertThat(sut.state.value?.tweetItem).isEqualTo(tweet)
-        assertThat(sut.state.value?.menuItemState).isEqualTo(
-            TweetDetailViewStates.MenuItemState(true)
-        )
+        assertThat(sut.state.value?.menuItemState).isEqualTo(MenuItemState(true))
     }
 
     @Test
