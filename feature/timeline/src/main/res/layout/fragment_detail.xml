@@ -50,7 +50,7 @@
                     android:maxLines="1"
                     android:text="@{@string/tweet_list_item_rt_user(viewModel.tweetItem.originalUser.screenName)}"
                     android:visibility="@{viewModel.tweetItem.isRetweet ? View.VISIBLE : View.GONE}"
-                    android:onClick="@{v -> viewModel.onOriginalUserClicked()}"
+                    android:onClick="@{v -> viewModel.onOriginalUserClicked(viewModel.tweetItem.originalUser)}"
                     tools:text="RT: @account"
                     tools:visibility="visible"
                     />
@@ -69,7 +69,7 @@
                     app:layout_constraintHorizontal_bias="0"
                     app:layout_constraintHorizontal_chainStyle="packed"
                     app:bindUserIcon="@{viewModel.tweetItem.body.user.iconUrl}"
-                    android:onClick="@{v -> viewModel.onBodyUserClicked()}"
+                    android:onClick="@{v -> viewModel.onBodyUserClicked(viewModel.tweetItem.body.user)}"
                     tools:background="#000"
                     />
 
@@ -93,7 +93,7 @@
                     android:maxLines="1"
                     android:textStyle="bold"
                     android:ellipsize="end"
-                    android:onClick="@{v -> viewModel.onBodyUserClicked()}"
+                    android:onClick="@{v -> viewModel.onBodyUserClicked(viewModel.tweetItem.body.user)}"
                     tools:text="Name"
                     />
 
@@ -106,7 +106,7 @@
                     app:layout_constraintEnd_toStartOf="@id/detail_twitter"
                     app:layout_constraintHorizontal_bias="0"
                     android:text="@{`@` + viewModel.tweetItem.body.user.screenName}"
-                    android:onClick="@{v -> viewModel.onBodyUserClicked()}"
+                    android:onClick="@{v -> viewModel.onBodyUserClicked(viewModel.tweetItem.body.user)}"
                     tools:text="\@screen_name"
                     />
 
@@ -202,7 +202,7 @@
             app:menu_main="@menu/detail_main"
             app:menu_more="@menu/detail_more"
             app:menuItemState="@{viewModel.menuItemStates}"
-            app:itemClickListener="@{item -> viewModel.onMenuItemClicked(item.itemId)}"
+            app:itemClickListener="@{item -> viewModel.onMenuItemClicked(item, viewModel.tweetItem)}"
             />
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </layout>

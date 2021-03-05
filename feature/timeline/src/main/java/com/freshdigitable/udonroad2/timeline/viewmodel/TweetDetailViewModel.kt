@@ -1,6 +1,6 @@
 package com.freshdigitable.udonroad2.timeline.viewmodel
 
-import androidx.annotation.IdRes
+import android.view.MenuItem
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
@@ -26,6 +26,7 @@ import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.shortcut.SelectedItemShortcut
 import com.freshdigitable.udonroad2.shortcut.ShortcutActions
+import com.freshdigitable.udonroad2.shortcut.ShortcutEventListener
 import com.freshdigitable.udonroad2.shortcut.ShortcutViewStates
 import com.freshdigitable.udonroad2.shortcut.TweetContextMenuEvent
 import com.freshdigitable.udonroad2.timeline.LaunchUserInfoAction
@@ -51,13 +52,11 @@ import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.scan
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transformLatest
-import timber.log.Timber
 import java.io.IOException
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 
 class TweetDetailViewModel(
-    private val eventDispatcher: EventDispatcher,
     private val viewStates: TweetDetailViewStates,
     coroutineContext: CoroutineContext? = null
 ) : TweetDetailEventListener by viewStates,
@@ -75,46 +74,6 @@ class TweetDetailViewModel(
         viewStates.state.asLiveData(this.coroutineContext)
     internal val navigationEvent: Flow<NavigationEvent> = viewStates.navigationEvent
 
-    fun onOriginalUserClicked() {
-        val user = tweetItem.value?.originalUser ?: return
-        onOriginalUserClicked(user)
-    }
-
-    fun onBodyUserClicked() {
-        val user = tweetItem.value?.body?.user ?: return
-        onBodyUserClicked(user)
-    }
-
-    fun onMenuItemClicked(@IdRes itemId: Int) {
-        Timber.tag("TweetDetailViewModel").d("onMenuItemClicked: $itemId")
-        val tweetItem = checkNotNull(tweetItem.value)
-        val tweetId = tweetItem.originalId
-        val event: AppEvent = when (itemId) {
-            R.id.detail_main_rt -> {
-                if (!tweetItem.body.isRetweeted) {
-                    SelectedItemShortcut.Retweet(tweetId)
-                } else {
-                    DetailMenuEvent.Unretweet(tweetId)
-                }
-            }
-            R.id.detail_main_fav -> {
-                if (!tweetItem.body.isFavorited) {
-                    SelectedItemShortcut.Like(tweetId)
-                } else {
-                    DetailMenuEvent.Unlike(tweetId)
-                }
-            }
-            R.id.detail_main_reply -> SelectedItemShortcut.Reply(tweetId)
-            R.id.detail_main_quote -> SelectedItemShortcut.Quote(tweetId)
-            R.id.detail_more_delete -> DetailMenuEvent.DeleteTweet(
-                tweetItem.body.retweetIdByCurrentUser ?: tweetId
-            )
-            R.id.detail_main_conv -> SelectedItemShortcut.Conversation(tweetId)
-            else -> throw NotImplementedError("detail menu: $itemId is not implemented yet...")
-        }
-        eventDispatcher.postEvent(event)
-    }
-
     override fun onCleared() {
         super.onCleared()
         viewStates.clear()
@@ -130,6 +89,7 @@ sealed class DetailMenuEvent : TweetContextMenuEvent {
 interface TweetDetailEventListener : UserIconClickListener {
     fun onOriginalUserClicked(user: TweetUserItem)
     fun onBodyUserClicked(user: TweetUserItem)
+    fun onMenuItemClicked(item: MenuItem, tweetItem: TweetListItem)
 }
 
 class TweetDetailActions @Inject constructor(
@@ -154,6 +114,34 @@ class TweetDetailActions @Inject constructor(
 
     override fun onUserIconClicked(user: TweetUserItem) {
         userIconClickedAction.onUserIconClicked(user)
+    }
+
+    private val shortcutEventListener = ShortcutEventListener.create(eventDispatcher)
+
+    override fun onMenuItemClicked(item: MenuItem, tweetItem: TweetListItem) {
+        val tweetId = tweetItem.originalId
+        val event: AppEvent = when (item.itemId) {
+            R.id.detail_main_rt -> {
+                if (tweetItem.body.isRetweeted) {
+                    DetailMenuEvent.Unretweet(tweetId)
+                } else {
+                    return shortcutEventListener.onShortcutMenuSelected(item, tweetId)
+                }
+            }
+            R.id.detail_main_fav -> {
+                if (tweetItem.body.isFavorited) {
+                    DetailMenuEvent.Unlike(tweetId)
+                } else {
+                    return shortcutEventListener.onShortcutMenuSelected(item, tweetId)
+                }
+            }
+            R.id.detail_more_delete -> DetailMenuEvent.DeleteTweet(
+                tweetItem.body.retweetIdByCurrentUser ?: tweetId
+            )
+            R.id.detail_main_conv -> SelectedItemShortcut.Conversation(tweetId)
+            else -> return shortcutEventListener.onShortcutMenuSelected(item, tweetId)
+        }
+        eventDispatcher.postEvent(event)
     }
 }
 

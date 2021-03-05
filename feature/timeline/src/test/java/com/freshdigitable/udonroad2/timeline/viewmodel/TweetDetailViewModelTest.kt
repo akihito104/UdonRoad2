@@ -86,7 +86,6 @@ class TweetDetailViewModelTest {
         val userIconClickedAction = UserIconClickedAction(eventDispatcher)
         val actions = TweetDetailActions(eventDispatcher, userIconClickedAction)
         TweetDetailViewModel(
-            eventDispatcher,
             TweetDetailViewStates(
                 tweet.originalId,
                 actions,
@@ -194,7 +193,7 @@ class TweetDetailViewModelTest {
         }
 
         // exercise
-        sut.onOriginalUserClicked()
+        sut.onOriginalUserClicked(requireNotNull(sut.tweetItem.value).originalUser)
 
         // verify
         assertThat(sut.tweetItem.value).isEqualTo(tweet)
@@ -211,7 +210,7 @@ class TweetDetailViewModelTest {
         }
 
         // exercise
-        sut.onBodyUserClicked()
+        sut.onBodyUserClicked(requireNotNull(sut.tweetItem.value).body.user)
 
         // verify
         assertThat(sut.tweetItem.value).isEqualTo(tweet)
