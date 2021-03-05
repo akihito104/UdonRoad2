@@ -67,7 +67,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             app:menu="@menu/shortcut_media"
-            app:menuListener="@{item -> viewModel.onFabMenuSelected(item, viewModel.tweetId)}"
+            app:menuListener="@{item -> viewModel.onShortcutMenuSelected(item, viewModel.tweetId)}"
             app:isVisible="@{viewModel.fabVisible}"
             />
     </androidx.constraintlayout.widget.ConstraintLayout>

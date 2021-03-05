@@ -26,7 +26,7 @@ interface ShortcutViewModel : ShortcutEventListener {
 }
 
 interface ShortcutEventListener {
-    fun onFabMenuSelected(item: MenuItem, id: TweetId)
+    fun onShortcutMenuSelected(item: MenuItem, id: TweetId)
 
     companion object {
         fun create(dispatcher: EventDispatcher): ShortcutEventListener =
@@ -37,7 +37,7 @@ interface ShortcutEventListener {
 private class TweetShortcutEventListener(
     private val dispatcher: EventDispatcher,
 ) : ShortcutEventListener {
-    override fun onFabMenuSelected(item: MenuItem, id: TweetId) {
+    override fun onShortcutMenuSelected(item: MenuItem, id: TweetId) {
         dispatcher.postSelectedItemShortcutEvent(item, id)
     }
 }
