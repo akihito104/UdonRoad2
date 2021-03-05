@@ -19,15 +19,14 @@ package com.freshdigitable.udonroad2.timeline
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.TweetId
-import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
-import com.freshdigitable.udonroad2.model.app.navigation.toAction
 import com.freshdigitable.udonroad2.model.app.navigation.toActionFlow
 import com.freshdigitable.udonroad2.model.tweet.TweetElement
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import com.freshdigitable.udonroad2.shortcut.ShortcutActions
 import com.freshdigitable.udonroad2.timeline.TimelineEvent.Init
 import com.freshdigitable.udonroad2.timeline.TimelineEvent.TweetItemSelection
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filter
 import timber.log.Timber
 
@@ -41,7 +40,7 @@ internal class TimelineActions(
     TweetMediaAction by mediaViewerAction,
     TweetListItemEventListener {
 
-    val showTimeline: AppAction<Init> = dispatcher.toAction()
+    val showTimeline: Flow<Init> = dispatcher.toActionFlow()
     val selectItem = dispatcher.toActionFlow<TweetItemSelection.Selected>()
         .filter { it.owner == owner }
     val toggleItem = dispatcher.toActionFlow<TweetItemSelection.Toggle>()
