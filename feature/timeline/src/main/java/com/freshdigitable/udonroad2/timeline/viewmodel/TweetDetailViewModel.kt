@@ -49,22 +49,24 @@ import kotlin.coroutines.CoroutineContext
 class TweetDetailViewModel(
     private val viewStates: TweetDetailViewStates,
     userIconViewModelSource: UserIconViewModelSource,
+    mediaViewModelSource: TweetMediaViewModelSource,
     coroutineContext: CoroutineContext? = null
 ) : TweetDetailEventListener by viewStates,
     UserIconClickListener by userIconViewModelSource,
     TweetMediaItemViewModel,
-    TweetMediaEventListener by viewStates,
+    TweetMediaEventListener by mediaViewModelSource,
     ActivityEventStream by viewStates,
     ViewModel() {
     private val coroutineContext: CoroutineContext =
         coroutineContext ?: viewModelScope.coroutineContext
 
     val state: LiveData<State> = viewStates.viewModelState.asLiveData(this.coroutineContext)
-    override val mediaState: LiveData<TweetMediaItemViewModel.State> =
-        viewStates.state.asLiveData(this.coroutineContext)
+    override val mediaState: LiveData<TweetMediaItemViewModel.State> = mediaViewModelSource.state
+        .asLiveData(this.coroutineContext)
     override val navigationEvent: Flow<NavigationEvent> = merge(
         viewStates.navigationEvent,
         userIconViewModelSource.navEvent,
+        mediaViewModelSource.navigationEvent
     )
 
     interface State {
@@ -138,11 +140,9 @@ class TweetDetailViewStates @Inject constructor(
     repository: TweetRepository,
     appSettingRepository: AppSettingRepository,
     listOwnerGenerator: ListOwnerGenerator,
-    mediaViewModelSource: TweetMediaViewModelSource,
 ) : TweetDetailEventListener by actions,
-    TweetMediaViewModelSource by mediaViewModelSource,
     ShortcutViewStates by ShortcutViewStates.create(actions, repository),
-    ActivityEventStream by ActivityEventStream.EmptyStream {
+    ActivityEventStream {
 
     internal val viewModelState: Flow<TweetDetailViewModel.State> = stateSourceBuilder(
         init = ViewModelState(currentUserId = appSettingRepository.currentUserId),
@@ -185,7 +185,6 @@ class TweetDetailViewStates @Inject constructor(
 
     override val navigationEvent: Flow<NavigationEvent> = merge(
         actions.launchOriginalTweetUserInfo.mapLatest { TimelineEvent.Navigate.UserInfo(it.user) },
-        mediaViewModelSource.navigationEvent,
         actions.showConversation.mapLatest {
             listOwnerGenerator.getTimelineEvent(
                 QueryType.TweetQueryType.Conversation(it.tweetId),

@@ -22,6 +22,7 @@ import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
 import com.freshdigitable.udonroad2.model.app.di.ViewModelScope
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
+import com.freshdigitable.udonroad2.timeline.TweetMediaViewModelSource
 import com.freshdigitable.udonroad2.timeline.UserIconViewModelSource
 import com.freshdigitable.udonroad2.timeline.viewmodel.TweetDetailViewModel
 import com.freshdigitable.udonroad2.timeline.viewmodel.TweetDetailViewStates
@@ -41,7 +42,9 @@ interface TweetDetailViewModelModule {
         fun provideTweetDetailViewModel(
             viewStates: TweetDetailViewStates,
             userIconViewModelSource: UserIconViewModelSource,
-        ): ViewModel = TweetDetailViewModel(viewStates, userIconViewModelSource)
+            mediaViewModelSource: TweetMediaViewModelSource,
+        ): ViewModel =
+            TweetDetailViewModel(viewStates, userIconViewModelSource, mediaViewModelSource)
     }
 }
 
