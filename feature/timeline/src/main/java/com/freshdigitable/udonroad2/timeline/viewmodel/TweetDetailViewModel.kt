@@ -27,7 +27,6 @@ import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.shortcut.SelectedItemShortcut
 import com.freshdigitable.udonroad2.shortcut.ShortcutActions
-import com.freshdigitable.udonroad2.shortcut.ShortcutEventListener
 import com.freshdigitable.udonroad2.shortcut.ShortcutViewStates
 import com.freshdigitable.udonroad2.shortcut.TweetContextMenuEvent
 import com.freshdigitable.udonroad2.timeline.R
@@ -105,8 +104,6 @@ class TweetDetailActions @Inject constructor(
         eventDispatcher.postEvent(TimelineEvent.UserIconClicked(user))
     }
 
-    private val shortcutEventListener = ShortcutEventListener.create(eventDispatcher)
-
     override fun onMenuItemClicked(item: MenuItem, tweetItem: TweetListItem) {
         val tweetId = tweetItem.originalId
         val event: AppEvent = when (item.itemId) {
@@ -114,21 +111,23 @@ class TweetDetailActions @Inject constructor(
                 if (tweetItem.body.isRetweeted) {
                     DetailMenuEvent.Unretweet(tweetId)
                 } else {
-                    return shortcutEventListener.onShortcutMenuSelected(item, tweetId)
+                    SelectedItemShortcut.Retweet(tweetId)
                 }
             }
             R.id.detail_main_fav -> {
                 if (tweetItem.body.isFavorited) {
                     DetailMenuEvent.Unlike(tweetId)
                 } else {
-                    return shortcutEventListener.onShortcutMenuSelected(item, tweetId)
+                    SelectedItemShortcut.Like(tweetId)
                 }
             }
+            R.id.detail_main_reply -> SelectedItemShortcut.Reply(tweetId)
+            R.id.detail_main_quote -> SelectedItemShortcut.Quote(tweetId)
             R.id.detail_more_delete -> DetailMenuEvent.DeleteTweet(
                 tweetItem.body.retweetIdByCurrentUser ?: tweetId
             )
             R.id.detail_main_conv -> SelectedItemShortcut.Conversation(tweetId)
-            else -> return shortcutEventListener.onShortcutMenuSelected(item, tweetId)
+            else -> throw NotImplementedError("detail menu: $item is not implemented yet...")
         }
         eventDispatcher.postEvent(event)
     }
