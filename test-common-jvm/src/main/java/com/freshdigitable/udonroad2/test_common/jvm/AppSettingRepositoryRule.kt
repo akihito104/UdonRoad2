@@ -20,13 +20,12 @@ import com.freshdigitable.udonroad2.data.impl.AppSettingRepository
 import com.freshdigitable.udonroad2.model.AccessTokenEntity
 import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.test_common.MockVerified
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
-import kotlinx.coroutines.flow.shareIn
 import org.junit.rules.TestRule
 
 class AppSettingRepositoryRule(
@@ -38,14 +37,10 @@ class AppSettingRepositoryRule(
         setupResponseWithVerify({ mock.currentUserId }, userId?.let { UserId(it) })
     }
 
-    val currentUserIdSource: Channel<UserId> = Channel()
-    fun setupCurrentUserIdSource(coroutineScope: CoroutineScope, userId: Long? = null) = rule.run {
-        setupResponseWithVerify(
-            { mock.currentUserIdSource },
-            currentUserIdSource.receiveAsFlow()
-                .onStart { userId?.let { emit(UserId(it)) } }
-                .shareIn(coroutineScope, SharingStarted.Lazily, 1)
-        )
+    val currentUserIdSource: MutableStateFlow<UserId?> = MutableStateFlow(null)
+    fun setupCurrentUserIdSource(userId: Long? = null) = rule.run {
+        currentUserIdSource.value = userId?.let { UserId(it) }
+        setupResponseWithVerify({ mock.currentUserIdSource }, currentUserIdSource.filterNotNull())
     }
 
     val registeredUserIdsSource = Channel<Set<UserId>>()

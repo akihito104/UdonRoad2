@@ -14,6 +14,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.map
 import androidx.navigation.fragment.navArgs
 import com.freshdigitable.udonroad2.shortcut.TweetDetailContextMenuView
 import com.freshdigitable.udonroad2.timeline.R
@@ -52,7 +53,7 @@ class TweetDetailFragment : Fragment() {
         val viewModel = component.viewModel(this)
         binding.viewModel = viewModel
 
-        viewModel.tweetItem.observe(viewLifecycleOwner) { item ->
+        viewModel.state.map { it.tweetItem }.observe(viewLifecycleOwner) { item ->
             binding.detailReactionContainer.removeAllViews()
             item?.body?.retweetCount?.let {
                 AppCompatTextView(view.context).apply {

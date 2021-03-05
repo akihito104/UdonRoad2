@@ -17,8 +17,8 @@
 package com.freshdigitable.udonroad2.shortcut
 
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
-import com.freshdigitable.udonroad2.model.app.AppTwitterException
 import com.freshdigitable.udonroad2.model.app.AppTwitterException.ErrorType
+import com.freshdigitable.udonroad2.model.app.isTwitterExceptionOf
 import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.mapLatest
@@ -71,16 +71,4 @@ private class ShortcutViewStateImpl(
                 )
         }
     )
-}
-
-fun Throwable.isTwitterExceptionOf(type: ErrorType? = null): Boolean {
-    return when (this) {
-        is AppTwitterException -> {
-            when (type) {
-                null -> true
-                else -> this.errorType == type
-            }
-        }
-        else -> false
-    }
 }

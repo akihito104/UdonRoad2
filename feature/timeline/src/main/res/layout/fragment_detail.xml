@@ -48,9 +48,9 @@
                     app:layout_constraintHorizontal_bias="0"
                     app:layout_constraintVertical_bias="0"
                     android:maxLines="1"
-                    android:text="@{@string/tweet_list_item_rt_user(viewModel.tweetItem.originalUser.screenName)}"
-                    android:visibility="@{viewModel.tweetItem.isRetweet ? View.VISIBLE : View.GONE}"
-                    android:onClick="@{v -> viewModel.onOriginalUserClicked(viewModel.tweetItem.originalUser)}"
+                    android:text="@{@string/tweet_list_item_rt_user(viewModel.state.tweetItem.originalUser.screenName)}"
+                    android:visibility="@{viewModel.state.tweetItem.isRetweet ? View.VISIBLE : View.GONE}"
+                    android:onClick="@{v -> viewModel.onOriginalUserClicked(viewModel.state.tweetItem.originalUser)}"
                     tools:text="RT: @account"
                     tools:visibility="visible"
                     />
@@ -68,8 +68,8 @@
                     app:layout_constraintEnd_toStartOf="@id/detail_name"
                     app:layout_constraintHorizontal_bias="0"
                     app:layout_constraintHorizontal_chainStyle="packed"
-                    app:bindUserIcon="@{viewModel.tweetItem.body.user.iconUrl}"
-                    android:onClick="@{v -> viewModel.onBodyUserClicked(viewModel.tweetItem.body.user)}"
+                    app:bindUserIcon="@{viewModel.state.tweetItem.body.user.iconUrl}"
+                    android:onClick="@{v -> viewModel.onBodyUserClicked(viewModel.state.tweetItem.body.user)}"
                     tools:background="#000"
                     />
 
@@ -89,11 +89,11 @@
                     app:layout_constraintTop_toTopOf="@id/detail_icon"
                     app:layout_constraintStart_toEndOf="@id/detail_icon"
                     app:layout_constraintEnd_toStartOf="@id/detail_twitter"
-                    android:text="@{viewModel.tweetItem.body.user.name}"
+                    android:text="@{viewModel.state.tweetItem.body.user.name}"
                     android:maxLines="1"
                     android:textStyle="bold"
                     android:ellipsize="end"
-                    android:onClick="@{v -> viewModel.onBodyUserClicked(viewModel.tweetItem.body.user)}"
+                    android:onClick="@{v -> viewModel.onBodyUserClicked(viewModel.state.tweetItem.body.user)}"
                     tools:text="Name"
                     />
 
@@ -105,8 +105,8 @@
                     app:layout_constraintStart_toStartOf="@id/detail_name"
                     app:layout_constraintEnd_toStartOf="@id/detail_twitter"
                     app:layout_constraintHorizontal_bias="0"
-                    android:text="@{`@` + viewModel.tweetItem.body.user.screenName}"
-                    android:onClick="@{v -> viewModel.onBodyUserClicked(viewModel.tweetItem.body.user)}"
+                    android:text="@{`@` + viewModel.state.tweetItem.body.user.screenName}"
+                    android:onClick="@{v -> viewModel.onBodyUserClicked(viewModel.state.tweetItem.body.user)}"
                     tools:text="\@screen_name"
                     />
 
@@ -119,7 +119,7 @@
                     app:layout_constraintBottom_toTopOf="@id/detail_mediaContainer"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
-                    android:text="@{viewModel.tweetItem.body.text}"
+                    android:text="@{viewModel.state.tweetItem.body.text}"
                     android:textSize="18sp"
                     tools:text="tweet body\nlorem ipsum"
                     />
@@ -133,10 +133,10 @@
                     app:layout_constraintBottom_toTopOf="@id/detail_date"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
-                    android:visibility="@{viewModel.tweetItem.body.media.isEmpty() ? View.GONE : View.VISIBLE}"
-                    app:bindMedia="@{viewModel.tweetItem.body.media}"
-                    app:hideForPossiblySensitive="@{viewModel.mediaState.isPossiblySensitiveHidden &amp;&amp; viewModel.tweetItem.body.possiblySensitive}"
-                    app:itemClickListener="@{(v, i) -> viewModel.onMediaItemClicked(viewModel.tweetItem.originalId, viewModel.tweetItem.body, i)}"
+                    android:visibility="@{viewModel.state.tweetItem.body.media.isEmpty() ? View.GONE : View.VISIBLE}"
+                    app:bindMedia="@{viewModel.state.tweetItem.body.media}"
+                    app:hideForPossiblySensitive="@{viewModel.mediaState.isPossiblySensitiveHidden &amp;&amp; viewModel.state.tweetItem.body.possiblySensitive}"
+                    app:itemClickListener="@{(v, i) -> viewModel.onMediaItemClicked(viewModel.state.tweetItem.originalId, viewModel.state.tweetItem.body, i)}"
                     tools:visibility="visible"
                     />
 
@@ -147,7 +147,7 @@
                     app:layout_constraintTop_toBottomOf="@id/detail_mediaContainer"
                     app:layout_constraintBottom_toTopOf="@id/detail_via"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:bindCreatedAtAbsolute="@{viewModel.tweetItem.body.createdAt}"
+                    app:bindCreatedAtAbsolute="@{viewModel.state.tweetItem.body.createdAt}"
                     tools:text="2019/5/1 20:30"
                     />
 
@@ -161,7 +161,7 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintHorizontal_bias="1"
                     app:layout_constraintVertical_bias="0"
-                    app:bindSource="@{viewModel.tweetItem.body.source}"
+                    app:bindSource="@{viewModel.state.tweetItem.body.source}"
                     android:ellipsize="end"
                     tools:text="via Twitter web client"
                     />
@@ -188,9 +188,9 @@
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:tweet="@{viewModel.tweetItem}"
+                    app:tweet="@{viewModel.state.tweetItem}"
                     app:mediaViewModel="@{viewModel}"
-                    android:visibility="@{viewModel.tweetItem.quoted != null ? View.VISIBLE : View.GONE}"
+                    android:visibility="@{viewModel.state.tweetItem.quoted != null ? View.VISIBLE : View.GONE}"
                     />
             </androidx.constraintlayout.widget.ConstraintLayout>
         </ScrollView>
@@ -201,8 +201,8 @@
             android:layout_height="wrap_content"
             app:menu_main="@menu/detail_main"
             app:menu_more="@menu/detail_more"
-            app:menuItemState="@{viewModel.menuItemStates}"
-            app:itemClickListener="@{item -> viewModel.onMenuItemClicked(item, viewModel.tweetItem)}"
+            app:menuItemState="@{viewModel.state.menuItemState}"
+            app:itemClickListener="@{item -> viewModel.onMenuItemClicked(item, viewModel.state.tweetItem)}"
             />
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </layout>

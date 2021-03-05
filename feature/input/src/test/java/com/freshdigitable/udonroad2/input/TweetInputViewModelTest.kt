@@ -605,7 +605,7 @@ class TweetInputViewModelRule(
             every { name } returns "user1"
             every { screenName } returns "User1"
         }
-        appSettingRepositoryRule.setupCurrentUserIdSource(executor, userId.value)
+        appSettingRepositoryRule.setupCurrentUserIdSource(userId.value)
         userRepositoryRule.setupResponseWithVerify(
             { userRepositoryRule.mock.getUserSource(userId) },
             flow { emit(authenticatedUser) }

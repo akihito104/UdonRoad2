@@ -25,6 +25,7 @@ class AppTwitterException(
 
     companion object {
         private const val STATUS_FORBIDDEN: Int = 403
+        private const val STATUS_NOT_FOUND: Int = 404
 
         private fun findByCode(statusCode: Int, errorCode: Int): ErrorType? {
             return ErrorType.values().firstOrNull {
@@ -42,5 +43,18 @@ class AppTwitterException(
         ALREADY_RETWEETED(STATUS_FORBIDDEN, 327),
         ALREADY_FOLLOW_REQUESTED(STATUS_FORBIDDEN, 160),
         REACHED_FOLLOW_LIMIT(STATUS_FORBIDDEN, 161),
+        TWEET_NOT_FOUND(STATUS_NOT_FOUND, 144),
+    }
+}
+
+fun Throwable.isTwitterExceptionOf(type: AppTwitterException.ErrorType? = null): Boolean {
+    return when (this) {
+        is AppTwitterException -> {
+            when (type) {
+                null -> true
+                else -> this.errorType == type
+            }
+        }
+        else -> false
     }
 }
