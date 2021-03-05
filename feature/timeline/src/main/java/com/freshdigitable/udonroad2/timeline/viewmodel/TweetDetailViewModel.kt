@@ -13,9 +13,11 @@ import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.AppTwitterException
 import com.freshdigitable.udonroad2.model.app.mainContext
+import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventStream
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
+import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.suspendMap
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
@@ -49,7 +51,6 @@ import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.scan
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transformLatest
-import kotlinx.coroutines.rx2.asFlow
 import timber.log.Timber
 import java.io.IOException
 import javax.inject.Inject
@@ -167,7 +168,8 @@ class TweetDetailViewStates @Inject constructor(
     userIconViewModelSource: UserIconViewModelSource,
 ) : TweetDetailEventListener by actions,
     TweetMediaViewModelSource by mediaViewModelSource,
-    ShortcutViewStates by ShortcutViewStates.create(actions, repository, executor) {
+    ShortcutViewStates by ShortcutViewStates.create(actions, repository),
+    ActivityEventStream by ActivityEventStream.EmptyStream {
     private val coroutineScope = CoroutineScope(context = executor.mainContext)
 
     internal val tweetItem: StateFlow<TweetListItem?> = repository.getDetailTweetItemSource(tweetId)
@@ -211,13 +213,14 @@ class TweetDetailViewStates @Inject constructor(
         userIconViewModelSource.navEvent,
         actions.launchOriginalTweetUserInfo.mapLatest { TimelineEvent.Navigate.UserInfo(it.user) },
         mediaViewModelSource.navigationEvent,
-        actions.showConversation.asFlow().mapLatest {
+        actions.showConversation.mapLatest {
             listOwnerGenerator.getTimelineEvent(
                 QueryType.TweetQueryType.Conversation(it.tweetId),
                 NavigationEvent.Type.NAVIGATE
             )
         }
     )
+    override val feedbackMessage: Flow<FeedbackMessage> = updateTweet
 
     data class MenuItemState(
         val isMainGroupEnabled: Boolean = false,
@@ -236,7 +239,6 @@ class TweetDetailViewStates @Inject constructor(
         actions.deleteTweet.suspendMap {
             repository.deleteTweet(it.tweetId)
         }.subscribe(),
-        updateTweet.subscribe()
     )
 
     fun clear() {

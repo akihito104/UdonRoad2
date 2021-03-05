@@ -45,7 +45,6 @@ import com.freshdigitable.udonroad2.shortcut.ShortcutViewModel
 import com.freshdigitable.udonroad2.shortcut.ShortcutViewStates
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.transformLatest
-import kotlinx.coroutines.rx2.asFlow
 import javax.inject.Inject
 import kotlin.math.min
 
@@ -59,7 +58,7 @@ class MediaViewModel @Inject constructor(
     val mediaItems: LiveData<List<MediaEntity>> = viewStates.mediaItems
     override val isFabVisible: LiveData<Boolean> = viewStates.isFabVisible
     internal val systemUiVisibility: LiveData<SystemUiVisibility> = viewStates.systemUiVisibility
-    internal val messageEvent: Flow<FeedbackMessage> = viewStates.updateTweet.asFlow()
+    internal val messageEvent: Flow<FeedbackMessage> = viewStates.updateTweet
 
     internal fun onSystemUiVisibilityChange(visibility: Int) {
         eventDispatcher.postEvent(
@@ -106,7 +105,7 @@ class MediaViewModelViewStates @Inject constructor(
     repository: MediaRepository,
     tweetRepository: TweetRepository,
     executor: AppExecutor,
-) : ShortcutViewStates by ShortcutViewStates.create(actions, tweetRepository, executor) {
+) : ShortcutViewStates by ShortcutViewStates.create(actions, tweetRepository) {
     internal val mediaItems: AppViewState<List<MediaEntity>> =
         repository.getMediaItemSource(tweetId)
             .transformLatest {
