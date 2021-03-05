@@ -84,7 +84,7 @@ class TweetDetailViewModelTest {
     private val sut: TweetDetailViewModel by lazy {
         val eventDispatcher = EventDispatcher()
         val userIconClickedAction = UserIconClickedAction(eventDispatcher)
-        val actions = TweetDetailActions(eventDispatcher, userIconClickedAction)
+        val actions = TweetDetailActions(eventDispatcher)
         TweetDetailViewModel(
             TweetDetailViewStates(
                 tweet.originalId,
@@ -96,8 +96,8 @@ class TweetDetailViewModelTest {
                     LaunchMediaViewerAction(eventDispatcher),
                     appSettingRepositoryRule.mock,
                 ),
-                UserIconViewModelSource(userIconClickedAction)
             ),
+            UserIconViewModelSource(userIconClickedAction),
             coroutineRule.coroutineContextProvider.mainContext,
         )
     }

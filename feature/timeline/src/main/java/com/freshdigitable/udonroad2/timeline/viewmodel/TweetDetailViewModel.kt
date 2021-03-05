@@ -30,14 +30,12 @@ import com.freshdigitable.udonroad2.shortcut.ShortcutActions
 import com.freshdigitable.udonroad2.shortcut.ShortcutEventListener
 import com.freshdigitable.udonroad2.shortcut.ShortcutViewStates
 import com.freshdigitable.udonroad2.shortcut.TweetContextMenuEvent
-import com.freshdigitable.udonroad2.timeline.LaunchUserInfoAction
 import com.freshdigitable.udonroad2.timeline.R
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.TweetMediaEventListener
 import com.freshdigitable.udonroad2.timeline.TweetMediaItemViewModel
 import com.freshdigitable.udonroad2.timeline.TweetMediaViewModelSource
 import com.freshdigitable.udonroad2.timeline.UserIconClickListener
-import com.freshdigitable.udonroad2.timeline.UserIconClickedAction
 import com.freshdigitable.udonroad2.timeline.UserIconViewModelSource
 import com.freshdigitable.udonroad2.timeline.getTimelineEvent
 import kotlinx.coroutines.flow.Flow
@@ -50,8 +48,10 @@ import kotlin.coroutines.CoroutineContext
 
 class TweetDetailViewModel(
     private val viewStates: TweetDetailViewStates,
+    userIconViewModelSource: UserIconViewModelSource,
     coroutineContext: CoroutineContext? = null
 ) : TweetDetailEventListener by viewStates,
+    UserIconClickListener by userIconViewModelSource,
     TweetMediaItemViewModel,
     TweetMediaEventListener by viewStates,
     ActivityEventStream by viewStates,
@@ -62,6 +62,10 @@ class TweetDetailViewModel(
     val state: LiveData<State> = viewStates.viewModelState.asLiveData(this.coroutineContext)
     override val mediaState: LiveData<TweetMediaItemViewModel.State> =
         viewStates.state.asLiveData(this.coroutineContext)
+    override val navigationEvent: Flow<NavigationEvent> = merge(
+        viewStates.navigationEvent,
+        userIconViewModelSource.navEvent,
+    )
 
     interface State {
         val tweetItem: TweetListItem?
@@ -75,7 +79,7 @@ sealed class DetailMenuEvent : TweetContextMenuEvent {
     data class DeleteTweet(override val tweetId: TweetId) : DetailMenuEvent()
 }
 
-interface TweetDetailEventListener : UserIconClickListener {
+interface TweetDetailEventListener {
     fun onOriginalUserClicked(user: TweetUserItem)
     fun onBodyUserClicked(user: TweetUserItem)
     fun onMenuItemClicked(item: MenuItem, tweetItem: TweetListItem)
@@ -83,9 +87,7 @@ interface TweetDetailEventListener : UserIconClickListener {
 
 class TweetDetailActions @Inject constructor(
     private val eventDispatcher: EventDispatcher,
-    private val userIconClickedAction: UserIconClickedAction,
 ) : TweetDetailEventListener,
-    LaunchUserInfoAction by userIconClickedAction,
     ShortcutActions by ShortcutActions.create(eventDispatcher) {
     val launchOriginalTweetUserInfo =
         eventDispatcher.toActionFlow<TimelineEvent.RetweetUserClicked>()
@@ -98,11 +100,7 @@ class TweetDetailActions @Inject constructor(
     }
 
     override fun onBodyUserClicked(user: TweetUserItem) {
-        onUserIconClicked(user)
-    }
-
-    override fun onUserIconClicked(user: TweetUserItem) {
-        userIconClickedAction.onUserIconClicked(user)
+        eventDispatcher.postEvent(TimelineEvent.UserIconClicked(user))
     }
 
     private val shortcutEventListener = ShortcutEventListener.create(eventDispatcher)
@@ -141,7 +139,6 @@ class TweetDetailViewStates @Inject constructor(
     appSettingRepository: AppSettingRepository,
     listOwnerGenerator: ListOwnerGenerator,
     mediaViewModelSource: TweetMediaViewModelSource,
-    userIconViewModelSource: UserIconViewModelSource,
 ) : TweetDetailEventListener by actions,
     TweetMediaViewModelSource by mediaViewModelSource,
     ShortcutViewStates by ShortcutViewStates.create(actions, repository),
@@ -187,7 +184,6 @@ class TweetDetailViewStates @Inject constructor(
     )
 
     override val navigationEvent: Flow<NavigationEvent> = merge(
-        userIconViewModelSource.navEvent,
         actions.launchOriginalTweetUserInfo.mapLatest { TimelineEvent.Navigate.UserInfo(it.user) },
         mediaViewModelSource.navigationEvent,
         actions.showConversation.mapLatest {
