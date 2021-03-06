@@ -94,7 +94,7 @@ class MovieMediaFragment(
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        view.setOnClickListener { mediaViewModel.toggleUiVisibility() }
+        view.setOnClickListener { mediaViewModel.onSystemUiToggled() }
 
         val surfaceView: SurfaceView = view.findViewById(R.id.media_video)
         val progressText: TextView = view.findViewById(R.id.media_progressText)

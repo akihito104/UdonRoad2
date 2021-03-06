@@ -59,17 +59,18 @@ class MediaActivity : AppCompatActivity(), HasAndroidInjector {
         setSupportActionBar(binding.mediaToolbar)
 
         window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
-            viewModel.onSystemUiVisibilityChange(visibility)
+            viewModel.onSystemUiVisibilityChanged(visibility)
         }
         viewModel.systemUiVisibility.observe(this) {
             window.decorView.systemUiVisibility = it.visibility
             when (it) {
                 SystemUiVisibility.SHOW -> supportActionBar?.show()
                 SystemUiVisibility.HIDE -> supportActionBar?.hide()
+                else -> throw IllegalStateException()
             }
         }
         lifecycleScope.launch {
-            viewModel.messageEvent.collect(activityEventDelegate::dispatchFeedbackMessage)
+            viewModel.feedbackMessage.collect(activityEventDelegate::dispatchFeedbackMessage)
         }
         binding.mediaPager.setupPager(viewModel)
     }
@@ -80,17 +81,12 @@ class MediaActivity : AppCompatActivity(), HasAndroidInjector {
         this.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
                 super.onPageSelected(position)
-                viewModel.setCurrentPosition(position)
+                viewModel.onCurrentPositionChanged(position)
             }
         })
 
         viewModel.mediaItems.observe(this@MediaActivity) { items ->
             adapter.setItems(items)
-        }
-        viewModel.currentPosition.observe(this@MediaActivity) {
-            if (it != null) {
-                this.currentItem = it
-            }
         }
     }
 

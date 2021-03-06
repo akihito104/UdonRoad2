@@ -20,7 +20,6 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.freshdigitable.udonroad2.data.impl.MediaRepository
 import com.freshdigitable.udonroad2.model.MediaEntity
 import com.freshdigitable.udonroad2.model.TweetId
-import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.tweet.TweetElement
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
@@ -64,7 +63,6 @@ class MediaViewModelTest {
             MediaViewModelActions(eventDispatcher),
             mediaRepositoryRule.mock,
             tweetRepositoryRule.mock,
-            AppExecutor(dispatcher = coroutineRule.coroutineContextProvider),
         )
         MediaViewModel(tweetListItem.originalId, eventDispatcher, viewStates)
     }
@@ -76,7 +74,7 @@ class MediaViewModelTest {
             mediaEntitySource.consumeAsFlow()
         )
         with(sut) {
-            listOf(mediaItems, currentPosition, systemUiVisibility, isFabVisible).forEach {
+            listOf(state, mediaItems, systemUiVisibility, isFabVisible).forEach {
                 it.observeForever {}
             }
         }
@@ -86,8 +84,8 @@ class MediaViewModelTest {
     fun initialValue() {
         // verify
         assertThat(sut).isNotNull()
-        assertThat(sut.mediaItems.value).isNull()
-        assertThat(sut.currentPosition.value).isNull()
+        assertThat(sut.mediaItems.value).isEmpty()
+        assertThat(sut.state.value?.currentPosition).isNull()
         assertThat(sut.systemUiVisibility.value).isEqualTo(SystemUiVisibility.SHOW)
         assertThat(sut.isFabVisible.value).isTrue()
     }
@@ -101,13 +99,13 @@ class MediaViewModelTest {
 
         // verify
         assertThat(sut.mediaItems.value).hasSize(1)
-        assertThat(sut.currentPosition.value).isEqualTo(0)
+        assertThat(sut.state.value?.currentPosition).isEqualTo(0)
     }
 
     @Test
     fun toggleUiVisibility() {
         // exercise
-        sut.toggleUiVisibility()
+        sut.onSystemUiToggled()
 
         // verify
         assertThat(sut.systemUiVisibility.value).isEqualTo(SystemUiVisibility.HIDE)
