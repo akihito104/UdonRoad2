@@ -25,5 +25,6 @@ fun EventDispatcher.postEvents(vararg events: AppEvent) {
 inline fun <reified T : AppEvent> EventDispatcher.toActionFlow(
     block: Flow<AppEvent>.() -> Flow<T> = { filterIsInstance() }
 ): Flow<T> = PublishSubject.create<AppEvent>().also { subject ->
+    subject.doOnDispose { Timber.tag("EventDispatcher").d("disposed") }
     this.emitter.subscribe(subject)
 }.asFlow().block()
