@@ -19,11 +19,12 @@ package com.freshdigitable.udonroad2.model.app
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.merge
-import kotlinx.coroutines.flow.scan
+import timber.log.Timber
 
 typealias UpdateFun<S> = suspend (S) -> S
 typealias ScanFun<S, E> = suspend (S, E) -> S
@@ -31,9 +32,28 @@ typealias ScanFun<S, E> = suspend (S, E) -> S
 fun <S> stateSourceBuilder(
     init: S,
     vararg updateSource: Flow<UpdateFun<S>>
+): Flow<S> = stateSourceBuilder(initBlock = suspend { init }, updateSource = updateSource)
+
+fun <S> stateSourceBuilder(
+    initBlock: suspend () -> S,
+    stateBlock: Flow<S>.() -> Flow<UpdateFun<S>> = { emptyFlow() },
+    vararg updateSource: Flow<UpdateFun<S>>
 ): Flow<S> {
     check(updateSource.isNotEmpty())
-    return merge(*updateSource).scan(init) { state, trans -> trans(state) }.distinctUntilChanged()
+    return flow {
+        val state: S = initBlock()
+        emit(state)
+        val stateFlow = MutableStateFlow(state)
+        merge(stateFlow.stateBlock(), *updateSource).collect {
+            val current = stateFlow.value
+            val next = it(current)
+            if (next != current) {
+                Timber.tag("StateTransition").d("changed: $next")
+                stateFlow.value = next
+                emit(next)
+            }
+        }
+    }
 }
 
 fun <E, S> Flow<E>.onEvent(update: ScanFun<S, E>): Flow<UpdateFun<S>> =
