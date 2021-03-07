@@ -56,11 +56,6 @@ class UserViewModel(
         eventDispatcher.postEvent(event)
         return true
     }
-
-    override fun onCleared() {
-        super.onCleared()
-        viewState.clear()
-    }
 }
 
 interface UserViewEventListener {

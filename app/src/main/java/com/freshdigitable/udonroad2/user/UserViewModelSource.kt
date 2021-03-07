@@ -24,29 +24,23 @@ import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.SelectedItemId
-import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.AppTwitterException
-import com.freshdigitable.udonroad2.model.app.mainContext
 import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
 import com.freshdigitable.udonroad2.model.app.onEvent
 import com.freshdigitable.udonroad2.model.app.stateSourceBuilder
 import com.freshdigitable.udonroad2.model.user.Relationship
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.model.user.UserEntity
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.receiveAsFlow
-import kotlinx.coroutines.flow.shareIn
+import timber.log.Timber
 import java.io.IOException
 import javax.inject.Inject
 import kotlin.math.min
@@ -58,44 +52,38 @@ class UserViewModelSource @Inject constructor(
     relationshipRepository: RelationshipRepository,
     selectedItemRepository: SelectedItemRepository,
     ownerGenerator: ListOwnerGenerator,
-    executor: AppExecutor,
 ) : UserViewEventListener by actions {
-    private val scope = CoroutineScope(SupervisorJob() + executor.mainContext)
     private val feedbackChannel = Channel<FeedbackMessage>()
-
-    private val pages: Flow<State> = stateSourceBuilder(
-        init = State(),
-        flowOf(UserPage.values()).onEvent { s, p ->
-            val pages = p.map {
+    internal val state: Flow<State> = stateSourceBuilder(
+        initBlock = {
+            val pages = UserPage.values().map {
                 it to ownerGenerator.generate(it.createQuery(tweetUserItem))
             }.toMap()
-            s.copy(pages = pages)
+            State(pages = pages)
+        },
+        stateBlock = {
+            mapNotNull { it.currentOwner }
+                .distinctUntilChanged()
+                .flatMapLatest { selectedItemRepository.getSource(it) }
+                .onEvent { s, e -> s.copy(selectedItemId = e) }
         },
         actions.currentPageChanged.onEvent { s, e ->
             val listOwner = s.pages[e.page] ?: return@onEvent s.copy(currentPage = e.page)
             s.copy(currentPage = e.page, selectedItemId = selectedItemRepository.find(listOwner))
         },
-    ).shareIn(scope, SharingStarted.Lazily, replay = 1)
-    private val selectedItemId: Flow<SelectedItemId?> = pages.mapNotNull { it.currentOwner }
-        .flatMapLatest { selectedItemRepository.getSource(it) }
-    internal val state: Flow<State> = stateSourceBuilder(
-        init = State(),
         actions.scrollAppbar.onEvent { s, r ->
+            Timber.tag("UserViewModelSource").d("scrollAppbar: $r")
             val a = if (r.scrollRate >= 0.9f) {
                 min((r.scrollRate - 0.9f) * 10, 1f)
             } else {
                 0f
             }
-            s.copy(titleAlpha = a)
+            if (s.titleAlpha != a) {
+                s.copy(titleAlpha = a)
+            } else {
+                s
+            }
         },
-        pages.onEvent { s, p ->
-            s.copy(
-                pages = p.pages,
-                currentPage = p.currentPage,
-                selectedItemId = p.selectedItemId,
-            )
-        },
-        selectedItemId.onEvent { s, e -> s.copy(selectedItemId = e) },
         userRepository.getUserSource(tweetUserItem.id).onEvent { s, u ->
             if (u != null) {
                 if (s.relationship != null) {
@@ -142,10 +130,6 @@ class UserViewModelSource @Inject constructor(
             )
         }
     )
-
-    fun clear() {
-        scope.cancel()
-    }
 
     companion object {
         private suspend fun RelationshipRepository.updateStatus(
