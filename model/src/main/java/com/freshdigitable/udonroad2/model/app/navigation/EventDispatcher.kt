@@ -1,10 +1,16 @@
 package com.freshdigitable.udonroad2.model.app.navigation
 
+import io.reactivex.Observer
+import io.reactivex.disposables.Disposable
+import io.reactivex.disposables.Disposables
 import io.reactivex.subjects.PublishSubject
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.channels.sendBlocking
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.filterIsInstance
-import kotlinx.coroutines.rx2.asFlow
 import timber.log.Timber
+import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -23,8 +29,36 @@ fun EventDispatcher.postEvents(vararg events: AppEvent) {
 }
 
 inline fun <reified T : AppEvent> EventDispatcher.toActionFlow(
-    block: Flow<AppEvent>.() -> Flow<T> = { filterIsInstance() }
-): Flow<T> = PublishSubject.create<AppEvent>().also { subject ->
-    subject.doOnDispose { Timber.tag("EventDispatcher").d("disposed") }
-    this.emitter.subscribe(subject)
-}.asFlow().block()
+    crossinline prediction: (T) -> Boolean = { true },
+): Flow<T> = callbackFlow<AppEvent> {
+    val disposable: AtomicReference<Disposable> = AtomicReference()
+    val observer = object : Observer<AppEvent> {
+        override fun onSubscribe(d: Disposable) {
+            val isExpected = disposable.compareAndSet(null, d)
+            if (!isExpected) d.dispose()
+        }
+
+        override fun onNext(t: AppEvent) {
+            if (t is T && prediction(t)) {
+                sendBlocking(t)
+            }
+        }
+
+        override fun onError(e: Throwable) {
+            close(e)
+        }
+
+        override fun onComplete() {
+            close()
+        }
+    }
+
+    emitter.subscribe(observer)
+    awaitClose {
+        val d = disposable.getAndSet(Disposables.disposed())
+        if (!d.isDisposed) {
+            Timber.tag("EventDispatcher").d("disposed: $d")
+            d.dispose()
+        }
+    }
+}.filterIsInstance()
