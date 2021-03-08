@@ -27,7 +27,6 @@ import com.freshdigitable.udonroad2.shortcut.ShortcutActions
 import com.freshdigitable.udonroad2.timeline.TimelineEvent.Init
 import com.freshdigitable.udonroad2.timeline.TimelineEvent.TweetItemSelection
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.filter
 import timber.log.Timber
 
 internal class TimelineActions(
@@ -41,12 +40,9 @@ internal class TimelineActions(
     TweetListItemEventListener {
 
     val showTimeline: Flow<Init> = dispatcher.toActionFlow()
-    val selectItem = dispatcher.toActionFlow<TweetItemSelection.Selected>()
-        .filter { it.owner == owner }
-    val toggleItem = dispatcher.toActionFlow<TweetItemSelection.Toggle>()
-        .filter { it.owner == owner }
-    val unselectItem = dispatcher.toActionFlow<TweetItemSelection.Unselected>()
-        .filter { it.owner == owner }
+    val selectItem = dispatcher.toActionFlow<TweetItemSelection.Selected> { it.owner == owner }
+    val toggleItem = dispatcher.toActionFlow<TweetItemSelection.Toggle> { it.owner == owner }
+    val unselectItem = dispatcher.toActionFlow<TweetItemSelection.Unselected> { it.owner == owner }
 
     override fun onBodyItemClicked(item: TweetListItem) {
         Timber.tag("TimelineViewModel").d("onBodyItemClicked: ${item.body.id}")
