@@ -28,11 +28,11 @@ import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.ViewState
 import com.freshdigitable.udonroad2.model.app.navigation.toActionFlow
-import com.freshdigitable.udonroad2.model.app.onEvent
 import com.freshdigitable.udonroad2.model.app.stateSourceBuilder
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.getTimelineEvent
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.mapLatest
@@ -61,16 +61,10 @@ internal class MainViewModelSource @Inject constructor(
         }
         listOwnerGenerator.getTimelineEvent(type, NavigationEvent.Type.INIT)
     }
-
-    private val selectedItem = navDelegate.containerState.flatMapLatest {
-        when (it) {
-            is MainNavHostState.Timeline -> selectedItemRepository.getSource(it.owner)
-            else -> emptyFlow()
-        }
-    }
     internal val states: Flow<MainActivityViewState> = stateSourceBuilder(
-        init = MainActivityViewState(),
-        navDelegate.containerState.onEvent { state, container ->
+        { MainActivityViewState() }
+    ) {
+        eventOf(navDelegate.containerState) { state, container ->
             state.copy(
                 navHostState = container,
                 selectedItem = when (container) {
@@ -78,17 +72,26 @@ internal class MainViewModelSource @Inject constructor(
                     else -> null
                 }
             )
-        },
-        selectedItem.onEvent { state, item ->
-            state.copy(selectedItem = item)
-        },
-        tweetInputSharedState.isExpanded.onEvent { state, expanded ->
+        }
+        eventOf(tweetInputSharedState.isExpanded) { state, expanded ->
             state.copy(isTweetInputExpanded = expanded)
-        },
-        navDelegate.isInTopLevelDest.onEvent { state, isInTopLevel ->
+        }
+        eventOf(navDelegate.isInTopLevelDest) { state, isInTopLevel ->
             state.copy(isInTopLevelDestination = isInTopLevel)
         }
-    )
+        flatMap({
+            mapLatest { it.navHostState }
+                .distinctUntilChanged()
+                .flatMapLatest {
+                    when (it) {
+                        is MainNavHostState.Timeline -> selectedItemRepository.getSource(it.owner)
+                        else -> emptyFlow()
+                    }
+                }
+        }) { s, item ->
+            s.copy(selectedItem = item)
+        }
+    }
 }
 
 internal data class MainActivityViewState(
