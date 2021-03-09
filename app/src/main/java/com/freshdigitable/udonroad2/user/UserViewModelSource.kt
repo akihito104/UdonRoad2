@@ -26,7 +26,6 @@ import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.app.AppTwitterException
 import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
-import com.freshdigitable.udonroad2.model.app.onEvent
 import com.freshdigitable.udonroad2.model.app.stateSourceBuilder
 import com.freshdigitable.udonroad2.model.user.Relationship
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
@@ -60,18 +59,13 @@ class UserViewModelSource @Inject constructor(
                 it to ownerGenerator.generate(it.createQuery(tweetUserItem))
             }.toMap()
             State(pages = pages)
-        },
-        stateBlock = {
-            mapNotNull { it.currentOwner }
-                .distinctUntilChanged()
-                .flatMapLatest { selectedItemRepository.getSource(it) }
-                .onEvent { s, e -> s.copy(selectedItemId = e) }
-        },
-        actions.currentPageChanged.onEvent { s, e ->
-            val listOwner = s.pages[e.page] ?: return@onEvent s.copy(currentPage = e.page)
+        }
+    ) {
+        eventOf(actions.currentPageChanged) { s, e ->
+            val listOwner = s.pages[e.page] ?: return@eventOf s.copy(currentPage = e.page)
             s.copy(currentPage = e.page, selectedItemId = selectedItemRepository.find(listOwner))
-        },
-        actions.scrollAppbar.onEvent { s, r ->
+        }
+        eventOf(actions.scrollAppbar) { s, r ->
             Timber.tag("UserViewModelSource").d("scrollAppbar: $r")
             val a = if (r.scrollRate >= 0.9f) {
                 min((r.scrollRate - 0.9f) * 10, 1f)
@@ -83,8 +77,8 @@ class UserViewModelSource @Inject constructor(
             } else {
                 s
             }
-        },
-        userRepository.getUserSource(tweetUserItem.id).onEvent { s, u ->
+        }
+        eventOf(userRepository.getUserSource(tweetUserItem.id)) { s, u ->
             if (u != null) {
                 if (s.relationship != null) {
                     s.copy(user = u)
@@ -114,11 +108,18 @@ class UserViewModelSource @Inject constructor(
                 }
                 s.copy(user = res.getOrNull())
             }
-        },
-        relationshipRepository.getRelationshipSource(tweetUserItem.id).onEvent { s, r ->
+        }
+        eventOf(relationshipRepository.getRelationshipSource(tweetUserItem.id)) { s, r ->
             s.copy(relationship = r)
         }
-    )
+        flatMap({
+            mapNotNull { it.currentOwner }
+                .distinctUntilChanged()
+                .flatMapLatest { selectedItemRepository.getSource(it) }
+        }) { s, item ->
+            s.copy(selectedItemId = item)
+        }
+    }
 
     @ExperimentalCoroutinesApi
     internal val feedbackMessage: Flow<FeedbackMessage> = merge(
