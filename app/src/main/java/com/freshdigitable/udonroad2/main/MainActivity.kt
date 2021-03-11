@@ -139,7 +139,7 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
         }
     }
 
-    private fun NavigationView.bindMenuState(state: DrawerViewState) {
+    private fun NavigationView.bindMenuState(state: DrawerViewModel.State) {
         menu.apply {
             removeGroup(R.id.menu_group_drawer_switchable_accounts)
             state.switchableAccounts.map { it.account }

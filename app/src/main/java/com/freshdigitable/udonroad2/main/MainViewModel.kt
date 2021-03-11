@@ -39,7 +39,8 @@ internal class MainViewModel(
     private val drawerViewStates: DrawerViewModelSource,
 ) : ShortcutViewModel,
     ShortcutEventListener by ShortcutEventListener.create(eventDispatcher),
-    DrawerActionListener by drawerViewStates,
+    DrawerViewModel,
+    DrawerEventListener by drawerViewStates,
     ViewModel() {
 
     val mainState: LiveData<MainActivityViewState> =
@@ -51,7 +52,7 @@ internal class MainViewModel(
     override val isFabVisible: LiveData<Boolean> =
         mainState.map { it.isShortcutVisible }.distinctUntilChanged()
 
-    val drawerState: LiveData<DrawerViewState> =
+    override val drawerState: LiveData<DrawerViewModel.State> =
         drawerViewStates.state.asLiveData(viewModelScope.coroutineContext)
 
     internal val navigationEvent: Flow<NavigationEvent> = merge(

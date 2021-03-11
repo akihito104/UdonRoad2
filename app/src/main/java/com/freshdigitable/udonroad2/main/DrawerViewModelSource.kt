@@ -16,19 +16,20 @@
 
 package com.freshdigitable.udonroad2.main
 
+import androidx.lifecycle.LiveData
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.data.UserDataSource
 import com.freshdigitable.udonroad2.data.impl.AppSettingRepository
-import com.freshdigitable.udonroad2.main.DrawerViewState.Companion.toClosedState
+import com.freshdigitable.udonroad2.main.DrawerViewModelSource.DrawerViewState.Companion.toClosedState
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
+import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.app.di.ActivityScope
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.ViewState
 import com.freshdigitable.udonroad2.model.app.navigation.toActionFlow
-import com.freshdigitable.udonroad2.model.app.onEvent
 import com.freshdigitable.udonroad2.model.app.stateSourceBuilder
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.oauth.LoginUseCase
@@ -36,24 +37,21 @@ import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.getTimelineEvent
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.receiveAsFlow
-import java.io.Serializable
 import java.util.SortedSet
 import javax.inject.Inject
 
-internal data class DrawerViewState(
-    val isOpened: Boolean = false,
-    val isAccountSwitcherOpened: Boolean = false,
-    val currentUser: TweetUserItem? = null,
-    val switchableAccounts: SortedSet<TweetUserItem> = sortedSetOf()
-) : ViewState, Serializable {
-    companion object {
-        fun DrawerViewState.toClosedState(): DrawerViewState =
-            copy(isOpened = false, isAccountSwitcherOpened = false)
+interface DrawerViewModel : DrawerEventListener {
+    val drawerState: LiveData<State>
+
+    interface State : ViewState {
+        val isOpened: Boolean
+        val isAccountSwitcherOpened: Boolean
+        val currentUser: TweetUserItem?
+        val switchableAccounts: SortedSet<TweetUserItem>
     }
 }
 
@@ -68,7 +66,7 @@ internal sealed class DrawerEvent : AppEvent {
     object CurrentUserIconClicked : DrawerEvent()
 }
 
-interface DrawerActionListener {
+interface DrawerEventListener {
     fun onBackPressed(): Boolean
     fun onAccountSwitcherClicked()
     fun onDrawerOpened()
@@ -80,7 +78,7 @@ interface DrawerActionListener {
 @ActivityScope
 internal class DrawerActions @Inject constructor(
     private val dispatcher: EventDispatcher,
-) : DrawerActionListener {
+) : DrawerEventListener {
     override fun onBackPressed(): Boolean {
         dispatcher.postEvent(DrawerEvent.Closed)
         return true
@@ -141,56 +139,38 @@ internal class DrawerViewModelSource @Inject constructor(
     private val listOwnerGenerator: ListOwnerGenerator,
     appSettingRepository: AppSettingRepository,
     userRepository: UserDataSource,
-) : DrawerActionListener by actions {
+) : DrawerEventListener by actions {
     private val navEventChannel: Channel<NavigationEvent> = Channel()
     internal val navEventSource: Flow<NavigationEvent> = navEventChannel.receiveAsFlow()
 
-    private val currentUser: Flow<TweetUserItem> = appSettingRepository.currentUserIdSource
-        .flatMapLatest { userRepository.getUserSource(it) }
-        .filterNotNull()
-    private val switchableRegisteredUsers: Flow<SortedSet<TweetUserItem>> = combine(
-        appSettingRepository.registeredUserIdsSource,
-        appSettingRepository.currentUserIdSource,
-    ) { registered, current ->
-        (registered - current).map { userRepository.getUser(it) }
-            .toSortedSet<TweetUserItem> { a, b ->
-                a.screenName.compareTo(b.screenName)
-            }
-    }.onStart { emit(sortedSetOf()) }
+    internal val state: Flow<DrawerViewModel.State> = stateSourceBuilder({ DrawerViewState() }) {
+        eventOf(actions.showDrawerMenu) { state, _ -> state.copy(isOpened = true) }
+        eventOf(actions.hideDrawerMenu) { state, _ -> state.toClosedState() }
 
-    internal val state: Flow<DrawerViewState> = stateSourceBuilder(
-        init = DrawerViewState(),
-        currentUser.onEvent { state, user -> state.copy(currentUser = user) },
-        switchableRegisteredUsers.onEvent { state, account ->
-            state.copy(switchableAccounts = account)
-        },
-        actions.showDrawerMenu.onEvent { state, _ -> state.copy(isOpened = true) },
-        actions.hideDrawerMenu.onEvent { state, _ -> state.toClosedState() },
-
-        actions.popToHome.onEvent { state, _ -> state.toClosedState() }, // TODO
-        actions.launchCustomTimelineList.onEvent { state, _ ->
+        eventOf(actions.popToHome) { state, _ -> state.toClosedState() } // TODO
+        eventOf(actions.launchCustomTimelineList) { state, _ ->
             val userId = requireNotNull(state.currentUser).id
             navEventChannel.sendTimelineEvent(
                 QueryType.CustomTimelineListQueryType.Ownership(userId),
                 NavigationEvent.Type.NAVIGATE
             )
             state.toClosedState()
-        },
+        }
 
-        actions.showCurrentUser.onEvent { state, _ ->
+        eventOf(actions.showCurrentUser) { state, _ ->
             state.currentUser?.let {
                 navEventChannel.send(TimelineEvent.Navigate.UserInfo(it))
             }
             state
-        },
-        actions.toggleAccountSwitcher.onEvent { state, _ ->
+        }
+        eventOf(actions.toggleAccountSwitcher) { state, _ ->
             state.copy(isAccountSwitcherOpened = !state.isAccountSwitcherOpened)
-        },
-        actions.launchOAuth.onEvent { state, _ ->
+        }
+        eventOf(actions.launchOAuth) { state, _ ->
             navEventChannel.sendTimelineEvent(QueryType.Oauth, NavigationEvent.Type.NAVIGATE)
             state.toClosedState()
-        },
-        actions.switchAccount.onEvent { state, event ->
+        }
+        eventOf(actions.switchAccount) { state, event ->
             val user =
                 requireNotNull(state.switchableAccounts.find { it.account == event.accountName })
             login(user.id)
@@ -199,8 +179,23 @@ internal class DrawerViewModelSource @Inject constructor(
                 NavigationEvent.Type.INIT
             )
             state.toClosedState()
-        },
-    )
+        }
+        eventOf(appSettingRepository.currentUserIdSource) { s, id ->
+            val switchableAccounts = userRepository.getSwitchableUsers(s, id, s.registeredUserId)
+            s.copy(currentUserId = id, switchableAccounts = switchableAccounts)
+        }
+        eventOf(appSettingRepository.registeredUserIdsSource) { s, ids ->
+            val switchableAccounts = userRepository.getSwitchableUsers(s, s.currentUserId, ids)
+            s.copy(registeredUserId = ids, switchableAccounts = switchableAccounts)
+        }
+        flatMap(
+            flow = {
+                this.mapNotNull { it.currentUserId }
+                    .distinctUntilChanged()
+                    .flatMapLatest { userRepository.getUserSource(it) }
+            }
+        ) { s, user -> s.copy(currentUser = user) }
+    }
 
     private suspend fun Channel<NavigationEvent>.sendTimelineEvent(
         queryType: QueryType,
@@ -208,5 +203,49 @@ internal class DrawerViewModelSource @Inject constructor(
     ) {
         val timelineEvent = listOwnerGenerator.getTimelineEvent(queryType, navType)
         send(timelineEvent)
+    }
+
+    internal data class DrawerViewState(
+        override val isOpened: Boolean = false,
+        override val isAccountSwitcherOpened: Boolean = false,
+        internal val currentUserId: UserId? = null,
+        override val currentUser: TweetUserItem? = null,
+        internal val registeredUserId: Set<UserId> = emptySet(),
+        override val switchableAccounts: SortedSet<TweetUserItem> = sortedSetOf(),
+    ) : DrawerViewModel.State {
+        internal val switchableUserIds: Set<UserId>
+            get() = switchableUserIds(currentUserId, registeredUserId)
+
+        companion object {
+            fun DrawerViewState.toClosedState(): DrawerViewState =
+                copy(isOpened = false, isAccountSwitcherOpened = false)
+
+            fun switchableUserIds(
+                currentUserId: UserId?,
+                registeredUserId: Set<UserId>
+            ): Set<UserId> = currentUserId?.let { registeredUserId - it } ?: emptySet()
+        }
+    }
+
+    companion object {
+        private val sortWithScreenName: Comparator<TweetUserItem> = Comparator { o1, o2 ->
+            requireNotNull(o1)
+            requireNotNull(o2)
+            o1.screenName.compareTo(o2.screenName)
+        }
+
+        private suspend fun UserDataSource.getSwitchableUsers(
+            state: DrawerViewState,
+            currentUserId: UserId?,
+            registeredUserId: Set<UserId>
+        ): SortedSet<TweetUserItem> {
+            val switchableUserIds =
+                DrawerViewState.switchableUserIds(currentUserId, registeredUserId)
+            return if (switchableUserIds != state.switchableUserIds) {
+                switchableUserIds.map { getUser(it) }.toSortedSet(sortWithScreenName)
+            } else {
+                sortedSetOf()
+            }
+        }
     }
 }
