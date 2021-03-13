@@ -48,9 +48,9 @@ object Versions {
     const val LEAKCANARY = "2.6"
 
     // test
-    const val JUNIT = "4.13.1"
-    const val MOCKK = "1.10.0"
-    const val ROBOLECTRIC = "4.5-alpha-3"
+    const val JUNIT = "4.13.2"
+    const val MOCKK = "1.10.6"
+    const val ROBOLECTRIC = "4.5.1"
     const val TRUTH = "1.1.2"
     const val KOTLINX_TEST_COROUTINES = KOTLIN_COROUTINES
     const val ANDROIDX_TEST_CORE = "1.3.0"
