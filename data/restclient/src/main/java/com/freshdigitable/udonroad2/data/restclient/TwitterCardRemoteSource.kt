@@ -30,11 +30,12 @@ import timber.log.Timber
 import java.io.IOException
 import java.io.Reader
 import java.util.Locale
+import javax.inject.Inject
 
-internal class TwitterCardRemoteSource(
+internal class TwitterCardRemoteSource @Inject constructor(
     private val httpClient: OkHttpClient
 ) : TwitterCardDataSource.Remote {
-    override fun getTwitterCardSource(url: String): Flow<TwitterCard> {
+    override fun getTwitterCardSource(url: String): Flow<TwitterCard?> {
         val request = Request.Builder()
             .url(url)
             .build()
@@ -48,6 +49,9 @@ internal class TwitterCardRemoteSource(
             if (item.isSuccess) emit(item.getOrThrow())
         }
     }
+
+    override suspend fun putTwitterCard(url: String, card: TwitterCard) =
+        throw NotImplementedError()
 
     companion object {
         private const val TAG = "TwitterCardRemoteSource"

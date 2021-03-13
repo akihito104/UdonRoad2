@@ -22,6 +22,7 @@ import com.freshdigitable.udonroad2.data.AppSettingDataSource
 import com.freshdigitable.udonroad2.data.OAuthTokenDataSource
 import com.freshdigitable.udonroad2.data.RelationDataSource
 import com.freshdigitable.udonroad2.data.TweetDataSource
+import com.freshdigitable.udonroad2.data.TwitterCardDataSource
 import com.freshdigitable.udonroad2.data.UserDataSource
 import com.freshdigitable.udonroad2.data.db.AppDatabase
 import com.freshdigitable.udonroad2.data.db.dao.ConversationListDao
@@ -35,6 +36,7 @@ import com.freshdigitable.udonroad2.data.db.dao.UserLocalSource
 import com.freshdigitable.udonroad2.data.db.entity.ListDao
 import com.freshdigitable.udonroad2.data.local.SharedPreferenceDataSource
 import com.freshdigitable.udonroad2.data.local.TweetLocalDataSource
+import com.freshdigitable.udonroad2.data.local.TwitterCardLocalSource
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -99,4 +101,7 @@ internal interface LocalSourceModuleInternal {
 
     @Binds
     fun bindRelationDataSourceLocal(source: RelationshipLocalDataSource): RelationDataSource.Local
+
+    @Binds
+    fun bindTwitterCardLocalSource(source: TwitterCardLocalSource): TwitterCardDataSource.Local
 }

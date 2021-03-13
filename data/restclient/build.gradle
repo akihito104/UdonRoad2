@@ -55,7 +55,7 @@ dependencies {
     implementation Libs.ANDROIDX_APPCOMPAT
     implementation Libs.ANDROIDX_LIFECYCLE_LIVEDATA_KTX
 
-    implementation Libs.OKHTTP
+    api Libs.OKHTTP
     implementation Libs.TWITTER4J
     implementation Libs.TWITTER4J_HTTP2_SUPPORT
     implementation Libs.THREETENBP

@@ -41,7 +41,8 @@ interface TweetDataSource {
 }
 
 interface TwitterCardDataSource {
-    fun getTwitterCardSource(url: String): Flow<TwitterCard>
+    fun getTwitterCardSource(url: String): Flow<TwitterCard?>
+    suspend fun putTwitterCard(url: String, card: TwitterCard)
 
     interface Local : TwitterCardDataSource
     interface Remote : TwitterCardDataSource
