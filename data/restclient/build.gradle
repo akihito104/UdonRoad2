@@ -53,10 +53,10 @@ dependencies {
     implementation Libs.KOTLINX_COROUTINES_ANDROID
 
     implementation Libs.ANDROIDX_APPCOMPAT
-
-    implementation Libs.TWITTER4J
     implementation Libs.ANDROIDX_LIFECYCLE_LIVEDATA_KTX
 
+    implementation Libs.OKHTTP
+    implementation Libs.TWITTER4J
     implementation Libs.TWITTER4J_HTTP2_SUPPORT
     implementation Libs.THREETENBP
     implementation Libs.TIMBER

@@ -18,8 +18,8 @@ package com.freshdigitable.udonroad2.model
 
 interface TwitterCard {
     val url: String
-    val title: String
+    val title: String?
     val displayUrl: String
-    val imageUrl: String
-    val appUrl: String
+    val imageUrl: String?
+    val appUrl: String?
 }
