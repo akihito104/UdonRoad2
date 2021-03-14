@@ -18,6 +18,7 @@ package com.freshdigitable.udonroad2.model.tweet
 
 import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.TweetMediaItem
+import com.freshdigitable.udonroad2.model.UrlItem
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import org.threeten.bp.Instant
 
@@ -51,6 +52,9 @@ interface TweetElement : TweetElementUpdatable {
     val source: String
 
     val createdAt: Instant
+
+    val urlItems: List<UrlItem>
+        get() = emptyList()
 
     val media: List<TweetMediaItem>
         get() = emptyList()

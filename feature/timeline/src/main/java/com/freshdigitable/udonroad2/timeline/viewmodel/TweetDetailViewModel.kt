@@ -7,9 +7,11 @@ import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import com.freshdigitable.udonroad2.data.impl.AppSettingRepository
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
+import com.freshdigitable.udonroad2.data.impl.TwitterCardRepository
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.TweetId
+import com.freshdigitable.udonroad2.model.TwitterCard
 import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.app.AppTwitterException.ErrorType
 import com.freshdigitable.udonroad2.model.app.isTwitterExceptionOf
@@ -19,7 +21,6 @@ import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.toActionFlow
-import com.freshdigitable.udonroad2.model.app.onEvent
 import com.freshdigitable.udonroad2.model.app.stateSourceBuilder
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
@@ -36,6 +37,8 @@ import com.freshdigitable.udonroad2.timeline.UserIconClickListener
 import com.freshdigitable.udonroad2.timeline.UserIconViewModelSource
 import com.freshdigitable.udonroad2.timeline.getTimelineEvent
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.merge
 import java.io.IOException
@@ -68,6 +71,7 @@ internal class TweetDetailViewModel(
     interface State {
         val tweetItem: TweetListItem?
         val menuItemState: MenuItemState
+        val twitterCard: TwitterCard?
     }
 }
 
@@ -134,6 +138,7 @@ internal class TweetDetailViewStates @Inject constructor(
     tweetId: TweetId,
     actions: TweetDetailActions,
     repository: TweetRepository,
+    twitterCardRepository: TwitterCardRepository,
     appSettingRepository: AppSettingRepository,
     listOwnerGenerator: ListOwnerGenerator,
 ) : TweetDetailEventListener by actions,
@@ -141,8 +146,9 @@ internal class TweetDetailViewStates @Inject constructor(
     ActivityEventStream {
 
     internal val viewModelState: Flow<TweetDetailViewModel.State> = stateSourceBuilder(
-        init = ViewModelState(currentUserId = appSettingRepository.currentUserId),
-        repository.getDetailTweetItemSource(tweetId).onEvent { s, item ->
+        { ViewModelState(currentUserId = appSettingRepository.currentUserId) }
+    ) {
+        eventOf(repository.getDetailTweetItemSource(tweetId)) { s, item ->
             when {
                 item != null -> s.copy(tweetItem = item)
                 s.isTweetItemDeleted -> s
@@ -163,21 +169,28 @@ internal class TweetDetailViewStates @Inject constructor(
                     )
                 }
             }
-        },
-        appSettingRepository.currentUserIdSource.onEvent { s, id -> s.copy(currentUserId = id) },
-        actions.unlikeTweet.onEvent { s, e ->
+        }
+        eventOf(appSettingRepository.currentUserIdSource) { s, id -> s.copy(currentUserId = id) }
+        eventOf(actions.unlikeTweet) { s, e ->
             repository.updateLike(e.tweetId, false)
             s
-        },
-        actions.unretweetTweet.onEvent { s, e ->
+        }
+        eventOf(actions.unretweetTweet) { s, e ->
             repository.updateRetweet(e.tweetId, false)
             s
-        },
-        actions.deleteTweet.onEvent { s, e ->
+        }
+        eventOf(actions.deleteTweet) { s, e ->
             repository.deleteTweet(e.tweetId)
             s.copy(isTweetItemDeleted = true)
-        },
-    )
+        }
+        flatMap(
+            flow = {
+                this.mapLatest { it.tweetItem?.body?.urlItems?.firstOrNull() }
+                    .filterNotNull()
+                    .flatMapLatest { twitterCardRepository.getTwitterCardSource(it.expandedUrl) }
+            }
+        ) { s, card -> s.copy(twitterCard = card) }
+    }
 
     override val navigationEvent: Flow<NavigationEvent> = merge(
         actions.launchOriginalTweetUserInfo.mapLatest { TimelineEvent.Navigate.UserInfo(it.user) },
@@ -194,6 +207,7 @@ internal class TweetDetailViewStates @Inject constructor(
         override val tweetItem: TweetListItem? = null,
         val isTweetItemDeleted: Boolean = false,
         val currentUserId: UserId? = null,
+        override val twitterCard: TwitterCard? = null,
     ) : TweetDetailViewModel.State {
         override val menuItemState: MenuItemState
             get() = when (tweetItem) {

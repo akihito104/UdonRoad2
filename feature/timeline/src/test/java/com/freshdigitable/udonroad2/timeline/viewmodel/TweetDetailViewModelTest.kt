@@ -77,6 +77,7 @@ class TweetDetailViewModelTest {
             }
             every { isRetweeted } returns false
             every { isFavorited } returns false
+            every { urlItems } returns emptyList()
         }
     }
     private val executor = CoroutineScope(coroutineRule.coroutineContextProvider.mainContext)
@@ -88,6 +89,7 @@ class TweetDetailViewModelTest {
                 tweet.originalId,
                 TweetDetailActions(eventDispatcher),
                 tweetRepositoryRule.mock,
+                mockk(),
                 appSettingRepositoryRule.mock,
                 ListOwnerGenerator.create(),
             ),
