@@ -50,6 +50,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@id/card_title"
             app:layout_constraintHorizontal_chainStyle="spread_inside"
+            app:cardImage="@{item}"
             />
 
         <TextView
