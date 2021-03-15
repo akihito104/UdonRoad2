@@ -160,6 +160,9 @@ internal abstract class TweetDao(
         )
         addTweetEntitiesInternal(tweetEntities.map(TweetEntity::toDbEntity))
         addTweetEntities(tweetEntities.map { it.toTweetEntityDb() })
+        db.urlDao().addUrlEntities(tweetEntities.flatMap { t ->
+            t.urlItems.map { it.toEntity(t.id) }
+        })
 
         val mediaItems = tweetEntities.filter { it.media.isNotEmpty() }
             .flatMap { t -> t.media.map { t to it } }

@@ -99,9 +99,9 @@ entity tweet_list {
   * tweet_id: TweetId [PK] [FK]
 }
 
-entity url {
+entity url_tweet {
   * tweet_id: TweetId [PK]
-  * text: String
+  * url: String
   * display: String
   * expanded: String
   * start: Int [PK]
@@ -158,7 +158,7 @@ list --{ custom_timeline_list
 tweet_list }--{ tweet
 tweet --|{ tweet_element
 tweet_element --o{ media_url
-tweet_element --o{ url
+tweet_element --o{ url_tweet
 tweet_element ---o{ user_reply
 tweet_element ---o{ hash_tag
 tweet_element --o| favorited
@@ -169,7 +169,7 @@ media --o{ video_valiant
 
 user_list }--{ user
 user }--{ relationship
-user --o{ url
+user --o{ url_user
 user -o{ tweet
 
 custom_timeline_list }--{ custom_timeline

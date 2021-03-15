@@ -18,13 +18,15 @@ package com.freshdigitable.udonroad2.data.db.entity
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
-import androidx.room.PrimaryKey
+import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.UrlItem
 
-@Entity(tableName = "url")
+@Entity(tableName = "url_tweet", primaryKeys = ["tweet_id", "url"])
 internal data class UrlEntity(
-    @PrimaryKey
-    @ColumnInfo(name = "text", index = true)
+    @ColumnInfo(name = "tweet_id")
+    val id: TweetId,
+
+    @ColumnInfo(name = "url", index = true)
     override val url: String,
 
     @ColumnInfo(name = "display")

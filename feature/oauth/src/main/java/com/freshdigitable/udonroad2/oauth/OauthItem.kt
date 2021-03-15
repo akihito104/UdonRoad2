@@ -18,6 +18,7 @@ package com.freshdigitable.udonroad2.oauth
 
 import com.freshdigitable.udonroad2.model.MediaEntity
 import com.freshdigitable.udonroad2.model.TweetId
+import com.freshdigitable.udonroad2.model.UrlItem
 import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.tweet.TweetElement
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
@@ -51,5 +52,6 @@ data class OauthTweetElement(
     override val media: List<MediaEntity> = emptyList(),
     override val isRetweeted: Boolean = false,
     override val isFavorited: Boolean = false,
-    override val possiblySensitive: Boolean = false
+    override val possiblySensitive: Boolean = false,
+    override val urlItems: List<UrlItem> = emptyList(),
 ) : TweetElement

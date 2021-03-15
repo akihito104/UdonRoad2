@@ -32,6 +32,7 @@ import com.freshdigitable.udonroad2.model.MediaId
 import com.freshdigitable.udonroad2.model.MediaType
 import com.freshdigitable.udonroad2.model.PagedResponseList
 import com.freshdigitable.udonroad2.model.TweetId
+import com.freshdigitable.udonroad2.model.UrlItem
 import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
 import com.freshdigitable.udonroad2.model.tweet.UserReplyEntity
@@ -44,6 +45,7 @@ import twitter4j.MediaEntity.Size.THUMB
 import twitter4j.PagableResponseList
 import twitter4j.Status
 import twitter4j.TwitterResponse
+import twitter4j.URLEntity
 import twitter4j.UserList
 import twitter4j.UserMentionEntity
 
@@ -69,7 +71,8 @@ internal fun Status.toEntity(
         createdAt = Instant.ofEpochMilli(createdAt.time),
         media = mediaEntities.map { it.toItem() },
         replyEntities = userMentionEntities.map { UserReplyEntity.create(it) },
-        retweetIdByCurrentUser = retweetId
+        retweetIdByCurrentUser = retweetId,
+        urlItems = urlEntities.map { UrlItem.create(it) }
     )
 }
 
@@ -152,4 +155,12 @@ internal fun twitter4j.MediaEntity.Variant.toItem(): VideoValiantRest {
         contentType = contentType,
         url = url
     )
+}
+
+internal fun UrlItem.Companion.create(item: URLEntity): UrlItem = object : UrlItem {
+    override val url: String get() = item.url
+    override val displayUrl: String get() = item.displayURL
+    override val expandedUrl: String get() = item.expandedURL
+    override val start: Int get() = item.start
+    override val end: Int get() = item.end
 }

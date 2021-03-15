@@ -26,4 +26,6 @@ interface UrlItem {
     val start: Int
 
     val end: Int
+
+    companion object
 }

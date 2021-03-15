@@ -54,7 +54,6 @@ interface TweetElement : TweetElementUpdatable {
     val createdAt: Instant
 
     val urlItems: List<UrlItem>
-        get() = emptyList()
 
     val media: List<TweetMediaItem>
         get() = emptyList()
