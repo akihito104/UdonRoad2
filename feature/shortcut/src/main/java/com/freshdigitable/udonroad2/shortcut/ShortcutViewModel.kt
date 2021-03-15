@@ -18,8 +18,26 @@ package com.freshdigitable.udonroad2.shortcut
 
 import android.view.MenuItem
 import androidx.lifecycle.LiveData
+import com.freshdigitable.udonroad2.model.TweetId
+import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 
-interface ShortcutViewModel {
+interface ShortcutViewModel : ShortcutEventListener {
     val isFabVisible: LiveData<Boolean>
-    fun onFabMenuSelected(item: MenuItem)
+}
+
+interface ShortcutEventListener {
+    fun onShortcutMenuSelected(item: MenuItem, id: TweetId)
+
+    companion object {
+        fun create(dispatcher: EventDispatcher): ShortcutEventListener =
+            TweetShortcutEventListener(dispatcher)
+    }
+}
+
+private class TweetShortcutEventListener(
+    private val dispatcher: EventDispatcher,
+) : ShortcutEventListener {
+    override fun onShortcutMenuSelected(item: MenuItem, id: TweetId) {
+        dispatcher.postSelectedItemShortcutEvent(item, id)
+    }
 }

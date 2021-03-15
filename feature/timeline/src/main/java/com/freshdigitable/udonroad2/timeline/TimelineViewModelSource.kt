@@ -22,7 +22,6 @@ import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
-import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventStream
 import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
@@ -46,13 +45,12 @@ internal class TimelineViewModelSource(
     selectedItemRepository: SelectedItemRepository,
     tweetRepository: TweetRepository,
     listOwnerGenerator: ListOwnerGenerator,
-    executor: AppExecutor,
     private val baseViewModelSource: ListItemLoadableViewModelSource,
     mediaViewModelSource: TweetMediaViewModelSource,
 ) : ListItemLoadableViewModelSource by baseViewModelSource,
     TweetMediaViewModelSource by mediaViewModelSource,
     ActivityEventStream,
-    ShortcutViewStates by ShortcutViewStates.create(actions, tweetRepository, executor),
+    ShortcutViewStates by ShortcutViewStates.create(actions, tweetRepository),
     TweetListItemEventListener by actions {
 
     override val state: Flow<TimelineState> = stateSourceBuilder(
@@ -90,8 +88,8 @@ internal class TimelineViewModelSource(
                 NavigationEvent.Type.INIT
             )
         },
-        actions.showTweetDetail.asFlow().map { TimelineEvent.Navigate.Detail(it.tweetId) },
-        actions.showConversation.asFlow().map {
+        actions.showTweetDetail.map { TimelineEvent.Navigate.Detail(it.tweetId) },
+        actions.showConversation.map {
             listOwnerGenerator.getTimelineEvent(
                 QueryType.TweetQueryType.Conversation(it.tweetId),
                 NavigationEvent.Type.NAVIGATE
@@ -102,7 +100,7 @@ internal class TimelineViewModelSource(
             .filter { it.selectedItemId?.owner == owner },
         baseViewModelSource.navigationEvent,
     )
-    override val feedbackMessage: Flow<FeedbackMessage> = updateTweet.asFlow()
+    override val feedbackMessage: Flow<FeedbackMessage> = updateTweet
 
     override suspend fun clear() {
         super.clear()

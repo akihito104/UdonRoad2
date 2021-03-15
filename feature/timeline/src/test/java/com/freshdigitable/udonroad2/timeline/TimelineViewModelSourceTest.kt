@@ -27,7 +27,6 @@ import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.TweetId
-import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.AppTwitterException
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
@@ -45,7 +44,7 @@ import com.freshdigitable.udonroad2.test_common.jvm.createMock
 import com.freshdigitable.udonroad2.test_common.jvm.testCollect
 import com.freshdigitable.udonroad2.timeline.TimelineEvent.TweetItemSelection
 import com.google.common.truth.Truth.assertThat
-import io.reactivex.observers.TestObserver
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flowOf
@@ -116,7 +115,7 @@ class TimelineViewModelSourceTest {
 
         // verify
         assertThat(selectedItems.last()?.originalId).isEqualTo(TweetId(200L))
-        messageEvents.assertValueAt(0) { it.messageRes == R.string.msg_fav_create_success }
+        assertThat(messageEvents.last().messageRes).isEqualTo(R.string.msg_fav_create_success)
     }
 
     @Test
@@ -134,7 +133,7 @@ class TimelineViewModelSourceTest {
 
         // verify
         assertThat(selectedItems.last()?.originalId).isEqualTo(TweetId(200L))
-        messageEvents.assertValueAt(0) { it.messageRes == R.string.msg_already_fav }
+        assertThat(messageEvents.last().messageRes).isEqualTo(R.string.msg_already_fav)
     }
 
     @Test
@@ -150,7 +149,7 @@ class TimelineViewModelSourceTest {
 
         // verify
         assertThat(selectedItems.last()?.originalId).isEqualTo(TweetId(200L))
-        messageEvents.assertValueAt(0) { it.messageRes == R.string.msg_rt_create_success }
+        assertThat(messageEvents.last().messageRes).isEqualTo(R.string.msg_rt_create_success)
     }
 
     @Test
@@ -169,12 +168,16 @@ class TimelineViewModelSourceTest {
 
             // verify
             assertThat(selectedItems.last()?.originalId).isEqualTo(TweetId(200L))
-            messageEvents.assertValueAt(0) { it.messageRes == R.string.msg_already_rt }
+            assertThat(messageEvents.last().messageRes).isEqualTo(R.string.msg_already_rt)
         }
 }
 
 open class TimelineViewStatesTestRule : TestWatcher() {
-    internal val actionsRule: TimelineActionsTestRule = TimelineActionsTestRule()
+    @ExperimentalCoroutinesApi
+    internal val coroutineTestRule = CoroutineTestRule()
+    internal val scope = CoroutineScope(coroutineTestRule.coroutineContextProvider.mainContext)
+    internal val actionsRule: TimelineActionsTestRule =
+        TimelineActionsTestRule(coroutineTestRule, scope)
     val tweetRepositoryMock = TweetRepositoryRule()
     val owner: ListOwner<QueryType.TweetQueryType> =
         actionsRule.owner as ListOwner<QueryType.TweetQueryType>
@@ -192,12 +195,6 @@ open class TimelineViewStatesTestRule : TestWatcher() {
     private val appSettingRepository = MockVerified.create<AppSettingRepository>().apply {
         setupResponseWithVerify({ mock.isPossiblySensitiveHidden }, flowOf(true))
     }
-
-    @ExperimentalCoroutinesApi
-    internal val coroutineTestRule = CoroutineTestRule()
-
-    @ExperimentalCoroutinesApi
-    internal val executor = AppExecutor(dispatcher = coroutineTestRule.coroutineContextProvider)
     internal val sut: TimelineViewModelSource by lazy {
         TimelineViewModelSource(
             owner,
@@ -205,7 +202,6 @@ open class TimelineViewStatesTestRule : TestWatcher() {
             SelectedItemRepository(),
             tweetRepositoryMock.mock,
             ListOwnerGenerator.create(AtomicInteger(1)),
-            executor,
             ListItemLoadableViewStateImpl(
                 owner as ListOwner<QueryType>,
                 actionsRule.sut,
@@ -219,7 +215,7 @@ open class TimelineViewStatesTestRule : TestWatcher() {
         )
     }
     lateinit var navEvents: List<NavigationEvent>
-    lateinit var messageEvents: TestObserver<FeedbackMessage>
+    lateinit var messageEvents: List<FeedbackMessage>
     lateinit var selectedItems: List<SelectedItemId?>
 
     fun setupPrependListResponse(res: List<TweetEntity> = emptyList()) = with(listRepositoryRule) {
@@ -235,10 +231,10 @@ open class TimelineViewStatesTestRule : TestWatcher() {
 
     override fun starting(description: Description?) {
         super.starting(description)
-        navEvents = sut.navigationEvent.testCollect(executor)
-        messageEvents = sut.updateTweet.test()
-        sut.state.testCollect(executor)
-        selectedItems = sut.selectedItemId.testCollect(executor)
+        navEvents = sut.navigationEvent.testCollect(scope)
+        messageEvents = sut.updateTweet.testCollect(scope)
+        sut.state.testCollect(scope)
+        selectedItems = sut.selectedItemId.testCollect(scope)
     }
 
     override fun apply(base: Statement?, description: Description?): Statement {
@@ -249,7 +245,6 @@ open class TimelineViewStatesTestRule : TestWatcher() {
             .around(tweetRepositoryMock)
             .around(appSettingRepository)
             .around(RxExceptionHandler())
-            .around(coroutineTestRule)
             .apply(super.apply(base, description), description)
     }
 

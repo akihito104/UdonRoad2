@@ -22,10 +22,15 @@ import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.postEvents
 import com.freshdigitable.udonroad2.shortcut.SelectedItemShortcut
-import io.reactivex.observers.TestObserver
+import com.freshdigitable.udonroad2.test_common.jvm.CoroutineTestRule
+import com.freshdigitable.udonroad2.test_common.jvm.testCollect
+import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.CoroutineScope
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TestWatcher
+import org.junit.runner.Description
+import org.junit.runners.model.Statement
 
 class TimelineActionsTest {
     @get:Rule
@@ -39,10 +44,7 @@ class TimelineActionsTest {
         )
 
         // verify
-        favTweetObserver
-            .assertNotComplete()
-            .assertValueCount(1)
-            .assertValueAt(0, SelectedItemShortcut.Like(TweetId(1000)))
+        assertThat(favTweetObserver).containsExactly(SelectedItemShortcut.Like(TweetId(1000)))
     }
 
     @Test
@@ -53,10 +55,7 @@ class TimelineActionsTest {
         )
 
         // verify
-        retweetObserver
-            .assertNotComplete()
-            .assertValueCount(1)
-            .assertValueAt(0, SelectedItemShortcut.Retweet(TweetId(1000)))
+        assertThat(retweetObserver).containsExactly(SelectedItemShortcut.Retweet(TweetId(1000)))
     }
 
     @Test
@@ -68,24 +67,32 @@ class TimelineActionsTest {
         )
 
         // verify
-        favTweetObserver
-            .assertNotComplete()
-            .assertValueCount(1)
-            .assertValueAt(0, SelectedItemShortcut.Like(TweetId(1000)))
-        retweetObserver
-            .assertNotComplete()
-            .assertValueCount(1)
-            .assertValueAt(0, SelectedItemShortcut.Retweet(TweetId(1000)))
+        assertThat(favTweetObserver).containsExactly(SelectedItemShortcut.Like(TweetId(1000)))
+        assertThat(retweetObserver).containsExactly(SelectedItemShortcut.Retweet(TweetId(1000)))
     }
 }
 
-class TimelineActionsTestRule : TestWatcher() {
+class TimelineActionsTestRule(
+    private val coroutineRule: CoroutineTestRule = CoroutineTestRule(),
+    private val scope: CoroutineScope = CoroutineScope(coroutineRule.coroutineContextProvider.mainContext),
+) : TestWatcher() {
     val owner = ListOwner(1, QueryType.TweetQueryType.Timeline())
     val dispatcher = EventDispatcher()
     internal val actions = ListItemLoadableActions(owner, dispatcher)
-    internal val sut: TimelineActions =
+    internal val sut: TimelineActions by lazy {
         TimelineActions(owner, dispatcher, actions, LaunchMediaViewerAction(dispatcher))
+    }
+    lateinit var favTweetObserver: List<SelectedItemShortcut.Like>
+    lateinit var retweetObserver: List<SelectedItemShortcut.Retweet>
 
-    val favTweetObserver: TestObserver<SelectedItemShortcut.Like> = sut.favTweet.test()
-    val retweetObserver: TestObserver<SelectedItemShortcut.Retweet> = sut.retweet.test()
+    override fun starting(description: Description?) {
+        super.starting(description)
+        favTweetObserver = sut.favTweet.testCollect(scope)
+        retweetObserver = sut.retweet.testCollect(scope)
+    }
+
+    override fun apply(base: Statement?, description: Description?): Statement {
+        val stmt = super.apply(base, description)
+        return coroutineRule.apply(stmt, description)
+    }
 }

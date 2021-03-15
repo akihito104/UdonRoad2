@@ -17,57 +17,70 @@
 package com.freshdigitable.udonroad2.shortcut
 
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
-import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.AppTwitterException
-import com.freshdigitable.udonroad2.model.app.mainContext
-import com.freshdigitable.udonroad2.model.app.navigation.AppAction
-import com.freshdigitable.udonroad2.model.app.navigation.EventResult
+import com.freshdigitable.udonroad2.model.app.AppTwitterException.ErrorType
 import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
-import com.freshdigitable.udonroad2.model.app.navigation.suspendMap
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.merge
+import java.io.IOException
 
 interface ShortcutViewStates {
-    val updateTweet: AppAction<FeedbackMessage>
+    val updateTweet: Flow<FeedbackMessage>
 
     companion object {
         fun create(
             actions: ShortcutActions,
             tweetRepository: TweetRepository,
-            executor: AppExecutor
-        ): ShortcutViewStates = ShortcutViewStateImpl(actions, tweetRepository, executor)
+        ): ShortcutViewStates = ShortcutViewStateImpl(actions, tweetRepository)
     }
 }
 
 private class ShortcutViewStateImpl(
     actions: ShortcutActions,
     tweetRepository: TweetRepository,
-    executor: AppExecutor,
 ) : ShortcutViewStates {
-    override val updateTweet: AppAction<FeedbackMessage> = AppAction.merge(
-        actions.favTweet.suspendMap(executor.mainContext) { event ->
-            tweetRepository.updateLike(event.tweetId, true)
-        }.map {
-            when {
-                it.isSuccess -> TweetFeedbackMessage.FAV_CREATE_SUCCESS
-                it.isExceptionTypeOf(AppTwitterException.ErrorType.ALREADY_FAVORITED) -> {
-                    TweetFeedbackMessage.ALREADY_FAV
-                }
-                else -> TweetFeedbackMessage.FAV_CREATE_FAILURE
-            }
+    override val updateTweet: Flow<FeedbackMessage> = merge(
+        actions.favTweet.mapLatest { event ->
+            tweetRepository.runCatching { updateLike(event.tweetId, true) }
+                .fold(
+                    onSuccess = { TweetFeedbackMessage.FAV_CREATE_SUCCESS },
+                    onFailure = {
+                        when {
+                            it.isTwitterExceptionOf(ErrorType.ALREADY_FAVORITED) ->
+                                TweetFeedbackMessage.ALREADY_FAV
+                            it is IOException -> TweetFeedbackMessage.FAV_CREATE_FAILURE
+                            else -> throw it
+                        }
+                    }
+                )
         },
-        actions.retweet.suspendMap(executor.mainContext) { event ->
-            tweetRepository.updateRetweet(event.tweetId, true)
-        }.map {
-            when {
-                it.isSuccess -> TweetFeedbackMessage.RT_CREATE_SUCCESS
-                it.isExceptionTypeOf(AppTwitterException.ErrorType.ALREADY_RETWEETED) -> {
-                    TweetFeedbackMessage.ALREADY_RT
-                }
-                else -> TweetFeedbackMessage.RT_CREATE_FAILURE
-            }
+        actions.retweet.mapLatest { event ->
+            tweetRepository.runCatching { updateRetweet(event.tweetId, true) }
+                .fold(
+                    onSuccess = { TweetFeedbackMessage.RT_CREATE_SUCCESS },
+                    onFailure = {
+                        when {
+                            it.isTwitterExceptionOf(ErrorType.ALREADY_RETWEETED) -> {
+                                TweetFeedbackMessage.ALREADY_RT
+                            }
+                            it is IOException -> TweetFeedbackMessage.RT_CREATE_FAILURE
+                            else -> throw it
+                        }
+                    }
+                )
         }
     )
 }
 
-fun EventResult<*, *>.isExceptionTypeOf(type: AppTwitterException.ErrorType): Boolean {
-    return (this.exception as? AppTwitterException)?.errorType == type
+fun Throwable.isTwitterExceptionOf(type: ErrorType? = null): Boolean {
+    return when (this) {
+        is AppTwitterException -> {
+            when (type) {
+                null -> true
+                else -> this.errorType == type
+            }
+        }
+        else -> false
+    }
 }

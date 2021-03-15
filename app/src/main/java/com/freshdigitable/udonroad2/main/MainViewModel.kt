@@ -16,7 +16,6 @@
 
 package com.freshdigitable.udonroad2.main
 
-import android.view.MenuItem
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
@@ -24,21 +23,24 @@ import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
 import com.freshdigitable.udonroad2.input.TweetInputEvent
+import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
+import com.freshdigitable.udonroad2.shortcut.ShortcutEventListener
 import com.freshdigitable.udonroad2.shortcut.ShortcutViewModel
-import com.freshdigitable.udonroad2.shortcut.postSelectedItemShortcutEvent
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.merge
-import timber.log.Timber
 
 internal class MainViewModel(
     private val eventDispatcher: EventDispatcher,
     viewStates: MainViewModelSource,
     private val drawerViewStates: DrawerViewModelSource,
-) : ViewModel(), ShortcutViewModel, DrawerActionListener by drawerViewStates {
+) : ShortcutViewModel,
+    ShortcutEventListener by ShortcutEventListener.create(eventDispatcher),
+    DrawerActionListener by drawerViewStates,
+    ViewModel() {
 
     val mainState: LiveData<MainActivityViewState> =
         viewStates.states.asLiveData(viewModelScope.coroutineContext)
@@ -59,13 +61,6 @@ internal class MainViewModel(
 
     internal fun initialEvent() {
         eventDispatcher.postEvent(TimelineEvent.Setup())
-    }
-
-    override fun onFabMenuSelected(item: MenuItem) {
-        Timber.tag("MainViewModel").d("onFabSelected: $item")
-        val selected =
-            requireNotNull(currentState.selectedItem) { "selectedItem should not be null." }
-        eventDispatcher.postSelectedItemShortcutEvent(item, selected)
     }
 
     fun collapseTweetInput() {
@@ -89,6 +84,11 @@ internal class MainViewModel(
 
     internal val currentState: MainActivityViewState
         get() = mainState.value ?: throw IllegalStateException()
+
+    val requireSelectedTweetId: TweetId
+        get() = requireNotNull(
+            currentState.selectedItem?.quoteId ?: currentState.selectedItem?.originalId
+        )
 }
 
 val TweetUserItem.account: String

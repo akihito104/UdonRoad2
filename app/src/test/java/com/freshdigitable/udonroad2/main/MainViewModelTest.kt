@@ -213,7 +213,10 @@ class MainViewModelTest {
             val dispatcherObserver = dispatcher.emitter.test()
 
             // exercise
-            sut.onFabMenuSelected(menuItem(R.id.iffabMenu_main_fav))
+            sut.onShortcutMenuSelected(
+                menuItem(R.id.iffabMenu_main_fav),
+                sut.requireSelectedTweetId
+            )
 
             // verify
             assertThat(sut.isFabVisible.value).isTrue()

@@ -60,7 +60,7 @@
                 android:layout_gravity="center_horizontal|bottom"
                 app:menu="@menu/shortcut_main"
                 style="@style/Widget.FlingFAB"
-                app:menuListener="@{viewModel::onFabMenuSelected}"
+                app:menuListener="@{item -> viewModel.onShortcutMenuSelected(item, viewModel.requireSelectedTweetId)}"
                 app:isVisible="@{viewModel.fabVisible}"
                 />
         </androidx.coordinatorlayout.widget.CoordinatorLayout>

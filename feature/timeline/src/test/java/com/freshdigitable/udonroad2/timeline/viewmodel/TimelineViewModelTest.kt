@@ -56,10 +56,10 @@ class TimelineViewModelTest {
         val isHeadingEnabled = mutableListOf<Boolean>()
         isHeadingEnabledFlow = isHeadingEnabled
         sut.listState.observeForever { isHeadingEnabled.add(it.isHeadingEnabled) }
-        navigationEvents = sut.navigationEvent.testCollect(viewStatesTestRule.executor)
-        sut.timeline.testCollect(viewStatesTestRule.executor)
+        navigationEvents = sut.navigationEvent.testCollect(viewStatesTestRule.scope)
+        sut.timeline.testCollect(viewStatesTestRule.scope)
         sut.selectedItemId.observeForever { }
-        sut.feedbackMessage.testCollect(viewStatesTestRule.executor)
+        sut.feedbackMessage.testCollect(viewStatesTestRule.scope)
         sut.mediaState.observeForever { }
     }
 
