@@ -1,6 +1,8 @@
 package com.freshdigitable.udonroad2.main
 
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
@@ -32,6 +34,7 @@ import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentArgs
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentDirections
 import com.freshdigitable.udonroad2.timeline.fragment.TweetDetailFragmentArgs
 import com.freshdigitable.udonroad2.timeline.fragment.TweetDetailFragmentDirections
+import com.freshdigitable.udonroad2.timeline.viewmodel.DetailEvent
 import com.freshdigitable.udonroad2.user.UserActivityDirections
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -94,6 +97,22 @@ internal class MainActivityNavigationDelegate @Inject constructor(
                     R.id.action_global_toMedia,
                     MediaActivityArgs(event.tweetId, event.index).toBundle()
                 )
+            }
+            is DetailEvent.NavigationExternalApp -> {
+                val intent = Intent(Intent.ACTION_VIEW)
+                val uri = event.card.appUrl?.let { appUrl ->
+                    val i = Intent(intent).apply {
+                        data = Uri.parse(appUrl)
+                    }
+                    val name = i.resolveActivity(activity.packageManager)
+                    if (name != null) {
+                        appUrl
+                    } else {
+                        null
+                    }
+                } ?: event.card.url
+                intent.data = Uri.parse(uri)
+                activity.startActivity(intent)
             }
         }
     }

@@ -75,15 +75,22 @@ internal class TweetDetailViewModel(
     }
 }
 
-internal sealed class DetailMenuEvent : TweetContextMenuEvent {
-    data class Unlike(override val tweetId: TweetId) : DetailMenuEvent()
-    data class Unretweet(override val tweetId: TweetId) : DetailMenuEvent()
-    data class DeleteTweet(override val tweetId: TweetId) : DetailMenuEvent()
+sealed class DetailEvent : AppEvent {
+    internal sealed class Menu : TweetContextMenuEvent {
+        data class Unlike(override val tweetId: TweetId) : Menu()
+        data class Unretweet(override val tweetId: TweetId) : Menu()
+        data class DeleteTweet(override val tweetId: TweetId) : Menu()
+    }
+
+    internal data class TwitterCardClicked(val card: TwitterCard) : DetailEvent()
+
+    data class NavigationExternalApp(val card: TwitterCard) : NavigationEvent
 }
 
 interface TweetDetailEventListener {
     fun onOriginalUserClicked(user: TweetUserItem)
     fun onBodyUserClicked(user: TweetUserItem)
+    fun onTwitterCardClicked(card: TwitterCard)
     fun onMenuItemClicked(item: MenuItem, tweetItem: TweetListItem)
 }
 
@@ -93,9 +100,10 @@ internal class TweetDetailActions @Inject constructor(
     ShortcutActions by ShortcutActions.create(eventDispatcher) {
     val launchOriginalTweetUserInfo =
         eventDispatcher.toActionFlow<TimelineEvent.RetweetUserClicked>()
-    val unlikeTweet = eventDispatcher.toActionFlow<DetailMenuEvent.Unlike>()
-    val unretweetTweet = eventDispatcher.toActionFlow<DetailMenuEvent.Unretweet>()
-    val deleteTweet = eventDispatcher.toActionFlow<DetailMenuEvent.DeleteTweet>()
+    val unlikeTweet = eventDispatcher.toActionFlow<DetailEvent.Menu.Unlike>()
+    val unretweetTweet = eventDispatcher.toActionFlow<DetailEvent.Menu.Unretweet>()
+    val deleteTweet = eventDispatcher.toActionFlow<DetailEvent.Menu.DeleteTweet>()
+    val launchAppForCard = eventDispatcher.toActionFlow<DetailEvent.TwitterCardClicked>()
 
     override fun onOriginalUserClicked(user: TweetUserItem) {
         eventDispatcher.postEvent(TimelineEvent.RetweetUserClicked(user))
@@ -105,26 +113,30 @@ internal class TweetDetailActions @Inject constructor(
         eventDispatcher.postEvent(TimelineEvent.UserIconClicked(user))
     }
 
+    override fun onTwitterCardClicked(card: TwitterCard) {
+        eventDispatcher.postEvent(DetailEvent.TwitterCardClicked(card))
+    }
+
     override fun onMenuItemClicked(item: MenuItem, tweetItem: TweetListItem) {
         val tweetId = tweetItem.originalId
         val event: AppEvent = when (item.itemId) {
             R.id.detail_main_rt -> {
                 if (tweetItem.body.isRetweeted) {
-                    DetailMenuEvent.Unretweet(tweetId)
+                    DetailEvent.Menu.Unretweet(tweetId)
                 } else {
                     SelectedItemShortcut.Retweet(tweetId)
                 }
             }
             R.id.detail_main_fav -> {
                 if (tweetItem.body.isFavorited) {
-                    DetailMenuEvent.Unlike(tweetId)
+                    DetailEvent.Menu.Unlike(tweetId)
                 } else {
                     SelectedItemShortcut.Like(tweetId)
                 }
             }
             R.id.detail_main_reply -> SelectedItemShortcut.Reply(tweetId)
             R.id.detail_main_quote -> SelectedItemShortcut.Quote(tweetId)
-            R.id.detail_more_delete -> DetailMenuEvent.DeleteTweet(
+            R.id.detail_more_delete -> DetailEvent.Menu.DeleteTweet(
                 tweetItem.body.retweetIdByCurrentUser ?: tweetId
             )
             R.id.detail_main_conv -> SelectedItemShortcut.Conversation(tweetId)
@@ -199,7 +211,8 @@ internal class TweetDetailViewStates @Inject constructor(
                 QueryType.TweetQueryType.Conversation(it.tweetId),
                 NavigationEvent.Type.NAVIGATE
             )
-        }
+        },
+        actions.launchAppForCard.mapLatest { DetailEvent.NavigationExternalApp(it.card) },
     )
     override val feedbackMessage: Flow<FeedbackMessage> = updateTweet
 
