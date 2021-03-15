@@ -20,8 +20,10 @@ import android.net.Uri
 import android.util.Xml
 import com.freshdigitable.udonroad2.data.TwitterCardDataSource
 import com.freshdigitable.udonroad2.model.TwitterCard
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.xmlpull.v1.XmlPullParser
@@ -42,11 +44,24 @@ internal class TwitterCardRemoteSource @Inject constructor(
         val call = httpClient.newCall(request)
         return flow {
             val item = call.runCatching {
-                val response = execute()
-                val meta = findMetaTagForCard(requireNotNull(response.body?.charStream()))
-                TwitterCardRemote(response.request.url.toString(), meta)
-            }
-            if (item.isSuccess) emit(item.getOrThrow())
+                withContext(Dispatchers.IO) {
+                    execute().use { response ->
+                        val meta = findMetaTagForCard(requireNotNull(response.body?.charStream()))
+                        TwitterCardRemote(response.request.url.toString(), meta)
+                    }
+                }
+            }.fold(
+                onSuccess = { it },
+                onFailure = {
+                    Timber.tag("TwitterCardRemoteSource").e(it, "url: $url")
+                    when (it) {
+                        is XmlPullParserException -> TwitterCardRemote(url)
+                        is IOException -> null
+                        else -> throw it
+                    }
+                }
+            )
+            emit(item)
         }
     }
 
@@ -141,7 +156,10 @@ private enum class Property {
     }
 
     companion object {
-        fun findByString(property: String): Property {
+        fun findByString(property: String?): Property {
+            if (property == null) {
+                return UNKNOWN
+            }
             for (p in values()) {
                 if (p.toAttrString() == property) {
                     return p
