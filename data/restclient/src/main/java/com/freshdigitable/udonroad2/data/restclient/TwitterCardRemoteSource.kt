@@ -74,10 +74,11 @@ internal class TwitterCardRemoteSource @Inject constructor(
         @Throws(XmlPullParserException::class, IOException::class)
         private fun findMetaTagForCard(reader: Reader): Map<Property, String> {
             Timber.tag(TAG).d("findMetaTagForCard: ")
-            val xmlPullParser = Xml.newPullParser()
-            xmlPullParser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false)
-            xmlPullParser.setFeature(Xml.FEATURE_RELAXED, true)
-            xmlPullParser.setInput(reader)
+            val xmlPullParser = Xml.newPullParser().apply {
+                setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false)
+                setFeature(Xml.FEATURE_RELAXED, true)
+                setInput(reader)
+            }
 
             var eventType = xmlPullParser.eventType
             while (eventType != XmlPullParser.END_DOCUMENT) {
@@ -86,9 +87,9 @@ internal class TwitterCardRemoteSource @Inject constructor(
                     continue
                 }
                 val name = xmlPullParser.name
-                if (isHeadTag(name)) {
+                if (name.isHeadTag()) {
                     Timber.tag(TAG).d("fetch> head:")
-                    return readHead(xmlPullParser)
+                    return xmlPullParser.readHead()
                 }
                 eventType = xmlPullParser.next()
             }
@@ -96,29 +97,25 @@ internal class TwitterCardRemoteSource @Inject constructor(
         }
 
         @Throws(XmlPullParserException::class, IOException::class)
-        private fun readHead(xpp: XmlPullParser): Map<Property, String> {
-            if (xpp.eventType != XmlPullParser.START_TAG) {
-                throw IllegalStateException()
-            }
-            if (!isHeadTag(xpp.name)) {
-                throw  IllegalStateException()
-            }
+        private fun XmlPullParser.readHead(): Map<Property, String> {
+            check(eventType == XmlPullParser.START_TAG)
+            check(name.isHeadTag())
+
             val metadata = mutableMapOf<Property, String>()
-            var eventType = xpp.nextTag()
-            while (eventType != XmlPullParser.END_TAG || !isHeadTag(xpp.name)) {
-                if (xpp.eventType != XmlPullParser.START_TAG) {
-                    eventType = xpp.next()
+            var eventType = nextTag()
+            while (eventType != XmlPullParser.END_TAG || !name.isHeadTag()) {
+                if (this.eventType != XmlPullParser.START_TAG) {
+                    eventType = next()
                     continue
                 }
-                if (isMetaTag(xpp.name)) {
-                    val property = readMetaProperty(xpp)
+                if (name.isMetaTag()) {
+                    val property = readMetaProperty()
                     if (property != Property.UNKNOWN) {
-                        val content = readContent(xpp)
-                        metadata[property] = content
+                        metadata[property] = readContent()
                     }
-                    eventType = xpp.nextTag()
+                    eventType = nextTag()
                 } else {
-                    eventType = xpp.next()
+                    eventType = next()
                 }
             }
             Timber.tag(TAG).d("readHead: end")
@@ -126,25 +123,20 @@ internal class TwitterCardRemoteSource @Inject constructor(
         }
 
         @Throws(XmlPullParserException::class)
-        private fun readMetaProperty(xpp: XmlPullParser): Property {
-            if (xpp.eventType != XmlPullParser.START_TAG) {
-                throw  IllegalStateException()
+        private fun XmlPullParser.readMetaProperty(): Property {
+            check(eventType == XmlPullParser.START_TAG)
+            check(name.isMetaTag())
+
+            val p = Property.findByString(getAttributeValue(null, "name"))
+            return when {
+                p != Property.UNKNOWN -> p
+                else -> Property.findByString(getAttributeValue(null, "property"))
             }
-            if (!isMetaTag(xpp.name)) {
-                throw  IllegalStateException()
-            }
-            val p = Property.findByString(xpp.getAttributeValue(null, "name"))
-            return if (p != Property.UNKNOWN) p else Property.findByString(
-                xpp.getAttributeValue(
-                    null,
-                    "property"
-                )
-            )
         }
 
-        private fun readContent(xpp: XmlPullParser): String = xpp.getAttributeValue(null, "content")
-        private fun isHeadTag(tag: String): Boolean = "head".equals(tag, ignoreCase = true)
-        private fun isMetaTag(tag: String): Boolean = "meta".equals(tag, ignoreCase = true)
+        private fun XmlPullParser.readContent(): String = getAttributeValue(null, "content")
+        private fun String.isHeadTag(): Boolean = "head".equals(this, ignoreCase = true)
+        private fun String.isMetaTag(): Boolean = "meta".equals(this, ignoreCase = true)
     }
 }
 
@@ -160,12 +152,7 @@ private enum class Property {
             if (property == null) {
                 return UNKNOWN
             }
-            for (p in values()) {
-                if (p.toAttrString() == property) {
-                    return p
-                }
-            }
-            return UNKNOWN
+            return values().firstOrNull { it.toAttrString() == property } ?: UNKNOWN
         }
     }
 }
