@@ -22,9 +22,12 @@ import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.flow.onEach
 import timber.log.Timber
+import java.util.concurrent.atomic.AtomicBoolean
 
 typealias UpdateFun<S> = suspend (S) -> S
 typealias ScanFun<S, E> = suspend (S, E) -> S
@@ -72,24 +75,28 @@ internal class StateSourceBuilder<S>(
 
     fun build(): Flow<S> {
         val updaterSource = updaters.map { it.create() }.toTypedArray()
+        val initialized = AtomicBoolean(false)
+        val stateFlow = MutableStateFlow<S?>(null)
+        val updateWithStateSource =
+            updateWithState.map { s -> s.create(stateFlow.mapNotNull { it }) }.toTypedArray()
         return flow {
-            val state: S = initBlock()
-            val stateFlow = MutableStateFlow(state)
-            val updateWithStateSource = updateWithState.map { it.create(stateFlow) }.toTypedArray()
-            emit(state)
+            if (initialized.compareAndSet(false, true)) {
+                val state: S = initBlock()
+                stateFlow.value = state
+                Timber.tag("StateTransition").d("emit(init)")
+                emit(state)
+            }
 
             merge(*updateSource, *updaterSource, *updateWithStateSource).collect {
-                val current = stateFlow.value
+                val current = requireNotNull(stateFlow.value)
                 val next = it(current)
                 if (next != current) {
-                    Timber.tag("StateTransition").d("changed: $next")
                     stateFlow.value = next
                     emit(next)
                 }
             }
-        }.onCompletion {
-            updateWithState.clear()
-            updaters.clear()
+        }.onEach {
+            Timber.tag("StateTransition").d("onEach: $it")
         }
     }
 

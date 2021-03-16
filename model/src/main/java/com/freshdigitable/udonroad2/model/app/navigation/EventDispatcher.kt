@@ -57,7 +57,7 @@ inline fun <reified T : AppEvent> EventDispatcher.toActionFlow(
     awaitClose {
         val d = disposable.getAndSet(Disposables.disposed())
         if (!d.isDisposed) {
-            Timber.tag("EventDispatcher").d("disposed: $d")
+            Timber.tag("EventDispatcher").d("disposed(${T::class.simpleName}): $d")
             d.dispose()
         }
     }

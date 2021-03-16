@@ -56,6 +56,7 @@ class MainViewModelTest {
         @Test
         fun initialState(): Unit = with(rule) {
             val actual = sut.drawerState.value
+            assertThat(actual).isNotNull()
             assertThat(actual?.switchableAccounts).isEmpty()
             assertThat(actual?.isOpened).isFalse()
             assertThat(actual?.isAccountSwitcherOpened).isFalse()
@@ -120,7 +121,7 @@ class MainViewModelTest {
             sut.initialEvent()
 
             // verify
-            stateModelRule.assertThatNavigationEventOfTimeline(0) {
+            navigationEventActual.assertThatNavigationEvent<TimelineEvent.Navigate.Timeline>(0) {
                 assertThat(it.owner.query).isEqualTo(QueryType.Oauth)
             }
         }
@@ -365,7 +366,8 @@ class MainViewModelTest {
 }
 
 internal class MainViewModelTestRule : TestWatcher() {
-    val stateModelRule: MainActivityStateModelTestRule = MainActivityStateModelTestRule()
+    val stateModelRule: MainActivityStateModelTestRule =
+        MainActivityStateModelTestRule(isStateCollected = false)
     val dispatcher = stateModelRule.dispatcher
     val coroutineRule = stateModelRule.coroutineRule
     val appSettingRepositoryRule = stateModelRule.appSettingRepositoryRule
@@ -374,7 +376,8 @@ internal class MainViewModelTestRule : TestWatcher() {
         dispatcher,
         appSettingRepositoryRule,
         stateModelRule.oauthTokenRepository,
-        coroutineRule
+        coroutineRule,
+        isStateCollected = false,
     )
 
     val sut: MainViewModel by lazy {

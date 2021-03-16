@@ -115,6 +115,7 @@ internal class MainActivityStateModelTestRule(
         appSettingRepositoryRule
     ),
     val coroutineRule: CoroutineTestRule = CoroutineTestRule(),
+    private val isStateCollected: Boolean = true,
 ) : TestWatcher() {
     val selectedItemRepository = SelectedItemRepository()
     val navDelegateRule = MainActivityNavigationDelegateRule()
@@ -144,8 +145,10 @@ internal class MainActivityStateModelTestRule(
 
     override fun starting(description: Description?) {
         super.starting(description)
-        navigationEventActual = sut.initContainer.testCollect(coroutineScope)
-        sut.states.testCollect(coroutineScope)
+        if (isStateCollected) {
+            navigationEventActual = sut.initContainer.testCollect(coroutineScope)
+            sut.states.testCollect(coroutineScope)
+        }
     }
 
     override fun apply(base: Statement?, description: Description?): Statement {
@@ -161,9 +164,16 @@ internal class MainActivityStateModelTestRule(
         index: Int,
         matcher: (TimelineEvent.Navigate.Timeline) -> Unit
     ) {
-        with(navigationEventActual[index]) {
-            assertThat(this).isInstanceOf(TimelineEvent.Navigate.Timeline::class.java)
-            matcher(this as TimelineEvent.Navigate.Timeline)
-        }
+        navigationEventActual.assertThatNavigationEvent(index, matcher)
+    }
+}
+
+inline fun <reified T : NavigationEvent> List<NavigationEvent>.assertThatNavigationEvent(
+    index: Int,
+    matcher: (T) -> Unit
+) {
+    with(this[index]) {
+        assertThat(this).isInstanceOf(T::class.java)
+        matcher(this as T)
     }
 }
