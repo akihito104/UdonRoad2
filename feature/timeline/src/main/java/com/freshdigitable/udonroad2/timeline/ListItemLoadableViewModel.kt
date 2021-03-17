@@ -15,7 +15,6 @@ import com.freshdigitable.udonroad2.model.app.onEvent
 import com.freshdigitable.udonroad2.model.app.stateSourceBuilder
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.receiveAsFlow
 import javax.inject.Inject
 
@@ -65,8 +64,7 @@ internal class ListItemLoadableActions @Inject constructor(
 
     override val scrollList: Flow<TimelineEvent.ListScrolled> = eventDispatcher.toActionFlow()
     override val heading: Flow<TimelineEvent.HeadingClicked> =
-        eventDispatcher.toActionFlow<TimelineEvent.HeadingClicked>()
-            .filter { it.owner == owner }
+        eventDispatcher.toActionFlow { it.owner == owner }
     override val prependList: Flow<TimelineEvent.SwipedToRefresh> = eventDispatcher.toActionFlow()
 }
 
