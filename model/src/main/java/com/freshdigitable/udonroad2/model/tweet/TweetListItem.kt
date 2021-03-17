@@ -35,6 +35,20 @@ interface TweetListItem {
     val isRetweet: Boolean
         get() = originalId != body.id
 
+    val bodyTextWithDisplayUrl: String
+        get() = when (val qId = quoted?.id) {
+            null -> body.textWithDisplayUrl
+            else -> {
+                body.urlItems.fold(body.text) { t, url ->
+                    val displayUrl =
+                        if (url.expandedUrl.contains(qId.value.toString())) "" else url.displayUrl
+                    t.replace(url.url, displayUrl)
+                }.also {
+                    body.media.fold(it) { t, url -> t.replace(url.mediaUrl, url.displayUrl) }
+                }
+            }
+        }
+
     override fun equals(other: Any?): Boolean
 
     override fun hashCode(): Int
@@ -59,6 +73,9 @@ interface TweetElement : TweetElementUpdatable {
         get() = emptyList()
 
     val possiblySensitive: Boolean
+
+    val textWithDisplayUrl: String
+        get() = (urlItems + media).fold(text) { t, url -> t.replace(url.url, url.displayUrl) }
 
     companion object
 }

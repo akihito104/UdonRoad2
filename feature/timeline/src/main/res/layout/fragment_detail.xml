@@ -119,7 +119,7 @@
                     app:layout_constraintBottom_toTopOf="@id/detail_mediaContainer"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
-                    android:text="@{viewModel.state.tweetItem.body.text}"
+                    android:text="@{viewModel.state.tweetItem.bodyTextWithDisplayUrl}"
                     android:textSize="18sp"
                     tools:text="tweet body\nlorem ipsum"
                     />
