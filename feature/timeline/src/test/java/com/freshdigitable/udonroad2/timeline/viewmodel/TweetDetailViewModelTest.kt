@@ -21,7 +21,6 @@ import com.freshdigitable.udonroad2.data.impl.create
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.UserId
-import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.tweet.DetailTweetElement
@@ -40,6 +39,7 @@ import com.freshdigitable.udonroad2.timeline.UserIconViewModelSource
 import com.google.common.truth.Truth.assertThat
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import org.hamcrest.CoreMatchers
@@ -79,28 +79,24 @@ class TweetDetailViewModelTest {
             every { isFavorited } returns false
         }
     }
-    private val executor = AppExecutor(dispatcher = coroutineRule.coroutineContextProvider)
+    private val executor = CoroutineScope(coroutineRule.coroutineContextProvider.mainContext)
 
     private val sut: TweetDetailViewModel by lazy {
         val eventDispatcher = EventDispatcher()
-        val userIconClickedAction = UserIconClickedAction(eventDispatcher)
-        val actions = TweetDetailActions(eventDispatcher, userIconClickedAction)
         TweetDetailViewModel(
-            eventDispatcher,
             TweetDetailViewStates(
                 tweet.originalId,
-                actions,
+                TweetDetailActions(eventDispatcher),
                 tweetRepositoryRule.mock,
                 appSettingRepositoryRule.mock,
                 ListOwnerGenerator.create(),
-                executor,
-                TweetMediaViewModelSource.create(
-                    LaunchMediaViewerAction(eventDispatcher),
-                    appSettingRepositoryRule.mock,
-                ),
-                UserIconViewModelSource(userIconClickedAction)
             ),
-            executor.dispatcher.mainContext
+            UserIconViewModelSource(UserIconClickedAction(eventDispatcher)),
+            TweetMediaViewModelSource.create(
+                LaunchMediaViewerAction(eventDispatcher),
+                appSettingRepositoryRule.mock,
+            ),
+            coroutineRule.coroutineContextProvider.mainContext,
         )
     }
     private val tweetSource: Channel<TweetListItem?> = Channel()
@@ -110,8 +106,10 @@ class TweetDetailViewModelTest {
     fun setup() {
         tweetRepositoryRule.setupShowTweet(tweet.originalId, tweetSource.receiveAsFlow())
         appSettingRepositoryRule.setupIsPossiblySensitiveHidden()
-        sut.tweetItem.observeForever { }
-        sut.menuItemStates.observeForever { }
+        val userId = tweet.originalId.value + 10
+        appSettingRepositoryRule.setupCurrentUserId(userId)
+        appSettingRepositoryRule.setupCurrentUserIdSource(userId)
+        sut.state.observeForever { }
         sut.mediaState.observeForever { }
         navigationEvents = sut.navigationEvent.testCollect(executor)
     }
@@ -120,30 +118,26 @@ class TweetDetailViewModelTest {
     fun initialState() {
         // verify
         assertThat(sut).isNotNull()
-        assertThat(sut.tweetItem.value).isNull()
-        assertThat(sut.menuItemStates.value).isEqualTo(TweetDetailViewStates.MenuItemState())
+        assertThat(sut.state.value?.tweetItem).isNull()
+        assertThat(sut.state.value?.menuItemState).isEqualTo(MenuItemState())
     }
 
     @Test
     fun whenItemIsFound_then_tweetItemHasItem() {
-        // setup
-        appSettingRepositoryRule.setupCurrentUserId(tweet.originalId.value + 10)
-
         // exercise
         coroutineRule.runBlockingTest {
             tweetSource.send(tweet)
         }
 
         // verify
-        assertThat(sut.tweetItem.value).isEqualTo(tweet)
-        assertThat(sut.menuItemStates.value).isEqualTo(TweetDetailViewStates.MenuItemState(true))
+        assertThat(sut.state.value?.tweetItem).isEqualTo(tweet)
+        assertThat(sut.state.value?.menuItemState).isEqualTo(MenuItemState(true))
     }
 
     @Test
     fun whenItemIsNotFoundInLocal_then_fetchTweetItem() {
         // setup
         tweetRepositoryRule.setupFindTweetItem(tweet.originalId, tweet)
-        appSettingRepositoryRule.setupCurrentUserId(tweet.originalId.value + 10)
 
         // exercise
         coroutineRule.runBlockingTest {
@@ -151,7 +145,7 @@ class TweetDetailViewModelTest {
         }
 
         // verify
-        assertThat(sut.tweetItem.value).isEqualTo(tweet)
+        assertThat(sut.state.value?.tweetItem).isEqualTo(tweet)
     }
 
     @Test
@@ -165,7 +159,7 @@ class TweetDetailViewModelTest {
         }
 
         // verify
-        assertThat(sut.tweetItem.value).isNull()
+        assertThat(sut.state.value?.tweetItem).isNull()
     }
 
     @Test
@@ -182,22 +176,21 @@ class TweetDetailViewModelTest {
         }
 
         // verify
-        assertThat(sut.tweetItem.value).isNull()
+        assertThat(sut.state.value?.tweetItem).isNull()
     }
 
     @Test
     fun onOriginalUserClicked_navigationDelegateIsCalled() {
         // setup
-        appSettingRepositoryRule.setupCurrentUserId(tweet.originalId.value + 10)
         coroutineRule.runBlockingTest {
             tweetSource.send(tweet)
         }
 
         // exercise
-        sut.onOriginalUserClicked()
+        sut.onOriginalUserClicked(requireNotNull(sut.state.value?.tweetItem).originalUser)
 
         // verify
-        assertThat(sut.tweetItem.value).isEqualTo(tweet)
+        assertThat(sut.state.value?.tweetItem).isEqualTo(tweet)
         val tweetingUser = tweet.originalUser
         assertThat(navigationEvents).containsExactly(TimelineEvent.Navigate.UserInfo(tweetingUser))
     }
@@ -205,16 +198,15 @@ class TweetDetailViewModelTest {
     @Test
     fun onBodyUserClicked_navigationDelegateIsCalled() {
         // setup
-        appSettingRepositoryRule.setupCurrentUserId(tweet.originalId.value + 10)
         coroutineRule.runBlockingTest {
             tweetSource.send(tweet)
         }
 
         // exercise
-        sut.onBodyUserClicked()
+        sut.onBodyUserClicked(requireNotNull(sut.state.value?.tweetItem).body.user)
 
         // verify
-        assertThat(sut.tweetItem.value).isEqualTo(tweet)
+        assertThat(sut.state.value?.tweetItem).isEqualTo(tweet)
         val tweetingUser = tweet.body.user
         assertThat(navigationEvents).containsExactly(TimelineEvent.Navigate.UserInfo(tweetingUser))
     }
@@ -222,7 +214,6 @@ class TweetDetailViewModelTest {
     @Test
     fun onMediaItemClicked_navigationDelegateIsCalled() {
         // setup
-        appSettingRepositoryRule.setupCurrentUserId(tweet.originalId.value + 10)
         coroutineRule.runBlockingTest {
             tweetSource.send(tweet)
         }
@@ -232,7 +223,7 @@ class TweetDetailViewModelTest {
         sut.onMediaItemClicked(tweet.originalId, tweetId, tweet.body, 0)
 
         // verify
-        assertThat(sut.tweetItem.value).isEqualTo(tweet)
+        assertThat(sut.state.value?.tweetItem).isEqualTo(tweet)
         assertThat(navigationEvents).containsExactly(TimelineEvent.Navigate.MediaViewer(tweetId))
     }
 }

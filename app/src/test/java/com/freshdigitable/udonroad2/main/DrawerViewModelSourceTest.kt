@@ -116,7 +116,7 @@ class DrawerViewModelSourceTest {
         fun setup(): Unit = with(rule) {
             setupGetUserSource(authenticatedUser)
             coroutineRule.runBlockingTest {
-                appSettingRepositoryRule.currentUserIdSource.send(authenticatedUser)
+                appSettingRepositoryRule.currentUserIdSource.value = authenticatedUser
                 appSettingRepositoryRule.registeredUserIdsSource.send(setOf(authenticatedUser))
             }
         }
@@ -222,7 +222,7 @@ class DrawerViewStateSourceTestRule(
     override fun starting(description: Description?) {
         super.starting(description)
         appSettingRepositoryRule.apply {
-            setupCurrentUserIdSource(coroutineScope)
+            setupCurrentUserIdSource()
             setupRegisteredUserIdsSource(setOf())
         }
         actualStates = sut.state.testCollect(coroutineScope)

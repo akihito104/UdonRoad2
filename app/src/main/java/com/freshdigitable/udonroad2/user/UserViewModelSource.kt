@@ -47,7 +47,6 @@ import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.shareIn
-import kotlinx.coroutines.rx2.asFlow
 import java.io.IOException
 import javax.inject.Inject
 import kotlin.math.min
@@ -72,7 +71,7 @@ class UserViewModelSource @Inject constructor(
             }.toMap()
             s.copy(pages = pages)
         },
-        actions.currentPageChanged.asFlow().onEvent { s, e ->
+        actions.currentPageChanged.onEvent { s, e ->
             val listOwner = s.pages[e.page] ?: return@onEvent s.copy(currentPage = e.page)
             s.copy(currentPage = e.page, selectedItemId = selectedItemRepository.find(listOwner))
         },
@@ -81,7 +80,7 @@ class UserViewModelSource @Inject constructor(
         .flatMapLatest { selectedItemRepository.getSource(it) }
     internal val state: Flow<State> = stateSourceBuilder(
         init = State(),
-        actions.scrollAppbar.asFlow().onEvent { s, r ->
+        actions.scrollAppbar.onEvent { s, r ->
             val a = if (r.scrollRate >= 0.9f) {
                 min((r.scrollRate - 0.9f) * 10, 1f)
             } else {
@@ -136,7 +135,7 @@ class UserViewModelSource @Inject constructor(
     @ExperimentalCoroutinesApi
     internal val feedbackMessage: Flow<FeedbackMessage> = merge(
         feedbackChannel.receiveAsFlow(),
-        actions.changeRelationships.asFlow().mapLatest { event ->
+        actions.changeRelationships.mapLatest { event ->
             relationshipRepository.runCatching { updateStatus(event) }.fold(
                 onSuccess = { findSuccessFeedbackMessage(event) },
                 onFailure = { findFailureFeedbackMessage(event) }

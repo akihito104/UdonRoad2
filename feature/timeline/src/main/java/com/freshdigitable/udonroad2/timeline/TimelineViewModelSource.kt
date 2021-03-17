@@ -36,7 +36,6 @@ import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.rx2.asFlow
 import javax.inject.Inject
 
 internal class TimelineViewModelSource(
@@ -82,7 +81,7 @@ internal class TimelineViewModelSource(
     internal val selectedItemId: Flow<SelectedItemId?> = selectedItemRepository.getSource(owner)
 
     override val navigationEvent: Flow<NavigationEvent> = merge(
-        actions.showTimeline.asFlow().map {
+        actions.showTimeline.map {
             listOwnerGenerator.getTimelineEvent(
                 QueryType.TweetQueryType.Timeline(),
                 NavigationEvent.Type.INIT

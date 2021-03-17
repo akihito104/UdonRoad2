@@ -18,11 +18,11 @@ package com.freshdigitable.udonroad2.user
 
 import android.view.MenuItem
 import com.freshdigitable.udonroad2.model.UserId
-import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
-import com.freshdigitable.udonroad2.model.app.navigation.toAction
+import com.freshdigitable.udonroad2.model.app.navigation.toActionFlow
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.user.UserActivityEvent.Relationships
+import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class UserActions @Inject constructor(
@@ -46,11 +46,11 @@ class UserActions @Inject constructor(
         TODO("Not yet implemented")
     }
 
-    internal val currentPageChanged: AppAction<UserActivityEvent.PageChanged> =
-        eventDispatcher.toAction()
-    internal val scrollAppbar: AppAction<UserActivityEvent.AppbarScrolled> =
-        eventDispatcher.toAction()
-    internal val changeRelationships: AppAction<Relationships> = eventDispatcher.toAction()
+    internal val currentPageChanged: Flow<UserActivityEvent.PageChanged> =
+        eventDispatcher.toActionFlow()
+    internal val scrollAppbar: Flow<UserActivityEvent.AppbarScrolled> =
+        eventDispatcher.toActionFlow()
+    internal val changeRelationships: Flow<Relationships> = eventDispatcher.toActionFlow()
 }
 
 private fun EventDispatcher.postRelationshipEvent(userId: UserId, item: MenuItem): Boolean {

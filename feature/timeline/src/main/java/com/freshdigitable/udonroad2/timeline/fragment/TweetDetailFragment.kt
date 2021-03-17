@@ -14,13 +14,14 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.map
 import androidx.navigation.fragment.navArgs
 import com.freshdigitable.udonroad2.shortcut.TweetDetailContextMenuView
 import com.freshdigitable.udonroad2.timeline.R
 import com.freshdigitable.udonroad2.timeline.databinding.FragmentDetailBinding
 import com.freshdigitable.udonroad2.timeline.di.TweetDetailViewModelComponent
+import com.freshdigitable.udonroad2.timeline.viewmodel.MenuItemState
 import com.freshdigitable.udonroad2.timeline.viewmodel.TweetDetailViewModel
-import com.freshdigitable.udonroad2.timeline.viewmodel.TweetDetailViewStates
 import dagger.android.support.AndroidSupportInjection
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
@@ -52,7 +53,7 @@ class TweetDetailFragment : Fragment() {
         val viewModel = component.viewModel(this)
         binding.viewModel = viewModel
 
-        viewModel.tweetItem.observe(viewLifecycleOwner) { item ->
+        viewModel.state.map { it.tweetItem }.observe(viewLifecycleOwner) { item ->
             binding.detailReactionContainer.removeAllViews()
             item?.body?.retweetCount?.let {
                 AppCompatTextView(view.context).apply {
@@ -95,7 +96,7 @@ class TweetDetailFragment : Fragment() {
 }
 
 @BindingAdapter("menuItemState")
-fun TweetDetailContextMenuView.updateMenuItemState(item: TweetDetailViewStates.MenuItemState?) {
+fun TweetDetailContextMenuView.updateMenuItemState(item: MenuItemState?) {
     updateMenuItem {
         changeGroupEnabled(R.id.menuGroup_detailMain, item?.isMainGroupEnabled ?: false)
         onMenuItem(R.id.detail_main_rt) {

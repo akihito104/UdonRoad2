@@ -22,7 +22,8 @@ import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
 import com.freshdigitable.udonroad2.model.app.di.ViewModelScope
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
-import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
+import com.freshdigitable.udonroad2.timeline.TweetMediaViewModelSource
+import com.freshdigitable.udonroad2.timeline.UserIconViewModelSource
 import com.freshdigitable.udonroad2.timeline.viewmodel.TweetDetailViewModel
 import com.freshdigitable.udonroad2.timeline.viewmodel.TweetDetailViewStates
 import dagger.BindsInstance
@@ -32,18 +33,18 @@ import dagger.Subcomponent
 import dagger.multibindings.IntoMap
 
 @Module
-interface TweetDetailViewModelModule {
+internal interface TweetDetailViewModelModule {
     companion object {
         @Provides
         @IntoMap
         @ViewModelKey(TweetDetailViewModel::class)
         @ViewModelScope
         fun provideTweetDetailViewModel(
-            eventDispatcher: EventDispatcher,
             viewStates: TweetDetailViewStates,
-        ): ViewModel {
-            return TweetDetailViewModel(eventDispatcher, viewStates)
-        }
+            userIconViewModelSource: UserIconViewModelSource,
+            mediaViewModelSource: TweetMediaViewModelSource,
+        ): ViewModel =
+            TweetDetailViewModel(viewStates, userIconViewModelSource, mediaViewModelSource)
     }
 }
 

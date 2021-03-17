@@ -274,7 +274,7 @@ class MainViewModelTest {
         fun setup(): Unit = with(rule) {
             drawerViewStateRule.setupGetUserSource(authenticatedUserId)
             coroutineRule.runBlockingTest {
-                appSettingRepositoryRule.currentUserIdSource.send(authenticatedUserId)
+                appSettingRepositoryRule.currentUserIdSource.value = authenticatedUserId
                 appSettingRepositoryRule.registeredUserIdsSource.send(setOf(authenticatedUserId))
             }
         }
