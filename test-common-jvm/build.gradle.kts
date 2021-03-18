@@ -48,4 +48,5 @@ dependencies {
     implementation(Libs.JUNIT)
     implementation(Libs.MOCKK)
     api(Libs.TIMBER)
+    api(Libs.TRUTH)
 }
