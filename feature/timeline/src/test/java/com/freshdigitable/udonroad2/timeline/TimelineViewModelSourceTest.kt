@@ -16,7 +16,6 @@
 
 package com.freshdigitable.udonroad2.timeline
 
-import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.freshdigitable.udonroad2.data.ListRepository
 import com.freshdigitable.udonroad2.data.PagedListProvider
 import com.freshdigitable.udonroad2.data.impl.AppSettingRepository
@@ -39,12 +38,12 @@ import com.freshdigitable.udonroad2.shortcut.SelectedItemShortcut
 import com.freshdigitable.udonroad2.test_common.MockVerified
 import com.freshdigitable.udonroad2.test_common.RxExceptionHandler
 import com.freshdigitable.udonroad2.test_common.jvm.CoroutineTestRule
+import com.freshdigitable.udonroad2.test_common.jvm.ObserverEventCollector
 import com.freshdigitable.udonroad2.test_common.jvm.TweetRepositoryRule
 import com.freshdigitable.udonroad2.test_common.jvm.createMock
-import com.freshdigitable.udonroad2.test_common.jvm.testCollect
+import com.freshdigitable.udonroad2.test_common.jvm.setupForActivate
 import com.freshdigitable.udonroad2.timeline.TimelineEvent.TweetItemSelection
 import com.google.common.truth.Truth.assertThat
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flowOf
@@ -172,12 +171,13 @@ class TimelineViewModelSourceTest {
         }
 }
 
-open class TimelineViewStatesTestRule : TestWatcher() {
+class TimelineViewStatesTestRule(
+    private val isStateCollected: Boolean = true
+) : TestWatcher() {
     @ExperimentalCoroutinesApi
     internal val coroutineTestRule = CoroutineTestRule()
-    internal val scope = CoroutineScope(coroutineTestRule.coroutineContextProvider.mainContext)
-    internal val actionsRule: TimelineActionsTestRule =
-        TimelineActionsTestRule(coroutineTestRule, scope)
+    private val eventCollector = ObserverEventCollector(coroutineTestRule)
+    internal val actionsRule: TimelineActionsTestRule = TimelineActionsTestRule(coroutineTestRule)
     val tweetRepositoryMock = TweetRepositoryRule()
     val owner: ListOwner<QueryType.TweetQueryType> =
         actionsRule.owner as ListOwner<QueryType.TweetQueryType>
@@ -214,9 +214,12 @@ open class TimelineViewStatesTestRule : TestWatcher() {
             )
         )
     }
-    lateinit var navEvents: List<NavigationEvent>
-    lateinit var messageEvents: List<FeedbackMessage>
-    lateinit var selectedItems: List<SelectedItemId?>
+    val navEvents: List<NavigationEvent>
+        get() = eventCollector.nonNullEventsOf(sut.navigationEvent)
+    val messageEvents: List<FeedbackMessage>
+        get() = eventCollector.nonNullEventsOf(sut.feedbackMessage)
+    val selectedItems: List<SelectedItemId?>
+        get() = eventCollector.nonNullEventsOf(sut.selectedItemId)
 
     fun setupPrependListResponse(res: List<TweetEntity> = emptyList()) = with(listRepositoryRule) {
         coSetupResponseWithVerify(
@@ -231,14 +234,15 @@ open class TimelineViewStatesTestRule : TestWatcher() {
 
     override fun starting(description: Description?) {
         super.starting(description)
-        navEvents = sut.navigationEvent.testCollect(scope)
-        messageEvents = sut.updateTweet.testCollect(scope)
-        sut.state.testCollect(scope)
-        selectedItems = sut.selectedItemId.testCollect(scope)
+        if (isStateCollected) {
+            eventCollector.setupForActivate {
+                addAll(sut.state, sut.navigationEvent, sut.updateTweet, sut.selectedItemId)
+            }
+        }
     }
 
-    override fun apply(base: Statement?, description: Description?): Statement {
-        return RuleChain.outerRule(InstantTaskExecutorRule())
+    override fun apply(base: Statement?, description: Description?): Statement =
+        RuleChain.outerRule(eventCollector)
             .around(actionsRule)
             .around(listRepositoryRule)
             .around(listProviderRule)
@@ -246,7 +250,6 @@ open class TimelineViewStatesTestRule : TestWatcher() {
             .around(appSettingRepository)
             .around(RxExceptionHandler())
             .apply(super.apply(base, description), description)
-    }
 
     override fun finished(description: Description?) {
         super.finished(description)

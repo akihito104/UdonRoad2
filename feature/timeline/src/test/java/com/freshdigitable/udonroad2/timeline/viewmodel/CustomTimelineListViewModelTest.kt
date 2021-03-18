@@ -26,12 +26,13 @@ import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.UserId
-import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.test_common.MockVerified
 import com.freshdigitable.udonroad2.test_common.jvm.CoroutineTestRule
-import com.freshdigitable.udonroad2.test_common.jvm.testCollect
+import com.freshdigitable.udonroad2.test_common.jvm.ObserverEventCollector
+import com.freshdigitable.udonroad2.test_common.jvm.assertLatestNavigationEvent
+import com.freshdigitable.udonroad2.test_common.jvm.setupForActivate
 import com.freshdigitable.udonroad2.timeline.ListItemLoadableActions
 import com.freshdigitable.udonroad2.timeline.ListItemLoadableViewModelSource
 import com.freshdigitable.udonroad2.timeline.ListItemLoadableViewStateImpl
@@ -42,6 +43,7 @@ import com.google.common.truth.Truth.assertThat
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.flow.emptyFlow
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
@@ -53,17 +55,30 @@ class CustomTimelineListViewModelTest {
     private val owner: ListOwner<QueryType.CustomTimelineListQueryType> =
         ListOwner(ListId(2), QueryType.CustomTimelineListQueryType.Ownership())
 
+    private val viewStateRule = ListItemLoadableViewStateRule(owner)
+    private val eventCollector = ObserverEventCollector(viewStateRule.coroutineTestRule)
+
     @get:Rule
-    val rule = ListItemLoadableViewStateRule(owner)
+    val rule: TestRule = RuleChain.outerRule(viewStateRule)
+        .around(eventCollector)
 
     private val sut: CustomTimelineListViewModel by lazy {
-        val userIconClickedAction = UserIconClickedAction(rule.eventDispatcher)
+        val userIconClickedAction = UserIconClickedAction(viewStateRule.eventDispatcher)
         val viewState = CustomTimelineListItemLoadableViewState(
-            CustomTimelineListActions(rule.eventDispatcher),
-            rule.viewModelSource,
+            CustomTimelineListActions(viewStateRule.eventDispatcher),
+            viewStateRule.viewModelSource,
             ListOwnerGenerator.create(),
         )
         CustomTimelineListViewModel(viewState, UserIconViewModelSource(userIconClickedAction))
+    }
+
+    @Before
+    fun setup() {
+        eventCollector.setupForActivate {
+            addAll(sut.listState)
+            addAll(sut.timeline)
+            addActivityEventStream(sut)
+        }
     }
 
     @Test
@@ -72,14 +87,14 @@ class CustomTimelineListViewModelTest {
         val user = mockk<TweetUserItem>().also {
             every { it.id } returns UserId(3000)
         }
-        val executor = AppExecutor(dispatcher = rule.coroutineTestRule.coroutineContextProvider)
-        val navEventActual = sut.navigationEvent.testCollect(executor)
 
         // exercise
         sut.onUserIconClicked(user)
 
         // verify
-        assertFor<TimelineEvent.Navigate.UserInfo>(navEventActual.last()) {
+        eventCollector.assertLatestNavigationEvent<TimelineEvent.Navigate.UserInfo>(
+            sut.navigationEvent
+        ) {
             assertThat(it.tweetUserItem.id).isEqualTo(user.id)
         }
     }
@@ -91,17 +106,16 @@ class CustomTimelineListViewModelTest {
             every { it.id } returns CustomTimelineId(3000)
             every { it.name } returns "custom timeline"
         }
-        val executor = AppExecutor(dispatcher = rule.coroutineTestRule.coroutineContextProvider)
-        val navEventActual = sut.navigationEvent.testCollect(executor)
 
         // exercise
         sut.onBodyItemClicked(item)
 
         // verify
-        assertFor<TimelineEvent.Navigate.Timeline>(navEventActual.last()) { actualEvent ->
-            assertFor<ListOwner<QueryType.TweetQueryType.CustomTimeline>>(actualEvent.owner) {
-                assertThat(it.query.id).isEqualTo(item.id)
-            }
+        eventCollector.assertLatestNavigationEvent<TimelineEvent.Navigate.Timeline>(
+            sut.navigationEvent
+        ) { actualEvent ->
+            assertThat((actualEvent.owner.query as QueryType.TweetQueryType.CustomTimeline).id)
+                .isEqualTo(item.id)
         }
     }
 }
@@ -130,9 +144,4 @@ class ListItemLoadableViewStateRule(
             .around(pagedListProvider)
             .apply(base, description)
     }
-}
-
-inline fun <reified T> assertFor(actual: Any, body: (T) -> Unit) {
-    assertThat(actual).isInstanceOf(T::class.java)
-    body(actual as T)
 }

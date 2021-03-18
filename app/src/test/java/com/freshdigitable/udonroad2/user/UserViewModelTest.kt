@@ -17,7 +17,6 @@
 package com.freshdigitable.udonroad2.user
 
 import androidx.annotation.IdRes
-import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.data.UserDataSource
 import com.freshdigitable.udonroad2.data.impl.RelationshipRepository
@@ -38,7 +37,8 @@ import com.freshdigitable.udonroad2.model.user.UserEntity
 import com.freshdigitable.udonroad2.test_common.MatcherScopedSuspendBlock
 import com.freshdigitable.udonroad2.test_common.MockVerified
 import com.freshdigitable.udonroad2.test_common.jvm.CoroutineTestRule
-import com.freshdigitable.udonroad2.test_common.jvm.testCollect
+import com.freshdigitable.udonroad2.test_common.jvm.ObserverEventCollector
+import com.freshdigitable.udonroad2.test_common.jvm.setupForActivate
 import com.freshdigitable.udonroad2.user.RelationshipMenu.BLOCK
 import com.freshdigitable.udonroad2.user.RelationshipMenu.FOLLOW
 import com.freshdigitable.udonroad2.user.RelationshipMenu.MUTE
@@ -51,7 +51,6 @@ import com.freshdigitable.udonroad2.user.RelationshipMenu.UNMUTE
 import com.google.common.truth.Truth.assertThat
 import io.mockk.every
 import io.mockk.mockk
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.Before
@@ -379,6 +378,7 @@ class UserViewModelTestRule(
     val relationshipRepository: RelationshipRepository = relationshipRepositoryMock.mock
     val selectedItemRepository = SelectedItemRepository()
     val coroutineRule = CoroutineTestRule()
+    val eventCollector = ObserverEventCollector(coroutineRule)
 
     val sut: UserViewModel by lazy {
         val eventDispatcher = EventDispatcher()
@@ -392,7 +392,8 @@ class UserViewModelTestRule(
         )
         UserViewModel(eventDispatcher, viewStates)
     }
-    lateinit var feedbackMessages: List<FeedbackMessage>
+    val feedbackMessages: List<FeedbackMessage>
+        get() = eventCollector.nonNullEventsOf(sut.feedbackMessage)
 
     override fun starting(description: Description?) {
         super.starting(description)
@@ -403,21 +404,17 @@ class UserViewModelTestRule(
     private fun setupSut() {
         sut.onCurrentPageChanged(0)
         sut.onAppBarScrolled(0f)
-        listOf(sut.state, sut.relationshipMenuItems).forEach {
-            it.observeForever {}
+        eventCollector.setupForActivate {
+            addAll(sut.state, sut.relationshipMenuItems)
+            addAll(sut.pages, sut.feedbackMessage)
         }
-        val executor = CoroutineScope(coroutineRule.coroutineContextProvider.mainContext)
-        sut.pages.testCollect(executor)
-        feedbackMessages = sut.feedbackMessage.testCollect(executor)
     }
 
-    override fun apply(base: Statement?, description: Description?): Statement {
-        return RuleChain.outerRule(InstantTaskExecutorRule())
+    override fun apply(base: Statement?, description: Description?): Statement =
+        RuleChain.outerRule(eventCollector)
             .around(userRepositoryMock)
             .around(relationshipRepositoryMock)
-            .around(coroutineRule)
             .apply(super.apply(base, description), description)
-    }
 
     val userSource: MutableStateFlow<UserEntity?> = MutableStateFlow(null)
     val relationshipSource: MutableStateFlow<Relationship?> = MutableStateFlow(null)

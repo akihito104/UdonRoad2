@@ -23,9 +23,9 @@ import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.postEvents
 import com.freshdigitable.udonroad2.shortcut.SelectedItemShortcut
 import com.freshdigitable.udonroad2.test_common.jvm.CoroutineTestRule
-import com.freshdigitable.udonroad2.test_common.jvm.testCollect
+import com.freshdigitable.udonroad2.test_common.jvm.ObserverEventCollector
+import com.freshdigitable.udonroad2.test_common.jvm.setupForActivate
 import com.google.common.truth.Truth.assertThat
-import kotlinx.coroutines.CoroutineScope
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TestWatcher
@@ -73,26 +73,29 @@ class TimelineActionsTest {
 }
 
 class TimelineActionsTestRule(
-    private val coroutineRule: CoroutineTestRule = CoroutineTestRule(),
-    private val scope: CoroutineScope = CoroutineScope(coroutineRule.coroutineContextProvider.mainContext),
+    coroutineRule: CoroutineTestRule = CoroutineTestRule(),
 ) : TestWatcher() {
+    private val eventCollector = ObserverEventCollector(coroutineRule)
     val owner = ListOwner(1, QueryType.TweetQueryType.Timeline())
     val dispatcher = EventDispatcher()
-    internal val actions = ListItemLoadableActions(owner, dispatcher)
+    private val actions = ListItemLoadableActions(owner, dispatcher)
     internal val sut: TimelineActions by lazy {
         TimelineActions(owner, dispatcher, actions, LaunchMediaViewerAction(dispatcher))
     }
-    lateinit var favTweetObserver: List<SelectedItemShortcut.Like>
-    lateinit var retweetObserver: List<SelectedItemShortcut.Retweet>
+    val favTweetObserver: List<SelectedItemShortcut.Like>
+        get() = eventCollector.nonNullEventsOf(sut.favTweet)
+    val retweetObserver: List<SelectedItemShortcut.Retweet>
+        get() = eventCollector.nonNullEventsOf(sut.retweet)
 
     override fun starting(description: Description?) {
         super.starting(description)
-        favTweetObserver = sut.favTweet.testCollect(scope)
-        retweetObserver = sut.retweet.testCollect(scope)
+        eventCollector.setupForActivate {
+            addAll(sut.favTweet, sut.retweet)
+        }
     }
 
     override fun apply(base: Statement?, description: Description?): Statement {
         val stmt = super.apply(base, description)
-        return coroutineRule.apply(stmt, description)
+        return eventCollector.apply(stmt, description)
     }
 }

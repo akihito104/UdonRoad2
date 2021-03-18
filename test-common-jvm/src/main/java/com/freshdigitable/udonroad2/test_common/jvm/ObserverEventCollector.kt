@@ -16,10 +16,9 @@
 
 package com.freshdigitable.udonroad2.test_common.jvm
 
+import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
-import com.freshdigitable.udonroad2.model.app.AppExecutor
-import com.freshdigitable.udonroad2.model.app.mainContext
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventStream
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.google.common.truth.Truth.assertThat
@@ -29,24 +28,10 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import org.junit.rules.RuleChain
 import org.junit.rules.TestWatcher
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
-import kotlin.coroutines.CoroutineContext
-
-fun <T> Flow<T>.testCollect(executor: AppExecutor): List<T> =
-    testCollect(executor, executor.mainContext)
-
-fun <T> Flow<T>.testCollect(
-    coroutineScope: CoroutineScope,
-    coroutineContext: CoroutineContext = coroutineScope.coroutineContext
-): List<T> {
-    val actual = mutableListOf<T>()
-    coroutineScope.launch(coroutineContext) {
-        collect { actual.add(it) }
-    }
-    return actual
-}
 
 class ObserverEventCollector(
     private val coroutineRule: CoroutineTestRule = CoroutineTestRule(),
@@ -61,6 +46,9 @@ class ObserverEventCollector(
 
     fun <T> eventsOf(liveData: LiveData<T>): List<T?> =
         requireNotNull(observers[liveData]).events as List<T?>
+
+    inline fun <reified T> nonNullEventsOf(liveData: LiveData<T>): List<T> =
+        eventsOf(liveData).map { requireNotNull(it) }
 
     private val scope =
         CoroutineScope(coroutineRule.coroutineContextProvider.mainContext + SupervisorJob())
@@ -93,10 +81,10 @@ class ObserverEventCollector(
         scope.cancel()
     }
 
-    override fun apply(base: Statement?, description: Description?): Statement {
-        val apply = super.apply(base, description)
-        return coroutineRule.apply(apply, description)
-    }
+    override fun apply(base: Statement?, description: Description?): Statement =
+        RuleChain.outerRule(coroutineRule)
+            .around(InstantTaskExecutorRule())
+            .apply(super.apply(base, description), description)
 
     override fun finished(description: Description?) {
         super.finished(description)

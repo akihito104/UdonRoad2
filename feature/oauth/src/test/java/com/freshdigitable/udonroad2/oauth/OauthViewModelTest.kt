@@ -16,7 +16,6 @@
 
 package com.freshdigitable.udonroad2.oauth
 
-import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.SavedStateHandle
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -25,15 +24,16 @@ import com.freshdigitable.udonroad2.data.impl.create
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.UserId
-import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
+import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.user.UserEntity
 import com.freshdigitable.udonroad2.test_common.MockVerified
 import com.freshdigitable.udonroad2.test_common.RxExceptionHandler
 import com.freshdigitable.udonroad2.test_common.jvm.CoroutineTestRule
 import com.freshdigitable.udonroad2.test_common.jvm.OAuthTokenRepositoryRule
-import com.freshdigitable.udonroad2.test_common.jvm.testCollect
+import com.freshdigitable.udonroad2.test_common.jvm.ObserverEventCollector
+import com.freshdigitable.udonroad2.test_common.jvm.setupForActivate
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.google.common.truth.Truth.assertThat
 import io.mockk.every
@@ -117,29 +117,37 @@ class OauthViewModelTest {
 @ExperimentalCoroutinesApi
 class OauthViewModelTestRule : TestWatcher() {
     private val coroutineRule = CoroutineTestRule()
+    private val eventCollector = ObserverEventCollector(coroutineRule)
     val oauthRepository = OAuthTokenRepositoryRule()
     val userRepository = MockVerified.create<UserDataSource>()
     private val dispatcher = EventDispatcher()
 
-    internal val sut = OauthViewModel(
-        OauthViewModelSource(
-            OauthAction(dispatcher),
-            LoginUseCase(oauthRepository.appSettingMock, oauthRepository.mock, userRepository.mock),
-            OauthDataSource(ApplicationProvider.getApplicationContext()),
-            oauthRepository.mock,
-            ListOwnerGenerator.create(),
-            OauthSavedStates(SavedStateHandle(), coroutineRule.coroutineContextProvider),
+    internal val sut: OauthViewModel by lazy {
+        OauthViewModel(
+            OauthViewModelSource(
+                OauthAction(dispatcher),
+                LoginUseCase(
+                    oauthRepository.appSettingMock,
+                    oauthRepository.mock,
+                    userRepository.mock
+                ),
+                OauthDataSource(ApplicationProvider.getApplicationContext()),
+                oauthRepository.mock,
+                ListOwnerGenerator.create(),
+                OauthSavedStates(SavedStateHandle(), coroutineRule.coroutineContextProvider),
+            )
         )
-    )
+    }
     val dispatcherObserver: TestObserver<AppEvent> = dispatcher.emitter.test()
-    val navEvents = sut.navigationEvent.testCollect(
-        AppExecutor(dispatcher = coroutineRule.coroutineContextProvider)
-    )
+    val navEvents: List<NavigationEvent> get() = eventCollector.nonNullEventsOf(sut.navigationEvent)
 
     override fun starting(description: Description?) {
         super.starting(description)
-        sut.state.observeForever { }
-        sut.sendPinButtonEnabled.observeForever { }
+        eventCollector.setupForActivate {
+            addAll(sut.state, sut.sendPinButtonEnabled, sut.listState)
+            addAll(sut.timeline)
+            addActivityEventStream(sut)
+        }
     }
 
     fun runBlockingTest(block: suspend OauthViewModelTestRule.() -> Unit) {
@@ -151,9 +159,8 @@ class OauthViewModelTestRule : TestWatcher() {
     }
 
     override fun apply(base: Statement?, description: Description?): Statement {
-        return RuleChain.outerRule(InstantTaskExecutorRule())
-            .around(RxExceptionHandler())
-            .around(coroutineRule)
+        return RuleChain.outerRule(RxExceptionHandler())
+            .around(eventCollector)
             .around(oauthRepository)
             .around(userRepository)
             .apply(super.apply(base, description), description)

@@ -22,9 +22,9 @@ import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.test_common.jvm.CoroutineTestRule
-import com.freshdigitable.udonroad2.test_common.jvm.testCollect
+import com.freshdigitable.udonroad2.test_common.jvm.ObserverEventCollector
+import com.freshdigitable.udonroad2.test_common.jvm.setupForActivate
 import com.google.common.truth.Truth.assertThat
-import kotlinx.coroutines.CoroutineScope
 import org.junit.Rule
 import org.junit.Test
 
@@ -98,8 +98,11 @@ class SelectedItemRepositoryTest {
     fun getSource_putSimply() {
         // setup
         val selected = owners[0].selectAt(0)
-        val actualItems = sut.getSource(owners[0])
-            .testCollect(CoroutineScope(coroutineRule.coroutineContextProvider.mainContext))
+        val actualItems = ObserverEventCollector(coroutineRule).run {
+            val source = sut.getSource(owners[0])
+            setupForActivate { addAll(source) }
+            eventsOf(source)
+        }
 
         // exercise
         coroutineRule.runBlockingTest {
@@ -114,8 +117,11 @@ class SelectedItemRepositoryTest {
     fun getSource_putAndRemove() {
         // setup
         val selected = owners[0].selectAt(0)
-        val actualItems = sut.getSource(owners[0])
-            .testCollect(CoroutineScope(coroutineRule.coroutineContextProvider.mainContext))
+        val actualItems = ObserverEventCollector(coroutineRule).run {
+            val source = sut.getSource(owners[0])
+            setupForActivate { addAll(source) }
+            eventsOf(source)
+        }
 
         // exercise
         coroutineRule.runBlockingTest {
@@ -131,8 +137,11 @@ class SelectedItemRepositoryTest {
     @Test
     fun getSource_putToOverwrite() {
         // setup
-        val actualItems = sut.getSource(owners[0])
-            .testCollect(CoroutineScope(coroutineRule.coroutineContextProvider.mainContext))
+        val actualItems = ObserverEventCollector(coroutineRule).run {
+            val source = sut.getSource(owners[0])
+            setupForActivate { addAll(source) }
+            eventsOf(source)
+        }
 
         // exercise
         coroutineRule.runBlockingTest {
@@ -148,8 +157,11 @@ class SelectedItemRepositoryTest {
     @Test
     fun getSource_putOtherOwner() {
         // setup
-        val actualItems = sut.getSource(owners[0])
-            .testCollect(CoroutineScope(coroutineRule.coroutineContextProvider.mainContext))
+        val actualItems = ObserverEventCollector(coroutineRule).run {
+            val source = sut.getSource(owners[0])
+            setupForActivate { addAll(source) }
+            eventsOf(source)
+        }
 
         // exercise
         coroutineRule.runBlockingTest {
@@ -165,8 +177,11 @@ class SelectedItemRepositoryTest {
     @Test
     fun getSource_removeUnregisteredItem_then_noUpdateIsOccurred() {
         // setup
-        val actualItems = sut.getSource(owners[0])
-            .testCollect(CoroutineScope(coroutineRule.coroutineContextProvider.mainContext))
+        val actualItems = ObserverEventCollector(coroutineRule).run {
+            val source = sut.getSource(owners[0])
+            setupForActivate { addAll(source) }
+            eventsOf(source)
+        }
 
         // exercise
         coroutineRule.runBlockingTest {

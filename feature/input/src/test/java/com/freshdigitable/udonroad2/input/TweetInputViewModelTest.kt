@@ -17,8 +17,6 @@
 package com.freshdigitable.udonroad2.input
 
 import android.text.Editable
-import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import androidx.lifecycle.Observer
 import com.freshdigitable.udonroad2.data.UserDataSource
 import com.freshdigitable.udonroad2.data.impl.TweetInputRepository
 import com.freshdigitable.udonroad2.input.MediaChooserResultContract.MediaChooserResult
@@ -35,16 +33,13 @@ import com.freshdigitable.udonroad2.test_common.MatcherScopedBlock
 import com.freshdigitable.udonroad2.test_common.MockVerified
 import com.freshdigitable.udonroad2.test_common.jvm.AppSettingRepositoryRule
 import com.freshdigitable.udonroad2.test_common.jvm.CoroutineTestRule
-import com.freshdigitable.udonroad2.test_common.jvm.testCollect
+import com.freshdigitable.udonroad2.test_common.jvm.ObserverEventCollector
+import com.freshdigitable.udonroad2.test_common.jvm.setupForActivate
 import com.google.common.truth.Subject
 import com.google.common.truth.Truth.assertThat
 import io.mockk.coVerify
 import io.mockk.every
-import io.mockk.just
 import io.mockk.mockk
-import io.mockk.runs
-import io.mockk.spyk
-import io.mockk.verifyOrder
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flow
 import org.junit.Before
@@ -171,54 +166,48 @@ class TweetInputViewModelTest {
 
         @Test
         fun onCameraAppCandidatesQueried(): Unit = with(rule) {
-            // setup
-            val actual = sut.chooserForCameraApp.testCollect(executor)
-
             // exercise
             sut.onCameraAppCandidatesQueried(listOf(cameraApp), mockk())
 
             // verify
-            assertThat(actual).hasSize(2)
-            assertThat(actual[0]).isInstanceOf<CameraApp.State.Idling>()
-            assertThat(actual[1]).isInstanceOf<CameraApp.State.WaitingForChosen>()
+            assertThat(actualCameraAppState).hasSize(2)
+            assertThat(actualCameraAppState[0]).isInstanceOf<CameraApp.State.Idling>()
+            assertThat(actualCameraAppState[1]).isInstanceOf<CameraApp.State.WaitingForChosen>()
         }
 
         @Test
         fun dispatchChosenWithCameraApp_then_dispatchSelectedEvent(): Unit = with(rule) {
             // setup
-            val actual = sut.chooserForCameraApp.testCollect(executor)
             sut.onCameraAppCandidatesQueried(listOf(cameraApp), mockk())
 
             // exercise
             dispatchChosen(cameraApp)
 
             // verify
-            assertThat(actual).hasSize(3)
-            assertThat(actual[0]).isInstanceOf<CameraApp.State.Idling>()
-            assertThat(actual[1]).isInstanceOf<CameraApp.State.WaitingForChosen>()
-            assertThat(actual[2]).isInstanceOf<CameraApp.State.Selected>()
+            assertThat(actualCameraAppState).hasSize(3)
+            assertThat(actualCameraAppState[0]).isInstanceOf<CameraApp.State.Idling>()
+            assertThat(actualCameraAppState[1]).isInstanceOf<CameraApp.State.WaitingForChosen>()
+            assertThat(actualCameraAppState[2]).isInstanceOf<CameraApp.State.Selected>()
         }
 
         @Test
         fun dispatchChosenWithNotCameraApp_then_moveIdlingState(): Unit = with(rule) {
             // setup
-            val actual = sut.chooserForCameraApp.testCollect(executor)
             sut.onCameraAppCandidatesQueried(listOf(cameraApp), mockk())
 
             // exercise
             dispatchChosen(galleryApp)
 
             // verify
-            assertThat(actual).hasSize(3)
-            assertThat(actual[0]).isInstanceOf<CameraApp.State.Idling>()
-            assertThat(actual[1]).isInstanceOf<CameraApp.State.WaitingForChosen>()
-            assertThat(actual[2]).isInstanceOf<CameraApp.State.Idling>()
+            assertThat(actualCameraAppState).hasSize(3)
+            assertThat(actualCameraAppState[0]).isInstanceOf<CameraApp.State.Idling>()
+            assertThat(actualCameraAppState[1]).isInstanceOf<CameraApp.State.WaitingForChosen>()
+            assertThat(actualCameraAppState[2]).isInstanceOf<CameraApp.State.Idling>()
         }
 
         @Test
         fun dispatchChosenNotAtCandidatesQueried_then_throwException(): Unit = with(rule) {
             // setup
-            sut.chooserForCameraApp.testCollect(executor)
             expectedException.expect(RuntimeException::class.java)
 
             // exercise
@@ -228,7 +217,6 @@ class TweetInputViewModelTest {
         @Test
         fun onMediaChooserFinished_whenCameraAppChosen_then_dispatchAddResult(): Unit = with(rule) {
             // setup
-            val actual = sut.chooserForCameraApp.testCollect(executor)
             val path = mockk<AppFilePath>()
             coroutineTestRule.runBlockingTest {
                 sut.onWriteClicked()
@@ -240,11 +228,11 @@ class TweetInputViewModelTest {
             }
 
             // verify
-            assertThat(actual).hasSize(4)
-            assertThat(actual[0]).isInstanceOf<CameraApp.State.Idling>()
-            assertThat(actual[1]).isInstanceOf<CameraApp.State.WaitingForChosen>()
-            assertThat(actual[2]).isInstanceOf<CameraApp.State.Selected>()
-            assertThat(actual[3]).isInstanceOf<CameraApp.State.Finished>()
+            assertThat(actualCameraAppState).hasSize(4)
+            assertThat(actualCameraAppState[0]).isInstanceOf<CameraApp.State.Idling>()
+            assertThat(actualCameraAppState[1]).isInstanceOf<CameraApp.State.WaitingForChosen>()
+            assertThat(actualCameraAppState[2]).isInstanceOf<CameraApp.State.Selected>()
+            assertThat(actualCameraAppState[3]).isInstanceOf<CameraApp.State.Finished>()
             assertThat(sut.state.value?.media).hasSize(1)
             assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.SEND_ENABLED)
         }
@@ -252,7 +240,6 @@ class TweetInputViewModelTest {
         @Test
         fun onCancelClicked_whenHasMedia_then_mediaIsEmpty(): Unit = with(rule) {
             // setup
-            val actual = sut.chooserForCameraApp.testCollect(executor)
             val path = mockk<AppFilePath>()
             coroutineTestRule.runBlockingTest {
                 sut.onCameraAppCandidatesQueried(listOf(cameraApp), path)
@@ -264,18 +251,17 @@ class TweetInputViewModelTest {
             }
 
             // verify
-            assertThat(actual).hasSize(4)
-            assertThat(actual[0]).isInstanceOf<CameraApp.State.Idling>()
-            assertThat(actual[1]).isInstanceOf<CameraApp.State.WaitingForChosen>()
-            assertThat(actual[2]).isInstanceOf<CameraApp.State.Selected>()
-            assertThat(actual[3]).isInstanceOf<CameraApp.State.Finished>()
+            assertThat(actualCameraAppState).hasSize(4)
+            assertThat(actualCameraAppState[0]).isInstanceOf<CameraApp.State.Idling>()
+            assertThat(actualCameraAppState[1]).isInstanceOf<CameraApp.State.WaitingForChosen>()
+            assertThat(actualCameraAppState[2]).isInstanceOf<CameraApp.State.Selected>()
+            assertThat(actualCameraAppState[3]).isInstanceOf<CameraApp.State.Finished>()
             assertThat(sut.state.value?.media).isEmpty()
         }
 
         @Test
         fun onMediaChooserFinishedAtIdlingState_then_stillIdling(): Unit = with(rule) {
             // setup
-            val actual = sut.chooserForCameraApp.testCollect(executor)
             coroutineTestRule.runBlockingTest {
                 sut.onCameraAppCandidatesQueried(listOf(cameraApp), mockk())
                 dispatchChosen(galleryApp)
@@ -285,10 +271,10 @@ class TweetInputViewModelTest {
             }
 
             // verify
-            assertThat(actual).hasSize(3)
-            assertThat(actual[0]).isInstanceOf<CameraApp.State.Idling>()
-            assertThat(actual[1]).isInstanceOf<CameraApp.State.WaitingForChosen>()
-            assertThat(actual[2]).isInstanceOf<CameraApp.State.Idling>()
+            assertThat(actualCameraAppState).hasSize(3)
+            assertThat(actualCameraAppState[0]).isInstanceOf<CameraApp.State.Idling>()
+            assertThat(actualCameraAppState[1]).isInstanceOf<CameraApp.State.WaitingForChosen>()
+            assertThat(actualCameraAppState[2]).isInstanceOf<CameraApp.State.Idling>()
             assertThat(sut.state.value?.media).hasSize(0)
         }
 
@@ -566,15 +552,12 @@ class TweetInputViewModelRule(
 ) : TestWatcher() {
     val expectedException: ExpectedException = ExpectedException.none()
     val coroutineTestRule = CoroutineTestRule()
+    private val eventCollector = ObserverEventCollector(coroutineTestRule)
     private val repository = MockVerified.create<TweetInputRepository>()
-    val inputTaskObserver: Observer<InputViewState> = spyk<Observer<InputViewState>>().apply {
-        every { onChanged(any()) } just runs
-    }
     private val appSettingRepositoryRule = AppSettingRepositoryRule()
     private val userRepositoryRule = MockVerified.create<UserDataSource>()
     private val createReplyTextUseCaseRule = MockVerified.create<CreateReplyTextUseCase>()
     private val createQuoteTextUseCaseRule = MockVerified.create<CreateQuoteTextUseCase>()
-    val executor = AppExecutor(dispatcher = coroutineTestRule.coroutineContextProvider)
     private val eventDispatcher = EventDispatcher()
 
     internal val sut: TweetInputViewModel by lazy {
@@ -589,13 +572,16 @@ class TweetInputViewModelRule(
                 repository.mock,
                 appSettingRepositoryRule.mock,
                 userRepositoryRule.mock,
-                executor,
+                AppExecutor(dispatcher = coroutineTestRule.coroutineContextProvider),
             ),
         )
     }
 
     val cameraApp = Components("com.example", "com.example.ExCameraActivity")
     val galleryApp = Components("com.example", "com.example.ExGalleryActivity")
+    internal val actualCameraAppState: List<CameraApp.State>
+        get() = eventCollector.nonNullEventsOf(sut.chooserForCameraApp)
+    val inputTaskObserver: List<InputViewState> get() = eventCollector.nonNullEventsOf(sut.state)
 
     override fun starting(description: Description?) {
         super.starting(description)
@@ -610,11 +596,9 @@ class TweetInputViewModelRule(
             { userRepositoryRule.mock.getUserSource(userId) },
             flow { emit(authenticatedUser) }
         )
-        with(sut) {
-            state.observeForever(inputTaskObserver)
-            listOf(
-                isExpanded, menuItem, user
-            ).forEach { it.observeForever { } }
+        eventCollector.setupForActivate {
+            addAll(sut.state, sut.isExpanded, sut.menuItem, sut.user)
+            addAll(sut.chooserForCameraApp, sut.expandAnimationEvent)
         }
     }
 
@@ -655,10 +639,15 @@ class TweetInputViewModelRule(
         )
     }
 
-    fun Observer<InputViewState>.verifyInputTaskOrderOfOnChanged(vararg state: InputTaskState) {
-        verifyOrder {
-            state.forEach { s -> onChanged(match { it.taskState == s }) }
+    fun List<InputViewState>.verifyInputTaskOrderOfOnChanged(vararg state: InputTaskState) {
+        val actual = this.map { it.taskState }.fold(listOf<InputTaskState>()) { acc, s ->
+            if (acc.lastOrNull() != s) {
+                acc + s
+            } else {
+                acc
+            }
         }
+        assertThat(actual).containsExactly(*state)
     }
 
     fun editable(text: String): Editable = mockk<Editable>().apply {
@@ -667,8 +656,7 @@ class TweetInputViewModelRule(
 
     override fun apply(base: Statement?, description: Description?): Statement {
         return RuleChain.outerRule(expectedException)
-            .around(coroutineTestRule)
-            .around(InstantTaskExecutorRule())
+            .around(eventCollector)
             .around(repository)
             .around(appSettingRepositoryRule)
             .around(userRepositoryRule)
