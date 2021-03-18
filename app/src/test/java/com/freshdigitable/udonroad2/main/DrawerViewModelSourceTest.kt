@@ -205,7 +205,9 @@ class DrawerViewStateSourceTestRule(
 ) : TestWatcher() {
     val authenticatedUser = UserId(1000)
 
-    private val coroutineScope = CoroutineScope(coroutineRule.coroutineContextProvider.mainContext)
+    private val coroutineScope: CoroutineScope by lazy {
+        CoroutineScope(coroutineRule.coroutineContextProvider.mainContext)
+    }
     private val userRepository = MockVerified.create<UserDataSource>()
 
     internal val sut: DrawerViewModelSource by lazy {

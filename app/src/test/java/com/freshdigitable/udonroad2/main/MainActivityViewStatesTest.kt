@@ -125,8 +125,9 @@ internal class MainActivityStateModelTestRule(
         every { mock.isExpanded } returns isExpandedSource
     }
     val authenticatedUserId = UserId(10000)
-    val coroutineScope =
+    val coroutineScope: CoroutineScope by lazy {
         CoroutineScope(coroutineRule.coroutineContextProvider.mainContext + SupervisorJob())
+    }
     val sut: MainViewModelSource by lazy {
         MainViewModelSource(
             MainActivityActions(dispatcher),

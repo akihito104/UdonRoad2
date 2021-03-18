@@ -24,7 +24,6 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.merge
-import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 import timber.log.Timber
 import java.util.concurrent.atomic.AtomicBoolean
@@ -74,11 +73,15 @@ internal class StateSourceBuilder<S>(
     }
 
     fun build(): Flow<S> {
-        val updaterSource = updaters.map { it.create() }.toTypedArray()
         val initialized = AtomicBoolean(false)
         val stateFlow = MutableStateFlow<S?>(null)
-        val updateWithStateSource =
-            updateWithState.map { s -> s.create(stateFlow.mapNotNull { it }) }.toTypedArray()
+        val updateSources = merge(
+            *updateSource,
+            *updaters.map { it.create() }.toTypedArray(),
+            *updateWithState.map { s -> s.create(stateFlow.mapNotNull { it }) }.toTypedArray()
+        )
+        updaters.clear()
+        updateWithState.clear()
         return flow {
             if (initialized.compareAndSet(false, true)) {
                 val state: S = initBlock()
@@ -87,7 +90,7 @@ internal class StateSourceBuilder<S>(
                 emit(state)
             }
 
-            merge(*updateSource, *updaterSource, *updateWithStateSource).collect {
+            updateSources.collect {
                 val current = requireNotNull(stateFlow.value)
                 val next = it(current)
                 if (next != current) {
@@ -163,8 +166,6 @@ class UpdaterFlowBuilderScope<S, E>(
         eventSource.collect { e ->
             tasks.forEach { it(this, e) }
         }
-    }.onCompletion {
-        tasks.clear()
     }
 
     sealed class SourceElement<S, E> {

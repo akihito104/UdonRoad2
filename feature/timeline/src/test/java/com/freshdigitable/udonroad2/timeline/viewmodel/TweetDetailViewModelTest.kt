@@ -17,7 +17,6 @@
 package com.freshdigitable.udonroad2.timeline.viewmodel
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import androidx.lifecycle.Observer
 import com.freshdigitable.udonroad2.data.impl.create
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.TweetId
@@ -30,8 +29,9 @@ import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.test_common.jvm.AppSettingRepositoryRule
 import com.freshdigitable.udonroad2.test_common.jvm.CoroutineTestRule
+import com.freshdigitable.udonroad2.test_common.jvm.ObserverEventCollector
 import com.freshdigitable.udonroad2.test_common.jvm.TweetRepositoryRule
-import com.freshdigitable.udonroad2.test_common.jvm.testCollect
+import com.freshdigitable.udonroad2.test_common.jvm.setupForActivate
 import com.freshdigitable.udonroad2.timeline.LaunchMediaViewerAction
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.TweetMediaViewModelSource
@@ -40,7 +40,6 @@ import com.freshdigitable.udonroad2.timeline.UserIconViewModelSource
 import com.google.common.truth.Truth.assertThat
 import io.mockk.every
 import io.mockk.mockk
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import org.hamcrest.CoreMatchers
@@ -58,6 +57,7 @@ class TweetDetailViewModelTest {
     private val tweetRepositoryRule = TweetRepositoryRule()
     private val appSettingRepositoryRule = AppSettingRepositoryRule()
     private val coroutineRule = CoroutineTestRule()
+    private val eventCollector = ObserverEventCollector(coroutineRule)
 
     @get:Rule
     val rules: TestRule = RuleChain.outerRule(exceptions)
@@ -65,6 +65,7 @@ class TweetDetailViewModelTest {
         .around(coroutineRule)
         .around(tweetRepositoryRule)
         .around(appSettingRepositoryRule)
+        .around(eventCollector)
 
     private val tweet = mockk<DetailTweetListItem>().apply {
         every { originalId } returns TweetId(1000)
@@ -81,7 +82,6 @@ class TweetDetailViewModelTest {
             every { urlItems } returns emptyList()
         }
     }
-    private val executor = CoroutineScope(coroutineRule.coroutineContextProvider.mainContext)
 
     private val sut: TweetDetailViewModel by lazy {
         val eventDispatcher = EventDispatcher()
@@ -103,8 +103,8 @@ class TweetDetailViewModelTest {
         )
     }
     private val tweetSource: Channel<TweetListItem?> = Channel()
-    private lateinit var navigationEvents: List<NavigationEvent>
-    private val stateObserver = Observer<TweetDetailViewModel.State> {}
+    private val navigationEvents: List<NavigationEvent>
+        get() = eventCollector.nonNullEventsOf(sut.navigationEvent)
 
     @Before
     fun setup() {
@@ -113,9 +113,10 @@ class TweetDetailViewModelTest {
         val userId = tweet.originalId.value + 10
         appSettingRepositoryRule.setupCurrentUserId(userId)
         appSettingRepositoryRule.setupCurrentUserIdSource(userId)
-        sut.state.observeForever(stateObserver)
-        sut.mediaState.observeForever { }
-        navigationEvents = sut.navigationEvent.testCollect(executor)
+        eventCollector.setupForActivate {
+            addAll(sut.state, sut.mediaState)
+            addActivityEventStream(sut)
+        }
     }
 
     @Test
@@ -134,14 +135,10 @@ class TweetDetailViewModelTest {
         assertThat(sut.state.value?.tweetItem).isEqualTo(tweet)
         assertThat(sut.state.value?.menuItemState).isEqualTo(MenuItemState(true))
 
-        coroutineRule.runBlockingTest {
-            sut.state.removeObserver(stateObserver)
-        }
+        eventCollector.deactivateAll()
         assertThat(sut.state.value?.tweetItem).isEqualTo(tweet)
 
-        coroutineRule.runBlockingTest {
-            sut.state.observeForever(stateObserver)
-        }
+        eventCollector.activateAll()
 
         assertThat(sut.state.value).isNotNull()
         assertThat(sut.state.value?.tweetItem).isEqualTo(tweet)
