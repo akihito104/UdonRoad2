@@ -27,13 +27,12 @@ import com.freshdigitable.udonroad2.input.MediaChooserResultContract.MediaChoose
 import com.freshdigitable.udonroad2.model.app.AppFilePath
 import com.freshdigitable.udonroad2.model.app.di.ActivityScope
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
-import com.freshdigitable.udonroad2.model.app.navigation.toAction
+import com.freshdigitable.udonroad2.model.app.navigation.toActionFlow
 import com.freshdigitable.udonroad2.model.user.UserEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.rx2.asFlow
 import javax.inject.Inject
 
 internal class TweetInputViewModel @Inject constructor(
@@ -47,8 +46,7 @@ internal class TweetInputViewModel @Inject constructor(
         viewModelSource.user.asLiveData(viewModelScope.coroutineContext)
     internal val menuItem = state.map { it.menuItem }.distinctUntilChanged()
 
-    val expandAnimationEvent: Flow<TweetInputEvent.Opened> =
-        eventDispatcher.toAction<TweetInputEvent.Opened>().asFlow()
+    val expandAnimationEvent: Flow<TweetInputEvent.Opened> = eventDispatcher.toActionFlow()
     internal val chooserForCameraApp = viewModelSource.chooserForCameraApp
 }
 

@@ -21,127 +21,134 @@ import android.view.View
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
+import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.map
+import androidx.lifecycle.viewModelScope
 import com.freshdigitable.udonroad2.data.impl.MediaRepository
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
 import com.freshdigitable.udonroad2.model.MediaEntity
 import com.freshdigitable.udonroad2.model.TweetId
-import com.freshdigitable.udonroad2.model.app.AppExecutor
-import com.freshdigitable.udonroad2.model.app.ext.combineLatest
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
-import com.freshdigitable.udonroad2.model.app.navigation.AppAction
+import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventStream
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
-import com.freshdigitable.udonroad2.model.app.navigation.AppViewState
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
 import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessageDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.SnackbarFeedbackMessageDelegate
-import com.freshdigitable.udonroad2.model.app.navigation.toAction
-import com.freshdigitable.udonroad2.model.app.navigation.toViewState
+import com.freshdigitable.udonroad2.model.app.navigation.toActionFlow
+import com.freshdigitable.udonroad2.model.app.onEvent
+import com.freshdigitable.udonroad2.model.app.stateSourceBuilder
 import com.freshdigitable.udonroad2.model.app.weakRef
 import com.freshdigitable.udonroad2.shortcut.ShortcutActions
 import com.freshdigitable.udonroad2.shortcut.ShortcutEventListener
 import com.freshdigitable.udonroad2.shortcut.ShortcutViewModel
 import com.freshdigitable.udonroad2.shortcut.ShortcutViewStates
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.transformLatest
 import javax.inject.Inject
 import kotlin.math.min
 
-class MediaViewModel @Inject constructor(
+internal class MediaViewModel @Inject constructor(
     val tweetId: TweetId,
     private val eventDispatcher: EventDispatcher,
     viewStates: MediaViewModelViewStates,
-) : ShortcutViewModel,
+) : MediaEventListener by viewStates,
+    ShortcutViewModel,
     ShortcutEventListener by ShortcutEventListener.create(eventDispatcher),
+    ActivityEventStream by viewStates,
     ViewModel() {
-    val mediaItems: LiveData<List<MediaEntity>> = viewStates.mediaItems
-    override val isFabVisible: LiveData<Boolean> = viewStates.isFabVisible
-    internal val systemUiVisibility: LiveData<SystemUiVisibility> = viewStates.systemUiVisibility
-    internal val messageEvent: Flow<FeedbackMessage> = viewStates.updateTweet
+    val state = viewStates.state.asLiveData(viewModelScope.coroutineContext)
+    internal val mediaItems: LiveData<List<MediaEntity>> = state.map { it.mediaItems }
+        .distinctUntilChanged()
+    override val isFabVisible: LiveData<Boolean> = state.map { it.isShortcutVisible }
+        .distinctUntilChanged()
+    internal val systemUiVisibility: LiveData<SystemUiVisibility> =
+        state.map { it.systemUiVisibility }.distinctUntilChanged()
 
-    internal fun onSystemUiVisibilityChange(visibility: Int) {
-        eventDispatcher.postEvent(
-            MediaViewerEvent.SystemUiVisibilityChanged(SystemUiVisibility.get(visibility))
-        )
-    }
-
-    fun toggleUiVisibility() {
-        eventDispatcher.postEvent(
-            MediaViewerEvent.SystemUiVisibilityToggled(checkNotNull(systemUiVisibility.value))
-        )
-    }
-
-    val currentPosition: LiveData<Int?> = viewStates.currentPosition
-
-    fun setCurrentPosition(pos: Int) {
-        eventDispatcher.postEvent(MediaViewerEvent.CurrentPositionChanged(pos))
+    interface State {
+        val mediaItems: List<MediaEntity>
+        val systemUiVisibility: SystemUiVisibility
+        val currentPosition: Int?
+        val isShortcutVisible: Boolean
+            get() = systemUiVisibility == SystemUiVisibility.SHOW
     }
 }
 
-internal sealed class MediaViewerEvent : AppEvent {
-    data class CurrentPositionChanged(val index: Int) : MediaViewerEvent()
-
-    data class SystemUiVisibilityChanged(val visibility: SystemUiVisibility) : MediaViewerEvent()
-    data class SystemUiVisibilityToggled(val currentVisibility: SystemUiVisibility) :
-        MediaViewerEvent()
+interface MediaEventListener {
+    fun onSystemUiVisibilityChanged(visibility: Int)
+    fun onSystemUiToggled()
+    fun onCurrentPositionChanged(pos: Int)
 }
 
-class MediaViewModelActions @Inject constructor(
-    eventDispatcher: EventDispatcher
-) : ShortcutActions by ShortcutActions.create(eventDispatcher) {
-    internal val changeCurrentPosition: AppAction<MediaViewerEvent.CurrentPositionChanged> =
-        eventDispatcher.toAction()
-    internal val changeSystemUiVisibility: AppAction<MediaViewerEvent.SystemUiVisibilityChanged> =
-        eventDispatcher.toAction()
-    internal val toggleSystemUiVisibility: AppAction<MediaViewerEvent.SystemUiVisibilityToggled> =
-        eventDispatcher.toAction()
+internal class MediaViewModelActions @Inject constructor(
+    private val eventDispatcher: EventDispatcher
+) : MediaEventListener,
+    ShortcutActions by ShortcutActions.create(eventDispatcher) {
+    internal sealed class Event : AppEvent {
+        data class CurrentPositionChanged(val index: Int) : Event()
+        data class SystemUiVisibilityChanged(val visibility: SystemUiVisibility) : Event()
+        object SystemUiVisibilityToggled : Event()
+    }
+
+    internal val changeCurrentPosition =
+        eventDispatcher.toActionFlow<Event.CurrentPositionChanged>()
+    internal val changeSystemUiVisibility: Flow<Event.SystemUiVisibilityChanged> =
+        eventDispatcher.toActionFlow()
+    internal val toggleSystemUiVisibility: Flow<Event.SystemUiVisibilityToggled> =
+        eventDispatcher.toActionFlow()
+
+    override fun onSystemUiVisibilityChanged(visibility: Int) {
+        val event = Event.SystemUiVisibilityChanged(SystemUiVisibility.get(visibility))
+        eventDispatcher.postEvent(event)
+    }
+
+    override fun onSystemUiToggled() {
+        eventDispatcher.postEvent(Event.SystemUiVisibilityToggled)
+    }
+
+    override fun onCurrentPositionChanged(pos: Int) {
+        eventDispatcher.postEvent(Event.CurrentPositionChanged(pos))
+    }
 }
 
-class MediaViewModelViewStates @Inject constructor(
+internal class MediaViewModelViewStates @Inject constructor(
     tweetId: TweetId,
     firstPosition: Int,
     actions: MediaViewModelActions,
     repository: MediaRepository,
     tweetRepository: TweetRepository,
-    executor: AppExecutor,
-) : ShortcutViewStates by ShortcutViewStates.create(actions, tweetRepository) {
-    internal val mediaItems: AppViewState<List<MediaEntity>> =
-        repository.getMediaItemSource(tweetId)
-            .transformLatest {
-                if (it.isNotEmpty()) {
-                    emit(it)
-                } else {
-                    tweetRepository.findDetailTweetItem(tweetId)
-                }
+) : MediaEventListener by actions,
+    ShortcutViewStates by ShortcutViewStates.create(actions, tweetRepository),
+    ActivityEventStream by ActivityEventStream.EmptyStream {
+    internal val state: Flow<MediaViewModel.State> = stateSourceBuilder(
+        init = Snapshot(position = firstPosition),
+        repository.getMediaItemSource(tweetId).onEvent { s, items ->
+            if (items.isNotEmpty()) {
+                s.copy(mediaItems = items)
+            } else {
+                tweetRepository.findDetailTweetItem(tweetId)
+                s
             }
-            .asLiveData(executor.dispatcher.mainContext)
-
-    internal val systemUiVisibility: AppViewState<SystemUiVisibility> = AppAction.merge(
-        AppAction.just(SystemUiVisibility.SHOW),
-        actions.changeSystemUiVisibility.map { it.visibility },
-        actions.toggleSystemUiVisibility.map { it.currentVisibility.toggle() }
+        },
+        actions.changeSystemUiVisibility.onEvent { s, e ->
+            s.copy(systemUiVisibility = e.visibility)
+        },
+        actions.toggleSystemUiVisibility.onEvent { s, _ ->
+            s.copy(systemUiVisibility = s.systemUiVisibility.toggle())
+        },
+        actions.changeCurrentPosition.onEvent { s, e -> s.copy(position = e.index) }
     )
-        .distinctUntilChanged()
-        .toViewState()
-    internal val isFabVisible: LiveData<Boolean> = systemUiVisibility.map {
-        it == SystemUiVisibility.SHOW
-    }
+    override val feedbackMessage: Flow<FeedbackMessage> = updateTweet
 
-    internal val currentPosition: AppViewState<Int?> = combineLatest(
-        AppAction.merge(
-            AppAction.just(firstPosition),
-            actions.changeCurrentPosition.map { it.index }
-        ).distinctUntilChanged().toViewState<Int, Int>(),
-        mediaItems
-    ) { pos, items ->
-        if (pos != null && pos < 0) {
-            0
-        } else if (pos != null && items?.isNotEmpty() == true) {
-            min(pos, items.size - 1)
-        } else {
-            value
-        }
+    private data class Snapshot(
+        override val mediaItems: List<MediaEntity> = emptyList(),
+        override val systemUiVisibility: SystemUiVisibility = SystemUiVisibility.SHOW,
+        private val position: Int,
+    ) : MediaViewModel.State {
+        override val currentPosition: Int?
+            get() = when {
+                mediaItems.isNotEmpty() -> min(position.coerceAtLeast(0), mediaItems.lastIndex)
+                else -> null
+            }
     }
 }
 

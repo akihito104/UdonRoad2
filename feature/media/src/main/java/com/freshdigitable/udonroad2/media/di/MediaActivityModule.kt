@@ -43,7 +43,7 @@ interface MediaActivityModule {
 }
 
 @Module
-interface MediaViewModelModule {
+internal interface MediaViewModelModule {
     @Binds
     @IntoMap
     @ViewModelKey(MediaViewModel::class)

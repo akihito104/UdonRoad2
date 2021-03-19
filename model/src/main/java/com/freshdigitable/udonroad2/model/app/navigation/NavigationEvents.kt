@@ -23,7 +23,6 @@ interface NavigationEvent : AppEvent {
 
 interface ViewState
 interface FragmentContainerState
-data class StateHolder<T>(val value: T?)
 
 sealed class CommonEvent : AppEvent {
     object Back : CommonEvent()
