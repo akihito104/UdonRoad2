@@ -12,6 +12,7 @@ import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.TwitterCard
+import com.freshdigitable.udonroad2.model.UrlItem
 import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.app.AppTwitterException.ErrorType
 import com.freshdigitable.udonroad2.model.app.isTwitterExceptionOf
@@ -22,6 +23,7 @@ import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.toActionFlow
 import com.freshdigitable.udonroad2.model.app.stateSourceBuilder
+import com.freshdigitable.udonroad2.model.tweet.DetailTweetListItem
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.shortcut.SelectedItemShortcut
@@ -69,7 +71,7 @@ internal class TweetDetailViewModel(
     )
 
     interface State {
-        val tweetItem: TweetListItem?
+        val tweetItem: DetailTweetListItem?
         val menuItemState: MenuItemState
         val twitterCard: TwitterCard?
     }
@@ -82,12 +84,20 @@ sealed class DetailEvent : AppEvent {
         data class DeleteTweet(override val tweetId: TweetId) : Menu()
     }
 
+    internal data class SpanClicked(val urlItem: UrlItem) : DetailEvent()
     internal data class TwitterCardClicked(val card: TwitterCard) : DetailEvent()
 
-    data class NavigationExternalApp(val card: TwitterCard) : NavigationEvent
+    data class NavigationExternalApp(
+        val url: String,
+        val appUrl: String? = null
+    ) : NavigationEvent
 }
 
-interface TweetDetailEventListener {
+interface SpanClickListener {
+    fun onSpanClicked(urlItem: UrlItem)
+}
+
+interface TweetDetailEventListener : SpanClickListener {
     fun onOriginalUserClicked(user: TweetUserItem)
     fun onBodyUserClicked(user: TweetUserItem)
     fun onTwitterCardClicked(card: TwitterCard)
@@ -104,6 +114,7 @@ internal class TweetDetailActions @Inject constructor(
     val unretweetTweet = eventDispatcher.toActionFlow<DetailEvent.Menu.Unretweet>()
     val deleteTweet = eventDispatcher.toActionFlow<DetailEvent.Menu.DeleteTweet>()
     val launchAppForCard = eventDispatcher.toActionFlow<DetailEvent.TwitterCardClicked>()
+    val launchExternalApp = eventDispatcher.toActionFlow<DetailEvent.SpanClicked>()
 
     override fun onOriginalUserClicked(user: TweetUserItem) {
         eventDispatcher.postEvent(TimelineEvent.RetweetUserClicked(user))
@@ -111,6 +122,10 @@ internal class TweetDetailActions @Inject constructor(
 
     override fun onBodyUserClicked(user: TweetUserItem) {
         eventDispatcher.postEvent(TimelineEvent.UserIconClicked(user))
+    }
+
+    override fun onSpanClicked(urlItem: UrlItem) {
+        eventDispatcher.postEvent(DetailEvent.SpanClicked(urlItem))
     }
 
     override fun onTwitterCardClicked(card: TwitterCard) {
@@ -212,12 +227,17 @@ internal class TweetDetailViewStates @Inject constructor(
                 NavigationEvent.Type.NAVIGATE
             )
         },
-        actions.launchAppForCard.mapLatest { DetailEvent.NavigationExternalApp(it.card) },
+        actions.launchAppForCard.mapLatest {
+            DetailEvent.NavigationExternalApp(url = it.card.url, appUrl = it.card.appUrl)
+        },
+        actions.launchExternalApp.mapLatest {
+            DetailEvent.NavigationExternalApp(url = it.urlItem.url)
+        },
     )
     override val feedbackMessage: Flow<FeedbackMessage> = updateTweet
 
     private data class ViewModelState(
-        override val tweetItem: TweetListItem? = null,
+        override val tweetItem: DetailTweetListItem? = null,
         val isTweetItemDeleted: Boolean = false,
         val currentUserId: UserId? = null,
         override val twitterCard: TwitterCard? = null,
