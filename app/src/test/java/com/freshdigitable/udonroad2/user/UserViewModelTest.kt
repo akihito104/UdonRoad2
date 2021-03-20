@@ -378,7 +378,7 @@ class UserViewModelTestRule(
     val relationshipRepository: RelationshipRepository = relationshipRepositoryMock.mock
     val selectedItemRepository = SelectedItemRepository()
     val coroutineRule = CoroutineTestRule()
-    val eventCollector = ObserverEventCollector(coroutineRule)
+    private val eventCollector = ObserverEventCollector(coroutineRule)
 
     val sut: UserViewModel by lazy {
         val eventDispatcher = EventDispatcher()

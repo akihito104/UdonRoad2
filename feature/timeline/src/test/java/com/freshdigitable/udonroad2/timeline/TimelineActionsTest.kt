@@ -74,8 +74,10 @@ class TimelineActionsTest {
 
 class TimelineActionsTestRule(
     coroutineRule: CoroutineTestRule = CoroutineTestRule(),
+    isStateCollected: Boolean = true,
 ) : TestWatcher() {
-    private val eventCollector = ObserverEventCollector(coroutineRule)
+    private val eventCollector =
+        if (isStateCollected) ObserverEventCollector(coroutineRule) else null
     val owner = ListOwner(1, QueryType.TweetQueryType.Timeline())
     val dispatcher = EventDispatcher()
     private val actions = ListItemLoadableActions(owner, dispatcher)
@@ -83,19 +85,19 @@ class TimelineActionsTestRule(
         TimelineActions(owner, dispatcher, actions, LaunchMediaViewerAction(dispatcher))
     }
     val favTweetObserver: List<SelectedItemShortcut.Like>
-        get() = eventCollector.nonNullEventsOf(sut.favTweet)
+        get() = requireNotNull(eventCollector).nonNullEventsOf(sut.favTweet)
     val retweetObserver: List<SelectedItemShortcut.Retweet>
-        get() = eventCollector.nonNullEventsOf(sut.retweet)
+        get() = requireNotNull(eventCollector).nonNullEventsOf(sut.retweet)
 
     override fun starting(description: Description?) {
         super.starting(description)
-        eventCollector.setupForActivate {
+        eventCollector?.setupForActivate {
             addAll(sut.favTweet, sut.retweet)
         }
     }
 
     override fun apply(base: Statement?, description: Description?): Statement {
         val stmt = super.apply(base, description)
-        return eventCollector.apply(stmt, description)
+        return eventCollector?.apply(stmt, description) ?: stmt
     }
 }

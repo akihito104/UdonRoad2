@@ -82,12 +82,13 @@ class ObserverEventCollector(
     }
 
     override fun apply(base: Statement?, description: Description?): Statement =
-        RuleChain.outerRule(coroutineRule)
-            .around(InstantTaskExecutorRule())
+        RuleChain.outerRule(InstantTaskExecutorRule())
+            .around(coroutineRule)
             .apply(super.apply(base, description), description)
 
     override fun finished(description: Description?) {
         super.finished(description)
+        deactivateAll()
         scope.cancel()
     }
 

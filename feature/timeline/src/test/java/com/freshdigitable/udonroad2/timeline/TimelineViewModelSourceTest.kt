@@ -172,12 +172,14 @@ class TimelineViewModelSourceTest {
 }
 
 class TimelineViewStatesTestRule(
-    private val isStateCollected: Boolean = true
+    isStateCollected: Boolean = true
 ) : TestWatcher() {
     @ExperimentalCoroutinesApi
     internal val coroutineTestRule = CoroutineTestRule()
-    private val eventCollector = ObserverEventCollector(coroutineTestRule)
-    internal val actionsRule: TimelineActionsTestRule = TimelineActionsTestRule(coroutineTestRule)
+    private val eventCollector =
+        if (isStateCollected) ObserverEventCollector(coroutineTestRule) else null
+    internal val actionsRule: TimelineActionsTestRule =
+        TimelineActionsTestRule(coroutineTestRule, false)
     val tweetRepositoryMock = TweetRepositoryRule()
     val owner: ListOwner<QueryType.TweetQueryType> =
         actionsRule.owner as ListOwner<QueryType.TweetQueryType>
@@ -215,11 +217,11 @@ class TimelineViewStatesTestRule(
         )
     }
     val navEvents: List<NavigationEvent>
-        get() = eventCollector.nonNullEventsOf(sut.navigationEvent)
+        get() = requireNotNull(eventCollector).nonNullEventsOf(sut.navigationEvent)
     val messageEvents: List<FeedbackMessage>
-        get() = eventCollector.nonNullEventsOf(sut.feedbackMessage)
+        get() = requireNotNull(eventCollector).nonNullEventsOf(sut.feedbackMessage)
     val selectedItems: List<SelectedItemId?>
-        get() = eventCollector.nonNullEventsOf(sut.selectedItemId)
+        get() = requireNotNull(eventCollector).nonNullEventsOf(sut.selectedItemId)
 
     fun setupPrependListResponse(res: List<TweetEntity> = emptyList()) = with(listRepositoryRule) {
         coSetupResponseWithVerify(
@@ -234,22 +236,21 @@ class TimelineViewStatesTestRule(
 
     override fun starting(description: Description?) {
         super.starting(description)
-        if (isStateCollected) {
-            eventCollector.setupForActivate {
-                addAll(sut.state, sut.navigationEvent, sut.updateTweet, sut.selectedItemId)
-            }
+        eventCollector?.setupForActivate {
+            addAll(sut.state, sut.navigationEvent, sut.updateTweet, sut.selectedItemId)
         }
     }
 
-    override fun apply(base: Statement?, description: Description?): Statement =
-        RuleChain.outerRule(eventCollector)
-            .around(actionsRule)
+    override fun apply(base: Statement?, description: Description?): Statement {
+        val chain = eventCollector?.let { RuleChain.outerRule(it) } ?: RuleChain.emptyRuleChain()
+        return chain.around(actionsRule)
             .around(listRepositoryRule)
             .around(listProviderRule)
             .around(tweetRepositoryMock)
             .around(appSettingRepository)
             .around(RxExceptionHandler())
             .apply(super.apply(base, description), description)
+    }
 
     override fun finished(description: Description?) {
         super.finished(description)
