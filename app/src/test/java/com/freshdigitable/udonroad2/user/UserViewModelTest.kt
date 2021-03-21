@@ -30,7 +30,6 @@ import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.UserId
-import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
 import com.freshdigitable.udonroad2.model.user.Relationship
@@ -52,6 +51,7 @@ import com.freshdigitable.udonroad2.user.RelationshipMenu.UNMUTE
 import com.google.common.truth.Truth.assertThat
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.Before
@@ -379,7 +379,6 @@ class UserViewModelTestRule(
     val relationshipRepository: RelationshipRepository = relationshipRepositoryMock.mock
     val selectedItemRepository = SelectedItemRepository()
     val coroutineRule = CoroutineTestRule()
-    private val executor = AppExecutor(dispatcher = coroutineRule.coroutineContextProvider)
 
     val sut: UserViewModel by lazy {
         val eventDispatcher = EventDispatcher()
@@ -390,7 +389,6 @@ class UserViewModelTestRule(
             relationshipRepository,
             selectedItemRepository,
             ListOwnerGenerator.create(),
-            executor
         )
         UserViewModel(eventDispatcher, viewStates)
     }
@@ -408,6 +406,7 @@ class UserViewModelTestRule(
         listOf(sut.state, sut.relationshipMenuItems).forEach {
             it.observeForever {}
         }
+        val executor = CoroutineScope(coroutineRule.coroutineContextProvider.mainContext)
         sut.pages.testCollect(executor)
         feedbackMessages = sut.feedbackMessage.testCollect(executor)
     }

@@ -55,7 +55,11 @@ class MainViewModelTest {
 
         @Test
         fun initialState(): Unit = with(rule) {
-            assertThat(sut.drawerState.value).isEqualTo(DrawerViewState())
+            val actual = sut.drawerState.value
+            assertThat(actual?.switchableAccounts).isEmpty()
+            assertThat(actual?.isOpened).isFalse()
+            assertThat(actual?.isAccountSwitcherOpened).isFalse()
+            assertThat(actual?.currentUser).isNull()
         }
 
         @Test
@@ -398,7 +402,7 @@ internal class MainViewModelTestRule : TestWatcher() {
             .apply(super.apply(base, description), description)
 
     companion object {
-        val LiveData<DrawerViewState>.currentUser: TweetUserItem
+        val LiveData<DrawerViewModel.State>.currentUser: TweetUserItem
             get() = requireNotNull(this.value?.currentUser)
     }
 }

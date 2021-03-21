@@ -19,11 +19,12 @@ package com.freshdigitable.udonroad2.model.app
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.merge
-import kotlinx.coroutines.flow.scan
+import kotlinx.coroutines.flow.onCompletion
+import timber.log.Timber
 
 typealias UpdateFun<S> = suspend (S) -> S
 typealias ScanFun<S, E> = suspend (S, E) -> S
@@ -32,8 +33,79 @@ fun <S> stateSourceBuilder(
     init: S,
     vararg updateSource: Flow<UpdateFun<S>>
 ): Flow<S> {
-    check(updateSource.isNotEmpty())
-    return merge(*updateSource).scan(init) { state, trans -> trans(state) }.distinctUntilChanged()
+    require(updateSource.isNotEmpty())
+    val builder = StateSourceBuilder(initBlock = { init }, updateSource = updateSource)
+    return builder.build()
+}
+
+fun <S> stateSourceBuilder(
+    initBlock: suspend () -> S,
+    scope: StateSourceBuilderScope<S>.() -> Unit = {},
+): Flow<S> {
+    val builder = StateSourceBuilder(initBlock)
+    builder.scope()
+    return builder.build()
+}
+
+interface StateSourceBuilderScope<S> {
+    fun <R> flatMap(flow: Flow<S>.() -> Flow<R>, scan: ScanFun<S, R>)
+    fun <E> eventOf(flow: Flow<E>, scan: ScanFun<S, E>)
+}
+
+internal class StateSourceBuilder<S>(
+    private val initBlock: suspend () -> S,
+    private vararg val updateSource: Flow<UpdateFun<S>>
+) : StateSourceBuilderScope<S> {
+    private val updateWithState = mutableListOf<FlatMapWithState<S, *>>()
+    private val updaters = mutableListOf<Updater<S, *>>()
+
+    override fun <E> eventOf(flow: Flow<E>, scan: ScanFun<S, E>) {
+        updaters.add(Updater(flow, scan))
+    }
+
+    override fun <R> flatMap(
+        flow: (Flow<S>) -> Flow<R>,
+        scan: ScanFun<S, R>
+    ) {
+        updateWithState.add(FlatMapWithState(flow, scan))
+    }
+
+    fun build(): Flow<S> {
+        val updaterSource = updaters.map { it.create() }.toTypedArray()
+        return flow {
+            val state: S = initBlock()
+            val stateFlow = MutableStateFlow(state)
+            val updateWithStateSource = updateWithState.map { it.create(stateFlow) }.toTypedArray()
+            emit(state)
+
+            merge(*updateSource, *updaterSource, *updateWithStateSource).collect {
+                val current = stateFlow.value
+                val next = it(current)
+                if (next != current) {
+                    Timber.tag("StateTransition").d("changed: $next")
+                    stateFlow.value = next
+                    emit(next)
+                }
+            }
+        }.onCompletion {
+            updateWithState.clear()
+            updaters.clear()
+        }
+    }
+
+    class FlatMapWithState<S, R>(
+        private val flow: Flow<S>.() -> Flow<R>,
+        private val scan: ScanFun<S, R>
+    ) {
+        fun create(stateFlow: Flow<S>): Flow<UpdateFun<S>> = flow(stateFlow).onEvent(scan)
+    }
+
+    class Updater<S, E>(
+        private val flow: Flow<E>,
+        private val scan: ScanFun<S, E>
+    ) {
+        fun create(): Flow<UpdateFun<S>> = flow.onEvent(scan)
+    }
 }
 
 fun <E, S> Flow<E>.onEvent(update: ScanFun<S, E>): Flow<UpdateFun<S>> =
@@ -82,10 +154,10 @@ class UpdaterFlowBuilderScope<S, E>(
 
     internal fun build(): Flow<UpdateFun<S>> = flow {
         eventSource.collect { e ->
-            tasks.forEach {
-                it(this, e)
-            }
+            tasks.forEach { it(this, e) }
         }
+    }.onCompletion {
+        tasks.clear()
     }
 
     sealed class SourceElement<S, E> {
@@ -123,6 +195,7 @@ class UpdaterFlowBuilderScope<S, E>(
                 flowCollector.emit(updater)
 
                 val res = channel.receive()
+                channel.close()
                 if (res.isSuccess) {
                     val afterOnSuccessTasks = onSuccess.drop(1)
                     if (afterOnSuccessTasks.isNotEmpty()) {

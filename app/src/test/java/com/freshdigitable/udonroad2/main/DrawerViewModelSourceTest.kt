@@ -55,7 +55,11 @@ class DrawerViewModelSourceTest {
 
         @Test
         fun initialState(): Unit = with(rule) {
-            assertThat(actualStates.last()).isEqualTo(DrawerViewState())
+            val actual = actualStates.last()
+            assertThat(actual.currentUser).isEqualTo(null)
+            assertThat(actual.isAccountSwitcherOpened).isEqualTo(false)
+            assertThat(actual.isOpened).isEqualTo(false)
+            assertThat(actual.switchableAccounts).isEmpty()
         }
 
         @Test
@@ -216,7 +220,7 @@ class DrawerViewStateSourceTestRule(
             userRepository.mock
         )
     }
-    internal lateinit var actualStates: List<DrawerViewState>
+    internal lateinit var actualStates: List<DrawerViewModel.State>
     internal lateinit var navigationEventActual: List<NavigationEvent>
 
     override fun starting(description: Description?) {
