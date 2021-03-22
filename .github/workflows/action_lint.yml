@@ -16,7 +16,9 @@ jobs:
       - name: cache gradle
         uses: actions/cache@v2
         with:
-          path: ~/.gradle/caches
+          path: |
+            ~/.gradle/caches
+            ./.gradle
           key: ${{ runner.os }}-gradle-cache-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-gradle-cache-
@@ -44,7 +46,9 @@ jobs:
       - name: cache gradle
         uses: actions/cache@v2
         with:
-          path: ~/.gradle/caches
+          path: |
+            ~/.gradle/caches
+            ./.gradle
           key: ${{ runner.os }}-gradle-cache-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-gradle-cache-
@@ -72,7 +76,9 @@ jobs:
       - name: cache gradle
         uses: actions/cache@v2
         with:
-          path: ~/.gradle/caches
+          path: |
+            ~/.gradle/caches
+            ./.gradle
           key: ${{ runner.os }}-gradle-cache-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-gradle-cache-
@@ -100,7 +106,9 @@ jobs:
       - name: cache gradle
         uses: actions/cache@v2
         with:
-          path: ~/.gradle/caches
+          path: |
+            ~/.gradle/caches
+            ./.gradle
           key: ${{ runner.os }}-gradle-cache-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-gradle-cache-
