@@ -1,15 +1,14 @@
-name: lint check
+name: pull request check
 
 on: pull_request
 
 jobs:
   build:
-    name: pull request check
+    name: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-
-      - name: cache
+      - name: cache gradle
         uses: actions/cache@v2
         with:
           path: |
@@ -18,16 +17,103 @@ jobs:
           key: ${{ runner.os }}-gradle-${{ hashFiles('buildSrc/build.gradle.kts', 'buildSrc/src/main/java/*.kt', '**/gradle-wrapper.properties') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
+      - name: assemble
+        run: ./gradlew assembleDebug
+      - name: cache build
+        uses: actions/cache@v2
+        with:
+          path: **/build
+          key: ${{ runner.os ]}-assemble-${{ hashFiles('**/src/**/*.*', '**/*.gradle', '**/*.kts', 'licences.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-assemble-
 
+  androidLint:
+    name: android lint
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - name: cache gradle
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('buildSrc/build.gradle.kts', 'buildSrc/src/main/java/*.kt', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+      - name: cache build
+        uses: actions/cache@v2
+        with:
+          path: **/build
+          key: ${{ runner.os ]}-assemble-${{ hashFiles('**/src/**/*.*', '**/*.gradle', '**/*.kts', 'licences.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-assemble-
       - name: android lint
         run: ./gradlew lintDebug
 
+  ktlint:
+    name: ktlint
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - name: cache gradle
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('buildSrc/build.gradle.kts', 'buildSrc/src/main/java/*.kt', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+      - name: cache build
+        uses: actions/cache@v2
+        with:
+          path: **/build
+          key: ${{ runner.os ]}-assemble-${{ hashFiles('**/src/**/*.*', '**/*.gradle', '**/*.kts', 'licences.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-assemble-
       - name: ktlint
         run: ./gradlew ktlintCheck
 
+  unitTest:
+    name: unit test
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - name: cache gradle
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('buildSrc/build.gradle.kts', 'buildSrc/src/main/java/*.kt', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+          ${{ runner.os }}-gradle-
+      - name: cache build
+        uses: actions/cache@v2
+        with:
+          path: **/build
+          key: ${{ runner.os ]}-assemble-${{ hashFiles('(**/src/**/*.*', '**/*.gradle', '**/*.kts', 'licences.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-assemble-
       - name: unit test
         run: ./gradlew testDebugUnitTest
 
+  report:
+    runs-on: ubuntu-latest
+    needs: [androidLint, ktlint, unitTest]
+    steps:
+      - uses: actions/checkout@v2
+      - name: cache build
+          uses: actions/cache@v2
+          with:
+            path: **/build
+            key: ${{ runner.os ]}-assemble-${{ hashFiles('(**/src/**/*.*', '**/*.gradle', '**/*.kts', 'licences.yml') }}
+            restore-keys: |
+              ${{ runner.os }}-assemble-
       - name: Danger
         uses: danger/kotlin@0.7.1
         env:
