@@ -14,11 +14,9 @@ jobs:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('buildSrc/build.gradle.kts', 'buildSrc/src/main/java/*.kt', '**/gradle-wrapper.properties') }}
+          key: ${{ runner.os }}-gradle-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-gradle-
-      - name: assemble
-        run: ./gradlew assembleDebug
       - name: cache build
         uses: actions/cache@v2
         with:
@@ -26,6 +24,8 @@ jobs:
           key: ${{ runner.os }}-assemble-${{ hashFiles('**/src/**/*.*', '**/*.gradle', '**/*.kts', 'licences.yml') }}
           restore-keys: |
             ${{ runner.os }}-assemble-
+      - name: assemble
+        run: ./gradlew assembleDebug
 
   androidLint:
     name: android lint
@@ -39,7 +39,7 @@ jobs:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('buildSrc/build.gradle.kts', 'buildSrc/src/main/java/*.kt', '**/gradle-wrapper.properties') }}
+          key: ${{ runner.os }}-gradle-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-gradle-
       - name: cache build
@@ -64,7 +64,7 @@ jobs:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('buildSrc/build.gradle.kts', 'buildSrc/src/main/java/*.kt', '**/gradle-wrapper.properties') }}
+          key: ${{ runner.os }}-gradle-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-gradle-
       - name: cache build
@@ -89,7 +89,7 @@ jobs:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('buildSrc/build.gradle.kts', 'buildSrc/src/main/java/*.kt', '**/gradle-wrapper.properties') }}
+          key: ${{ runner.os }}-gradle-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-gradle-
       - name: cache build
