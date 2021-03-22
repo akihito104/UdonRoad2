@@ -8,20 +8,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - name: cache gradle wrapper
+        uses: actions/cache@v2
+        with:
+          path: ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-wrapper-
       - name: cache gradle
         uses: actions/cache@v2
         with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ github.sha }}
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-cache-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-gradle-
+            ${{ runner.os }}-gradle-cache-
       - name: cache build
         uses: actions/cache@v2
         with:
           path: ./**/build
-          key: ${{ runner.os }}-assemble-${{ hashFiles('**/src/**/*.*', '**/*.gradle', '**/*.kts', 'licences.yml') }}
+          key: ${{ runner.os }}-assemble-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-assemble-
       - name: assemble
@@ -33,20 +38,25 @@ jobs:
     needs: build
     steps:
       - uses: actions/checkout@v2
+      - name: cache gradle wrapper
+        uses: actions/cache@v2
+        with:
+          path: ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-wrapper-
       - name: cache gradle
         uses: actions/cache@v2
         with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ github.sha }}
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-cache-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-gradle-
+            ${{ runner.os }}-gradle-cache-
       - name: cache build
         uses: actions/cache@v2
         with:
           path: ./**/build
-          key: ${{ runner.os }}-assemble-${{ hashFiles('**/src/**/*.*', '**/*.gradle', '**/*.kts', 'licences.yml') }}
+          key: ${{ runner.os }}-assemble-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-assemble-
       - name: android lint
@@ -58,20 +68,25 @@ jobs:
     needs: build
     steps:
       - uses: actions/checkout@v2
+      - name: cache gradle wrapper
+        uses: actions/cache@v2
+        with:
+          path: ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-wrapper-
       - name: cache gradle
         uses: actions/cache@v2
         with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ github.sha }}
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-cache-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-gradle-
+            ${{ runner.os }}-gradle-cache-
       - name: cache build
         uses: actions/cache@v2
         with:
           path: ./**/build
-          key: ${{ runner.os }}-assemble-${{ hashFiles('**/src/**/*.*', '**/*.gradle', '**/*.kts', 'licences.yml') }}
+          key: ${{ runner.os }}-assemble-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-assemble-
       - name: ktlint
@@ -83,20 +98,25 @@ jobs:
     needs: build
     steps:
       - uses: actions/checkout@v2
+      - name: cache gradle wrapper
+        uses: actions/cache@v2
+        with:
+          path: ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-wrapper-
       - name: cache gradle
         uses: actions/cache@v2
         with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ github.sha }}
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-cache-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-gradle-
+            ${{ runner.os }}-gradle-cache-
       - name: cache build
         uses: actions/cache@v2
         with:
           path: ./**/build
-          key: ${{ runner.os }}-assemble-${{ hashFiles('(**/src/**/*.*', '**/*.gradle', '**/*.kts', 'licences.yml') }}
+          key: ${{ runner.os }}-assemble-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-assemble-
       - name: unit test
@@ -111,7 +131,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ./**/build
-          key: ${{ runner.os }}-assemble-${{ hashFiles('(**/src/**/*.*', '**/*.gradle', '**/*.kts', 'licences.yml') }}
+          key: ${{ runner.os }}-assemble-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-assemble-
       - name: Danger
