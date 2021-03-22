@@ -13,8 +13,6 @@ jobs:
         with:
           path: ~/.gradle/wrapper
           key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-wrapper-
       - name: cache gradle
         uses: actions/cache@v2
         with:
@@ -30,7 +28,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-assemble-
       - name: assemble
-        run: ./gradlew assembleDebug
+        run: ./gradlew compileDebugSources
 
   androidLint:
     name: android lint
@@ -43,8 +41,6 @@ jobs:
         with:
           path: ~/.gradle/wrapper
           key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-wrapper-
       - name: cache gradle
         uses: actions/cache@v2
         with:
@@ -73,8 +69,6 @@ jobs:
         with:
           path: ~/.gradle/wrapper
           key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-wrapper-
       - name: cache gradle
         uses: actions/cache@v2
         with:
@@ -103,8 +97,6 @@ jobs:
         with:
           path: ~/.gradle/wrapper
           key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-wrapper-
       - name: cache gradle
         uses: actions/cache@v2
         with:
