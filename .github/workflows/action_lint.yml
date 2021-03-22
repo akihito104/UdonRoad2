@@ -23,7 +23,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ./**/build
-          key: ${{ runner.os ]}-assemble-${{ hashFiles('**/src/**/*.*', '**/*.gradle', '**/*.kts', 'licences.yml') }}
+          key: ${{ runner.os }}-assemble-${{ hashFiles('**/src/**/*.*', '**/*.gradle', '**/*.kts', 'licences.yml') }}
           restore-keys: |
             ${{ runner.os }}-assemble-
 
@@ -46,7 +46,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ./**/build
-          key: ${{ runner.os ]}-assemble-${{ hashFiles('**/src/**/*.*', '**/*.gradle', '**/*.kts', 'licences.yml') }}
+          key: ${{ runner.os }}-assemble-${{ hashFiles('**/src/**/*.*', '**/*.gradle', '**/*.kts', 'licences.yml') }}
           restore-keys: |
             ${{ runner.os }}-assemble-
       - name: android lint
@@ -71,7 +71,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ./**/build
-          key: ${{ runner.os ]}-assemble-${{ hashFiles('**/src/**/*.*', '**/*.gradle', '**/*.kts', 'licences.yml') }}
+          key: ${{ runner.os }}-assemble-${{ hashFiles('**/src/**/*.*', '**/*.gradle', '**/*.kts', 'licences.yml') }}
           restore-keys: |
             ${{ runner.os }}-assemble-
       - name: ktlint
@@ -96,7 +96,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ./**/build
-          key: ${{ runner.os ]}-assemble-${{ hashFiles('(**/src/**/*.*', '**/*.gradle', '**/*.kts', 'licences.yml') }}
+          key: ${{ runner.os }}-assemble-${{ hashFiles('(**/src/**/*.*', '**/*.gradle', '**/*.kts', 'licences.yml') }}
           restore-keys: |
             ${{ runner.os }}-assemble-
       - name: unit test
@@ -111,7 +111,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ./**/build
-          key: ${{ runner.os ]}-assemble-${{ hashFiles('(**/src/**/*.*', '**/*.gradle', '**/*.kts', 'licences.yml') }}
+          key: ${{ runner.os }}-assemble-${{ hashFiles('(**/src/**/*.*', '**/*.gradle', '**/*.kts', 'licences.yml') }}
           restore-keys: |
             ${{ runner.os }}-assemble-
       - name: Danger
