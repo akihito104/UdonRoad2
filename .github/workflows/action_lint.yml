@@ -108,12 +108,12 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: cache build
-          uses: actions/cache@v2
-          with:
-            path: ./**/build
-            key: ${{ runner.os ]}-assemble-${{ hashFiles('(**/src/**/*.*', '**/*.gradle', '**/*.kts', 'licences.yml') }}
-            restore-keys: |
-              ${{ runner.os }}-assemble-
+        uses: actions/cache@v2
+        with:
+          path: ./**/build
+          key: ${{ runner.os ]}-assemble-${{ hashFiles('(**/src/**/*.*', '**/*.gradle', '**/*.kts', 'licences.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-assemble-
       - name: Danger
         uses: danger/kotlin@0.7.1
         env:
