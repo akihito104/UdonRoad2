@@ -22,7 +22,7 @@ jobs:
       - name: cache build
         uses: actions/cache@v2
         with:
-          path: **/build
+          path: ./**/build
           key: ${{ runner.os ]}-assemble-${{ hashFiles('**/src/**/*.*', '**/*.gradle', '**/*.kts', 'licences.yml') }}
           restore-keys: |
             ${{ runner.os }}-assemble-
@@ -45,7 +45,7 @@ jobs:
       - name: cache build
         uses: actions/cache@v2
         with:
-          path: **/build
+          path: ./**/build
           key: ${{ runner.os ]}-assemble-${{ hashFiles('**/src/**/*.*', '**/*.gradle', '**/*.kts', 'licences.yml') }}
           restore-keys: |
             ${{ runner.os }}-assemble-
@@ -70,7 +70,7 @@ jobs:
       - name: cache build
         uses: actions/cache@v2
         with:
-          path: **/build
+          path: ./**/build
           key: ${{ runner.os ]}-assemble-${{ hashFiles('**/src/**/*.*', '**/*.gradle', '**/*.kts', 'licences.yml') }}
           restore-keys: |
             ${{ runner.os }}-assemble-
@@ -95,7 +95,7 @@ jobs:
       - name: cache build
         uses: actions/cache@v2
         with:
-          path: **/build
+          path: ./**/build
           key: ${{ runner.os ]}-assemble-${{ hashFiles('(**/src/**/*.*', '**/*.gradle', '**/*.kts', 'licences.yml') }}
           restore-keys: |
             ${{ runner.os }}-assemble-
@@ -110,7 +110,7 @@ jobs:
       - name: cache build
           uses: actions/cache@v2
           with:
-            path: **/build
+            path: ./**/build
             key: ${{ runner.os ]}-assemble-${{ hashFiles('(**/src/**/*.*', '**/*.gradle', '**/*.kts', 'licences.yml') }}
             restore-keys: |
               ${{ runner.os }}-assemble-
