@@ -11,16 +11,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-
-      - name: cache
+      - name: cache gradle wrapper
+        uses: actions/cache@v2
+        with:
+          path: ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+      - name: cache gradle
         uses: actions/cache@v2
         with:
           path: |
             ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('buildSrc/build.gradle.kts', 'buildSrc/src/main/java/*.kt', '**/gradle-wrapper.properties') }}
+            ./.gradle
+          key: ${{ runner.os }}-gradle-cache-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-gradle-
-
+            ${{ runner.os }}-gradle-cache-
+      - name: cache build
+        uses: actions/cache@v2
+        with:
+          path: ./**/build
+          key: ${{ runner.os }}-assemble-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-assemble-
       - name: unit testing
         run: ./gradlew testDebugUnitTest
