@@ -59,6 +59,11 @@ jobs:
           key: ${{ runner.os }}-assemble-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-assemble-
+      - name: store lint result
+        uses: actions/cache@v2
+        with:
+          path: ./**/build/reports/lint-results-*.xml
+          key: ${{ runner.os }}-result-${{ github.sha }}-lint
       - name: android lint
         run: ./gradlew lintDebug
 
@@ -89,6 +94,11 @@ jobs:
           key: ${{ runner.os }}-assemble-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-assemble-
+      - name: store ktlint result
+        uses: actions/cache@v2
+        with:
+          path: ./**/build/reports/ktlint
+          key: ${{ runner.os }}-result-${{ github.sha }}-ktlint
       - name: ktlint
         run: ./gradlew ktlintCheck
 
@@ -119,6 +129,11 @@ jobs:
           key: ${{ runner.os }}-assemble-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-assemble-
+      - name: store unit test result
+        uses: actions/cache@v2
+        with:
+          path: ./**/build/test-results
+          key: ${{ runner.os }}-result-${{ github.sha }}-unittest
       - name: unit test
         run: ./gradlew testDebugUnitTest
 
@@ -127,13 +142,21 @@ jobs:
     needs: [androidLint, ktlint, unitTest]
     steps:
       - uses: actions/checkout@v2
-      - name: cache build
+      - name: restore lint result
         uses: actions/cache@v2
         with:
-          path: ./**/build
-          key: ${{ runner.os }}-assemble-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-assemble-
+          path: ./**/build/reports/lint-results-*.xml
+          key: ${{ runner.os }}-result-${{ github.sha }}-lint
+      - name: restore ktlint result
+        uses: actions/cache@v2
+        with:
+          path: ./**/build/reports/ktlint
+          key: ${{ runner.os }}-result-${{ github.sha }}-ktlint
+      - name: restore unit test result
+        uses: actions/cache@v2
+        with:
+          path: ./**/build/test-results
+          key: ${{ runner.os }}-result-${{ github.sha }}-unittest
       - name: Danger
         uses: danger/kotlin@0.7.1
         env:
