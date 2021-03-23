@@ -1,33 +1,162 @@
-name: lint check
+name: pull request check
 
 on: pull_request
 
 jobs:
   build:
-    name: pull request check
+    name: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-
-      - name: cache
+      - name: cache gradle wrapper
+        uses: actions/cache@v2
+        with:
+          path: ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+      - name: cache gradle
         uses: actions/cache@v2
         with:
           path: |
             ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('buildSrc/build.gradle.kts', 'buildSrc/src/main/java/*.kt', '**/gradle-wrapper.properties') }}
+            ./.gradle
+          key: ${{ runner.os }}-gradle-cache-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-gradle-
+            ${{ runner.os }}-gradle-cache-
+      - name: cache build
+        uses: actions/cache@v2
+        with:
+          path: ./**/build
+          key: ${{ runner.os }}-assemble-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-assemble-
+      - name: assemble
+        run: ./gradlew compileDebugSources
 
+  androidLint:
+    name: android lint
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - name: cache gradle wrapper
+        uses: actions/cache@v2
+        with:
+          path: ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+      - name: cache gradle
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.gradle/caches
+            ./.gradle
+          key: ${{ runner.os }}-gradle-cache-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-cache-
+      - name: cache build
+        uses: actions/cache@v2
+        with:
+          path: ./**/build
+          key: ${{ runner.os }}-assemble-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-assemble-
+      - name: store lint result
+        uses: actions/cache@v2
+        with:
+          path: ./**/build/reports/lint-results-*.xml
+          key: ${{ runner.os }}-result-${{ github.sha }}-lint
       - name: android lint
         run: ./gradlew lintDebug
 
+  ktlint:
+    name: ktlint
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - name: cache gradle wrapper
+        uses: actions/cache@v2
+        with:
+          path: ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+      - name: cache gradle
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.gradle/caches
+            ./.gradle
+          key: ${{ runner.os }}-gradle-cache-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-cache-
+      - name: cache build
+        uses: actions/cache@v2
+        with:
+          path: ./**/build
+          key: ${{ runner.os }}-assemble-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-assemble-
+      - name: store ktlint result
+        uses: actions/cache@v2
+        with:
+          path: ./**/build/reports/ktlint
+          key: ${{ runner.os }}-result-${{ github.sha }}-ktlint
       - name: ktlint
         run: ./gradlew ktlintCheck
 
+  unitTest:
+    name: unit test
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - name: cache gradle wrapper
+        uses: actions/cache@v2
+        with:
+          path: ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+      - name: cache gradle
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.gradle/caches
+            ./.gradle
+          key: ${{ runner.os }}-gradle-cache-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-cache-
+      - name: cache build
+        uses: actions/cache@v2
+        with:
+          path: ./**/build
+          key: ${{ runner.os }}-assemble-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-assemble-
+      - name: store unit test result
+        uses: actions/cache@v2
+        with:
+          path: ./**/build/test-results
+          key: ${{ runner.os }}-result-${{ github.sha }}-unittest
       - name: unit test
         run: ./gradlew testDebugUnitTest
 
+  report:
+    runs-on: ubuntu-latest
+    needs: [androidLint, ktlint, unitTest]
+    steps:
+      - uses: actions/checkout@v2
+      - name: restore lint result
+        uses: actions/cache@v2
+        with:
+          path: ./**/build/reports/lint-results-*.xml
+          key: ${{ runner.os }}-result-${{ github.sha }}-lint
+      - name: restore ktlint result
+        uses: actions/cache@v2
+        with:
+          path: ./**/build/reports/ktlint
+          key: ${{ runner.os }}-result-${{ github.sha }}-ktlint
+      - name: restore unit test result
+        uses: actions/cache@v2
+        with:
+          path: ./**/build/test-results
+          key: ${{ runner.os }}-result-${{ github.sha }}-unittest
       - name: Danger
         uses: danger/kotlin@0.7.1
         env:
