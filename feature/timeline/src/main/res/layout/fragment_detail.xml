@@ -119,7 +119,7 @@
                     app:layout_constraintBottom_toTopOf="@id/detail_mediaContainer"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
-                    android:text="@{viewModel.state.tweetItem.body.text}"
+                    android:text="@{viewModel.state.tweetItem.bodyTextWithDisplayUrl}"
                     android:textSize="18sp"
                     tools:text="tweet body\nlorem ipsum"
                     />
@@ -185,12 +185,28 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/margin"
                     app:layout_constraintTop_toBottomOf="@id/detail_via"
-                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintBottom_toTopOf="@id/detail_twitter_card"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:tweet="@{viewModel.state.tweetItem}"
                     app:mediaViewModel="@{viewModel}"
                     android:visibility="@{viewModel.state.tweetItem.quoted != null ? View.VISIBLE : View.GONE}"
+                    />
+
+                <include
+                    android:id="@+id/detail_twitter_card"
+                    layout="@layout/view_twitter_card"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/margin"
+                    android:layout_marginBottom="@dimen/margin"
+                    app:layout_constraintTop_toBottomOf="@id/detail_quote"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:item="@{viewModel.state.twitterCard}"
+                    app:onClickListener="@{v -> viewModel.onTwitterCardClicked(viewModel.state.twitterCard)}"
+                    android:visibility="@{viewModel.state.twitterCard != null ? View.VISIBLE : View.GONE}"
                     />
             </androidx.constraintlayout.widget.ConstraintLayout>
         </ScrollView>

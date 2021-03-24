@@ -20,10 +20,12 @@ import com.freshdigitable.udonroad2.data.AppSettingDataSource
 import com.freshdigitable.udonroad2.data.OAuthTokenDataSource
 import com.freshdigitable.udonroad2.data.RelationDataSource
 import com.freshdigitable.udonroad2.data.TweetDataSource
+import com.freshdigitable.udonroad2.data.TwitterCardDataSource
 import com.freshdigitable.udonroad2.data.UserDataSource
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
+import okhttp3.OkHttpClient
 import twitter4j.Twitter
 import twitter4j.TwitterFactory
 import twitter4j.conf.ConfigurationBuilder
@@ -52,6 +54,12 @@ internal interface AppTwitterModule {
         @Provides
         @Singleton
         fun providesAppTwitter(twitter: Twitter): AppTwitter = AppTwitter(twitter)
+
+        @Provides
+        @Singleton
+        fun provideHttpClient(): OkHttpClient = OkHttpClient.Builder()
+            .followRedirects(true)
+            .build()
     }
 
     @Binds
@@ -68,4 +76,9 @@ internal interface AppTwitterModule {
 
     @Binds
     fun bindRelationshipDataSourceRemote(source: FriendshipRestClient): RelationDataSource.Remote
+
+    @Binds
+    fun bindTwitterCardRemoteDataSource(
+        source: TwitterCardRemoteSource
+    ): TwitterCardDataSource.Remote
 }

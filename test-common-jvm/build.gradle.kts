@@ -47,4 +47,5 @@ dependencies {
     implementation(Libs.KOTLINX_TEST_COROUTINES)
     implementation(Libs.JUNIT)
     implementation(Libs.MOCKK)
+    api(Libs.TIMBER)
 }

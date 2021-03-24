@@ -127,7 +127,7 @@
             app:layout_constraintBottom_toTopOf="@id/tweetItem_mediaContainer"
             app:layout_constraintStart_toStartOf="@id/tweetItem_names"
             app:layout_constraintEnd_toEndOf="parent"
-            android:text="@{tweet.body.text}"
+            android:text="@{tweet.bodyTextWithDisplayUrl}"
             tools:text="tweet body"
             />
 

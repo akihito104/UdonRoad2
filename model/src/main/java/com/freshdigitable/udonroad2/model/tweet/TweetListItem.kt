@@ -18,6 +18,7 @@ package com.freshdigitable.udonroad2.model.tweet
 
 import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.TweetMediaItem
+import com.freshdigitable.udonroad2.model.UrlItem
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import org.threeten.bp.Instant
 
@@ -33,6 +34,20 @@ interface TweetListItem {
 
     val isRetweet: Boolean
         get() = originalId != body.id
+
+    val bodyTextWithDisplayUrl: String
+        get() = when (val qId = quoted?.id) {
+            null -> body.textWithDisplayUrl
+            else -> {
+                body.urlItems.fold(body.text) { t, url ->
+                    val displayUrl =
+                        if (url.expandedUrl.contains(qId.value.toString())) "" else url.displayUrl
+                    t.replace(url.url, displayUrl)
+                }.also {
+                    body.media.fold(it) { t, url -> t.replace(url.mediaUrl, url.displayUrl) }
+                }
+            }
+        }
 
     override fun equals(other: Any?): Boolean
 
@@ -52,10 +67,15 @@ interface TweetElement : TweetElementUpdatable {
 
     val createdAt: Instant
 
+    val urlItems: List<UrlItem>
+
     val media: List<TweetMediaItem>
         get() = emptyList()
 
     val possiblySensitive: Boolean
+
+    val textWithDisplayUrl: String
+        get() = (urlItems + media).fold(text) { t, url -> t.replace(url.url, url.displayUrl) }
 
     companion object
 }

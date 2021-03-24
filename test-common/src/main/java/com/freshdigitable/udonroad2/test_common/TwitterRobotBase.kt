@@ -246,6 +246,7 @@ fun createStatus(
     isRetweeted: Boolean = false,
     isFavorited: Boolean = false,
     retweetedStatus: Status? = null,
+    urlEntities: Array<URLEntity> = emptyArray(),
 ): Status {
     return object : Status {
         override fun getUser(): User = user
@@ -265,12 +266,12 @@ fun createStatus(
         override fun getMediaEntities(): Array<MediaEntity> = mediaEntities
         override fun getCurrentUserRetweetId(): Long = currentUserRetweetId
         override fun getUserMentionEntities(): Array<UserMentionEntity> = userMentionEntities
+        override fun getURLEntities(): Array<URLEntity> = urlEntities
 
         override fun compareTo(other: Status): Int = this.createdAt.compareTo(other.createdAt)
 
         override fun getRateLimitStatus(): RateLimitStatus = TODO("Not yet implemented")
         override fun getAccessLevel(): Int = TODO("Not yet implemented")
-        override fun getURLEntities(): Array<URLEntity> = TODO("Not yet implemented")
         override fun getHashtagEntities(): Array<HashtagEntity> = TODO("Not yet implemented")
         override fun getSymbolEntities(): Array<SymbolEntity> = TODO("Not yet implemented")
         override fun getDisplayTextRangeStart(): Int = TODO("Not yet implemented")

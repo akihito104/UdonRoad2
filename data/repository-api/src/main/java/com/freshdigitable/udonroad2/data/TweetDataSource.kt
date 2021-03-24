@@ -17,6 +17,7 @@
 package com.freshdigitable.udonroad2.data
 
 import com.freshdigitable.udonroad2.model.TweetId
+import com.freshdigitable.udonroad2.model.TwitterCard
 import com.freshdigitable.udonroad2.model.tweet.DetailTweetListItem
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
 import com.freshdigitable.udonroad2.model.tweet.TweetEntityUpdatable
@@ -37,4 +38,12 @@ interface TweetDataSource {
 
     interface Local : TweetDataSource
     interface Remote : TweetDataSource
+}
+
+interface TwitterCardDataSource {
+    fun getTwitterCardSource(url: String): Flow<TwitterCard?>
+    suspend fun putTwitterCard(url: String, card: TwitterCard)
+
+    interface Local : TwitterCardDataSource
+    interface Remote : TwitterCardDataSource
 }

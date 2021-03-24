@@ -2,6 +2,7 @@ package com.freshdigitable.udonroad2.data.restclient.data
 
 import com.freshdigitable.udonroad2.model.MediaEntity
 import com.freshdigitable.udonroad2.model.TweetId
+import com.freshdigitable.udonroad2.model.UrlItem
 import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
 import com.freshdigitable.udonroad2.model.tweet.UserReplyEntity
@@ -25,6 +26,7 @@ internal class TweetEntityRest(
     override val media: List<MediaEntity>,
     override val replyEntities: List<UserReplyEntity>,
     override val retweetIdByCurrentUser: TweetId?,
+    override val urlItems: List<UrlItem>,
 ) : TweetEntity
 
 internal data class UserReplyEntityRest(

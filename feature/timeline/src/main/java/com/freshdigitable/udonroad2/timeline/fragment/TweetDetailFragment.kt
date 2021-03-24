@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+import android.widget.ImageView
 import android.widget.LinearLayout
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.databinding.BindingAdapter
@@ -16,6 +17,8 @@ import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.map
 import androidx.navigation.fragment.navArgs
+import com.bumptech.glide.Glide
+import com.freshdigitable.udonroad2.model.TwitterCard
 import com.freshdigitable.udonroad2.shortcut.TweetDetailContextMenuView
 import com.freshdigitable.udonroad2.timeline.R
 import com.freshdigitable.udonroad2.timeline.databinding.FragmentDetailBinding
@@ -109,4 +112,14 @@ fun TweetDetailContextMenuView.updateMenuItemState(item: MenuItemState?) {
             isVisible = item?.isDeleteVisible ?: false
         }
     }
+}
+
+@BindingAdapter("cardImage")
+fun ImageView.bindCardImage(card: TwitterCard?) {
+    if (card == null) {
+        return
+    }
+    Glide.with(this)
+        .load(card.imageUrl)
+        .into(this)
 }

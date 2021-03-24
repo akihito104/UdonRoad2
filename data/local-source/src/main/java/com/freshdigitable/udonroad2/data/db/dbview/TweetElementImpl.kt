@@ -22,9 +22,11 @@ import androidx.room.Embedded
 import androidx.room.Ignore
 import androidx.room.Relation
 import com.freshdigitable.udonroad2.data.db.dbview.TweetListItemDbView.TweetElementDbView
+import com.freshdigitable.udonroad2.data.db.entity.UrlEntity
 import com.freshdigitable.udonroad2.data.db.entity.UserReplyEntityDb
 import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.TweetMediaItem
+import com.freshdigitable.udonroad2.model.UrlItem
 import com.freshdigitable.udonroad2.model.tweet.DetailTweetElement
 import com.freshdigitable.udonroad2.model.tweet.DetailTweetListItem
 import com.freshdigitable.udonroad2.model.tweet.TweetElement
@@ -156,6 +158,9 @@ internal data class TweetListItemImpl(
             field = value.sortedBy { it.order }
         }
 
+    @Relation(entity = UrlEntity::class, parentColumn = "id", entityColumn = "tweet_id")
+    var bodyUrlItems: List<UrlEntity> = emptyList()
+
     @Relation(
         entity = TweetItemMediaDbView::class,
         parentColumn = "qt_id",
@@ -166,6 +171,9 @@ internal data class TweetListItemImpl(
             field = value.sortedBy { it.order }
         }
 
+    @Relation(entity = UrlEntity::class, parentColumn = "qt_id", entityColumn = "tweet_id")
+    var quoteUrlItems: List<UrlEntity> = emptyList()
+
     override val body: TweetElement
         @Ignore get() = TweetElementImpl(
             tweetListItem.body,
@@ -173,6 +181,7 @@ internal data class TweetListItemImpl(
             isRetweeted,
             isFavorited,
             retweetIdByCurrentUser,
+            bodyUrlItems,
         )
 
     override val quoted: TweetElement?
@@ -183,6 +192,7 @@ internal data class TweetListItemImpl(
                 isQuoteRetweeted,
                 isQuoteFavorited,
                 quoteRetweetIdByCurrentUser,
+                quoteUrlItems,
             )
         }
 }
@@ -192,7 +202,8 @@ internal data class TweetElementImpl(
     override val media: List<TweetMediaItem> = emptyList(),
     override val isRetweeted: Boolean,
     override val isFavorited: Boolean,
-    override val retweetIdByCurrentUser: TweetId?
+    override val retweetIdByCurrentUser: TweetId?,
+    override val urlItems: List<UrlItem>,
 ) : TweetElement {
     override val id: TweetId get() = tweet.id
     override val text: String get() = tweet.text

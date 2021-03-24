@@ -201,6 +201,7 @@ class DrawerViewStateSourceTestRule(
         appSettingRepositoryRule
     ),
     val coroutineRule: CoroutineTestRule = CoroutineTestRule(),
+    private val isStateCollected: Boolean = true,
 ) : TestWatcher() {
     val authenticatedUser = UserId(1000)
 
@@ -229,8 +230,10 @@ class DrawerViewStateSourceTestRule(
             setupCurrentUserIdSource()
             setupRegisteredUserIdsSource(setOf())
         }
-        actualStates = sut.state.testCollect(coroutineScope)
-        navigationEventActual = sut.navEventSource.testCollect(coroutineScope)
+        if (isStateCollected) {
+            actualStates = sut.state.testCollect(coroutineScope)
+            navigationEventActual = sut.navEventSource.testCollect(coroutineScope)
+        }
     }
 
     fun setupGetUserSource(userId: UserId) {

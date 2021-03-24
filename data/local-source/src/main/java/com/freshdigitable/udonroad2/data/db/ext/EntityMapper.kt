@@ -11,6 +11,7 @@ import com.freshdigitable.udonroad2.model.CustomTimelineEntity
 import com.freshdigitable.udonroad2.model.ListId
 import com.freshdigitable.udonroad2.model.MediaEntity
 import com.freshdigitable.udonroad2.model.MediaType
+import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.UrlItem
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
 import com.freshdigitable.udonroad2.model.user.UserEntity
@@ -74,9 +75,8 @@ internal fun MediaEntity.Size.toEntity(): MediaDbEntity.Size {
     return MediaDbEntity.Size(width, height, resizeType)
 }
 
-internal fun UrlItem.toEntity(): UrlEntity {
-    return UrlEntity(url, displayUrl, expandedUrl, start, end)
-}
+internal fun UrlItem.toEntity(tweetId: TweetId): UrlEntity =
+    UrlEntity(tweetId, url, displayUrl, expandedUrl, start, end)
 
 internal fun CustomTimelineEntity.toEntity(): CustomTimelineDb {
     return CustomTimelineDb(

@@ -83,6 +83,7 @@ object Libs {
     const val KOTLINX_TEST_COROUTINES =
         "org.jetbrains.kotlinx:kotlinx-coroutines-test:${Versions.KOTLINX_TEST_COROUTINES}"
     const val ROBOLECTRIC = "org.robolectric:robolectric:${Versions.ROBOLECTRIC}"
+    const val OKHTTP = "com.squareup.okhttp3:okhttp:${Versions.OKHTTP}"
     const val TWITTER4J = "org.twitter4j:twitter4j-core:${Versions.TWITTER4J}"
     const val TWITTER4J_HTTP2_SUPPORT =
         "org.twitter4j:twitter4j-http2-support:${Versions.TWITTER4J}"
