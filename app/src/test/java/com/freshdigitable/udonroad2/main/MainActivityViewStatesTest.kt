@@ -16,7 +16,6 @@
 
 package com.freshdigitable.udonroad2.main
 
-import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
 import com.freshdigitable.udonroad2.data.impl.create
 import com.freshdigitable.udonroad2.input.TweetInputSharedState
@@ -25,19 +24,18 @@ import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
-import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.postEvents
 import com.freshdigitable.udonroad2.test_common.MockVerified
 import com.freshdigitable.udonroad2.test_common.RxExceptionHandler
 import com.freshdigitable.udonroad2.test_common.jvm.AppSettingRepositoryRule
 import com.freshdigitable.udonroad2.test_common.jvm.CoroutineTestRule
 import com.freshdigitable.udonroad2.test_common.jvm.OAuthTokenRepositoryRule
-import com.freshdigitable.udonroad2.test_common.jvm.testCollect
+import com.freshdigitable.udonroad2.test_common.jvm.ObserverEventCollector
+import com.freshdigitable.udonroad2.test_common.jvm.assertLatestNavigationEvent
+import com.freshdigitable.udonroad2.test_common.jvm.setupForActivate
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.google.common.truth.Truth.assertThat
 import io.mockk.every
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.Rule
 import org.junit.Test
@@ -60,7 +58,9 @@ class MainActivityViewStatesTest {
         dispatcher.postEvent(TimelineEvent.Setup())
 
         // verify
-        assertThatNavigationEventOfTimeline(0) {
+        eventCollector.assertLatestNavigationEvent<TimelineEvent.Navigate.Timeline>(
+            sut.initContainer
+        ) {
             assertThat(it.owner.query).isEqualTo(QueryType.Oauth)
         }
     }
@@ -74,7 +74,9 @@ class MainActivityViewStatesTest {
         dispatcher.postEvent(TimelineEvent.Setup())
 
         // verify
-        assertThatNavigationEventOfTimeline(0) {
+        eventCollector.assertLatestNavigationEvent<TimelineEvent.Navigate.Timeline>(
+            sut.initContainer
+        ) {
             assertThat(it.owner.query).isInstanceOf(QueryType.TweetQueryType.Timeline::class.java)
         }
     }
@@ -88,7 +90,9 @@ class MainActivityViewStatesTest {
         dispatchEvents(TimelineEvent.Setup())
 
         // verify
-        assertThatNavigationEventOfTimeline(0) {
+        eventCollector.assertLatestNavigationEvent<TimelineEvent.Navigate.Timeline>(
+            sut.initContainer
+        ) {
             assertThat(it.owner.query).isEqualTo(QueryType.Oauth)
         }
     }
@@ -119,14 +123,13 @@ internal class MainActivityStateModelTestRule(
 ) : TestWatcher() {
     val selectedItemRepository = SelectedItemRepository()
     val navDelegateRule = MainActivityNavigationDelegateRule()
+    val eventCollector = ObserverEventCollector(coroutineRule)
 
     val isExpandedSource = MutableStateFlow(false)
     private val tweetInputSharedState = MockVerified.create<TweetInputSharedState>().apply {
         every { mock.isExpanded } returns isExpandedSource
     }
     val authenticatedUserId = UserId(10000)
-    val coroutineScope =
-        CoroutineScope(coroutineRule.coroutineContextProvider.mainContext + SupervisorJob())
     val sut: MainViewModelSource by lazy {
         MainViewModelSource(
             MainActivityActions(dispatcher),
@@ -137,7 +140,6 @@ internal class MainActivityStateModelTestRule(
             navDelegateRule.state,
         )
     }
-    private lateinit var navigationEventActual: List<NavigationEvent>
 
     fun dispatchEvents(vararg events: AppEvent) {
         dispatcher.postEvents(*events)
@@ -146,34 +148,17 @@ internal class MainActivityStateModelTestRule(
     override fun starting(description: Description?) {
         super.starting(description)
         if (isStateCollected) {
-            navigationEventActual = sut.initContainer.testCollect(coroutineScope)
-            sut.states.testCollect(coroutineScope)
+            eventCollector.setupForActivate {
+                addAll(sut.states, sut.initContainer)
+            }
         }
     }
 
     override fun apply(base: Statement?, description: Description?): Statement {
-        return RuleChain.outerRule(InstantTaskExecutorRule())
-            .around(coroutineRule)
+        return RuleChain.outerRule(eventCollector)
             .around(navDelegateRule)
             .around(oauthTokenRepository)
             .around(RxExceptionHandler())
             .apply(super.apply(base, description), description)
-    }
-
-    fun assertThatNavigationEventOfTimeline(
-        index: Int,
-        matcher: (TimelineEvent.Navigate.Timeline) -> Unit
-    ) {
-        navigationEventActual.assertThatNavigationEvent(index, matcher)
-    }
-}
-
-inline fun <reified T : NavigationEvent> List<NavigationEvent>.assertThatNavigationEvent(
-    index: Int,
-    matcher: (T) -> Unit
-) {
-    with(this[index]) {
-        assertThat(this).isInstanceOf(T::class.java)
-        matcher(this as T)
     }
 }

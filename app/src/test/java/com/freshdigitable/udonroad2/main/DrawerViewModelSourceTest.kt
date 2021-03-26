@@ -30,12 +30,12 @@ import com.freshdigitable.udonroad2.test_common.MockVerified
 import com.freshdigitable.udonroad2.test_common.jvm.AppSettingRepositoryRule
 import com.freshdigitable.udonroad2.test_common.jvm.CoroutineTestRule
 import com.freshdigitable.udonroad2.test_common.jvm.OAuthTokenRepositoryRule
-import com.freshdigitable.udonroad2.test_common.jvm.testCollect
+import com.freshdigitable.udonroad2.test_common.jvm.ObserverEventCollector
+import com.freshdigitable.udonroad2.test_common.jvm.setupForActivate
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.google.common.truth.Truth.assertThat
 import io.mockk.every
 import io.mockk.mockk
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.flow
 import org.junit.Before
 import org.junit.Rule
@@ -203,9 +203,9 @@ class DrawerViewStateSourceTestRule(
     val coroutineRule: CoroutineTestRule = CoroutineTestRule(),
     private val isStateCollected: Boolean = true,
 ) : TestWatcher() {
+    private val eventCollector = ObserverEventCollector(coroutineRule)
     val authenticatedUser = UserId(1000)
 
-    private val coroutineScope = CoroutineScope(coroutineRule.coroutineContextProvider.mainContext)
     private val userRepository = MockVerified.create<UserDataSource>()
 
     internal val sut: DrawerViewModelSource by lazy {
@@ -221,8 +221,10 @@ class DrawerViewStateSourceTestRule(
             userRepository.mock
         )
     }
-    internal lateinit var actualStates: List<DrawerViewModel.State>
-    internal lateinit var navigationEventActual: List<NavigationEvent>
+    internal val actualStates: List<DrawerViewModel.State>
+        get() = eventCollector.nonNullEventsOf(sut.state)
+    internal val navigationEventActual: List<NavigationEvent>
+        get() = eventCollector.nonNullEventsOf(sut.navEventSource)
 
     override fun starting(description: Description?) {
         super.starting(description)
@@ -231,8 +233,9 @@ class DrawerViewStateSourceTestRule(
             setupRegisteredUserIdsSource(setOf())
         }
         if (isStateCollected) {
-            actualStates = sut.state.testCollect(coroutineScope)
-            navigationEventActual = sut.navEventSource.testCollect(coroutineScope)
+            eventCollector.setupForActivate {
+                addAll(sut.state, sut.navEventSource)
+            }
         }
     }
 
@@ -252,7 +255,7 @@ class DrawerViewStateSourceTestRule(
     }
 
     override fun apply(base: Statement?, description: Description?): Statement =
-        RuleChain.outerRule(coroutineRule)
+        RuleChain.outerRule(eventCollector)
             .around(oAuthTokenRepositoryRule)
             .around(userRepository)
             .apply(super.apply(base, description), description)

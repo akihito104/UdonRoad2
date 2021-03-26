@@ -20,8 +20,9 @@ import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
+import com.freshdigitable.udonroad2.test_common.jvm.ObserverEventCollector
 import com.freshdigitable.udonroad2.test_common.jvm.createMock
-import com.freshdigitable.udonroad2.test_common.jvm.testCollect
+import com.freshdigitable.udonroad2.test_common.jvm.setupForActivate
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.TimelineViewStatesTestRule
 import com.freshdigitable.udonroad2.timeline.UserIconClickedAction
@@ -32,13 +33,16 @@ import io.mockk.mockk
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.junit.runner.Description
+import org.junit.rules.RuleChain
+import org.junit.rules.TestRule
 
 class TimelineViewModelTest {
+    private val eventCollector = ObserverEventCollector()
+    private val viewStatesTestRule = TimelineViewStatesTestRule(isStateCollected = false)
+
     @get:Rule
-    val viewStatesTestRule = object : TimelineViewStatesTestRule() {
-        override fun starting(description: Description?) = Unit
-    }
+    val rule: TestRule = RuleChain.outerRule(eventCollector)
+        .around(viewStatesTestRule)
 
     internal val sut: TimelineViewModel by lazy {
         val eventDispatcher = viewStatesTestRule.actionsRule.dispatcher
@@ -48,19 +52,18 @@ class TimelineViewModelTest {
         )
     }
 
-    private lateinit var isHeadingEnabledFlow: List<Boolean>
-    private lateinit var navigationEvents: List<NavigationEvent>
+    private val isHeadingEnabledFlow: List<Boolean>
+        get() = eventCollector.nonNullEventsOf(sut.listState).map { it.isHeadingEnabled }
+    private val navigationEvents: List<NavigationEvent>
+        get() = eventCollector.nonNullEventsOf(sut.navigationEvent)
 
     @Before
     fun setup() {
-        val isHeadingEnabled = mutableListOf<Boolean>()
-        isHeadingEnabledFlow = isHeadingEnabled
-        sut.listState.observeForever { isHeadingEnabled.add(it.isHeadingEnabled) }
-        navigationEvents = sut.navigationEvent.testCollect(viewStatesTestRule.scope)
-        sut.timeline.testCollect(viewStatesTestRule.scope)
-        sut.selectedItemId.observeForever { }
-        sut.feedbackMessage.testCollect(viewStatesTestRule.scope)
-        sut.mediaState.observeForever { }
+        eventCollector.setupForActivate {
+            addAll(sut.listState, sut.selectedItemId, sut.mediaState)
+            addAll(sut.timeline)
+            addActivityEventStream(sut)
+        }
     }
 
     @Test

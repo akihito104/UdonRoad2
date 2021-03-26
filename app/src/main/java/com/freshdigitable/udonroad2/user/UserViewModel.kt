@@ -5,7 +5,6 @@ import androidx.annotation.IdRes
 import androidx.annotation.Keep
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.asFlow
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.map
@@ -22,7 +21,10 @@ import com.freshdigitable.udonroad2.shortcut.postSelectedItemShortcutEvent
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.user.UserActivityEvent.Relationships
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.shareIn
 import timber.log.Timber
 import java.util.EnumSet
 
@@ -31,11 +33,12 @@ class UserViewModel(
     private val viewState: UserViewModelSource,
 ) : UserViewEventListener by viewState,
     ViewModel() {
-    val state: LiveData<UserViewState> = viewState.state.asLiveData(viewModelScope.coroutineContext)
+    private val sharedState = viewState.state
+        .shareIn(viewModelScope, SharingStarted.Lazily, replay = 1)
+    val state: LiveData<UserViewState> = sharedState.asLiveData(viewModelScope.coroutineContext)
     val relationshipMenuItems: LiveData<Set<RelationshipMenu>> =
         state.map { it.relationshipMenuItems }.distinctUntilChanged()
-    internal val pages: Flow<Map<UserPage, ListOwner<*>>> = state.map { it.pages }
-        .asFlow()
+    internal val pages: Flow<Map<UserPage, ListOwner<*>>> = sharedState.mapLatest { it.pages }
         .distinctUntilChanged()
     internal val feedbackMessage: Flow<FeedbackMessage> = viewState.feedbackMessage
 

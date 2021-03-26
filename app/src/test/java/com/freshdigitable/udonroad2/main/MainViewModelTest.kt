@@ -27,11 +27,12 @@ import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.UserId
-import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.model.user.UserEntity
 import com.freshdigitable.udonroad2.shortcut.SelectedItemShortcut
-import com.freshdigitable.udonroad2.test_common.jvm.testCollect
+import com.freshdigitable.udonroad2.test_common.jvm.ObserverEventCollector
+import com.freshdigitable.udonroad2.test_common.jvm.assertLatestNavigationEvent
+import com.freshdigitable.udonroad2.test_common.jvm.setupForActivate
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.google.common.truth.Truth.assertThat
 import io.mockk.every
@@ -121,7 +122,9 @@ class MainViewModelTest {
             sut.initialEvent()
 
             // verify
-            navigationEventActual.assertThatNavigationEvent<TimelineEvent.Navigate.Timeline>(0) {
+            eventCollector.assertLatestNavigationEvent<TimelineEvent.Navigate.Timeline>(
+                sut.navigationEvent,
+            ) {
                 assertThat(it.owner.query).isEqualTo(QueryType.Oauth)
             }
         }
@@ -246,6 +249,20 @@ class MainViewModelTest {
         }
 
         @Test
+        fun onAccountSwitcherClickeddAfterDeactivate_then_switcherIsOpened(): Unit = with(rule) {
+            // setup
+            eventCollector.deactivateAll()
+            eventCollector.activateAll()
+
+            // exercise
+            sut.onDrawerOpened()
+            sut.onAccountSwitcherClicked()
+
+            // verify
+            assertThat(sut.drawerState.value?.isAccountSwitcherOpened).isTrue()
+        }
+
+        @Test
         fun onBackPressed_whenTweetInputIsExpanded_then_dispatchInputCancelEvent(): Unit =
             with(rule) {
                 // setup
@@ -343,12 +360,13 @@ class MainViewModelTest {
             assertThat(actualConsumed).isTrue()
             assertThat(sut.drawerState.value?.isOpened).isFalse()
             assertThat(sut.drawerState.value?.isAccountSwitcherOpened).isFalse()
-            assertThat(navigationEventActual.last())
-                .isInstanceOf(TimelineEvent.Navigate.Timeline::class.java)
-            val event = navigationEventActual.last() as TimelineEvent.Navigate.Timeline
-            assertThat(event.owner.query)
-                .isInstanceOf(QueryType.CustomTimelineListQueryType.Ownership::class.java)
-            assertThat(event.owner.query.userId).isEqualTo(authenticatedUserId)
+            eventCollector.assertLatestNavigationEvent<TimelineEvent.Navigate.Timeline>(
+                sut.navigationEvent,
+            ) { event ->
+                assertThat(event.owner.query)
+                    .isInstanceOf(QueryType.CustomTimelineListQueryType.Ownership::class.java)
+                assertThat(event.owner.query.userId).isEqualTo(authenticatedUserId)
+            }
         }
 
         @Test
@@ -357,10 +375,11 @@ class MainViewModelTest {
             sut.onCurrentUserIconClicked()
 
             // verify
-            assertThat(navigationEventActual.last())
-                .isInstanceOf(TimelineEvent.Navigate.UserInfo::class.java)
-            val actualEvent = navigationEventActual.last() as TimelineEvent.Navigate.UserInfo
-            assertThat(actualEvent.tweetUserItem.id).isEqualTo(authenticatedUserId)
+            eventCollector.assertLatestNavigationEvent<TimelineEvent.Navigate.UserInfo>(
+                sut.navigationEvent
+            ) {
+                assertThat(it.tweetUserItem.id).isEqualTo(authenticatedUserId)
+            }
         }
     }
 }
@@ -370,6 +389,7 @@ internal class MainViewModelTestRule : TestWatcher() {
         MainActivityStateModelTestRule(isStateCollected = false)
     val dispatcher = stateModelRule.dispatcher
     val coroutineRule = stateModelRule.coroutineRule
+    internal val eventCollector = ObserverEventCollector(coroutineRule)
     val appSettingRepositoryRule = stateModelRule.appSettingRepositoryRule
     val authenticatedUserId = stateModelRule.authenticatedUserId
     val drawerViewStateRule = DrawerViewStateSourceTestRule(
@@ -383,25 +403,21 @@ internal class MainViewModelTestRule : TestWatcher() {
     val sut: MainViewModel by lazy {
         MainViewModel(dispatcher, stateModelRule.sut, drawerViewStateRule.sut)
     }
-    lateinit var navigationEventActual: List<NavigationEvent>
 
     override fun starting(description: Description?) {
         super.starting(description)
-        with(sut) {
-            listOf(
-                mainState,
-                appBarTitle,
-                isTweetInputMenuVisible,
-                isFabVisible,
-                drawerState
-            ).forEach { it.observeForever { } }
+        eventCollector.setupForActivate {
+            with(sut) {
+                addAll(mainState, appBarTitle, isTweetInputMenuVisible, isFabVisible, drawerState)
+                addAll(navigationEvent)
+            }
         }
-        navigationEventActual = sut.navigationEvent.testCollect(stateModelRule.coroutineScope)
     }
 
     override fun apply(base: Statement?, description: Description?): Statement =
         RuleChain.outerRule(stateModelRule)
             .around(drawerViewStateRule)
+            .around(eventCollector)
             .apply(super.apply(base, description), description)
 
     companion object {
