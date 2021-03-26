@@ -20,12 +20,59 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Rect
 import android.graphics.drawable.Drawable
+import android.text.SpannableStringBuilder
+import android.text.Spanned
 import android.text.style.ImageSpan
 import android.widget.TextView
+import androidx.core.graphics.drawable.updateBounds
+import androidx.databinding.BindingAdapter
+import com.bumptech.glide.Glide
+import com.bumptech.glide.request.target.CustomTarget
+import com.bumptech.glide.request.transition.Transition
+import com.freshdigitable.udonroad2.model.user.TweetUserItem
+import com.freshdigitable.udonroad2.timeline.R
 import kotlin.math.roundToInt
 
-fun TextView.bindRtUserIcon(before: String, icon: String, after: String) {
-    TODO()
+@BindingAdapter("rtUserText")
+fun TextView.bindRtUserIcon(user: TweetUserItem?) {
+    if (user == null) {
+        text = ""
+        return
+    }
+    val iconSpan = context.getString(R.string.rt_user_icon)
+    val rtText = context.getString(R.string.format_rt_user_with_icon, iconSpan, user.screenName)
+    val start = rtText.indexOf(iconSpan)
+    val iconSize = resources.getDimensionPixelSize(R.dimen.icon_size_small)
+    Glide.with(this)
+        .load(user.iconUrl)
+        .into(object : CustomTarget<Drawable>() {
+            override fun onLoadStarted(placeholder: Drawable?) {
+                placeholder?.let { this@bindRtUserIcon.text = createRtSpannedText(it) }
+            }
+
+            override fun onLoadFailed(errorDrawable: Drawable?) {
+                errorDrawable?.let { this@bindRtUserIcon.text = createRtSpannedText(it) }
+            }
+
+            override fun onLoadCleared(placeholder: Drawable?) {
+                placeholder?.let { this@bindRtUserIcon.text = createRtSpannedText(it) }
+            }
+
+            override fun onResourceReady(resource: Drawable, transition: Transition<in Drawable>?) {
+                this@bindRtUserIcon.text = createRtSpannedText(resource)
+            }
+
+            private fun createRtSpannedText(resource: Drawable): SpannableStringBuilder {
+                resource.updateBounds(0, 0, iconSize, iconSize)
+                val imageSpan = RefinedImageSpan(resource, RefinedImageSpan.ALIGN_CENTER, 0, 0)
+                return SpannableStringBuilder(rtText).apply {
+                    setSpan(imageSpan,
+                        start,
+                        start + iconSpan.length,
+                        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                }
+            }
+        })
 }
 
 internal class RefinedImageSpan(
@@ -48,7 +95,7 @@ internal class RefinedImageSpan(
             fm.ascent = when (verticalAlignment) {
                 ALIGN_BASELINE -> -bounds.bottom
                 ALIGN_BOTTOM -> (bounds.bottom * fontMetrics.top / fontMetrics.height).roundToInt()
-                ALIGN_CENTER -> (fontMetrics.top - (bounds.bottom - fontMetrics.center)).roundToInt()
+                ALIGN_CENTER -> (fontMetrics.top - (bounds.bottom - fontMetrics.height) / 2).roundToInt()
                 else -> fm.ascent
             }
             fm.descent = (bounds.bottom + fm.ascent).coerceAtLeast(0)
@@ -82,7 +129,7 @@ internal class RefinedImageSpan(
     }
 
     companion object {
-        private const val ALIGN_CENTER = 10 // XXX
+        const val ALIGN_CENTER = 10
 
         private val Paint.FontMetrics.height: Float get() = bottom - top
         private val Paint.FontMetrics.center: Float get() = height / 2f
