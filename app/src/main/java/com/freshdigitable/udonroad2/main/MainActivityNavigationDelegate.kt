@@ -100,7 +100,7 @@ internal class MainActivityNavigationDelegate @Inject constructor(
             }
             is DetailEvent.NavigationExternalApp -> {
                 val intent = Intent(Intent.ACTION_VIEW)
-                val uri = event.card.appUrl?.let { appUrl ->
+                val uri = event.appUrl?.let { appUrl ->
                     val i = Intent(intent).apply {
                         data = Uri.parse(appUrl)
                     }
@@ -110,7 +110,7 @@ internal class MainActivityNavigationDelegate @Inject constructor(
                     } else {
                         null
                     }
-                } ?: event.card.url
+                } ?: event.url
                 intent.data = Uri.parse(uri)
                 activity.startActivity(intent)
             }
