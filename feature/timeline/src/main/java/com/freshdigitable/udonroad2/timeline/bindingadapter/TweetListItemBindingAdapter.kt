@@ -176,8 +176,8 @@ fun MediaThumbnailContainer.bindMedia(
     }
 }
 
-@BindingAdapter("rtUserText")
-fun TextView.bindRtUserIcon(user: TweetUserItem?) {
+@BindingAdapter("rtUserText", "corner_radius", requireAll = false)
+fun TextView.bindRtUserIcon(user: TweetUserItem?, cornerRadius: Float?) {
     if (user == null) {
         text = ""
         return
@@ -189,7 +189,7 @@ fun TextView.bindRtUserIcon(user: TweetUserItem?) {
     Glide.with(this)
         .load(user.iconUrl)
         .placeholder(R.drawable.ic_person_outline_black)
-        .transform(resources.getRoundedCornersTransform())
+        .transform(resources.getRoundedCornersTransform(cornerRadius?.toInt()))
         .into(object : CustomTarget<Drawable>() {
             private fun createRtSpannedText(resource: Drawable): SpannableStringBuilder {
                 resource.setBounds(0, 0, iconSize, iconSize)

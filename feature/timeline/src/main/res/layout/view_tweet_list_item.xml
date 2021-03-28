@@ -67,6 +67,7 @@
             app:layout_constraintStart_toStartOf="parent"
             android:textSize="12sp"
             app:rtUserText="@{tweet.originalUser}"
+            app:corner_radius="@{@dimen/icon_corner_radius_small}"
             android:visibility="@{tweet.isRetweet ? View.VISIBLE : View.GONE}"
             tools:text="RT: @screen_name"
             tools:visibility="visible"
