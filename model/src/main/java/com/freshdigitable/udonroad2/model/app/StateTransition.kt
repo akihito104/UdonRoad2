@@ -33,7 +33,7 @@ typealias ScanFun<S, E> = suspend (S, E) -> S
 
 fun <S> stateSourceBuilder(
     init: S,
-    vararg updateSource: Flow<UpdateFun<S>>
+    vararg updateSource: Flow<UpdateFun<S>>,
 ): Flow<S> {
     require(updateSource.isNotEmpty())
     val builder = StateSourceBuilder(initBlock = { init }, updateSource = updateSource)
@@ -56,7 +56,7 @@ interface StateSourceBuilderScope<S> {
 
 internal class StateSourceBuilder<S>(
     private val initBlock: suspend () -> S,
-    private vararg val updateSource: Flow<UpdateFun<S>>
+    private vararg val updateSource: Flow<UpdateFun<S>>,
 ) : StateSourceBuilderScope<S> {
     private val updateWithState = mutableListOf<FlatMapWithState<S, *>>()
     private val updaters = mutableListOf<Updater<S, *>>()
@@ -67,7 +67,7 @@ internal class StateSourceBuilder<S>(
 
     override fun <R> flatMap(
         flow: (Flow<S>) -> Flow<R>,
-        scan: ScanFun<S, R>
+        scan: ScanFun<S, R>,
     ) {
         updateWithState.add(FlatMapWithState(flow, scan))
     }
@@ -105,14 +105,14 @@ internal class StateSourceBuilder<S>(
 
     class FlatMapWithState<S, R>(
         private val flow: Flow<S>.() -> Flow<R>,
-        private val scan: ScanFun<S, R>
+        private val scan: ScanFun<S, R>,
     ) {
         fun create(stateFlow: Flow<S>): Flow<UpdateFun<S>> = flow(stateFlow).onEvent(scan)
     }
 
     class Updater<S, E>(
         private val flow: Flow<E>,
-        private val scan: ScanFun<S, E>
+        private val scan: ScanFun<S, E>,
     ) {
         fun create(): Flow<UpdateFun<S>> = flow.onEvent(scan)
     }
@@ -123,7 +123,7 @@ fun <E, S> Flow<E>.onEvent(update: ScanFun<S, E>): Flow<UpdateFun<S>> =
 
 fun <S, E> Flow<E>.onEvent(
     atFirst: UpdaterFlowBuilderScope.SourceElement<S, E>,
-    block: UpdaterFlowBuilderScope<S, E>.() -> Unit
+    block: UpdaterFlowBuilderScope<S, E>.() -> Unit,
 ): Flow<UpdateFun<S>> {
     val builder = UpdaterFlowBuilderScope(this, atFirst)
     builder.block()
@@ -135,7 +135,7 @@ fun <S, E> scanSource(scan: ScanFun<S, E>): UpdaterFlowBuilderScope.SourceElemen
 
 class UpdaterFlowBuilderScope<S, E>(
     private val eventSource: Flow<E>,
-    onEvent: SourceElement<S, E>
+    onEvent: SourceElement<S, E>,
 ) {
     companion object {
         internal fun <S, E> onEvent(scan: ScanFun<S, E>): SourceElement<S, E> =
