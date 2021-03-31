@@ -70,7 +70,7 @@ object Versions {
     const val KTLINT = "0.40.0"
 
     // build libs
-    const val ANDROID_GRADLE_TOOL = "4.1.2"
+    const val ANDROID_GRADLE_TOOL = "4.1.3"
     const val SCABBARD = "0.4.0"
     const val RELEASES_HUB = "2.0.0"
     const val LICENSE_TOOL = "1.2.5"

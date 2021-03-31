@@ -59,6 +59,21 @@ subprojects {
         outputColorName.set("RED")
         ignoreFailures.set(true)
     }
+
+    if (path.startsWith(":test-")) {
+        tasks.whenTaskAdded {
+            if (name.contains("UnitTest", ignoreCase = true)) {
+                onlyIf { false }
+            }
+        }
+    }
+    if (path != ":app") {
+        tasks.whenTaskAdded {
+            if (name.contains("AndroidTest", ignoreCase = true)) {
+                onlyIf { false }
+            }
+        }
+    }
 }
 
 configure(listOf(project(":app"))) {
