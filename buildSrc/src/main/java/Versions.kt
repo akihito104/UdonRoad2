@@ -50,7 +50,7 @@ object Versions {
 
     // test
     const val JUNIT = "4.13.2"
-    const val MOCKK = "1.10.6"
+    const val MOCKK = "1.11.0"
     const val ROBOLECTRIC = "4.5.1"
     const val TRUTH = "1.1.2"
     const val KOTLINX_TEST_COROUTINES = KOTLIN_COROUTINES
