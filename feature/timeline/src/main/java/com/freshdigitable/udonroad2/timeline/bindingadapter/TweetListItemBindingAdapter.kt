@@ -16,9 +16,11 @@
 
 package com.freshdigitable.udonroad2.timeline.bindingadapter
 
+import android.content.res.Resources
 import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.Drawable
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.text.format.DateUtils
@@ -30,6 +32,8 @@ import androidx.databinding.BindingAdapter
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.bumptech.glide.request.RequestOptions
+import com.bumptech.glide.request.target.CustomTarget
+import com.bumptech.glide.request.transition.Transition
 import com.freshdigitable.udonroad2.media.MediaThumbnailContainer
 import com.freshdigitable.udonroad2.media.mediaViews
 import com.freshdigitable.udonroad2.model.MediaType
@@ -118,7 +122,12 @@ fun bindCreatedAtRelative(v: TextView, createdAt: Instant?) {
     }
 }
 
-private val roundedCornersTransforms: HashMap<Int, RoundedCorners?> = hashMapOf()
+private val roundedCornersTransforms: HashMap<Int, RoundedCorners> = hashMapOf()
+
+private fun Resources.getRoundedCornersTransform(cornerRadius: Int? = null): RoundedCorners {
+    val cr = cornerRadius ?: getDimensionPixelSize(R.dimen.icon_corner_radius)
+    return roundedCornersTransforms.getOrPut(cr) { RoundedCorners(cr) }
+}
 
 @BindingAdapter("bindUserIcon", "corner_radius", requireAll = false)
 fun bindUserIcon(v: ImageView, url: String?, cornerRadius: Float?) {
@@ -126,12 +135,10 @@ fun bindUserIcon(v: ImageView, url: String?, cornerRadius: Float?) {
         Glide.with(v).clear(v)
         return
     }
-    val cr: Int =
-        cornerRadius?.toInt() ?: v.resources.getDimensionPixelSize(R.dimen.icon_corner_radius)
-    val trans = roundedCornersTransforms.getOrPut(cr) { RoundedCorners(cr) }
     Glide.with(v)
         .load(url)
-        .transform(requireNotNull(trans))
+        .placeholder(R.drawable.ic_person_outline_black)
+        .transform(v.resources.getRoundedCornersTransform(cornerRadius?.toInt()))
         .into(v)
 }
 
@@ -140,7 +147,7 @@ private val movieType: Set<MediaType> = EnumSet.of(MediaType.VIDEO, MediaType.AN
 @BindingAdapter("bindMedia", "hideForPossiblySensitive", requireAll = false)
 fun MediaThumbnailContainer.bindMedia(
     items: List<TweetMediaItem>?,
-    hideForPossiblySensitive: Boolean?
+    hideForPossiblySensitive: Boolean?,
 ) {
     if (items.isNullOrEmpty()) {
         return
@@ -167,4 +174,46 @@ fun MediaThumbnailContainer.bindMedia(
                 .into(view)
         }
     }
+}
+
+@BindingAdapter("rtUserText", "corner_radius", requireAll = false)
+fun TextView.bindRtUserIcon(user: TweetUserItem?, cornerRadius: Float?) {
+    if (user == null) {
+        text = ""
+        return
+    }
+    val iconSpan = context.getString(R.string.rt_user_icon)
+    val rtText = context.getString(R.string.format_rt_user_with_icon, iconSpan, user.screenName)
+    val start = rtText.indexOf(iconSpan)
+    val iconSize = resources.getDimensionPixelSize(R.dimen.icon_size_small)
+    Glide.with(this)
+        .load(user.iconUrl)
+        .placeholder(R.drawable.ic_person_outline_black)
+        .transform(resources.getRoundedCornersTransform(cornerRadius?.toInt()))
+        .into(object : CustomTarget<Drawable>() {
+            private fun createRtSpannedText(resource: Drawable): SpannableStringBuilder {
+                resource.setBounds(0, 0, iconSize, iconSize)
+                val imageSpan = RefinedImageSpan(resource, RefinedImageSpan.ALIGN_CENTER, 0, 0)
+                val end = start + iconSpan.length
+                return SpannableStringBuilder(rtText).apply {
+                    setSpan(imageSpan, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                }
+            }
+
+            override fun onLoadStarted(placeholder: Drawable?) {
+                placeholder?.let { this@bindRtUserIcon.text = createRtSpannedText(it) }
+            }
+
+            override fun onLoadFailed(errorDrawable: Drawable?) {
+                errorDrawable?.let { this@bindRtUserIcon.text = createRtSpannedText(it) }
+            }
+
+            override fun onLoadCleared(placeholder: Drawable?) {
+                placeholder?.let { this@bindRtUserIcon.text = createRtSpannedText(it) }
+            }
+
+            override fun onResourceReady(resource: Drawable, transition: Transition<in Drawable>?) {
+                this@bindRtUserIcon.text = createRtSpannedText(resource)
+            }
+        })
 }

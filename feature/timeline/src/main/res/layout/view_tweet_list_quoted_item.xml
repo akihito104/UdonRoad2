@@ -51,8 +51,8 @@
 
         <ImageView
             android:id="@+id/quotedItem_icon"
-            android:layout_width="16dp"
-            android:layout_height="16dp"
+            android:layout_width="@dimen/icon_size_small"
+            android:layout_height="@dimen/icon_size_small"
             android:layout_marginEnd="@dimen/margin_half"
             android:layout_marginRight="@dimen/margin_half"
             app:layout_constraintTop_toTopOf="parent"

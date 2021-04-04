@@ -8,4 +8,7 @@
     <string name="title_conversation">Conversation</string>
     <string name="title_custom_timeline_ownership_list">My lists</string>
     <string name="action_totop">to top of the list</string>
+
+    <string name="rt_user_icon" translatable="false">[img]</string>
+    <string name="format_rt_user_with_icon">RT by %1$s @%2$s</string>
 </resources>

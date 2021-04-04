@@ -17,6 +17,8 @@
 <resources>
     <dimen name="icon_corner_radius">4dp</dimen>
     <dimen name="icon_corner_radius_small">2dp</dimen>
+    <dimen name="icon_size">40dp</dimen>
+    <dimen name="icon_size_small">16dp</dimen>
 
     <dimen name="quote_frame_corner_radius">4dp</dimen>
     <dimen name="quote_frame_border">1dp</dimen>
