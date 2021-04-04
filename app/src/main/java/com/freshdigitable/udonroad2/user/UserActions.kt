@@ -16,45 +16,24 @@
 
 package com.freshdigitable.udonroad2.user
 
-import android.view.MenuItem
-import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
-import com.freshdigitable.udonroad2.model.app.navigation.toActionFlow
+import com.freshdigitable.udonroad2.model.app.navigation.toAction
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.user.UserActivityEvent.Relationships
-import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class UserActions @Inject constructor(
     private val tweetUserItem: TweetUserItem,
-    private val eventDispatcher: EventDispatcher
+    eventDispatcher: EventDispatcher,
 ) : UserViewEventListener {
 
-    override fun onAppBarScrolled(rate: Float) {
-        eventDispatcher.postEvent(UserActivityEvent.AppbarScrolled(rate))
+    override val scrollAppbar = eventDispatcher.toAction<Float, UserActivityEvent.AppbarScrolled> {
+        UserActivityEvent.AppbarScrolled(it)
     }
-
-    override fun onCurrentPageChanged(index: Int) {
-        eventDispatcher.postEvent(UserActivityEvent.PageChanged(UserPage.values()[index]))
+    override val changePage = eventDispatcher.toAction<Int, UserActivityEvent.PageChanged> {
+        UserActivityEvent.PageChanged(UserPage.values()[it])
     }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return eventDispatcher.postRelationshipEvent(tweetUserItem.id, item)
+    override val changeRelationships = eventDispatcher.toAction<RelationshipMenu, Relationships> {
+        it.event(tweetUserItem.id)
     }
-
-    override fun onBackPressed(): Boolean {
-        TODO("Not yet implemented")
-    }
-
-    internal val currentPageChanged: Flow<UserActivityEvent.PageChanged> =
-        eventDispatcher.toActionFlow()
-    internal val scrollAppbar: Flow<UserActivityEvent.AppbarScrolled> =
-        eventDispatcher.toActionFlow()
-    internal val changeRelationships: Flow<Relationships> = eventDispatcher.toActionFlow()
-}
-
-private fun EventDispatcher.postRelationshipEvent(userId: UserId, item: MenuItem): Boolean {
-    val menuItem = RelationshipMenu.findById(item.itemId) ?: return false
-    postEvent(menuItem.event(userId))
-    return true
 }
