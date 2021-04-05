@@ -16,7 +16,10 @@
 
 package com.freshdigitable.udonroad2
 
+import android.app.Activity
 import android.app.Application
+import android.os.Bundle
+import android.view.WindowManager
 import com.freshdigitable.udonroad2.di.AppComponent
 import com.freshdigitable.udonroad2.di.DaggerAppComponent
 import com.freshdigitable.udonroad2.model.app.AppExecutor
@@ -39,6 +42,18 @@ open class AppApplication : HasAndroidInjector, Application() {
         super.onCreate()
         AndroidThreeTen.init(this)
         Timber.plant(Timber.DebugTree())
+        registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks {
+            override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
+                activity.window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            }
+
+            override fun onActivityStarted(activity: Activity) {}
+            override fun onActivityResumed(activity: Activity) {}
+            override fun onActivityPaused(activity: Activity) {}
+            override fun onActivityStopped(activity: Activity) {}
+            override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {}
+            override fun onActivityDestroyed(activity: Activity) {}
+        })
 
         val component = createComponent()
         component.setup()
