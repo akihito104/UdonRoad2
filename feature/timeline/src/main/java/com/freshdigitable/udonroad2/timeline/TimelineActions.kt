@@ -62,13 +62,10 @@ internal class TimelineActions(
         originalId: TweetId,
         quotedId: TweetId?,
         item: TweetElement,
-        index: Int
+        index: Int,
     ) {
         val selected = SelectedItemId(owner, originalId, quotedId)
-        dispatcher.postEvent(TimelineEvent.MediaItemClicked(item.id, index, selected))
-    }
-
-    override fun onMediaItemClicked(originalId: TweetId, item: TweetElement, index: Int) {
-        onMediaItemClicked(originalId, null, item, index)
+        dispatcher.postEvent(TweetItemSelection.Selected(selected))
+        onMediaItemClicked(item, index)
     }
 }

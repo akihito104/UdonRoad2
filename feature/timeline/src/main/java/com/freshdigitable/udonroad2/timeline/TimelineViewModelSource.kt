@@ -31,8 +31,6 @@ import com.freshdigitable.udonroad2.model.app.stateSourceBuilder
 import com.freshdigitable.udonroad2.shortcut.ShortcutViewStates
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentEventDelegate
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onEach
@@ -57,7 +55,6 @@ internal class TimelineViewModelSource(
             selectedItemId = selectedItemRepository.find(owner)
         ),
         baseViewModelSource.state.onEvent { s, base -> s.copy(baseState = base) },
-        mediaViewModelSource.state.onEvent { s, media -> s.copy(mediaState = media) },
         actions.selectItem.onEvent { s, e -> s.copy(selectedItemId = e.selectedItemId) },
         actions.unselectItem.onEvent { s, _ -> s.copy(selectedItemId = null) },
         actions.toggleItem.onEvent { s, e ->
@@ -67,9 +64,6 @@ internal class TimelineViewModelSource(
             }
         },
         actions.heading.onEvent { s, _ -> s.copy(selectedItemId = null) },
-        actions.launchMediaViewer.filter { it.selectedItemId?.owner == owner }.onEvent { s, e ->
-            e.selectedItemId?.let { s.copy(selectedItemId = it) } ?: s
-        },
     ).onEach {
         if (it.selectedItemId != null) {
             selectedItemRepository.put(it.selectedItemId)
@@ -94,9 +88,7 @@ internal class TimelineViewModelSource(
                 NavigationEvent.Type.NAVIGATE
             )
         },
-        mediaViewModelSource.navigationEvent
-            .filterIsInstance<TimelineEvent.Navigate.MediaViewer>()
-            .filter { it.selectedItemId?.owner == owner },
+        mediaViewModelSource.navigationEvent,
         baseViewModelSource.navigationEvent,
     )
     override val feedbackMessage: Flow<FeedbackMessage> = updateTweet
@@ -109,13 +101,10 @@ internal class TimelineViewModelSource(
 
 data class TimelineState(
     val baseState: ListItemLoadableViewModel.State? = null,
-    val mediaState: TweetMediaItemViewModel.State? = null,
     val selectedItemId: SelectedItemId? = null,
-) : ListItemLoadableViewModel.State, TweetMediaItemViewModel.State {
+) : ListItemLoadableViewModel.State {
     override val isHeadingEnabled: Boolean
         get() = baseState?.isHeadingEnabled == true || selectedItemId != null
-    override val isPossiblySensitiveHidden: Boolean
-        get() = mediaState?.isPossiblySensitiveHidden ?: false
 }
 
 class TimelineNavigationDelegate @Inject constructor(

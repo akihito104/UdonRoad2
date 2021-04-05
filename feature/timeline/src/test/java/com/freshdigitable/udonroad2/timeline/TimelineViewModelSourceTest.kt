@@ -172,7 +172,7 @@ class TimelineViewModelSourceTest {
 }
 
 class TimelineViewStatesTestRule(
-    isStateCollected: Boolean = true
+    isStateCollected: Boolean = true,
 ) : TestWatcher() {
     @ExperimentalCoroutinesApi
     internal val coroutineTestRule = CoroutineTestRule()
@@ -237,7 +237,9 @@ class TimelineViewStatesTestRule(
     override fun starting(description: Description?) {
         super.starting(description)
         eventCollector?.setupForActivate {
-            addAll(sut.state, sut.navigationEvent, sut.updateTweet, sut.selectedItemId)
+            with(sut) {
+                addAll(state, mediaState, navigationEvent, updateTweet, selectedItemId)
+            }
         }
     }
 

@@ -38,7 +38,6 @@ sealed class TimelineEvent : AppEvent {
     data class MediaItemClicked(
         val tweetId: TweetId,
         val index: Int = 0,
-        val selectedItemId: SelectedItemId? = null
     ) : TimelineEvent()
 
     sealed class ListScrolled : TimelineEvent() {
@@ -52,7 +51,7 @@ sealed class TimelineEvent : AppEvent {
     sealed class Navigate : TimelineEvent(), NavigationEvent {
         data class Timeline(
             val owner: ListOwner<*>,
-            override val type: NavigationEvent.Type = NavigationEvent.Type.NAVIGATE
+            override val type: NavigationEvent.Type = NavigationEvent.Type.NAVIGATE,
         ) : Navigate()
 
         data class ToTopOfList(val needsSkip: Boolean) : Navigate() {
@@ -62,7 +61,7 @@ sealed class TimelineEvent : AppEvent {
 
         data class Detail(
             val id: TweetId,
-            override val type: NavigationEvent.Type = NavigationEvent.Type.NAVIGATE
+            override val type: NavigationEvent.Type = NavigationEvent.Type.NAVIGATE,
         ) : Navigate()
 
         data class UserInfo(val tweetUserItem: TweetUserItem) : Navigate() {
@@ -72,13 +71,8 @@ sealed class TimelineEvent : AppEvent {
         data class MediaViewer(
             val tweetId: TweetId,
             val index: Int = 0,
-            val selectedItemId: SelectedItemId? = null
         ) : Navigate() {
-            internal constructor(event: MediaItemClicked) : this(
-                event.tweetId,
-                event.index,
-                event.selectedItemId
-            )
+            internal constructor(event: MediaItemClicked) : this(event.tweetId, event.index)
 
             override val type: NavigationEvent.Type = NavigationEvent.Type.NAVIGATE
         }
@@ -89,5 +83,5 @@ sealed class TimelineEvent : AppEvent {
 
 suspend fun ListOwnerGenerator.getTimelineEvent(
     queryType: QueryType,
-    navType: NavigationEvent.Type
+    navType: NavigationEvent.Type,
 ): TimelineEvent.Navigate.Timeline = TimelineEvent.Navigate.Timeline(generate(queryType), navType)

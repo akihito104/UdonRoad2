@@ -18,7 +18,6 @@ package com.freshdigitable.udonroad2.timeline
 
 import androidx.lifecycle.LiveData
 import com.freshdigitable.udonroad2.data.impl.AppSettingRepository
-import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventStream
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.toActionFlow
@@ -38,35 +37,22 @@ interface TweetMediaItemViewModel : TweetMediaEventListener {
 }
 
 interface TweetMediaEventListener {
-    fun onMediaItemClicked(originalId: TweetId, item: TweetElement, index: Int) {
-        onMediaItemClicked(originalId, null, item, index)
-    }
-
-    fun onMediaItemClicked(originalId: TweetId, quotedId: TweetId?, item: TweetElement, index: Int)
+    fun onMediaItemClicked(item: TweetElement, index: Int)
 }
 
-internal interface TweetMediaAction : TweetMediaEventListener {
-    val launchMediaViewer: Flow<TimelineEvent.MediaItemClicked>
-}
+internal interface TweetMediaAction : TweetMediaEventListener, Flow<TimelineEvent.MediaItemClicked>
 
 internal class LaunchMediaViewerAction @Inject constructor(
     private val eventDispatcher: EventDispatcher,
-) : TweetMediaAction {
-    override fun onMediaItemClicked(
-        originalId: TweetId,
-        quotedId: TweetId?,
-        item: TweetElement,
-        index: Int
-    ) {
+) : TweetMediaAction,
+    Flow<TimelineEvent.MediaItemClicked> by eventDispatcher.toActionFlow() {
+    override fun onMediaItemClicked(item: TweetElement, index: Int) {
         eventDispatcher.postEvent(TimelineEvent.MediaItemClicked(item.id, index))
     }
-
-    override val launchMediaViewer: Flow<TimelineEvent.MediaItemClicked> =
-        eventDispatcher.toActionFlow()
 }
 
 interface TweetMediaViewModelSource : TweetMediaEventListener, ActivityEventStream {
-    val state: Flow<TweetMediaItemViewModel.State>
+    val mediaState: Flow<TweetMediaItemViewModel.State>
 
     companion object {
         internal fun create(
@@ -77,13 +63,13 @@ interface TweetMediaViewModelSource : TweetMediaEventListener, ActivityEventStre
 }
 
 private class TweetMediaViewModelSourceImpl(
-    actions: TweetMediaAction,
+    launchMediaViewer: TweetMediaAction,
     appSettingRepository: AppSettingRepository,
 ) : TweetMediaViewModelSource,
-    TweetMediaEventListener by actions,
+    TweetMediaEventListener by launchMediaViewer,
     ActivityEventStream by ActivityEventStream.EmptyStream {
 
-    override val state: Flow<TweetMediaItemViewModel.State> = stateSourceBuilder(
+    override val mediaState: Flow<TweetMediaItemViewModel.State> = stateSourceBuilder(
         init = Snapshot(),
         appSettingRepository.isPossiblySensitiveHidden.onEvent { s, e ->
             s.copy(isPossiblySensitiveHidden = e)
@@ -91,9 +77,9 @@ private class TweetMediaViewModelSourceImpl(
     )
 
     override val navigationEvent: Flow<TimelineEvent.Navigate.MediaViewer> =
-        actions.launchMediaViewer.map { TimelineEvent.Navigate.MediaViewer(it) }
+        launchMediaViewer.map { TimelineEvent.Navigate.MediaViewer(it) }
 
     data class Snapshot(
-        override val isPossiblySensitiveHidden: Boolean = false
+        override val isPossiblySensitiveHidden: Boolean = false,
     ) : TweetMediaItemViewModel.State
 }

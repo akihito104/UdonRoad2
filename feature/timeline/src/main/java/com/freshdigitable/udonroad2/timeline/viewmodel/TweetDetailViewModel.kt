@@ -51,7 +51,7 @@ internal class TweetDetailViewModel(
     viewStates: TweetDetailViewStates,
     userIconViewModelSource: UserIconViewModelSource,
     mediaViewModelSource: TweetMediaViewModelSource,
-    coroutineContext: CoroutineContext? = null
+    coroutineContext: CoroutineContext? = null,
 ) : TweetDetailEventListener by viewStates,
     UserIconClickListener by userIconViewModelSource,
     TweetMediaItemViewModel,
@@ -62,8 +62,8 @@ internal class TweetDetailViewModel(
         coroutineContext ?: viewModelScope.coroutineContext
 
     val state: LiveData<State> = viewStates.viewModelState.asLiveData(this.coroutineContext)
-    override val mediaState: LiveData<TweetMediaItemViewModel.State> = mediaViewModelSource.state
-        .asLiveData(this.coroutineContext)
+    override val mediaState: LiveData<TweetMediaItemViewModel.State> =
+        mediaViewModelSource.mediaState.asLiveData(this.coroutineContext)
     override val navigationEvent: Flow<NavigationEvent> = merge(
         viewStates.navigationEvent,
         userIconViewModelSource.navEvent,
@@ -89,7 +89,7 @@ sealed class DetailEvent : AppEvent {
 
     data class NavigationExternalApp(
         val url: String,
-        val appUrl: String? = null
+        val appUrl: String? = null,
     ) : NavigationEvent
 }
 
@@ -260,5 +260,5 @@ data class MenuItemState(
     val isMainGroupEnabled: Boolean = false,
     val isRetweetChecked: Boolean = false,
     val isFavChecked: Boolean = false,
-    val isDeleteVisible: Boolean = false
+    val isDeleteVisible: Boolean = false,
 )

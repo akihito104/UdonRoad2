@@ -38,7 +38,6 @@ import com.freshdigitable.udonroad2.timeline.UserIconViewModelSource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.distinctUntilChangedBy
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.shareIn
 
@@ -58,10 +57,8 @@ internal class TimelineViewModel(
         .shareIn(viewModelScope, SharingStarted.Lazily, replay = 1)
     override val selectedItemId: LiveData<SelectedItemId?> = viewModelSource.selectedItemId
         .asLiveData(viewModelScope.coroutineContext)
-    override val mediaState: LiveData<TweetMediaItemViewModel.State> =
-        state.distinctUntilChangedBy { it.mediaState }
-            .filterNotNull()
-            .asLiveData(viewModelScope.coroutineContext)
+    override val mediaState: LiveData<TweetMediaItemViewModel.State> = viewModelSource.mediaState
+        .asLiveData(viewModelScope.coroutineContext)
     override val listState: LiveData<ListItemLoadableViewModel.State> =
         state.distinctUntilChangedBy { it.isHeadingEnabled }
             .asLiveData(viewModelScope.coroutineContext)

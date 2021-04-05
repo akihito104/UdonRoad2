@@ -182,7 +182,7 @@
             android:visibility="@{tweet.body.media.isEmpty() ? View.GONE : View.VISIBLE}"
             app:bindMedia="@{tweet.body.media}"
             app:hideForPossiblySensitive="@{mediaViewModel.mediaState.isPossiblySensitiveHidden &amp;&amp; tweet.body.possiblySensitive}"
-            app:itemClickListener="@{(v, i) -> mediaViewModel.onMediaItemClicked(tweet.originalId, tweet.body, i)}"
+            app:itemClickListener="@{(v, i) -> itemViewModel.onMediaItemClicked(tweet.originalId, tweet.body, i)}"
             tools:visibility="visible"
             />
 
