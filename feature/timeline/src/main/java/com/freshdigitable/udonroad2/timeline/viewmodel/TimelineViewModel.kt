@@ -36,10 +36,8 @@ import com.freshdigitable.udonroad2.timeline.TweetMediaItemViewModel
 import com.freshdigitable.udonroad2.timeline.UserIconClickListener
 import com.freshdigitable.udonroad2.timeline.UserIconViewModelSource
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.merge
-import kotlinx.coroutines.flow.shareIn
 
 internal class TimelineViewModel(
     viewModelSource: TimelineViewModelSource,
@@ -53,15 +51,13 @@ internal class TimelineViewModel(
     TweetMediaEventListener by viewModelSource,
     ActivityEventStream by viewModelSource,
     ViewModel() {
-    private val state = viewModelSource.state
-        .shareIn(viewModelScope, SharingStarted.Lazily, replay = 1)
     override val selectedItemId: LiveData<SelectedItemId?> = viewModelSource.selectedItemId
         .asLiveData(viewModelScope.coroutineContext)
     override val mediaState: LiveData<TweetMediaItemViewModel.State> = viewModelSource.mediaState
         .asLiveData(viewModelScope.coroutineContext)
-    override val listState: LiveData<ListItemLoadableViewModel.State> =
-        state.distinctUntilChangedBy { it.isHeadingEnabled }
-            .asLiveData(viewModelScope.coroutineContext)
+    override val listState: LiveData<ListItemLoadableViewModel.State> = viewModelSource.state
+        .distinctUntilChangedBy { it.isHeadingEnabled }
+        .asLiveData(viewModelScope.coroutineContext)
     override val timeline: Flow<PagingData<Any>> = viewModelSource.pagedList
         .cachedIn(viewModelScope)
     override val navigationEvent: Flow<NavigationEvent> = merge(

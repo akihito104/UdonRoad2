@@ -20,13 +20,20 @@ import kotlinx.coroutines.flow.Flow
 
 interface AppEventListener {
     fun onEvent()
+
+    companion object {
+        val empty = object : AppEventListener {
+            override fun onEvent() = Unit
+        }
+    }
 }
 
 interface AppAction<E : AppEvent> : AppEventListener, Flow<E>
 
 inline fun <reified E : AppEvent> EventDispatcher.toAction(
     event: E,
-): AppAction<E> = object : AppAction<E>, Flow<E> by this.toActionFlow() {
+    crossinline prediction: (E) -> Boolean = { it == event },
+): AppAction<E> = object : AppAction<E>, Flow<E> by this.toActionFlow(prediction) {
     override fun onEvent() {
         this@toAction.postEvent(event)
     }
@@ -34,6 +41,12 @@ inline fun <reified E : AppEvent> EventDispatcher.toAction(
 
 interface AppEventListener1<T> {
     fun onEvent(t: T)
+
+    companion object {
+        fun <T> empty() = object : AppEventListener1<T> {
+            override fun onEvent(t: T) = Unit
+        }
+    }
 }
 
 interface AppAction1<T, E : AppEvent> : AppEventListener1<T>, Flow<E>

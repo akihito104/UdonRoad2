@@ -77,7 +77,7 @@ class TimelineViewModelTest {
     fun onListScrollStarted_then_isHeadingEnabledIsTrue() {
         viewStatesTestRule.coroutineTestRule.runBlockingTest {
             // exercise
-            sut.onListScrollStarted()
+            sut.scrollList.onEvent()
         }
 
         // verify
@@ -88,10 +88,10 @@ class TimelineViewModelTest {
     fun onListScrollStopped_stoppedAt5_then_isHeadingEnabledIsTrue() {
         viewStatesTestRule.coroutineTestRule.runBlockingTest {
             // setup
-            sut.onListScrollStarted()
+            sut.scrollList.onEvent()
 
             // exercise
-            sut.onListScrollStopped(5)
+            sut.stopScrollingList.onEvent(5)
         }
 
         // verify
@@ -102,12 +102,12 @@ class TimelineViewModelTest {
     fun onListScrollStopped_stoppedAt0_then_isHeadingEnabledIsFalse() {
         viewStatesTestRule.coroutineTestRule.runBlockingTest {
             // setup
-            sut.onListScrollStarted()
-            sut.onListScrollStopped(5)
-            sut.onListScrollStarted()
+            sut.scrollList.onEvent()
+            sut.stopScrollingList.onEvent(5)
+            sut.scrollList.onEvent()
 
             // exercise
-            sut.onListScrollStopped(0)
+            sut.stopScrollingList.onEvent(0)
         }
 
         // verify
@@ -122,7 +122,7 @@ class TimelineViewModelTest {
                 originalTweetId = TweetId(1000),
                 body = mockk(relaxed = true)
             )
-            sut.onListScrollStopped(0)
+            sut.stopScrollingList.onEvent(0)
 
             // exercise
             sut.onBodyItemClicked(item)
@@ -137,10 +137,10 @@ class TimelineViewModelTest {
     fun onHeadingClicked_firstVisibleItemPositionIs0_navigationEventIsEmpty() {
         viewStatesTestRule.coroutineTestRule.runBlockingTest {
             // setup
-            sut.onListScrollStopped(0)
+            sut.stopScrollingList.onEvent(0)
 
             // exercise
-            sut.onHeadingClicked()
+            sut.heading.onEvent()
         }
 
         // verify
@@ -151,7 +151,7 @@ class TimelineViewModelTest {
     fun onHeadingClicked_clearSelectedItem() {
         viewStatesTestRule.coroutineTestRule.runBlockingTest {
             // setup
-            sut.onListScrollStopped(0)
+            sut.stopScrollingList.onEvent(0)
             val item = TweetListItem.createMock(
                 originalTweetId = TweetId(1000),
                 body = mockk(relaxed = true)
@@ -159,7 +159,7 @@ class TimelineViewModelTest {
             sut.onBodyItemClicked(item)
 
             // exercise
-            sut.onHeadingClicked()
+            sut.heading.onEvent()
         }
 
         // verify
@@ -171,10 +171,10 @@ class TimelineViewModelTest {
     fun onHeadingClicked_firstVisibleItemPositionIs3_ToTopOfListWithNeedsSkipIsFalseIsCollected() {
         viewStatesTestRule.coroutineTestRule.runBlockingTest {
             // setup
-            sut.onListScrollStopped(3)
+            sut.stopScrollingList.onEvent(3)
 
             // exercise
-            sut.onHeadingClicked()
+            sut.heading.onEvent()
         }
 
         // verify
@@ -185,10 +185,10 @@ class TimelineViewModelTest {
     fun onHeadingClicked_firstVisibleItemPositionIs3_ToTopOfListWithNeedsSkipIsTrueIsCollected() {
         viewStatesTestRule.coroutineTestRule.runBlockingTest {
             // setup
-            sut.onListScrollStopped(4)
+            sut.stopScrollingList.onEvent(4)
 
             // exercise
-            sut.onHeadingClicked()
+            sut.heading.onEvent()
         }
 
         // verify
@@ -201,10 +201,10 @@ class TimelineViewModelTest {
         viewStatesTestRule.setupPrependListResponse()
 
         viewStatesTestRule.coroutineTestRule.runBlockingTest {
-            sut.onListScrollStopped(0)
+            sut.stopScrollingList.onEvent(0)
 
             // exercise
-            sut.onRefresh()
+            sut.prependList.onEvent()
         }
 
         // verify
@@ -217,10 +217,10 @@ class TimelineViewModelTest {
         viewStatesTestRule.setupPrependListResponse()
 
         viewStatesTestRule.coroutineTestRule.runBlockingTest {
-            sut.onListScrollStopped(1)
+            sut.stopScrollingList.onEvent(1)
 
             // exercise
-            sut.onRefresh()
+            sut.prependList.onEvent()
         }
 
         // verify
@@ -237,10 +237,10 @@ class TimelineViewModelTest {
         )
 
         viewStatesTestRule.coroutineTestRule.runBlockingTest {
-            sut.onListScrollStopped(0)
+            sut.stopScrollingList.onEvent(0)
 
             // exercise
-            sut.onRefresh()
+            sut.prependList.onEvent()
         }
 
         // verify
