@@ -14,8 +14,6 @@ import java.io.Serializable
 sealed class TimelineEvent : AppEvent {
     data class Setup(val savedState: Serializable? = null) : TimelineEvent()
 
-    object Init : TimelineEvent()
-
     data class UserIconClicked(val user: TweetUserItem) : TimelineEvent()
 
     data class RetweetUserClicked(val user: TweetUserItem) : TimelineEvent()

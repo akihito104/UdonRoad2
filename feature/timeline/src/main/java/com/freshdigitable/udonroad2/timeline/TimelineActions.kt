@@ -20,14 +20,12 @@ import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
+import com.freshdigitable.udonroad2.model.app.navigation.toAction
 import com.freshdigitable.udonroad2.model.app.navigation.toActionFlow
-import com.freshdigitable.udonroad2.model.tweet.TweetElement
+import com.freshdigitable.udonroad2.model.app.navigation.toListener
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import com.freshdigitable.udonroad2.shortcut.ShortcutActions
-import com.freshdigitable.udonroad2.timeline.TimelineEvent.Init
 import com.freshdigitable.udonroad2.timeline.TimelineEvent.TweetItemSelection
-import kotlinx.coroutines.flow.Flow
-import timber.log.Timber
 
 internal class TimelineActions(
     private val owner: ListOwner<*>,
@@ -39,33 +37,27 @@ internal class TimelineActions(
     TweetMediaAction by mediaViewerAction,
     TweetListItemEventListener {
 
-    val showTimeline: Flow<Init> = dispatcher.toActionFlow()
-    val selectItem = dispatcher.toActionFlow<TweetItemSelection.Selected> { it.owner == owner }
     val toggleItem = dispatcher.toActionFlow<TweetItemSelection.Toggle> { it.owner == owner }
-    val unselectItem = dispatcher.toActionFlow<TweetItemSelection.Unselected> { it.owner == owner }
-
-    override fun onBodyItemClicked(item: TweetListItem) {
-        Timber.tag("TimelineViewModel").d("onBodyItemClicked: ${item.body.id}")
-        updateSelectedItem(SelectedItemId(owner, item.originalId))
+    override val selectBodyItem = dispatcher.toListener<TweetListItem, TweetItemSelection.Toggle> {
+        TweetItemSelection.Toggle(SelectedItemId(owner, it.originalId))
+    }
+    override val toggleQuoteItem = dispatcher.toListener<TweetListItem, TweetItemSelection.Toggle> {
+        TweetItemSelection.Toggle(SelectedItemId(owner, it.originalId, it.quoted?.id))
     }
 
-    override fun onQuoteItemClicked(item: TweetListItem) {
-        Timber.tag("TimelineViewModel").d("onQuoteItemClicked: ${item.quoted?.id}")
-        updateSelectedItem(SelectedItemId(owner, item.originalId, item.quoted?.id))
-    }
-
-    private fun updateSelectedItem(selected: SelectedItemId) {
-        dispatcher.postEvent(TweetItemSelection.Toggle(selected))
+    val selectItem = dispatcher.toAction<SelectedItemId, TweetItemSelection.Selected> {
+        TweetItemSelection.Selected(it)
     }
 
     override fun onMediaItemClicked(
         originalId: TweetId,
         quotedId: TweetId?,
-        item: TweetElement,
+        id: TweetId,
         index: Int,
     ) {
-        val selected = SelectedItemId(owner, originalId, quotedId)
-        dispatcher.postEvent(TweetItemSelection.Selected(selected))
-        onMediaItemClicked(item, index)
+        selectItem.onEvent(SelectedItemId(owner, originalId, quotedId))
+        onMediaItemClicked(id, index)
     }
+
+    val unselectItem = dispatcher.toActionFlow<TweetItemSelection.Unselected> { it.owner == owner }
 }

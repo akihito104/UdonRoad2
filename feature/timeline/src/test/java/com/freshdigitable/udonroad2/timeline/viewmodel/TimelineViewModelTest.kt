@@ -125,7 +125,7 @@ class TimelineViewModelTest {
             sut.stopScrollingList.onEvent(0)
 
             // exercise
-            sut.onBodyItemClicked(item)
+            sut.selectBodyItem.onEvent(item)
         }
 
         // verify
@@ -156,7 +156,7 @@ class TimelineViewModelTest {
                 originalTweetId = TweetId(1000),
                 body = mockk(relaxed = true)
             )
-            sut.onBodyItemClicked(item)
+            sut.selectBodyItem.onEvent(item)
 
             // exercise
             sut.heading.onEvent()

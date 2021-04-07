@@ -159,11 +159,9 @@ internal interface UserListViewModelModule {
         @ViewModelKey(UserListViewModel::class)
         @IntoFactory
         fun provideUserListViewModel(
-            eventDispatcher: EventDispatcher,
             viewModelSource: ListItemLoadableViewStateImpl,
             userIconViewModelSource: UserIconViewModelSource,
-        ): ViewModel =
-            UserListViewModel(eventDispatcher, viewModelSource, userIconViewModelSource)
+        ): ViewModel = UserListViewModel(viewModelSource, userIconViewModelSource)
 
         @Provides
         @IntoMap

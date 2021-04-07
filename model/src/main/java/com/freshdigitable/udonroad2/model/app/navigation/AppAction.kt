@@ -51,10 +51,18 @@ interface AppEventListener1<T> {
 
 interface AppAction1<T, E : AppEvent> : AppEventListener1<T>, Flow<E>
 
-inline fun <T, reified E : AppEvent> EventDispatcher.toAction(
+inline fun <T, E : AppEvent> EventDispatcher.toListener(
     crossinline onEvent: (T) -> E,
-): AppAction1<T, E> = object : AppAction1<T, E>, Flow<E> by this.toActionFlow() {
-    override fun onEvent(t: T) {
-        this@toAction.postEvent(onEvent(t))
+): AppEventListener1<T> {
+    return object : AppEventListener1<T> {
+        override fun onEvent(t: T) {
+            this@toListener.postEvent(onEvent(t))
+        }
     }
 }
+
+inline fun <T, reified E : AppEvent> EventDispatcher.toAction(
+    crossinline onEvent: (T) -> E,
+): AppAction1<T, E> = object : AppAction1<T, E>,
+    AppEventListener1<T> by this.toListener(onEvent),
+    Flow<E> by this.toActionFlow() {}

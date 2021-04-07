@@ -75,12 +75,6 @@ internal class TimelineViewModelSource(
     internal val selectedItemId: Flow<SelectedItemId?> = selectedItemRepository.getSource(owner)
 
     override val navigationEvent: Flow<NavigationEvent> = merge(
-        actions.showTimeline.map {
-            listOwnerGenerator.getTimelineEvent(
-                QueryType.TweetQueryType.Timeline(),
-                NavigationEvent.Type.INIT
-            )
-        },
         actions.showTweetDetail.map { TimelineEvent.Navigate.Detail(it.tweetId) },
         actions.showConversation.map {
             listOwnerGenerator.getTimelineEvent(

@@ -18,12 +18,12 @@ package com.freshdigitable.udonroad2.timeline
 
 import androidx.lifecycle.LiveData
 import com.freshdigitable.udonroad2.data.impl.AppSettingRepository
+import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventStream
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.toActionFlow
 import com.freshdigitable.udonroad2.model.app.onEvent
 import com.freshdigitable.udonroad2.model.app.stateSourceBuilder
-import com.freshdigitable.udonroad2.model.tweet.TweetElement
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -37,7 +37,7 @@ interface TweetMediaItemViewModel : TweetMediaEventListener {
 }
 
 interface TweetMediaEventListener {
-    fun onMediaItemClicked(item: TweetElement, index: Int)
+    fun onMediaItemClicked(id: TweetId, index: Int)
 }
 
 internal interface TweetMediaAction : TweetMediaEventListener, Flow<TimelineEvent.MediaItemClicked>
@@ -46,8 +46,8 @@ internal class LaunchMediaViewerAction @Inject constructor(
     private val eventDispatcher: EventDispatcher,
 ) : TweetMediaAction,
     Flow<TimelineEvent.MediaItemClicked> by eventDispatcher.toActionFlow() {
-    override fun onMediaItemClicked(item: TweetElement, index: Int) {
-        eventDispatcher.postEvent(TimelineEvent.MediaItemClicked(item.id, index))
+    override fun onMediaItemClicked(id: TweetId, index: Int) {
+        eventDispatcher.postEvent(TimelineEvent.MediaItemClicked(id, index))
     }
 }
 

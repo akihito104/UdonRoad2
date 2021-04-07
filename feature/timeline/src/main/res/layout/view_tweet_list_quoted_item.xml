@@ -45,7 +45,7 @@
         android:layout_height="wrap_content"
         android:padding="@dimen/margin_half"
         android:background="@drawable/selector_item_quoted_background"
-        android:onClick="@{v -> itemViewModel.onQuoteItemClicked(tweet)}"
+        android:onClick="@{v -> itemViewModel.toggleQuoteItem.onEvent(tweet)}"
         app:selected="@{itemViewModel.selectedItemId.equalsTo(tweet.originalId, tweet.quoted.id)}"
         >
 
@@ -120,7 +120,7 @@
             android:visibility="@{tweet.quoted.media.isEmpty() ? View.GONE : View.VISIBLE}"
             app:bindMedia="@{tweet.quoted.media}"
             app:hideForPossiblySensitive="@{mediaViewModel.mediaState.isPossiblySensitiveHidden &amp;&amp; tweet.body.possiblySensitive}"
-            app:itemClickListener="@{(v, i) -> itemViewModel.onMediaItemClicked(tweet.originalId, tweet.quoted.id, tweet.quoted, i)}"
+            app:itemClickListener="@{(v, i) -> itemViewModel.onMediaItemClicked(tweet.originalId, tweet.quoted.id, tweet.quoted.id, i)}"
             tools:visibility="visible"
             />
 

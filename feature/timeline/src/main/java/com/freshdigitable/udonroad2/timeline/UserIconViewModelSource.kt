@@ -17,32 +17,32 @@
 package com.freshdigitable.udonroad2.timeline
 
 import com.freshdigitable.udonroad2.model.app.di.ActivityScope
+import com.freshdigitable.udonroad2.model.app.navigation.AppAction1
+import com.freshdigitable.udonroad2.model.app.navigation.AppEventListener1
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
-import com.freshdigitable.udonroad2.model.app.navigation.toActionFlow
+import com.freshdigitable.udonroad2.model.app.navigation.toAction
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 interface UserIconClickListener {
-    fun onUserIconClicked(user: TweetUserItem)
+    val launchUserInfo: AppEventListener1<TweetUserItem>
 }
 
 interface LaunchUserInfoAction : UserIconClickListener {
-    val launchUserInfo: Flow<TimelineEvent.UserIconClicked>
+    override val launchUserInfo: AppAction1<TweetUserItem, TimelineEvent.UserIconClicked>
 }
 
 @ActivityScope
 class UserIconClickedAction @Inject constructor(
-    private val eventDispatcher: EventDispatcher,
+    eventDispatcher: EventDispatcher,
 ) : LaunchUserInfoAction {
-    override val launchUserInfo: Flow<TimelineEvent.UserIconClicked> =
-        eventDispatcher.toActionFlow()
-
-    override fun onUserIconClicked(user: TweetUserItem) {
-        eventDispatcher.postEvent(TimelineEvent.UserIconClicked(user))
-    }
+    override val launchUserInfo =
+        eventDispatcher.toAction<TweetUserItem, TimelineEvent.UserIconClicked> {
+            TimelineEvent.UserIconClicked(it)
+        }
 }
 
 @ActivityScope
