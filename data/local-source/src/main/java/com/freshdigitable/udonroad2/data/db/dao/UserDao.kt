@@ -16,7 +16,6 @@
 
 package com.freshdigitable.udonroad2.data.db.dao
 
-import androidx.lifecycle.LiveData
 import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Insert
@@ -41,9 +40,6 @@ internal abstract class UserDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     internal abstract suspend fun addUsers(users: List<UserEntityDb>)
-
-    @Query("SELECT * FROM user WHERE id = :id")
-    internal abstract fun getUserSource(id: UserId): LiveData<UserEntityDb?>
 
     @Query("SELECT * FROM user WHERE id = :id")
     internal abstract suspend fun getUser(id: UserId): UserEntityDb?

@@ -17,7 +17,6 @@
 package com.freshdigitable.udonroad2.data.impl
 
 import com.freshdigitable.udonroad2.data.AppSettingDataSource
-import com.freshdigitable.udonroad2.data.restclient.TwitterConfigApiClient
 import com.freshdigitable.udonroad2.model.AccessTokenEntity
 import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.app.AppExecutor
@@ -30,7 +29,6 @@ import javax.inject.Singleton
 @Singleton
 class AppSettingRepository @Inject constructor(
     private val prefs: AppSettingDataSource.Local,
-    private val apiClient: TwitterConfigApiClient,
     private val oAuthApiClient: AppSettingDataSource.Remote,
     executor: AppExecutor,
 ) : AppSettingDataSource by prefs {
@@ -41,43 +39,4 @@ class AppSettingRepository @Inject constructor(
         prefs.updateCurrentUser(accessToken)
         oAuthApiClient.updateCurrentUser(accessToken)
     }
-
-//    private val twitterApiConfig = MutableLiveData<TwitterApiConfigEntity>()
-//
-//    fun getTwitterAPIConfig(): LiveData<TwitterApiConfigEntity> {
-//        if (isTwitterAPIConfigFetchable() || twitterApiConfig.value == null) {
-//            fetchTwitterAPIConfig()
-//        }
-//        return twitterApiConfig
-//    }
-//
-//    private fun setFetchTwitterAPIConfigTime(timestamp: Long) {
-//        prefs.putFetchTwitterApiConfig(timestamp)
-//    }
-//
-//    private fun getFetchTwitterAPIConfigTime(): Long {
-//        return prefs.getFetchTwitterApiConfigTime()
-//    }
-//
-//    private fun isTwitterAPIConfigFetchable(): Boolean {
-//        val lastTime = getFetchTwitterAPIConfigTime()
-//        if (lastTime == -1L) {
-//            return true
-//        }
-//        val now = System.currentTimeMillis()
-//        return now - lastTime > TimeUnit.DAYS.toMillis(1)
-//    }
-//
-//    private fun fetchTwitterAPIConfig() {
-//        executor.launchIO {
-//            val conf = apiClient.getTwitterApiConfig()
-//            setFetchTwitterAPIConfigTime(System.currentTimeMillis())
-// //        realm.executeTransaction({ r ->
-// //            r.delete(TwitterAPIConfigurationRealm::class.java)
-// //            val twitterAPIConfiguration = TwitterAPIConfigurationRealm(twitterAPIConfig)
-// //            r.insertOrUpdate(twitterAPIConfiguration)
-// //        })
-//            twitterApiConfig.postValue(conf)
-//        }
-//    }
 }

@@ -66,7 +66,7 @@ class SharedPreferenceDataSource @Inject constructor(
 
     override suspend fun getAccessToken(
         requestToken: RequestTokenItem,
-        verifier: String
+        verifier: String,
     ): AccessTokenEntity = throw NotImplementedError()
 
     override suspend fun verifyCredentials(): UserEntity = throw NotImplementedError()
@@ -116,29 +116,6 @@ class TwitterPreferences @Inject constructor(
         val secret = prefs.getString("$TOKEN_SECRET_PREFIX${userId.value}", null) ?: return null
         return AccessTokenEntity.create(userId, token, secret)
     }
-
-//    fun putFetchTwitterApiConfig(timestamp: Long) {
-//        prefs.edit {
-//            putLong(TWITTER_API_CONFIG_DATE, timestamp)
-//        }
-//    }
-//
-//    fun getFetchTwitterApiConfigTime(): Long {
-//        return prefs.getLong(TWITTER_API_CONFIG_DATE, -1)
-//    }
-//
-//    fun deleteAll() {
-//        val users = prefs.getStringSet(AUTHENTICATED_USERS, emptySet()) ?: emptySet()
-//        prefs.edit {
-//            remove(TWITTER_API_CONFIG_DATE)
-//            remove(CURRENT_USER_ID)
-//            users.forEach { u ->
-//                remove("$ACCESS_TOKEN_PREFIX$u")
-//                remove("$TOKEN_SECRET_PREFIX$u")
-//            }
-//            remove(AUTHENTICATED_USERS)
-//        }
-//    }
 
     companion object {
         private const val AUTHENTICATED_USERS = "authenticatedUsers"
