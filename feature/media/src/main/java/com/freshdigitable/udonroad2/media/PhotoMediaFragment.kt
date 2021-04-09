@@ -60,7 +60,7 @@ class PhotoMediaFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View? {
         return inflater.inflate(R.layout.view_media_image, container, false)
     }
@@ -68,7 +68,7 @@ class PhotoMediaFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        view.setOnClickListener { mediaViewModel.onSystemUiToggled() }
+        view.setOnClickListener { mediaViewModel.toggleSystemUiVisibility.onEvent() }
 
         val imageView = view as ImageView
 

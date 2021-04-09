@@ -40,7 +40,7 @@
             android:id="@+id/media_pager"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:onClick="@{v -> viewModel.onSystemUiToggled()}"
+            android:onClick="@{v -> viewModel.toggleSystemUiVisibility.onEvent()}"
             app:currentItem="@{viewModel.state.currentPosition}"
             />
 
@@ -68,7 +68,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             app:menu="@menu/shortcut_media"
-            app:menuListener="@{item -> viewModel.onShortcutMenuSelected(item, viewModel.tweetId)}"
+            app:menuListener="@{item -> viewModel.onShortcutMenuSelected(item, viewModel.state.tweetId)}"
             app:isVisible="@{viewModel.state.shortcutVisible}"
             />
     </androidx.constraintlayout.widget.ConstraintLayout>

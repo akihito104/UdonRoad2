@@ -64,7 +64,7 @@ class MediaViewModelTest {
             mediaRepositoryRule.mock,
             tweetRepositoryRule.mock,
         )
-        MediaViewModel(tweetListItem.originalId, eventDispatcher, viewStates)
+        MediaViewModel(eventDispatcher, viewStates)
     }
 
     @Before
@@ -105,7 +105,7 @@ class MediaViewModelTest {
     @Test
     fun toggleUiVisibility() {
         // exercise
-        sut.onSystemUiToggled()
+        sut.toggleSystemUiVisibility.onEvent()
 
         // verify
         assertThat(sut.systemUiVisibility.value).isEqualTo(SystemUiVisibility.HIDE)
