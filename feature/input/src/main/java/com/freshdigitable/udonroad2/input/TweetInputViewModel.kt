@@ -26,8 +26,8 @@ import androidx.lifecycle.viewModelScope
 import com.freshdigitable.udonroad2.input.MediaChooserResultContract.MediaChooserResult
 import com.freshdigitable.udonroad2.model.app.AppFilePath
 import com.freshdigitable.udonroad2.model.app.di.ActivityScope
-import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
-import com.freshdigitable.udonroad2.model.app.navigation.toActionFlow
+import com.freshdigitable.udonroad2.model.app.navigation.AppEventListener
+import com.freshdigitable.udonroad2.model.app.navigation.AppEventListener1
 import com.freshdigitable.udonroad2.model.user.UserEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -36,7 +36,6 @@ import kotlinx.coroutines.flow.mapLatest
 import javax.inject.Inject
 
 internal class TweetInputViewModel @Inject constructor(
-    eventDispatcher: EventDispatcher,
     viewModelSource: TweetInputViewModelSource,
 ) : ViewModel(), TweetInputEventListener by viewModelSource {
     val state = viewModelSource.state.asLiveData(viewModelScope.coroutineContext)
@@ -46,18 +45,18 @@ internal class TweetInputViewModel @Inject constructor(
         viewModelSource.user.asLiveData(viewModelScope.coroutineContext)
     internal val menuItem = state.map { it.menuItem }.distinctUntilChanged()
 
-    val expandAnimationEvent: Flow<TweetInputEvent.Opened> = eventDispatcher.toActionFlow()
+    val expandAnimationEvent: Flow<TweetInputEvent.Opened> = viewModelSource.expandAnimationEvent
     internal val chooserForCameraApp = viewModelSource.chooserForCameraApp
 }
 
 internal interface TweetInputEventListener {
-    fun onWriteClicked()
-    fun onTweetTextChanged(text: Editable)
-    fun onSendClicked()
-    fun onCancelClicked()
-    fun onExpandAnimationEnd()
+    val openInput: AppEventListener
+    val updateText: AppEventListener1<Editable>
+    val sendTweet: AppEventListener
+    val cancelInput: AppEventListener
+    val startInput: AppEventListener
     fun onCameraAppCandidatesQueried(candidates: List<Components>, path: AppFilePath)
-    fun onMediaChooserFinished(result: MediaChooserResult)
+    val updateMedia: AppEventListener1<MediaChooserResult>
 }
 
 @ActivityScope

@@ -75,7 +75,7 @@ class TweetInputViewModelTest {
         fun onCancelClicked_whenInputIsCollapsed_menuItemIsNotChanged(): Unit = with(rule) {
             coroutineTestRule.runBlockingTest {
                 // exercise
-                sut.onCancelClicked()
+                sut.cancelInput.onEvent()
             }
 
             // verify
@@ -88,7 +88,7 @@ class TweetInputViewModelTest {
         fun onWriteClicked_then_isVisibleIsTrue(): Unit = with(rule) {
             // exercise
             coroutineTestRule.runBlockingTest {
-                sut.onWriteClicked()
+                sut.openInput.onEvent()
             }
 
             // verify
@@ -101,10 +101,10 @@ class TweetInputViewModelTest {
         fun onCancelClicked_then_isVisibleIsFalse(): Unit = with(rule) {
             coroutineTestRule.runBlockingTest {
                 // setup
-                sut.onWriteClicked()
+                sut.openInput.onEvent()
 
                 // exercise
-                sut.onCancelClicked()
+                sut.cancelInput.onEvent()
             }
 
             // verify
@@ -117,10 +117,10 @@ class TweetInputViewModelTest {
         fun onTweetTextChanged_addedText_then_menuItemIsSendEnabled(): Unit = with(rule) {
             coroutineTestRule.runBlockingTest {
                 // setup
-                sut.onWriteClicked()
+                sut.openInput.onEvent()
 
                 // exercise
-                sut.onTweetTextChanged(editable("a"))
+                sut.updateText.onEvent(editable("a"))
             }
 
             // verify
@@ -133,11 +133,11 @@ class TweetInputViewModelTest {
         fun onCancelClicked_textAdded_then_textCleared(): Unit = with(rule) {
             coroutineTestRule.runBlockingTest {
                 // setup
-                sut.onWriteClicked()
-                sut.onTweetTextChanged(editable("a"))
+                sut.openInput.onEvent()
+                sut.updateText.onEvent(editable("a"))
 
                 // exercise
-                sut.onCancelClicked()
+                sut.cancelInput.onEvent()
             }
 
             // verify
@@ -151,11 +151,11 @@ class TweetInputViewModelTest {
         fun onTweetTextChanged_removedText_then_menuItemIsSendDisabled(): Unit = with(rule) {
             coroutineTestRule.runBlockingTest {
                 // setup
-                sut.onWriteClicked()
+                sut.openInput.onEvent()
 
                 // exercise
-                sut.onTweetTextChanged(editable("a"))
-                sut.onTweetTextChanged(editable(""))
+                sut.updateText.onEvent(editable("a"))
+                sut.updateText.onEvent(editable(""))
             }
 
             // verify
@@ -219,12 +219,12 @@ class TweetInputViewModelTest {
             // setup
             val path = mockk<AppFilePath>()
             coroutineTestRule.runBlockingTest {
-                sut.onWriteClicked()
+                sut.openInput.onEvent()
                 sut.onCameraAppCandidatesQueried(listOf(cameraApp), path)
                 dispatchChosen(cameraApp)
 
                 // exercise
-                sut.onMediaChooserFinished(MediaChooserResult.Add(listOf(path)))
+                sut.updateMedia.onEvent(MediaChooserResult.Add(listOf(path)))
             }
 
             // verify
@@ -244,10 +244,10 @@ class TweetInputViewModelTest {
             coroutineTestRule.runBlockingTest {
                 sut.onCameraAppCandidatesQueried(listOf(cameraApp), path)
                 dispatchChosen(cameraApp)
-                sut.onMediaChooserFinished(MediaChooserResult.Add(listOf(path)))
+                sut.updateMedia.onEvent(MediaChooserResult.Add(listOf(path)))
 
                 // exercise
-                sut.onCancelClicked()
+                sut.cancelInput.onEvent()
             }
 
             // verify
@@ -267,7 +267,7 @@ class TweetInputViewModelTest {
                 dispatchChosen(galleryApp)
 
                 // exercise
-                sut.onMediaChooserFinished(MediaChooserResult.Replace(listOf()))
+                sut.updateMedia.onEvent(MediaChooserResult.Replace(listOf()))
             }
 
             // verify
@@ -283,11 +283,11 @@ class TweetInputViewModelTest {
             coroutineTestRule.runBlockingTest {
                 // setup
                 setupPost("a")
-                sut.onWriteClicked()
-                sut.onTweetTextChanged(editable("a"))
+                sut.openInput.onEvent()
+                sut.updateText.onEvent(editable("a"))
 
                 // exercise
-                sut.onSendClicked()
+                sut.sendTweet.onEvent()
             }
 
             // verify
@@ -314,14 +314,14 @@ class TweetInputViewModelTest {
                 setupPost("a", listOf(mediaId))
                 setupUploadMedia(path, mediaId)
                 coroutineTestRule.runBlockingTest {
-                    sut.onWriteClicked()
+                    sut.openInput.onEvent()
                     sut.onCameraAppCandidatesQueried(listOf(cameraApp), path)
                     dispatchChosen(cameraApp)
-                    sut.onMediaChooserFinished(MediaChooserResult.Add(listOf(path)))
-                    sut.onTweetTextChanged(editable("a"))
+                    sut.updateMedia.onEvent(MediaChooserResult.Add(listOf(path)))
+                    sut.updateText.onEvent(editable("a"))
 
                     // exercise
-                    sut.onSendClicked()
+                    sut.sendTweet.onEvent()
                 }
 
                 // verify
@@ -344,11 +344,11 @@ class TweetInputViewModelTest {
             coroutineTestRule.runBlockingTest {
                 // setup
                 setupPost("a", withError = AppTwitterException(403, 123))
-                sut.onWriteClicked()
-                sut.onTweetTextChanged(editable("a"))
+                sut.openInput.onEvent()
+                sut.updateText.onEvent(editable("a"))
 
                 // exercise
-                sut.onSendClicked()
+                sut.sendTweet.onEvent()
             }
 
             // verify
@@ -443,7 +443,7 @@ class TweetInputViewModelTest {
 
             // exercise
             coroutineTestRule.runBlockingTest {
-                sut.onSendClicked()
+                sut.sendTweet.onEvent()
             }
 
             // verify
@@ -463,7 +463,7 @@ class TweetInputViewModelTest {
         @Test
         fun onCancelClicked_then_stateIsCleared(): Unit = with(rule) {
             coroutineTestRule.runBlockingTest {
-                sut.onCancelClicked()
+                sut.cancelInput.onEvent()
             }
 
             assertThat(sut.isExpanded.value).isFalse()
@@ -495,7 +495,7 @@ class TweetInputViewModelTest {
         fun onCancelClicked(): Unit = with(rule) {
             // exercise
             coroutineTestRule.runBlockingTest {
-                sut.onCancelClicked()
+                sut.cancelInput.onEvent()
             }
 
             // verify
@@ -512,8 +512,8 @@ class TweetInputViewModelTest {
 
             // exercise
             coroutineTestRule.runBlockingTest {
-                sut.onTweetTextChanged(editable("aaa"))
-                sut.onSendClicked()
+                sut.updateText.onEvent(editable("aaa"))
+                sut.sendTweet.onEvent()
             }
 
             // verify
@@ -548,7 +548,7 @@ class TweetInputViewModelTest {
 
 @ExperimentalCoroutinesApi
 class TweetInputViewModelRule(
-    collapsible: Boolean
+    collapsible: Boolean,
 ) : TestWatcher() {
     val expectedException: ExpectedException = ExpectedException.none()
     val coroutineTestRule = CoroutineTestRule()
@@ -562,7 +562,6 @@ class TweetInputViewModelRule(
 
     internal val sut: TweetInputViewModel by lazy {
         TweetInputViewModel(
-            eventDispatcher,
             TweetInputViewModelSource(
                 collapsible,
                 TweetInputActions(eventDispatcher),
@@ -606,7 +605,7 @@ class TweetInputViewModelRule(
         text: String,
         mediaIds: List<MediaId> = emptyList(),
         replyTo: TweetId? = null,
-        withError: Throwable? = null
+        withError: Throwable? = null,
     ) {
         when (withError) {
             null -> repository.coSetupResponseWithVerify(
