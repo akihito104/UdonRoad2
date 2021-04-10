@@ -27,6 +27,8 @@ import androidx.paging.cachedIn
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventStream
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
+import com.freshdigitable.udonroad2.model.app.navigation.AppEventListener
+import com.freshdigitable.udonroad2.model.app.navigation.AppEventListener1
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.timeline.ListItemLoadableEventListener
 import com.freshdigitable.udonroad2.timeline.ListItemLoadableViewModel
@@ -56,9 +58,9 @@ internal class OauthViewModel(
 }
 
 internal interface OauthEventListener {
-    fun onLoginClicked()
-    fun onAfterPinTextChanged(pin: CharSequence)
-    fun onSendPinClicked()
+    val authApp: AppEventListener
+    val inputPin: AppEventListener1<CharSequence>
+    val sendPin: AppEventListener
 }
 
 sealed class OauthEvent : AppEvent {

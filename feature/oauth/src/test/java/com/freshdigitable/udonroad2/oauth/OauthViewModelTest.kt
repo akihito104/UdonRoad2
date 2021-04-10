@@ -60,7 +60,7 @@ class OauthViewModelTest {
         oauthRepository.setupGetRequestTokenItem()
 
         // exercise
-        sut.onLoginClicked()
+        sut.authApp.onEvent()
 
         // verify
         dispatcherObserver.assertValueAt(0) { actual -> actual is OauthEvent.LoginClicked }
@@ -72,11 +72,11 @@ class OauthViewModelTest {
         // setup
         oauthRepository.setupGetRequestTokenItem()
 
-        sut.onLoginClicked()
+        sut.authApp.onEvent()
         assertThat(sut.sendPinButtonEnabled.value).isFalse()
 
         // exercise
-        sut.onAfterPinTextChanged("012345")
+        sut.inputPin.onEvent("012345")
 
         // verify
         dispatcherObserver.assertValueAt(0) { actual -> actual is OauthEvent.LoginClicked }
@@ -95,11 +95,11 @@ class OauthViewModelTest {
         setupLogin(user.id)
         userRepository.coSetupResponseWithVerify({ userRepository.mock.addUser(user) }, Unit)
 
-        sut.onLoginClicked()
-        sut.onAfterPinTextChanged("012345")
+        sut.authApp.onEvent()
+        sut.inputPin.onEvent("012345")
 
         // exercise
-        sut.onSendPinClicked()
+        sut.sendPin.onEvent()
 
         // verify
         dispatcherObserver
