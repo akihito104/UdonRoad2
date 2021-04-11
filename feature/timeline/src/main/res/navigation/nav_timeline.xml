@@ -44,6 +44,8 @@
         <action
             android:id="@+id/action_timeline_to_detail"
             app:destination="@id/fragment_detail"
+            app:popEnterAnim="@anim/slide_in_right"
+            app:exitAnim="@android:anim/slide_out_right"
             />
         <action
             android:id="@+id/action_timeline_to_timeline"
@@ -65,6 +67,8 @@
         <action
             android:id="@+id/action_detail_to_timeline"
             app:destination="@id/fragment_timeline"
+            app:enterAnim="@android:anim/fade_in"
+            app:popExitAnim="@android:anim/fade_out"
             />
     </fragment>
 
