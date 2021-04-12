@@ -49,8 +49,10 @@ internal class MainViewModel(
         mainState.map { it.appBarTitle }.distinctUntilChanged()
     internal val isTweetInputMenuVisible: LiveData<Boolean> =
         mainState.map { it.isTweetInputMenuVisible }.distinctUntilChanged()
-    override val isFabVisible: LiveData<Boolean> =
-        mainState.map { it.isShortcutVisible }.distinctUntilChanged()
+
+    @Suppress("UNCHECKED_CAST")
+    override val shortcutState: LiveData<ShortcutViewModel.State> =
+        mainState as LiveData<ShortcutViewModel.State>
 
     override val drawerState: LiveData<DrawerViewModel.State> =
         drawerViewStates.state.asLiveData(viewModelScope.coroutineContext)

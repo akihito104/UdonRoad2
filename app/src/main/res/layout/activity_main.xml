@@ -61,7 +61,7 @@
                 app:menu="@menu/shortcut_main"
                 style="@style/Widget.FlingFAB"
                 app:menuListener="@{item -> viewModel.onShortcutMenuSelected(item, viewModel.requireSelectedTweetId)}"
-                app:isVisible="@{viewModel.fabVisible}"
+                app:isVisible="@{viewModel.shortcutState.visible}"
                 />
         </androidx.coordinatorlayout.widget.CoordinatorLayout>
 

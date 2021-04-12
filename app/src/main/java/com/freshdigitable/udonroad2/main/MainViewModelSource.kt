@@ -29,6 +29,7 @@ import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.ViewState
 import com.freshdigitable.udonroad2.model.app.navigation.toActionFlow
 import com.freshdigitable.udonroad2.model.app.stateSourceBuilder
+import com.freshdigitable.udonroad2.shortcut.ShortcutViewModel
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.getTimelineEvent
 import kotlinx.coroutines.flow.Flow
@@ -99,13 +100,13 @@ internal data class MainActivityViewState(
     val isInTopLevelDestination: Boolean = false,
     val navHostState: MainNavHostState? = null,
     val selectedItem: SelectedItemId? = null,
-) : ViewState {
+) : ViewState, ShortcutViewModel.State {
     val isTweetInputMenuVisible: Boolean
         get() = !(
             navHostState is MainNavHostState.Timeline &&
                 navHostState.owner.query is QueryType.Oauth
             )
-    val isShortcutVisible: Boolean
+    override val isVisible: Boolean
         get() = when {
             isTweetInputExpanded -> false
             selectedItem != null -> true

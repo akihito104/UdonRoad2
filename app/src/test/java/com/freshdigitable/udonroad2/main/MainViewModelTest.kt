@@ -227,7 +227,7 @@ class MainViewModelTest {
             )
 
             // verify
-            assertThat(sut.isFabVisible.value).isTrue()
+            assertThat(sut.shortcutState.value?.isVisible).isTrue()
             dispatcherObserver
                 .assertValueCount(1)
                 .assertValueAt(0) { it is SelectedItemShortcut.Like }
@@ -284,7 +284,7 @@ class MainViewModelTest {
             stateModelRule.isExpandedSource.value = true
 
             // verify
-            assertThat(sut.isFabVisible.value).isFalse()
+            assertThat(sut.shortcutState.value?.isVisible).isFalse()
         }
     }
 
@@ -408,7 +408,7 @@ internal class MainViewModelTestRule : TestWatcher() {
         super.starting(description)
         eventCollector.setupForActivate {
             with(sut) {
-                addAll(mainState, appBarTitle, isTweetInputMenuVisible, isFabVisible, drawerState)
+                addAll(mainState, appBarTitle, isTweetInputMenuVisible, shortcutState, drawerState)
                 addAll(navigationEvent)
             }
         }

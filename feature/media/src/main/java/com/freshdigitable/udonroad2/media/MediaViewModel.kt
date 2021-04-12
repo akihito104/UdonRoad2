@@ -60,17 +60,19 @@ internal class MediaViewModel @Inject constructor(
     val state = viewStates.state.asLiveData(viewModelScope.coroutineContext)
     internal val mediaItems: LiveData<List<MediaEntity>> = state.map { it.mediaItems }
         .distinctUntilChanged()
-    override val isFabVisible: LiveData<Boolean> = state.map { it.isShortcutVisible }
-        .distinctUntilChanged()
+
+    @Suppress("UNCHECKED_CAST")
+    override val shortcutState: LiveData<ShortcutViewModel.State> =
+        state as LiveData<ShortcutViewModel.State>
     internal val systemUiVisibility: LiveData<SystemUiVisibility> =
         state.map { it.systemUiVisibility }.distinctUntilChanged()
 
-    interface State {
+    interface State : ShortcutViewModel.State {
         val tweetId: TweetId
         val mediaItems: List<MediaEntity>
         val systemUiVisibility: SystemUiVisibility
         val currentPosition: Int?
-        val isShortcutVisible: Boolean
+        override val isVisible: Boolean
             get() = systemUiVisibility == SystemUiVisibility.SHOW
     }
 }

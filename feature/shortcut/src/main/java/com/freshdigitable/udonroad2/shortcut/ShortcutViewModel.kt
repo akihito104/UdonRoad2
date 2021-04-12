@@ -22,7 +22,11 @@ import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 
 interface ShortcutViewModel : ShortcutEventListener {
-    val isFabVisible: LiveData<Boolean>
+    val shortcutState: LiveData<State>
+
+    interface State {
+        val isVisible: Boolean
+    }
 }
 
 interface ShortcutEventListener {
