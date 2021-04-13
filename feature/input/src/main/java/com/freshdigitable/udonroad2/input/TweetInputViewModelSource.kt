@@ -35,13 +35,13 @@ import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
 import com.freshdigitable.udonroad2.model.app.navigation.toActionFlow
 import com.freshdigitable.udonroad2.model.app.onEvent
-import com.freshdigitable.udonroad2.model.app.scanSource
 import com.freshdigitable.udonroad2.model.app.stateSourceBuilder
 import com.freshdigitable.udonroad2.model.user.UserEntity
 import com.freshdigitable.udonroad2.shortcut.SelectedItemShortcut
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
@@ -107,10 +107,14 @@ internal class TweetInputViewModelSource @Inject constructor(
                 is MediaChooserResult.Canceled -> state
             }
         },
-        actions.cancelInput.onEvent(
-            atFirst = scanSource { state, _ -> state.toCanceled() }
-        ) {
-            onNext { state, _ -> state.toIdling(idlingState) }
+        actions.cancelInput.flatMapLatest {
+            flowOf(InputTaskState.CANCELED, idlingState)
+        }.onEvent { state, event ->
+            when (event) {
+                InputTaskState.CANCELED -> state.toCanceled()
+                idlingState -> state.toIdling(idlingState)
+                else -> throw IllegalStateException()
+            }
         },
         actions.sendTweet.flatMapLatest {
             postTweet(it.tweet, idlingState)
