@@ -40,7 +40,7 @@
         android:layout_height="wrap_content"
         android:padding="8dp"
         android:background="@drawable/selector_item_background"
-        android:onClick="@{v -> viewModel.onBodyItemClicked(customTimeline)}"
+        android:onClick="@{v -> viewModel.selectBodyItem.dispatch(customTimeline)}"
         >
 
         <ImageView
@@ -53,7 +53,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@id/customTimelineItem_names"
             app:bindUserIcon="@{customTimeline.user.iconUrl}"
-            android:onClick="@{v -> viewModel.onUserIconClicked(customTimeline.user)}"
+            android:onClick="@{v -> viewModel.launchUserInfo.dispatch(customTimeline.user)}"
             tools:background="#888"
             />
 

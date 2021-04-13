@@ -31,7 +31,6 @@ import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.postEvents
-import com.freshdigitable.udonroad2.model.tweet.TweetElement
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import com.freshdigitable.udonroad2.shortcut.SelectedItemShortcut
@@ -67,11 +66,7 @@ class TimelineViewModelSourceTest {
             dispatchEvents(TimelineEvent.Setup())
 
             // exercise
-            sut.onMediaItemClicked(
-                TweetId(1000),
-                index = 0,
-                item = TweetElement.createMock(TweetId(1000))
-            )
+            sut.onMediaItemClicked(TweetId(1000), index = 0, id = TweetId(1000))
 
             // verify
             assertThat(selectedItems.last()?.originalId).isEqualTo(TweetId(1000L))
@@ -105,7 +100,7 @@ class TimelineViewModelSourceTest {
     fun updateTweet_dispatchLikeIsSuccess_then_likeDispatched(): Unit = with(rule) {
         // setup
         tweetRepositoryMock.setupPostLikeForSuccess(TweetId(200))
-        sut.onBodyItemClicked(TweetListItem.createMock(TweetId(200)))
+        sut.selectBodyItem.dispatch(TweetListItem.createMock(TweetId(200)))
 
         // exercise
         dispatchEvents(
@@ -123,7 +118,7 @@ class TimelineViewModelSourceTest {
         tweetRepositoryMock.setupPostLikeForFailure(
             TweetId(200), AppTwitterException.ErrorType.ALREADY_FAVORITED
         )
-        sut.onBodyItemClicked(TweetListItem.createMock(TweetId(200)))
+        sut.selectBodyItem.dispatch(TweetListItem.createMock(TweetId(200)))
 
         // exercise
         dispatchEvents(
@@ -139,7 +134,7 @@ class TimelineViewModelSourceTest {
     fun updateTweet_dispatchRetweetEvent_then_retweetDispatched(): Unit = with(rule) {
         // setup
         tweetRepositoryMock.setupPostRetweetForSuccess(TweetId(200))
-        sut.onBodyItemClicked(TweetListItem.createMock(TweetId(200)))
+        sut.selectBodyItem.dispatch(TweetListItem.createMock(TweetId(200)))
 
         // exercise
         dispatchEvents(
@@ -158,7 +153,7 @@ class TimelineViewModelSourceTest {
             tweetRepositoryMock.setupPostRetweetForFailure(
                 TweetId(200), AppTwitterException.ErrorType.ALREADY_RETWEETED
             )
-            sut.onBodyItemClicked(TweetListItem.createMock(TweetId(200)))
+            sut.selectBodyItem.dispatch(TweetListItem.createMock(TweetId(200)))
 
             // exercise
             dispatchEvents(
@@ -172,7 +167,7 @@ class TimelineViewModelSourceTest {
 }
 
 class TimelineViewStatesTestRule(
-    isStateCollected: Boolean = true
+    isStateCollected: Boolean = true,
 ) : TestWatcher() {
     @ExperimentalCoroutinesApi
     internal val coroutineTestRule = CoroutineTestRule()
@@ -237,7 +232,9 @@ class TimelineViewStatesTestRule(
     override fun starting(description: Description?) {
         super.starting(description)
         eventCollector?.setupForActivate {
-            addAll(sut.state, sut.navigationEvent, sut.updateTweet, sut.selectedItemId)
+            with(sut) {
+                addAll(state, mediaState, navigationEvent, updateTweet, selectedItemId)
+            }
         }
     }
 

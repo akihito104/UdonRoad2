@@ -59,7 +59,7 @@ class MediaActivity : AppCompatActivity(), HasAndroidInjector {
         setSupportActionBar(binding.mediaToolbar)
 
         window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
-            viewModel.onSystemUiVisibilityChanged(visibility)
+            viewModel.changeSystemUiVisibility.dispatch(visibility)
         }
         viewModel.systemUiVisibility.observe(this) {
             window.decorView.systemUiVisibility = it.visibility
@@ -81,7 +81,7 @@ class MediaActivity : AppCompatActivity(), HasAndroidInjector {
         this.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
                 super.onPageSelected(position)
-                viewModel.onCurrentPositionChanged(position)
+                viewModel.changeCurrentPosition.dispatch(position)
             }
         })
 

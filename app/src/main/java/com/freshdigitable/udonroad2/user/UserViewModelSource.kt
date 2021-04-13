@@ -61,7 +61,7 @@ class UserViewModelSource @Inject constructor(
             State(pages = pages)
         }
     ) {
-        eventOf(actions.currentPageChanged) { s, e ->
+        eventOf(actions.changePage) { s, e ->
             val listOwner = s.pages[e.page] ?: return@eventOf s.copy(currentPage = e.page)
             s.copy(currentPage = e.page, selectedItemId = selectedItemRepository.find(listOwner))
         }
@@ -134,7 +134,7 @@ class UserViewModelSource @Inject constructor(
 
     companion object {
         private suspend fun RelationshipRepository.updateStatus(
-            event: UserActivityEvent.Relationships
+            event: UserActivityEvent.Relationships,
         ): Any = when (event) {
             is UserActivityEvent.Relationships.Following -> updateFollowingStatus(
                 event.targetUserId, event.wantsFollow
@@ -152,7 +152,7 @@ class UserViewModelSource @Inject constructor(
         }
 
         private fun findSuccessFeedbackMessage(
-            event: UserActivityEvent.Relationships
+            event: UserActivityEvent.Relationships,
         ): RelationshipFeedbackMessage = when (event) {
             is UserActivityEvent.Relationships.Following -> {
                 if (event.wantsFollow) RelationshipFeedbackMessage.FOLLOW_CREATE_SUCCESS
@@ -175,7 +175,7 @@ class UserViewModelSource @Inject constructor(
         }
 
         private fun findFailureFeedbackMessage(
-            event: UserActivityEvent.Relationships
+            event: UserActivityEvent.Relationships,
         ): RelationshipFeedbackMessage = when (event) {
             is UserActivityEvent.Relationships.Following -> {
                 if (event.wantsFollow) RelationshipFeedbackMessage.FOLLOW_CREATE_FAILURE
@@ -248,7 +248,7 @@ internal enum class RelationshipFeedbackMessage(
 }
 
 internal enum class UserResourceFeedbackMessage(
-    override val messageRes: Int
+    override val messageRes: Int,
 ) : FeedbackMessage {
     FAILED_FETCH(R.string.msg_user_fetch_failure)
 }

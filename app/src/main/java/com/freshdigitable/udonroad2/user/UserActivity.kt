@@ -65,7 +65,7 @@ class UserActivity : HasAndroidInjector, AppCompatActivity() {
 
     private fun ActivityUserBinding.setup(
         viewModel: UserViewModel,
-        adapter: UserFragmentPagerAdapter
+        adapter: UserFragmentPagerAdapter,
     ) {
         lifecycleOwner = this@UserActivity
         this.viewModel = viewModel
@@ -73,7 +73,7 @@ class UserActivity : HasAndroidInjector, AppCompatActivity() {
         userToolbar.title = ""
         userAppBar.addOnOffsetChangedListener(
             AppBarLayout.OnOffsetChangedListener { appBar, offset ->
-                viewModel.onAppBarScrolled(
+                viewModel.scrollAppbar.dispatch(
                     abs(offset).toFloat() / appBar.totalScrollRange.toFloat()
                 )
             }
@@ -82,11 +82,11 @@ class UserActivity : HasAndroidInjector, AppCompatActivity() {
         userPager.apply {
             addOnPageChangeListener(object : ViewPager.SimpleOnPageChangeListener() {
                 override fun onPageSelected(position: Int) {
-                    viewModel.onCurrentPageChanged(position)
+                    viewModel.changePage.dispatch(position)
                 }
             })
             this.adapter = adapter
-            viewModel.onCurrentPageChanged(currentItem)
+            viewModel.changePage.dispatch(currentItem)
         }
         userTabContainer.setupWithViewPager(userPager)
     }
@@ -103,13 +103,8 @@ class UserActivity : HasAndroidInjector, AppCompatActivity() {
         return true
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return if (viewModel.onOptionsItemSelected(item)) {
-            true
-        } else {
-            super.onOptionsItemSelected(item)
-        }
-    }
+    override fun onOptionsItemSelected(item: MenuItem): Boolean =
+        viewModel.onOptionsItemSelected(item) || super.onOptionsItemSelected(item)
 
     override fun onBackPressed() {
         if (!viewModel.onBackPressed()) super.onBackPressed()

@@ -89,7 +89,7 @@ class CustomTimelineListViewModelTest {
         }
 
         // exercise
-        sut.onUserIconClicked(user)
+        sut.launchUserInfo.dispatch(user)
 
         // verify
         eventCollector.assertLatestNavigationEvent<TimelineEvent.Navigate.UserInfo>(
@@ -108,7 +108,7 @@ class CustomTimelineListViewModelTest {
         }
 
         // exercise
-        sut.onBodyItemClicked(item)
+        sut.selectBodyItem.dispatch(item)
 
         // verify
         eventCollector.assertLatestNavigationEvent<TimelineEvent.Navigate.Timeline>(

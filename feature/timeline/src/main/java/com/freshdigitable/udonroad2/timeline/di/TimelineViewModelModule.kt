@@ -159,11 +159,9 @@ internal interface UserListViewModelModule {
         @ViewModelKey(UserListViewModel::class)
         @IntoFactory
         fun provideUserListViewModel(
-            eventDispatcher: EventDispatcher,
             viewModelSource: ListItemLoadableViewStateImpl,
             userIconViewModelSource: UserIconViewModelSource,
-        ): ViewModel =
-            UserListViewModel(eventDispatcher, viewModelSource, userIconViewModelSource)
+        ): ViewModel = UserListViewModel(viewModelSource, userIconViewModelSource)
 
         @Provides
         @IntoMap
@@ -204,7 +202,7 @@ internal interface CustomTimelineListViewModelModule {
 private inline fun <Q : QueryType, VS : ListItemLoadableViewModelSource> provideViewState(
     owner: ListOwner<*>,
     listRepositoryFactory: ListRepositoryComponent.Factory,
-    block: (ListOwner<Q>, ListRepository<Q, Any>, PagedListProvider<Q, Any>) -> VS
+    block: (ListOwner<Q>, ListRepository<Q, Any>, PagedListProvider<Q, Any>) -> VS,
 ): VS {
     val component = listRepositoryFactory.create(owner.query)
     val listRepository = component.listRepository<Q>()

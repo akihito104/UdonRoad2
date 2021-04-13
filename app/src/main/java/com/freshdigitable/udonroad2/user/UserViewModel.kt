@@ -13,6 +13,7 @@ import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.UserId
+import com.freshdigitable.udonroad2.model.app.navigation.AppEventListener1
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
 import com.freshdigitable.udonroad2.model.user.Relationship
@@ -49,7 +50,7 @@ class UserViewModel(
         eventDispatcher.postSelectedItemShortcutEvent(item, selected)
     }
 
-    override fun onBackPressed(): Boolean {
+    fun onBackPressed(): Boolean {
         val selectedItem = state.value?.selectedItemId
         val event = if (selectedItem != null) {
             TimelineEvent.TweetItemSelection.Unselected(selectedItem.owner)
@@ -59,13 +60,18 @@ class UserViewModel(
         eventDispatcher.postEvent(event)
         return true
     }
+
+    fun onOptionsItemSelected(item: MenuItem): Boolean {
+        val relationMenu = RelationshipMenu.findById(item.itemId) ?: return false
+        changeRelationships.dispatch(relationMenu)
+        return true
+    }
 }
 
 interface UserViewEventListener {
-    fun onAppBarScrolled(rate: Float)
-    fun onCurrentPageChanged(index: Int)
-    fun onOptionsItemSelected(item: MenuItem): Boolean
-    fun onBackPressed(): Boolean
+    val changePage: AppEventListener1<Int>
+    val scrollAppbar: AppEventListener1<Float>
+    val changeRelationships: AppEventListener1<RelationshipMenu>
 }
 
 interface UserViewState {
@@ -81,7 +87,7 @@ interface UserViewState {
 @Keep
 enum class RelationshipMenu(
     @IdRes val id: Int,
-    val event: (UserId) -> Relationships
+    val event: (UserId) -> Relationships,
 ) {
     FOLLOW(R.id.action_follow, { u -> Relationships.Following(true, u) }),
     UNFOLLOW(R.id.action_unfollow, { u -> Relationships.Following(false, u) }),

@@ -242,7 +242,7 @@ class TweetDetailViewModelTest {
         val tweetId = tweet.body.id
 
         // exercise
-        sut.onMediaItemClicked(tweet.originalId, tweetId, tweet.body, 0)
+        sut.onMediaItemClicked(tweet.body.id, 0)
 
         // verify
         assertThat(sut.state.value?.tweetItem).isEqualTo(tweet)

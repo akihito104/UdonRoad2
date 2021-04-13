@@ -64,7 +64,7 @@ class MediaViewModelTest {
             mediaRepositoryRule.mock,
             tweetRepositoryRule.mock,
         )
-        MediaViewModel(tweetListItem.originalId, eventDispatcher, viewStates)
+        MediaViewModel(eventDispatcher, viewStates)
     }
 
     @Before
@@ -74,7 +74,7 @@ class MediaViewModelTest {
             mediaEntitySource.consumeAsFlow()
         )
         with(sut) {
-            listOf(state, mediaItems, systemUiVisibility, isFabVisible).forEach {
+            listOf(state, mediaItems, systemUiVisibility, shortcutState).forEach {
                 it.observeForever {}
             }
         }
@@ -87,7 +87,7 @@ class MediaViewModelTest {
         assertThat(sut.mediaItems.value).isEmpty()
         assertThat(sut.state.value?.currentPosition).isNull()
         assertThat(sut.systemUiVisibility.value).isEqualTo(SystemUiVisibility.SHOW)
-        assertThat(sut.isFabVisible.value).isTrue()
+        assertThat(sut.shortcutState.value?.isVisible).isTrue()
     }
 
     @Test
@@ -105,10 +105,10 @@ class MediaViewModelTest {
     @Test
     fun toggleUiVisibility() {
         // exercise
-        sut.onSystemUiToggled()
+        sut.toggleSystemUiVisibility.dispatch()
 
         // verify
         assertThat(sut.systemUiVisibility.value).isEqualTo(SystemUiVisibility.HIDE)
-        assertThat(sut.isFabVisible.value).isFalse()
+        assertThat(sut.shortcutState.value?.isVisible).isFalse()
     }
 }

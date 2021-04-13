@@ -8,7 +8,6 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.channels.sendBlocking
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.filterIsInstance
 import timber.log.Timber
 import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
@@ -30,7 +29,7 @@ fun EventDispatcher.postEvents(vararg events: AppEvent) {
 
 inline fun <reified T : AppEvent> EventDispatcher.toActionFlow(
     crossinline prediction: (T) -> Boolean = { true },
-): Flow<T> = callbackFlow<AppEvent> {
+): Flow<T> = callbackFlow {
     val disposable: AtomicReference<Disposable> = AtomicReference()
     val observer = object : Observer<AppEvent> {
         override fun onSubscribe(d: Disposable) {
@@ -61,4 +60,4 @@ inline fun <reified T : AppEvent> EventDispatcher.toActionFlow(
             d.dispose()
         }
     }
-}.filterIsInstance()
+}

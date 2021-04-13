@@ -8,20 +8,17 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventStream
-import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
+import com.freshdigitable.udonroad2.model.app.navigation.AppEventListener1
 import com.freshdigitable.udonroad2.model.user.UserListItem
 import com.freshdigitable.udonroad2.timeline.ListItemClickListener
 import com.freshdigitable.udonroad2.timeline.ListItemLoadableEventListener
 import com.freshdigitable.udonroad2.timeline.ListItemLoadableViewModel
 import com.freshdigitable.udonroad2.timeline.ListItemLoadableViewModelSource
-import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.UserIconClickListener
 import com.freshdigitable.udonroad2.timeline.UserIconViewModelSource
 import kotlinx.coroutines.flow.Flow
-import timber.log.Timber
 
 class UserListViewModel(
-    private val eventDispatcher: EventDispatcher,
     viewModelSource: ListItemLoadableViewModelSource,
     userIconViewModelSource: UserIconViewModelSource,
 ) : ListItemLoadableViewModel<QueryType.UserQueryType>,
@@ -36,8 +33,10 @@ class UserListViewModel(
     override val timeline: Flow<PagingData<Any>> =
         viewModelSource.pagedList.cachedIn(viewModelScope)
 
-    override fun onBodyItemClicked(item: UserListItem) {
-        Timber.tag("TimelineViewModel").d("onBodyItemClicked: ${item.id}")
-        eventDispatcher.postEvent(TimelineEvent.UserIconClicked(item))
-    }
+    override val selectBodyItem: AppEventListener1<UserListItem> =
+        object : AppEventListener1<UserListItem> {
+            override fun dispatch(t: UserListItem) {
+                userIconViewModelSource.launchUserInfo.dispatch(t)
+            }
+        }
 }

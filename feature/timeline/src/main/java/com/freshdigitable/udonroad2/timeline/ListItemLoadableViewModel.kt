@@ -8,9 +8,13 @@ import com.freshdigitable.udonroad2.data.PagedListProvider
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventStream
+import com.freshdigitable.udonroad2.model.app.navigation.AppAction
+import com.freshdigitable.udonroad2.model.app.navigation.AppAction1
+import com.freshdigitable.udonroad2.model.app.navigation.AppEventListener
+import com.freshdigitable.udonroad2.model.app.navigation.AppEventListener1
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
-import com.freshdigitable.udonroad2.model.app.navigation.toActionFlow
+import com.freshdigitable.udonroad2.model.app.navigation.toAction
 import com.freshdigitable.udonroad2.model.app.onEvent
 import com.freshdigitable.udonroad2.model.app.stateSourceBuilder
 import kotlinx.coroutines.channels.Channel
@@ -30,42 +34,30 @@ interface ListItemLoadableViewModel<Q : QueryType> :
 }
 
 interface ListItemLoadableEventListener {
-    fun onRefresh()
-    fun onListScrollStarted()
-    fun onListScrollStopped(firstVisibleItemPosition: Int)
-    fun onHeadingClicked()
+    val prependList: AppEventListener
+    val scrollList: AppEventListener
+    val stopScrollingList: AppEventListener1<Int>
+    val heading: AppEventListener
 }
 
 internal interface ListItemLoadableAction : ListItemLoadableEventListener {
-    val scrollList: Flow<TimelineEvent.ListScrolled>
-    val heading: Flow<TimelineEvent.HeadingClicked>
-    val prependList: Flow<TimelineEvent.SwipedToRefresh>
+    override val prependList: AppAction<TimelineEvent.SwipedToRefresh>
+    override val scrollList: AppAction<TimelineEvent.ListScrolled.Started>
+    override val stopScrollingList: AppAction1<Int, TimelineEvent.ListScrolled.Stopped>
+    override val heading: AppAction<TimelineEvent.HeadingClicked>
 }
 
 internal class ListItemLoadableActions @Inject constructor(
-    private val owner: ListOwner<*>,
-    private val eventDispatcher: EventDispatcher,
+    owner: ListOwner<*>,
+    eventDispatcher: EventDispatcher,
 ) : ListItemLoadableAction {
-    override fun onRefresh() {
-        eventDispatcher.postEvent(TimelineEvent.SwipedToRefresh)
+    override val prependList = eventDispatcher.toAction(TimelineEvent.SwipedToRefresh)
+    override val scrollList = eventDispatcher.toAction(TimelineEvent.ListScrolled.Started)
+    override val stopScrollingList = eventDispatcher.toAction { index: Int ->
+        TimelineEvent.ListScrolled.Stopped(index)
     }
-
-    override fun onListScrollStarted() {
-        eventDispatcher.postEvent(TimelineEvent.ListScrolled.Started)
-    }
-
-    override fun onListScrollStopped(firstVisibleItemPosition: Int) {
-        eventDispatcher.postEvent(TimelineEvent.ListScrolled.Stopped(firstVisibleItemPosition))
-    }
-
-    override fun onHeadingClicked() {
-        eventDispatcher.postEvent(TimelineEvent.HeadingClicked(owner))
-    }
-
-    override val scrollList: Flow<TimelineEvent.ListScrolled> = eventDispatcher.toActionFlow()
-    override val heading: Flow<TimelineEvent.HeadingClicked> =
-        eventDispatcher.toActionFlow { it.owner == owner }
-    override val prependList: Flow<TimelineEvent.SwipedToRefresh> = eventDispatcher.toActionFlow()
+    override val heading: AppAction<TimelineEvent.HeadingClicked> =
+        eventDispatcher.toAction(TimelineEvent.HeadingClicked(owner))
 }
 
 interface ListItemLoadableViewModelSource : ListItemLoadableEventListener, ActivityEventStream {
@@ -89,28 +81,18 @@ internal class ListItemLoadableViewStateImpl(
 
     override val state: Flow<Snapshot> = stateSourceBuilder(
         init = Snapshot(),
-        actions.scrollList.onEvent { s, e ->
-            when (e) {
-                is TimelineEvent.ListScrolled.Started -> {
-                    Snapshot(
-                        firstVisibleItemPosition = s.firstVisibleItemPosition,
-                        isHeadingEnabled = true
-                    )
-                }
-                is TimelineEvent.ListScrolled.Stopped -> {
-                    Snapshot(
-                        firstVisibleItemPosition = e.firstVisibleItemPosition,
-                        isHeadingEnabled = isHeadingEnabled(e.firstVisibleItemPosition)
-                    )
-                }
-            }
+        actions.scrollList.onEvent { s, _ -> s.copy(enableHeading = true) },
+        actions.stopScrollingList.onEvent { s, e ->
+            s.copy(
+                firstVisibleItemPosition = e.firstVisibleItemPosition,
+                enableHeading = false,
+            )
         },
         actions.prependList.onEvent { state, _ ->
             val items = listRepository.prependList(owner.query, owner.id)
             val firstVisibleItemPosition = state.firstVisibleItemPosition + items.size
             Snapshot(
                 firstVisibleItemPosition = firstVisibleItemPosition,
-                isHeadingEnabled = isHeadingEnabled(firstVisibleItemPosition)
             )
         },
         actions.heading.onEvent { s, _ ->
@@ -131,12 +113,10 @@ internal class ListItemLoadableViewStateImpl(
 
     internal data class Snapshot(
         val firstVisibleItemPosition: Int = RecyclerView.NO_POSITION,
-        override val isHeadingEnabled: Boolean = false,
-    ) : ListItemLoadableViewModel.State
-
-    companion object {
-        private fun isHeadingEnabled(firstVisibleItemPosition: Int): Boolean =
-            when (firstVisibleItemPosition) {
+        val enableHeading: Boolean = false,
+    ) : ListItemLoadableViewModel.State {
+        override val isHeadingEnabled: Boolean
+            get() = enableHeading || when (firstVisibleItemPosition) {
                 RecyclerView.NO_POSITION -> false
                 else -> firstVisibleItemPosition > 0
             }

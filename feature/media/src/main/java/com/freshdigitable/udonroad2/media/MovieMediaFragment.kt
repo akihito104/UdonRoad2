@@ -47,7 +47,7 @@ import java.util.concurrent.TimeUnit
 import kotlin.coroutines.CoroutineContext
 
 class MovieMediaFragment(
-    private val coroutineScope: MovieMediaCoroutineScope = MovieMediaCoroutineScope()
+    private val coroutineScope: MovieMediaCoroutineScope = MovieMediaCoroutineScope(),
 ) : Fragment(), CoroutineScope by coroutineScope {
 
     companion object {
@@ -83,7 +83,7 @@ class MovieMediaFragment(
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View? {
         return layoutInflater.inflate(R.layout.view_media_movie, container, false)
     }
@@ -94,7 +94,7 @@ class MovieMediaFragment(
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        view.setOnClickListener { mediaViewModel.onSystemUiToggled() }
+        view.setOnClickListener { mediaViewModel.toggleSystemUiVisibility.dispatch() }
 
         val surfaceView: SurfaceView = view.findViewById(R.id.media_video)
         val progressText: TextView = view.findViewById(R.id.media_progressText)
@@ -118,7 +118,7 @@ class MovieMediaFragment(
     private fun MediaPlayer.setup(
         surfaceView: SurfaceView,
         progressText: TextView,
-        progressBar: ProgressBar
+        progressBar: ProgressBar,
     ) {
         setOnPreparedListener {
             it.setupProgress(progressText, progressBar)

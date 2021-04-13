@@ -57,7 +57,7 @@ class ListItemFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View = FragmentTimelineBinding.inflate(inflater, container, false).root
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -107,7 +107,7 @@ class ListItemFragment : Fragment() {
 
     private fun RecyclerView.setup(
         adapter: PagingDataAdapter<Any, *>,
-        viewModel: ListItemLoadableViewModel<*>
+        viewModel: ListItemLoadableViewModel<*>,
     ) {
         val linearLayoutManager = LinearLayoutManager(context)
         this.layoutManager = linearLayoutManager
@@ -119,9 +119,9 @@ class ListItemFragment : Fragment() {
                 if (newState == RecyclerView.SCROLL_STATE_IDLE) {
                     val firstVisibleItemPosition =
                         linearLayoutManager.findFirstVisibleItemPosition()
-                    viewModel.onListScrollStopped(firstVisibleItemPosition)
+                    viewModel.stopScrollingList.dispatch(firstVisibleItemPosition)
                 } else if (newState == RecyclerView.SCROLL_STATE_DRAGGING) {
-                    viewModel.onListScrollStarted()
+                    viewModel.scrollList.dispatch()
                 }
             }
         })
@@ -145,7 +145,7 @@ class ListItemFragment : Fragment() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.action_heading -> {
-                viewModel.onHeadingClicked()
+                viewModel.heading.dispatch()
                 true
             }
             else -> super.onOptionsItemSelected(item)
