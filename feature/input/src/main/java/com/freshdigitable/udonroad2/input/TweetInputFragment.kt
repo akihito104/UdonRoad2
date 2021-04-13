@@ -76,7 +76,7 @@ class TweetInputFragment : Fragment() {
         super.onAttach(context)
         mediaChooser = registerForActivityResult(mediaChooserResultContract) { uris ->
             Timber.tag("TweetInputFragment").d("mediaChooser.onResult: $uris")
-            viewModel.updateMedia.onEvent(uris)
+            viewModel.updateMedia.dispatch(uris)
         }
     }
 
@@ -171,15 +171,15 @@ class TweetInputFragment : Fragment() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.input_tweet_write -> {
-                viewModel.openInput.onEvent()
+                viewModel.openInput.dispatch()
                 true
             }
             R.id.input_tweet_send -> {
-                viewModel.sendTweet.onEvent()
+                viewModel.sendTweet.dispatch()
                 true
             }
             android.R.id.closeButton -> {
-                viewModel.cancelInput.onEvent()
+                viewModel.cancelInput.dispatch()
                 true
             }
             else -> super.onOptionsItemSelected(item)

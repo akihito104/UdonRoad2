@@ -63,7 +63,7 @@ class UserViewModel(
 
     fun onOptionsItemSelected(item: MenuItem): Boolean {
         val relationMenu = RelationshipMenu.findById(item.itemId) ?: return false
-        changeRelationships.onEvent(relationMenu)
+        changeRelationships.dispatch(relationMenu)
         return true
     }
 }

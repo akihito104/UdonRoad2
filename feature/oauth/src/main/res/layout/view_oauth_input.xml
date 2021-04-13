@@ -54,7 +54,7 @@
             android:text="@string/oauth_login"
             android:focusable="true"
             android:focusableInTouchMode="true"
-            android:onClick="@{v -> viewModel.authApp.onEvent()}"
+            android:onClick="@{v -> viewModel.authApp.dispatch()}"
             />
 
         <TextView
@@ -89,7 +89,7 @@
                 android:nextFocusUp="@id/oauth_pin"
                 android:nextFocusLeft="@id/oauth_pin"
                 android:text="@{viewModel.state.pinText}"
-                android:afterTextChanged="@{(t) -> viewModel.inputPin.onEvent(t)}"
+                android:afterTextChanged="@{(t) -> viewModel.inputPin.dispatch(t)}"
                 />
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -103,7 +103,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             android:text="@string/oauth_send_pin"
             android:enabled="@{viewModel.sendPinButtonEnabled ?? false}"
-            android:onClick="@{v -> viewModel.sendPin.onEvent()}"
+            android:onClick="@{v -> viewModel.sendPin.dispatch()}"
             />
 
     </androidx.constraintlayout.widget.ConstraintLayout>

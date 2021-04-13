@@ -45,7 +45,7 @@
         android:layout_height="wrap_content"
         android:padding="@dimen/margin_half"
         android:background="@drawable/selector_item_quoted_background"
-        android:onClick="@{v -> itemViewModel.toggleQuoteItem.onEvent(tweet)}"
+        android:onClick="@{v -> itemViewModel.toggleQuoteItem.dispatch(tweet)}"
         app:selected="@{itemViewModel.selectedItemId.equalsTo(tweet.originalId, tweet.quoted.id)}"
         >
 

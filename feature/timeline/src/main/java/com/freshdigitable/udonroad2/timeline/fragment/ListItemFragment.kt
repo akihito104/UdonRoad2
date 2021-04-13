@@ -119,9 +119,9 @@ class ListItemFragment : Fragment() {
                 if (newState == RecyclerView.SCROLL_STATE_IDLE) {
                     val firstVisibleItemPosition =
                         linearLayoutManager.findFirstVisibleItemPosition()
-                    viewModel.stopScrollingList.onEvent(firstVisibleItemPosition)
+                    viewModel.stopScrollingList.dispatch(firstVisibleItemPosition)
                 } else if (newState == RecyclerView.SCROLL_STATE_DRAGGING) {
-                    viewModel.scrollList.onEvent()
+                    viewModel.scrollList.dispatch()
                 }
             }
         })
@@ -145,7 +145,7 @@ class ListItemFragment : Fragment() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.action_heading -> {
-                viewModel.heading.onEvent()
+                viewModel.heading.dispatch()
                 true
             }
             else -> super.onOptionsItemSelected(item)

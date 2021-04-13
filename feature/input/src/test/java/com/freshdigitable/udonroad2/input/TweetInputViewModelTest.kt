@@ -75,7 +75,7 @@ class TweetInputViewModelTest {
         fun onCancelClicked_whenInputIsCollapsed_menuItemIsNotChanged(): Unit = with(rule) {
             coroutineTestRule.runBlockingTest {
                 // exercise
-                sut.cancelInput.onEvent()
+                sut.cancelInput.dispatch()
             }
 
             // verify
@@ -88,7 +88,7 @@ class TweetInputViewModelTest {
         fun onWriteClicked_then_isVisibleIsTrue(): Unit = with(rule) {
             // exercise
             coroutineTestRule.runBlockingTest {
-                sut.openInput.onEvent()
+                sut.openInput.dispatch()
             }
 
             // verify
@@ -101,10 +101,10 @@ class TweetInputViewModelTest {
         fun onCancelClicked_then_isVisibleIsFalse(): Unit = with(rule) {
             coroutineTestRule.runBlockingTest {
                 // setup
-                sut.openInput.onEvent()
+                sut.openInput.dispatch()
 
                 // exercise
-                sut.cancelInput.onEvent()
+                sut.cancelInput.dispatch()
             }
 
             // verify
@@ -117,10 +117,10 @@ class TweetInputViewModelTest {
         fun onTweetTextChanged_addedText_then_menuItemIsSendEnabled(): Unit = with(rule) {
             coroutineTestRule.runBlockingTest {
                 // setup
-                sut.openInput.onEvent()
+                sut.openInput.dispatch()
 
                 // exercise
-                sut.updateText.onEvent(editable("a"))
+                sut.updateText.dispatch(editable("a"))
             }
 
             // verify
@@ -133,11 +133,11 @@ class TweetInputViewModelTest {
         fun onCancelClicked_textAdded_then_textCleared(): Unit = with(rule) {
             coroutineTestRule.runBlockingTest {
                 // setup
-                sut.openInput.onEvent()
-                sut.updateText.onEvent(editable("a"))
+                sut.openInput.dispatch()
+                sut.updateText.dispatch(editable("a"))
 
                 // exercise
-                sut.cancelInput.onEvent()
+                sut.cancelInput.dispatch()
             }
 
             // verify
@@ -151,11 +151,11 @@ class TweetInputViewModelTest {
         fun onTweetTextChanged_removedText_then_menuItemIsSendDisabled(): Unit = with(rule) {
             coroutineTestRule.runBlockingTest {
                 // setup
-                sut.openInput.onEvent()
+                sut.openInput.dispatch()
 
                 // exercise
-                sut.updateText.onEvent(editable("a"))
-                sut.updateText.onEvent(editable(""))
+                sut.updateText.dispatch(editable("a"))
+                sut.updateText.dispatch(editable(""))
             }
 
             // verify
@@ -219,12 +219,12 @@ class TweetInputViewModelTest {
             // setup
             val path = mockk<AppFilePath>()
             coroutineTestRule.runBlockingTest {
-                sut.openInput.onEvent()
+                sut.openInput.dispatch()
                 sut.onCameraAppCandidatesQueried(listOf(cameraApp), path)
                 dispatchChosen(cameraApp)
 
                 // exercise
-                sut.updateMedia.onEvent(MediaChooserResult.Add(listOf(path)))
+                sut.updateMedia.dispatch(MediaChooserResult.Add(listOf(path)))
             }
 
             // verify
@@ -244,10 +244,10 @@ class TweetInputViewModelTest {
             coroutineTestRule.runBlockingTest {
                 sut.onCameraAppCandidatesQueried(listOf(cameraApp), path)
                 dispatchChosen(cameraApp)
-                sut.updateMedia.onEvent(MediaChooserResult.Add(listOf(path)))
+                sut.updateMedia.dispatch(MediaChooserResult.Add(listOf(path)))
 
                 // exercise
-                sut.cancelInput.onEvent()
+                sut.cancelInput.dispatch()
             }
 
             // verify
@@ -267,7 +267,7 @@ class TweetInputViewModelTest {
                 dispatchChosen(galleryApp)
 
                 // exercise
-                sut.updateMedia.onEvent(MediaChooserResult.Replace(listOf()))
+                sut.updateMedia.dispatch(MediaChooserResult.Replace(listOf()))
             }
 
             // verify
@@ -283,11 +283,11 @@ class TweetInputViewModelTest {
             coroutineTestRule.runBlockingTest {
                 // setup
                 setupPost("a")
-                sut.openInput.onEvent()
-                sut.updateText.onEvent(editable("a"))
+                sut.openInput.dispatch()
+                sut.updateText.dispatch(editable("a"))
 
                 // exercise
-                sut.sendTweet.onEvent()
+                sut.sendTweet.dispatch()
             }
 
             // verify
@@ -314,14 +314,14 @@ class TweetInputViewModelTest {
                 setupPost("a", listOf(mediaId))
                 setupUploadMedia(path, mediaId)
                 coroutineTestRule.runBlockingTest {
-                    sut.openInput.onEvent()
+                    sut.openInput.dispatch()
                     sut.onCameraAppCandidatesQueried(listOf(cameraApp), path)
                     dispatchChosen(cameraApp)
-                    sut.updateMedia.onEvent(MediaChooserResult.Add(listOf(path)))
-                    sut.updateText.onEvent(editable("a"))
+                    sut.updateMedia.dispatch(MediaChooserResult.Add(listOf(path)))
+                    sut.updateText.dispatch(editable("a"))
 
                     // exercise
-                    sut.sendTweet.onEvent()
+                    sut.sendTweet.dispatch()
                 }
 
                 // verify
@@ -344,11 +344,11 @@ class TweetInputViewModelTest {
             coroutineTestRule.runBlockingTest {
                 // setup
                 setupPost("a", withError = AppTwitterException(403, 123))
-                sut.openInput.onEvent()
-                sut.updateText.onEvent(editable("a"))
+                sut.openInput.dispatch()
+                sut.updateText.dispatch(editable("a"))
 
                 // exercise
-                sut.sendTweet.onEvent()
+                sut.sendTweet.dispatch()
             }
 
             // verify
@@ -443,7 +443,7 @@ class TweetInputViewModelTest {
 
             // exercise
             coroutineTestRule.runBlockingTest {
-                sut.sendTweet.onEvent()
+                sut.sendTweet.dispatch()
             }
 
             // verify
@@ -463,7 +463,7 @@ class TweetInputViewModelTest {
         @Test
         fun onCancelClicked_then_stateIsCleared(): Unit = with(rule) {
             coroutineTestRule.runBlockingTest {
-                sut.cancelInput.onEvent()
+                sut.cancelInput.dispatch()
             }
 
             assertThat(sut.isExpanded.value).isFalse()
@@ -495,7 +495,7 @@ class TweetInputViewModelTest {
         fun onCancelClicked(): Unit = with(rule) {
             // exercise
             coroutineTestRule.runBlockingTest {
-                sut.cancelInput.onEvent()
+                sut.cancelInput.dispatch()
             }
 
             // verify
@@ -512,8 +512,8 @@ class TweetInputViewModelTest {
 
             // exercise
             coroutineTestRule.runBlockingTest {
-                sut.updateText.onEvent(editable("aaa"))
-                sut.sendTweet.onEvent()
+                sut.updateText.dispatch(editable("aaa"))
+                sut.sendTweet.dispatch()
             }
 
             // verify

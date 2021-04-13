@@ -40,7 +40,7 @@
             android:id="@+id/media_pager"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:onClick="@{v -> viewModel.toggleSystemUiVisibility.onEvent()}"
+            android:onClick="@{v -> viewModel.toggleSystemUiVisibility.dispatch()}"
             app:currentItem="@{viewModel.state.currentPosition}"
             />
 

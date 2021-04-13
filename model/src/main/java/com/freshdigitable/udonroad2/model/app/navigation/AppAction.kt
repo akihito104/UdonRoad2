@@ -19,11 +19,11 @@ package com.freshdigitable.udonroad2.model.app.navigation
 import kotlinx.coroutines.flow.Flow
 
 interface AppEventListener {
-    fun onEvent()
+    fun dispatch()
 
     companion object {
         val empty = object : AppEventListener {
-            override fun onEvent() = Unit
+            override fun dispatch() = Unit
         }
     }
 }
@@ -34,17 +34,17 @@ inline fun <reified E : AppEvent> EventDispatcher.toAction(
     event: E,
     crossinline prediction: (E) -> Boolean = { it == event },
 ): AppAction<E> = object : AppAction<E>, Flow<E> by this.toActionFlow(prediction) {
-    override fun onEvent() {
+    override fun dispatch() {
         this@toAction.postEvent(event)
     }
 }
 
 interface AppEventListener1<T> {
-    fun onEvent(t: T)
+    fun dispatch(t: T)
 
     companion object {
         fun <T> empty() = object : AppEventListener1<T> {
-            override fun onEvent(t: T) = Unit
+            override fun dispatch(t: T) = Unit
         }
     }
 }
@@ -55,7 +55,7 @@ inline fun <T, E : AppEvent> EventDispatcher.toListener(
     crossinline onEvent: (T) -> E,
 ): AppEventListener1<T> {
     return object : AppEventListener1<T> {
-        override fun onEvent(t: T) {
+        override fun dispatch(t: T) {
             this@toListener.postEvent(onEvent(t))
         }
     }

@@ -55,7 +55,7 @@ internal class TimelineActions(
         id: TweetId,
         index: Int,
     ) {
-        selectItem.onEvent(SelectedItemId(owner, originalId, quotedId))
+        selectItem.dispatch(SelectedItemId(owner, originalId, quotedId))
         onMediaItemClicked(id, index)
     }
 

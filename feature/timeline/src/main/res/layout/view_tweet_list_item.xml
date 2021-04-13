@@ -50,7 +50,7 @@
         android:layout_height="wrap_content"
         android:padding="8dp"
         android:background="@drawable/selector_item_background"
-        android:onClick="@{v -> itemViewModel.selectBodyItem.onEvent(tweet)}"
+        android:onClick="@{v -> itemViewModel.selectBodyItem.dispatch(tweet)}"
         app:selected="@{itemViewModel.selectedItemId.equalsTo(tweet.originalId)}"
         >
 
@@ -85,7 +85,7 @@
             app:layout_constraintHorizontal_chainStyle="packed"
             app:layout_constraintHorizontal_bias="0"
             app:bindUserIcon="@{tweet.body.user.iconUrl}"
-            android:onClick="@{v -> userIconClickListener.launchUserInfo.onEvent(tweet.body.user)}"
+            android:onClick="@{v -> userIconClickListener.launchUserInfo.dispatch(tweet.body.user)}"
             />
 
         <TextView

@@ -68,7 +68,7 @@ class PhotoMediaFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        view.setOnClickListener { mediaViewModel.toggleSystemUiVisibility.onEvent() }
+        view.setOnClickListener { mediaViewModel.toggleSystemUiVisibility.dispatch() }
 
         val imageView = view as ImageView
 

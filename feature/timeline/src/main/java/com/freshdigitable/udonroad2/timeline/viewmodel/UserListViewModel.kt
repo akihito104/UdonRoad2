@@ -35,8 +35,8 @@ class UserListViewModel(
 
     override val selectBodyItem: AppEventListener1<UserListItem> =
         object : AppEventListener1<UserListItem> {
-            override fun onEvent(t: UserListItem) {
-                userIconViewModelSource.launchUserInfo.onEvent(t)
+            override fun dispatch(t: UserListItem) {
+                userIconViewModelSource.launchUserInfo.dispatch(t)
             }
         }
 }

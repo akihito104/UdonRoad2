@@ -105,7 +105,7 @@ class MediaViewModelTest {
     @Test
     fun toggleUiVisibility() {
         // exercise
-        sut.toggleSystemUiVisibility.onEvent()
+        sut.toggleSystemUiVisibility.dispatch()
 
         // verify
         assertThat(sut.systemUiVisibility.value).isEqualTo(SystemUiVisibility.HIDE)

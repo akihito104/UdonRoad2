@@ -100,7 +100,7 @@ class TimelineViewModelSourceTest {
     fun updateTweet_dispatchLikeIsSuccess_then_likeDispatched(): Unit = with(rule) {
         // setup
         tweetRepositoryMock.setupPostLikeForSuccess(TweetId(200))
-        sut.selectBodyItem.onEvent(TweetListItem.createMock(TweetId(200)))
+        sut.selectBodyItem.dispatch(TweetListItem.createMock(TweetId(200)))
 
         // exercise
         dispatchEvents(
@@ -118,7 +118,7 @@ class TimelineViewModelSourceTest {
         tweetRepositoryMock.setupPostLikeForFailure(
             TweetId(200), AppTwitterException.ErrorType.ALREADY_FAVORITED
         )
-        sut.selectBodyItem.onEvent(TweetListItem.createMock(TweetId(200)))
+        sut.selectBodyItem.dispatch(TweetListItem.createMock(TweetId(200)))
 
         // exercise
         dispatchEvents(
@@ -134,7 +134,7 @@ class TimelineViewModelSourceTest {
     fun updateTweet_dispatchRetweetEvent_then_retweetDispatched(): Unit = with(rule) {
         // setup
         tweetRepositoryMock.setupPostRetweetForSuccess(TweetId(200))
-        sut.selectBodyItem.onEvent(TweetListItem.createMock(TweetId(200)))
+        sut.selectBodyItem.dispatch(TweetListItem.createMock(TweetId(200)))
 
         // exercise
         dispatchEvents(
@@ -153,7 +153,7 @@ class TimelineViewModelSourceTest {
             tweetRepositoryMock.setupPostRetweetForFailure(
                 TweetId(200), AppTwitterException.ErrorType.ALREADY_RETWEETED
             )
-            sut.selectBodyItem.onEvent(TweetListItem.createMock(TweetId(200)))
+            sut.selectBodyItem.dispatch(TweetListItem.createMock(TweetId(200)))
 
             // exercise
             dispatchEvents(

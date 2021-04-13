@@ -86,7 +86,7 @@ class UserViewModelTest {
         @Test
         fun setAppbarScrollRate(): Unit = with(rule) {
             // exercise
-            sut.scrollAppbar.onEvent(1f)
+            sut.scrollAppbar.dispatch(1f)
 
             // verify
             assertThat(sut.state.value?.titleAlpha).isEqualTo(1f)
@@ -95,7 +95,7 @@ class UserViewModelTest {
         @Test
         fun fabVisible_dispatchedSelectedEvent_then_fabVisibleIsTrue(): Unit = with(rule) {
             // setup
-            sut.changePage.onEvent(0)
+            sut.changePage.dispatch(0)
 
             // exercise
             selectedItemRepository.put(
@@ -153,7 +153,7 @@ class UserViewModelTest {
 
         @Before
         fun setup(): Unit = with(rule) {
-            sut.changePage.onEvent(0)
+            sut.changePage.dispatch(0)
             selectedItemRepository.put(
                 SelectedItemId(
                     ListOwner(0, QueryType.TweetQueryType.Timeline(targetId)), TweetId(10000)
@@ -165,7 +165,7 @@ class UserViewModelTest {
         fun fabVisible_changeCurrentPage_then_fabVisibleIsFalse(): Unit = with(rule) {
             // exercise
             coroutineRule.runBlockingTest {
-                sut.changePage.onEvent(1)
+                sut.changePage.dispatch(1)
             }
             // verify
             assertThat(sut.state.value?.isShortcutVisible).isFalse()
@@ -174,10 +174,10 @@ class UserViewModelTest {
         @Test
         fun fabVisible_returnToPage_then_fabVisibleIsTrue(): Unit = with(rule) {
             // setup
-            sut.changePage.onEvent(1)
+            sut.changePage.dispatch(1)
 
             // exercise
-            sut.changePage.onEvent(0)
+            sut.changePage.dispatch(0)
 
             // verify
             assertThat(sut.state.value?.isShortcutVisible).isTrue()
@@ -402,8 +402,8 @@ class UserViewModelTestRule(
     }
 
     private fun setupSut() {
-        sut.changePage.onEvent(0)
-        sut.scrollAppbar.onEvent(0f)
+        sut.changePage.dispatch(0)
+        sut.scrollAppbar.dispatch(0f)
         eventCollector.setupForActivate {
             addAll(sut.state, sut.relationshipMenuItems)
             addAll(sut.pages, sut.feedbackMessage)
