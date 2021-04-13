@@ -19,7 +19,6 @@ package com.freshdigitable.udonroad2.user
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
-import com.freshdigitable.udonroad2.user.UserActivityEvent.Relationships
 import javax.inject.Inject
 
 class UserActions @Inject constructor(
@@ -27,13 +26,13 @@ class UserActions @Inject constructor(
     eventDispatcher: EventDispatcher,
 ) : UserViewEventListener {
 
-    override val scrollAppbar = eventDispatcher.toAction<Float, UserActivityEvent.AppbarScrolled> {
-        UserActivityEvent.AppbarScrolled(it)
+    override val scrollAppbar = eventDispatcher.toAction { rate: Float ->
+        UserActivityEvent.AppbarScrolled(rate)
     }
-    override val changePage = eventDispatcher.toAction<Int, UserActivityEvent.PageChanged> {
-        UserActivityEvent.PageChanged(UserPage.values()[it])
+    override val changePage = eventDispatcher.toAction { index: Int ->
+        UserActivityEvent.PageChanged(UserPage.values()[index])
     }
-    override val changeRelationships = eventDispatcher.toAction<RelationshipMenu, Relationships> {
-        it.event(tweetUserItem.id)
+    override val changeRelationships = eventDispatcher.toAction { menuItem: RelationshipMenu ->
+        menuItem.event(tweetUserItem.id)
     }
 }

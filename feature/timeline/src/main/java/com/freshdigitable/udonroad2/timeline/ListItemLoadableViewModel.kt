@@ -53,10 +53,9 @@ internal class ListItemLoadableActions @Inject constructor(
 ) : ListItemLoadableAction {
     override val prependList = eventDispatcher.toAction(TimelineEvent.SwipedToRefresh)
     override val scrollList = eventDispatcher.toAction(TimelineEvent.ListScrolled.Started)
-    override val stopScrollingList =
-        eventDispatcher.toAction<Int, TimelineEvent.ListScrolled.Stopped> {
-            TimelineEvent.ListScrolled.Stopped(it)
-        }
+    override val stopScrollingList = eventDispatcher.toAction { index: Int ->
+        TimelineEvent.ListScrolled.Stopped(index)
+    }
     override val heading: AppAction<TimelineEvent.HeadingClicked> =
         eventDispatcher.toAction(TimelineEvent.HeadingClicked(owner))
 }

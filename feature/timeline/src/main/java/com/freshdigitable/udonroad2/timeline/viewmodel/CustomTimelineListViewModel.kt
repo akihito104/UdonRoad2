@@ -49,10 +49,9 @@ internal class CustomTimelineListViewModel(
 internal class CustomTimelineListActions @Inject constructor(
     eventDispatcher: EventDispatcher,
 ) : ListItemClickListener<CustomTimelineItem> {
-    override val selectBodyItem =
-        eventDispatcher.toAction<CustomTimelineItem, TimelineEvent.CustomTimelineClicked> {
-            TimelineEvent.CustomTimelineClicked(it)
-        }
+    override val selectBodyItem = eventDispatcher.toAction { item: CustomTimelineItem ->
+        TimelineEvent.CustomTimelineClicked(item)
+    }
 }
 
 internal class CustomTimelineListItemLoadableViewState(

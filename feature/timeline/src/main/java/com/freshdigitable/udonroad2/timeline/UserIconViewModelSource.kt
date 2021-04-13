@@ -39,10 +39,9 @@ interface LaunchUserInfoAction : UserIconClickListener {
 class UserIconClickedAction @Inject constructor(
     eventDispatcher: EventDispatcher,
 ) : LaunchUserInfoAction {
-    override val launchUserInfo =
-        eventDispatcher.toAction<TweetUserItem, TimelineEvent.UserIconClicked> {
-            TimelineEvent.UserIconClicked(it)
-        }
+    override val launchUserInfo = eventDispatcher.toAction { item: TweetUserItem ->
+        TimelineEvent.UserIconClicked(item)
+    }
 }
 
 @ActivityScope

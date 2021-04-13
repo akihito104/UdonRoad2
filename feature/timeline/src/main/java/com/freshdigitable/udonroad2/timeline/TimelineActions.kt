@@ -38,15 +38,15 @@ internal class TimelineActions(
     TweetListItemEventListener {
 
     val toggleItem = dispatcher.toActionFlow<TweetItemSelection.Toggle> { it.owner == owner }
-    override val selectBodyItem = dispatcher.toListener<TweetListItem, TweetItemSelection.Toggle> {
-        TweetItemSelection.Toggle(SelectedItemId(owner, it.originalId))
+    override val selectBodyItem = dispatcher.toListener { item: TweetListItem ->
+        TweetItemSelection.Toggle(SelectedItemId(owner, item.originalId))
     }
-    override val toggleQuoteItem = dispatcher.toListener<TweetListItem, TweetItemSelection.Toggle> {
-        TweetItemSelection.Toggle(SelectedItemId(owner, it.originalId, it.quoted?.id))
+    override val toggleQuoteItem = dispatcher.toListener { item: TweetListItem ->
+        TweetItemSelection.Toggle(SelectedItemId(owner, item.originalId, item.quoted?.id))
     }
 
-    val selectItem = dispatcher.toAction<SelectedItemId, TweetItemSelection.Selected> {
-        TweetItemSelection.Selected(it)
+    val selectItem = dispatcher.toAction { itemId: SelectedItemId ->
+        TweetItemSelection.Selected(itemId)
     }
 
     override fun onMediaItemClicked(
