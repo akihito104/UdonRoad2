@@ -175,7 +175,8 @@ class TweetInputFragment : Fragment() {
                 true
             }
             R.id.input_tweet_send -> {
-                viewModel.sendTweet.dispatch()
+                val tweet = requireNotNull(viewModel.state.value)
+                viewModel.sendTweet.dispatch(tweet)
                 true
             }
             android.R.id.closeButton -> {

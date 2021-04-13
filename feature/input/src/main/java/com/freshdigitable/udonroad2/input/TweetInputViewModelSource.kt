@@ -19,7 +19,6 @@ package com.freshdigitable.udonroad2.input
 import android.text.Editable
 import com.freshdigitable.udonroad2.data.UserDataSource
 import com.freshdigitable.udonroad2.data.impl.AppSettingRepository
-import com.freshdigitable.udonroad2.data.impl.TweetInputRepository
 import com.freshdigitable.udonroad2.input.CameraApp.Companion.transition
 import com.freshdigitable.udonroad2.input.InputViewState.Companion.toCanceled
 import com.freshdigitable.udonroad2.input.InputViewState.Companion.toFailed
@@ -31,7 +30,6 @@ import com.freshdigitable.udonroad2.input.MediaChooserResultContract.MediaChoose
 import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.AppFilePath
-import com.freshdigitable.udonroad2.model.app.AppTwitterException
 import com.freshdigitable.udonroad2.model.app.ioContext
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
@@ -47,7 +45,6 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
-import java.io.IOException
 import javax.inject.Inject
 
 internal class TweetInputActions @Inject constructor(
@@ -58,7 +55,9 @@ internal class TweetInputActions @Inject constructor(
     override val updateText = eventDispatcher.toAction { editable: Editable ->
         TweetInputEvent.TextUpdated(editable.toString())
     }
-    override val sendTweet = eventDispatcher.toAction(TweetInputEvent.Send)
+    override val sendTweet = eventDispatcher.toAction { tweet: InputTweet ->
+        TweetInputEvent.Send(tweet)
+    }
     override val cancelInput = eventDispatcher.toAction(TweetInputEvent.Cancel)
 
     internal val cameraApp: Flow<CameraApp.Event> = eventDispatcher.toActionFlow()
@@ -79,9 +78,8 @@ internal class TweetInputViewModelSource @Inject constructor(
     collapsible: Boolean,
     actions: TweetInputActions,
     createReplyText: CreateReplyTextUseCase,
-    createQuoteText: CreateQuoteTextUseCase,
+    postTweet: PostTweetUseCase,
     sharedState: TweetInputSharedState,
-    repository: TweetInputRepository,
     oauthRepository: AppSettingRepository,
     userRepository: UserDataSource,
     executor: AppExecutor,
@@ -114,30 +112,16 @@ internal class TweetInputViewModelSource @Inject constructor(
         ) {
             onNext { state, _ -> state.toIdling(idlingState) }
         },
-        actions.sendTweet.onEvent(
-            atFirst = scanSource { state, _ -> state.toSending() }
-        ) {
-            onNext(
-                withResult = { state, _ ->
-                    val mediaIds = state.media.map { repository.uploadMedia(it) }
-                    val quoteText = state.quote?.let { createQuoteText(it) }
-                    val text = if (quoteText == null) state.text else "${state.text} $quoteText"
-                    kotlin.runCatching {
-                        repository.post(text, mediaIds, state.reply)
-                    }
-                },
-                onSuccess = listOf(
-                    { state, _ -> state.toSucceeded() },
-                    { state, _ -> state.toIdling(idlingState) }
-                ),
-                onError = listOf { state, exception ->
-                    if (exception is AppTwitterException || exception is IOException) {
-                        state.toFailed()
-                    } else {
-                        throw exception
-                    }
-                }
-            )
+        actions.sendTweet.flatMapLatest {
+            postTweet(it.tweet, idlingState)
+        }.onEvent { state, event ->
+            when (event) {
+                InputTaskState.SENDING -> state.toSending()
+                InputTaskState.SUCCEEDED -> state.toSucceeded()
+                idlingState -> state.toIdling(idlingState)
+                InputTaskState.FAILED -> state.toFailed()
+                else -> throw IllegalStateException()
+            }
         }
     ).onEach {
         sharedState.taskStateSource.value = it
@@ -174,11 +158,11 @@ enum class InputTaskState(val isExpanded: Boolean) {
 
 data class InputViewState(
     val taskState: InputTaskState,
-    val text: String = "",
-    val reply: TweetId? = null,
-    val quote: TweetId? = null,
-    val media: List<AppFilePath> = emptyList(),
-) {
+    override val text: String = "",
+    override val reply: TweetId? = null,
+    override val quote: TweetId? = null,
+    override val media: List<AppFilePath> = emptyList(),
+) : InputTweet {
     val isExpanded: Boolean
         get() = taskState.isExpanded
     val hasReply: Boolean
