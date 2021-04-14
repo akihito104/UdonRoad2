@@ -20,12 +20,9 @@ import android.text.Editable
 import com.freshdigitable.udonroad2.data.UserDataSource
 import com.freshdigitable.udonroad2.data.impl.AppSettingRepository
 import com.freshdigitable.udonroad2.input.CameraApp.Companion.transition
-import com.freshdigitable.udonroad2.input.InputViewState.Companion.toCanceled
-import com.freshdigitable.udonroad2.input.InputViewState.Companion.toFailed
 import com.freshdigitable.udonroad2.input.InputViewState.Companion.toIdling
 import com.freshdigitable.udonroad2.input.InputViewState.Companion.toOpened
-import com.freshdigitable.udonroad2.input.InputViewState.Companion.toSending
-import com.freshdigitable.udonroad2.input.InputViewState.Companion.toSucceeded
+import com.freshdigitable.udonroad2.input.InputViewState.Companion.transTaskState
 import com.freshdigitable.udonroad2.input.MediaChooserResultContract.MediaChooserResult
 import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.app.AppExecutor
@@ -107,26 +104,10 @@ internal class TweetInputViewModelSource @Inject constructor(
                 is MediaChooserResult.Canceled -> state
             }
         },
-        actions.cancelInput.flatMapLatest {
-            flowOf(InputTaskState.CANCELED, idlingState)
-        }.onEvent { state, event ->
-            when (event) {
-                InputTaskState.CANCELED -> state.toCanceled()
-                idlingState -> state.toIdling(idlingState)
-                else -> throw IllegalStateException()
-            }
-        },
-        actions.sendTweet.flatMapLatest {
-            postTweet(it.tweet, idlingState)
-        }.onEvent { state, event ->
-            when (event) {
-                InputTaskState.SENDING -> state.toSending()
-                InputTaskState.SUCCEEDED -> state.toSucceeded()
-                idlingState -> state.toIdling(idlingState)
-                InputTaskState.FAILED -> state.toFailed()
-                else -> throw IllegalStateException()
-            }
-        }
+        actions.cancelInput.flatMapLatest { flowOf(InputTaskState.CANCELED, idlingState) }
+            .onEvent { state, taskState -> transitTaskState(state, taskState) },
+        actions.sendTweet.flatMapLatest { postTweet(it.tweet, idlingState) }
+            .onEvent { state, taskState -> transitTaskState(state, taskState) },
     ).onEach {
         sharedState.taskStateSource.value = it
     }
@@ -146,6 +127,13 @@ internal class TweetInputViewModelSource @Inject constructor(
 
     internal val isExpanded: Flow<Boolean> = sharedState.isExpanded
     internal val expandAnimationEvent = actions.startInput
+
+    private fun transitTaskState(state: InputViewState, taskState: InputTaskState): InputViewState {
+        return when (taskState) {
+            idlingState -> state.toIdling(idlingState)
+            else -> state.transTaskState(taskState)
+        }
+    }
 }
 
 enum class InputTaskState(val isExpanded: Boolean) {
@@ -208,11 +196,7 @@ data class InputViewState(
             quote = withQuote
         )
 
-        fun InputViewState.toCanceled(): InputViewState = copy(taskState = InputTaskState.CANCELED)
-        fun InputViewState.toSending(): InputViewState = copy(taskState = InputTaskState.SENDING)
-        fun InputViewState.toSucceeded(): InputViewState =
-            copy(taskState = InputTaskState.SUCCEEDED)
-
-        fun InputViewState.toFailed(): InputViewState = copy(taskState = InputTaskState.FAILED)
+        fun InputViewState.transTaskState(taskState: InputTaskState): InputViewState =
+            copy(taskState = taskState)
     }
 }
