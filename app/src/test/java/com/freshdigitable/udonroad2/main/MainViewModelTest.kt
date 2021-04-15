@@ -68,7 +68,7 @@ class MainViewModelTest {
         fun onDrawerOpened_then_isDrawerOpenedIsTrue(): Unit = with(rule) {
             coroutineRule.runBlockingTest {
                 // exercise
-                sut.onDrawerOpened()
+                sut.showDrawerMenu.dispatch()
             }
 
             // verify
@@ -79,10 +79,10 @@ class MainViewModelTest {
         fun onDrawerClosed_then_isDrawerOpenedIsFalse(): Unit = with(rule) {
             coroutineRule.runBlockingTest {
                 // setup
-                sut.onDrawerOpened()
+                sut.showDrawerMenu.dispatch()
 
                 // exercise
-                sut.onDrawerClosed()
+                sut.hideDrawerMenu.dispatch()
             }
 
             // verify
@@ -93,7 +93,7 @@ class MainViewModelTest {
         fun onAccountSwitcherClicked_isRegisteredUsersListOpenedIsTrue(): Unit = with(rule) {
             coroutineRule.runBlockingTest {
                 // exercise
-                sut.onAccountSwitcherClicked()
+                sut.toggleAccountSwitcher.dispatch()
             }
 
             // verify
@@ -105,8 +105,8 @@ class MainViewModelTest {
             with(rule) {
                 coroutineRule.runBlockingTest {
                     // exercise
-                    sut.onAccountSwitcherClicked()
-                    sut.onAccountSwitcherClicked()
+                    sut.toggleAccountSwitcher.dispatch()
+                    sut.toggleAccountSwitcher.dispatch()
                 }
 
                 // verify
@@ -255,8 +255,8 @@ class MainViewModelTest {
             eventCollector.activateAll()
 
             // exercise
-            sut.onDrawerOpened()
-            sut.onAccountSwitcherClicked()
+            sut.showDrawerMenu.dispatch()
+            sut.toggleAccountSwitcher.dispatch()
 
             // verify
             assertThat(sut.drawerState.value?.isAccountSwitcherOpened).isTrue()
@@ -332,11 +332,11 @@ class MainViewModelTest {
             with(rule) {
                 coroutineRule.runBlockingTest {
                     // setup
-                    sut.onDrawerOpened()
-                    sut.onAccountSwitcherClicked()
+                    sut.showDrawerMenu.dispatch()
+                    sut.toggleAccountSwitcher.dispatch()
 
                     // exercise
-                    sut.onDrawerClosed()
+                    sut.hideDrawerMenu.dispatch()
                 }
 
                 // verify
@@ -347,7 +347,7 @@ class MainViewModelTest {
         @Test
         fun onDrawerMenuItemClicked(): Unit = with(rule) {
             // setup
-            sut.onDrawerOpened()
+            sut.showDrawerMenu.dispatch()
 
             // exercise
             val actualConsumed = sut.onDrawerMenuItemClicked(
@@ -372,7 +372,7 @@ class MainViewModelTest {
         @Test
         fun onCurrentUserIconClicked(): Unit = with(rule) {
             // exercise
-            sut.onCurrentUserIconClicked()
+            sut.showCurrentUser.dispatch()
 
             // verify
             eventCollector.assertLatestNavigationEvent<TimelineEvent.Navigate.UserInfo>(

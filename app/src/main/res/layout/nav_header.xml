@@ -45,7 +45,7 @@
             android:padding="2dp"
             android:background="@drawable/s_rounded_mask_default"
             app:backgroundTint="@color/layer_white_transparent"
-            android:onClick="@{v -> viewModel.onCurrentUserIconClicked()}"
+            android:onClick="@{v -> viewModel.showCurrentUser.dispatch()}"
             app:bindUserIcon="@{viewModel.drawerState.currentUser.iconUrl}"
             />
 
@@ -60,7 +60,7 @@
             app:drawableRightCompat="@drawable/s_arrow_drop"
             app:bindNames="@{viewModel.drawerState.currentUser}"
             app:selected="@{viewModel.drawerState.isAccountSwitcherOpened}"
-            android:onClick="@{v -> viewModel.onAccountSwitcherClicked()}"
+            android:onClick="@{v -> viewModel.toggleAccountSwitcher.dispatch()}"
             tools:text="name\n\@screen_name"
             />
     </LinearLayout>
