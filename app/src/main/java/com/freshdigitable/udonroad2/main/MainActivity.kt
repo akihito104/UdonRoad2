@@ -98,11 +98,11 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
 
         binding.mainDrawer.addDrawerListener(object : DrawerLayout.SimpleDrawerListener() {
             override fun onDrawerOpened(drawerView: View) {
-                viewModel.onDrawerOpened()
+                viewModel.showDrawerMenu.dispatch()
             }
 
             override fun onDrawerClosed(drawerView: View) {
-                viewModel.onDrawerClosed()
+                viewModel.hideDrawerMenu.dispatch()
             }
         })
         binding.mainGlobalMenu.setNavigationItemSelectedListener { item ->

@@ -66,7 +66,7 @@ class DrawerViewModelSourceTest {
         fun onDrawerOpened_then_isDrawerOpenedIsTrue(): Unit = with(rule) {
             coroutineRule.runBlockingTest {
                 // exercise
-                sut.onDrawerOpened()
+                sut.showDrawerMenu.dispatch()
             }
 
             // verify
@@ -77,10 +77,10 @@ class DrawerViewModelSourceTest {
         fun onDrawerClosed_then_isDrawerOpenedIsFalse(): Unit = with(rule) {
             coroutineRule.runBlockingTest {
                 // setup
-                sut.onDrawerOpened()
+                sut.showDrawerMenu.dispatch()
 
                 // exercise
-                sut.onDrawerClosed()
+                sut.hideDrawerMenu.dispatch()
             }
 
             // verify
@@ -91,7 +91,7 @@ class DrawerViewModelSourceTest {
         fun onAccountSwitcherClicked_isRegisteredUsersListOpenedIsTrue(): Unit = with(rule) {
             coroutineRule.runBlockingTest {
                 // exercise
-                sut.onAccountSwitcherClicked()
+                sut.toggleAccountSwitcher.dispatch()
             }
 
             // verify
@@ -103,8 +103,8 @@ class DrawerViewModelSourceTest {
             with(rule) {
                 coroutineRule.runBlockingTest {
                     // exercise
-                    sut.onAccountSwitcherClicked()
-                    sut.onAccountSwitcherClicked()
+                    sut.toggleAccountSwitcher.dispatch()
+                    sut.toggleAccountSwitcher.dispatch()
                 }
 
                 // verify
@@ -156,11 +156,11 @@ class DrawerViewModelSourceTest {
             with(rule) {
                 coroutineRule.runBlockingTest {
                     // setup
-                    sut.onDrawerOpened()
-                    sut.onAccountSwitcherClicked()
+                    sut.showDrawerMenu.dispatch()
+                    sut.toggleAccountSwitcher.dispatch()
 
                     // exercise
-                    sut.onDrawerClosed()
+                    sut.hideDrawerMenu.dispatch()
                 }
 
                 // verify
@@ -171,7 +171,7 @@ class DrawerViewModelSourceTest {
         @Test
         fun onDrawerMenuItemClicked(): Unit = with(rule) {
             // setup
-            sut.onDrawerOpened()
+            sut.showDrawerMenu.dispatch()
 
             // exercise
             val actualConsumed = sut.onDrawerMenuItemClicked(

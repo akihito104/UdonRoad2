@@ -71,11 +71,12 @@ internal class MainViewModel(
         eventDispatcher.postEvent(TweetInputEvent.Cancel)
     }
 
-    override fun onBackPressed(): Boolean {
+    fun onBackPressed(): Boolean {
         val selectedItem = currentState.selectedItem
         val event = when {
             drawerState.value?.isOpened == true -> {
-                return drawerViewStates.onBackPressed()
+                drawerViewStates.hideDrawerMenu.dispatch()
+                return true
             }
             currentState.isTweetInputExpanded -> TweetInputEvent.Cancel
             selectedItem != null -> TimelineEvent.TweetItemSelection.Unselected(selectedItem.owner)
