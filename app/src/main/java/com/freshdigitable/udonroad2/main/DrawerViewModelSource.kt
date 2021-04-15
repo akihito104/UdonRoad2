@@ -31,16 +31,17 @@ import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.ViewState
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
+import com.freshdigitable.udonroad2.model.app.onEvent
 import com.freshdigitable.udonroad2.model.app.stateSourceBuilder
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
+import com.freshdigitable.udonroad2.model.user.UserEntity
 import com.freshdigitable.udonroad2.oauth.LoginUseCase
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.getTimelineEvent
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.receiveAsFlow
 import java.util.SortedSet
 import javax.inject.Inject
@@ -123,34 +124,35 @@ internal class DrawerViewModelSource @Inject constructor(
     private val navEventChannel: Channel<NavigationEvent> = Channel()
     internal val navEventSource: Flow<NavigationEvent> = navEventChannel.receiveAsFlow()
 
-    internal val state: Flow<DrawerViewModel.State> = stateSourceBuilder({ DrawerViewState() }) {
-        eventOf(actions.showDrawerMenu) { state, _ -> state.copy(isOpened = true) }
-        eventOf(actions.hideDrawerMenu) { state, _ -> state.toClosedState() }
+    internal val state: Flow<DrawerViewModel.State> = stateSourceBuilder(
+        init = DrawerViewState(),
+        actions.showDrawerMenu.onEvent { state, _ -> state.copy(isOpened = true) },
+        actions.hideDrawerMenu.onEvent { state, _ -> state.toClosedState() },
 
-        eventOf(actions.popToHome) { state, _ -> state.toClosedState() } // TODO
-        eventOf(actions.launchCustomTimelineList) { state, _ ->
+        actions.popToHome.onEvent { state, _ -> state.toClosedState() }, // TODO
+        actions.launchCustomTimelineList.onEvent { state, _ ->
             val userId = requireNotNull(state.currentUser).id
             navEventChannel.sendTimelineEvent(
                 QueryType.CustomTimelineListQueryType.Ownership(userId),
                 NavigationEvent.Type.NAVIGATE
             )
             state.toClosedState()
-        }
+        },
 
-        eventOf(actions.showCurrentUser) { state, _ ->
+        actions.showCurrentUser.onEvent { state, _ ->
             state.currentUser?.let {
                 navEventChannel.send(TimelineEvent.Navigate.UserInfo(it))
             }
             state
-        }
-        eventOf(actions.toggleAccountSwitcher) { state, _ ->
+        },
+        actions.toggleAccountSwitcher.onEvent { state, _ ->
             state.copy(isAccountSwitcherOpened = !state.isAccountSwitcherOpened)
-        }
-        eventOf(actions.launchOAuth) { state, _ ->
+        },
+        actions.launchOAuth.onEvent { state, _ ->
             navEventChannel.sendTimelineEvent(QueryType.Oauth, NavigationEvent.Type.NAVIGATE)
             state.toClosedState()
-        }
-        eventOf(actions.switchAccount) { state, event ->
+        },
+        actions.switchAccount.onEvent { state, event ->
             val user =
                 requireNotNull(state.switchableAccounts.find { it.account == event.accountName })
             login(user.id)
@@ -159,23 +161,22 @@ internal class DrawerViewModelSource @Inject constructor(
                 NavigationEvent.Type.INIT
             )
             state.toClosedState()
-        }
-        eventOf(appSettingRepository.currentUserIdSource) { s, id ->
-            val switchableAccounts = userRepository.getSwitchableUsers(s, id, s.registeredUserId)
-            s.copy(currentUserId = id, switchableAccounts = switchableAccounts)
-        }
-        eventOf(appSettingRepository.registeredUserIdsSource) { s, ids ->
+        },
+        appSettingRepository.currentUserIdSource.flatMapLatest { id ->
+            userRepository.getUserSource(id).mapLatest { id to it }
+        }.onEvent { s, (id: UserId, user: UserEntity?) ->
+            val switchableAccounts = when {
+                s.currentUserId != id ->
+                    userRepository.getSwitchableUsers(s, id, s.registeredUserId)
+                else -> s.switchableAccounts
+            }
+            s.copy(currentUserId = id, currentUser = user, switchableAccounts = switchableAccounts)
+        },
+        appSettingRepository.registeredUserIdsSource.onEvent { s, ids ->
             val switchableAccounts = userRepository.getSwitchableUsers(s, s.currentUserId, ids)
             s.copy(registeredUserId = ids, switchableAccounts = switchableAccounts)
-        }
-        flatMap(
-            flow = {
-                this.mapNotNull { it.currentUserId }
-                    .distinctUntilChanged()
-                    .flatMapLatest { userRepository.getUserSource(it) }
-            }
-        ) { s, user -> s.copy(currentUser = user) }
-    }
+        },
+    )
 
     private suspend fun Channel<NavigationEvent>.sendTimelineEvent(
         queryType: QueryType,
