@@ -23,7 +23,7 @@ import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 sealed class TweetInputEvent : AppEvent {
     object Open : TweetInputEvent()
     object Opened : TweetInputEvent()
-    object Send : TweetInputEvent()
+    data class Send(val tweet: InputTweet) : TweetInputEvent()
     object Cancel : TweetInputEvent()
     data class TextUpdated(val text: String) : TweetInputEvent()
 }
@@ -69,7 +69,7 @@ internal sealed class CameraApp : TweetInputEvent() {
 
 data class Components(
     val packageName: String,
-    val className: String
+    val className: String,
 ) {
     companion object
 }

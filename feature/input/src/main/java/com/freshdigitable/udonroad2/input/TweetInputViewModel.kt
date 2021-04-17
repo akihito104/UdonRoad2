@@ -52,7 +52,7 @@ internal class TweetInputViewModel @Inject constructor(
 internal interface TweetInputEventListener {
     val openInput: AppEventListener
     val updateText: AppEventListener1<Editable>
-    val sendTweet: AppEventListener
+    val sendTweet: AppEventListener1<InputTweet>
     val cancelInput: AppEventListener
     val startInput: AppEventListener
     fun onCameraAppCandidatesQueried(candidates: List<Components>, path: AppFilePath)

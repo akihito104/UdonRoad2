@@ -19,35 +19,29 @@ package com.freshdigitable.udonroad2.input
 import android.text.Editable
 import com.freshdigitable.udonroad2.data.UserDataSource
 import com.freshdigitable.udonroad2.data.impl.AppSettingRepository
-import com.freshdigitable.udonroad2.data.impl.TweetInputRepository
 import com.freshdigitable.udonroad2.input.CameraApp.Companion.transition
-import com.freshdigitable.udonroad2.input.InputViewState.Companion.toCanceled
-import com.freshdigitable.udonroad2.input.InputViewState.Companion.toFailed
 import com.freshdigitable.udonroad2.input.InputViewState.Companion.toIdling
 import com.freshdigitable.udonroad2.input.InputViewState.Companion.toOpened
-import com.freshdigitable.udonroad2.input.InputViewState.Companion.toSending
-import com.freshdigitable.udonroad2.input.InputViewState.Companion.toSucceeded
+import com.freshdigitable.udonroad2.input.InputViewState.Companion.transTaskState
 import com.freshdigitable.udonroad2.input.MediaChooserResultContract.MediaChooserResult
 import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.AppFilePath
-import com.freshdigitable.udonroad2.model.app.AppTwitterException
 import com.freshdigitable.udonroad2.model.app.ioContext
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
 import com.freshdigitable.udonroad2.model.app.navigation.toActionFlow
 import com.freshdigitable.udonroad2.model.app.onEvent
-import com.freshdigitable.udonroad2.model.app.scanSource
 import com.freshdigitable.udonroad2.model.app.stateSourceBuilder
 import com.freshdigitable.udonroad2.model.user.UserEntity
 import com.freshdigitable.udonroad2.shortcut.SelectedItemShortcut
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
-import java.io.IOException
 import javax.inject.Inject
 
 internal class TweetInputActions @Inject constructor(
@@ -58,7 +52,9 @@ internal class TweetInputActions @Inject constructor(
     override val updateText = eventDispatcher.toAction { editable: Editable ->
         TweetInputEvent.TextUpdated(editable.toString())
     }
-    override val sendTweet = eventDispatcher.toAction(TweetInputEvent.Send)
+    override val sendTweet = eventDispatcher.toAction { tweet: InputTweet ->
+        TweetInputEvent.Send(tweet)
+    }
     override val cancelInput = eventDispatcher.toAction(TweetInputEvent.Cancel)
 
     internal val cameraApp: Flow<CameraApp.Event> = eventDispatcher.toActionFlow()
@@ -79,9 +75,8 @@ internal class TweetInputViewModelSource @Inject constructor(
     collapsible: Boolean,
     actions: TweetInputActions,
     createReplyText: CreateReplyTextUseCase,
-    createQuoteText: CreateQuoteTextUseCase,
+    postTweet: PostTweetUseCase,
     sharedState: TweetInputSharedState,
-    repository: TweetInputRepository,
     oauthRepository: AppSettingRepository,
     userRepository: UserDataSource,
     executor: AppExecutor,
@@ -109,36 +104,10 @@ internal class TweetInputViewModelSource @Inject constructor(
                 is MediaChooserResult.Canceled -> state
             }
         },
-        actions.cancelInput.onEvent(
-            atFirst = scanSource { state, _ -> state.toCanceled() }
-        ) {
-            onNext { state, _ -> state.toIdling(idlingState) }
-        },
-        actions.sendTweet.onEvent(
-            atFirst = scanSource { state, _ -> state.toSending() }
-        ) {
-            onNext(
-                withResult = { state, _ ->
-                    val mediaIds = state.media.map { repository.uploadMedia(it) }
-                    val quoteText = state.quote?.let { createQuoteText(it) }
-                    val text = if (quoteText == null) state.text else "${state.text} $quoteText"
-                    kotlin.runCatching {
-                        repository.post(text, mediaIds, state.reply)
-                    }
-                },
-                onSuccess = listOf(
-                    { state, _ -> state.toSucceeded() },
-                    { state, _ -> state.toIdling(idlingState) }
-                ),
-                onError = listOf { state, exception ->
-                    if (exception is AppTwitterException || exception is IOException) {
-                        state.toFailed()
-                    } else {
-                        throw exception
-                    }
-                }
-            )
-        }
+        actions.cancelInput.flatMapLatest { flowOf(InputTaskState.CANCELED, idlingState) }
+            .onEvent { state, taskState -> transitTaskState(state, taskState) },
+        actions.sendTweet.flatMapLatest { postTweet(it.tweet, idlingState) }
+            .onEvent { state, taskState -> transitTaskState(state, taskState) },
     ).onEach {
         sharedState.taskStateSource.value = it
     }
@@ -158,6 +127,13 @@ internal class TweetInputViewModelSource @Inject constructor(
 
     internal val isExpanded: Flow<Boolean> = sharedState.isExpanded
     internal val expandAnimationEvent = actions.startInput
+
+    private fun transitTaskState(state: InputViewState, taskState: InputTaskState): InputViewState {
+        return when (taskState) {
+            idlingState -> state.toIdling(idlingState)
+            else -> state.transTaskState(taskState)
+        }
+    }
 }
 
 enum class InputTaskState(val isExpanded: Boolean) {
@@ -174,11 +150,11 @@ enum class InputTaskState(val isExpanded: Boolean) {
 
 data class InputViewState(
     val taskState: InputTaskState,
-    val text: String = "",
-    val reply: TweetId? = null,
-    val quote: TweetId? = null,
-    val media: List<AppFilePath> = emptyList(),
-) {
+    override val text: String = "",
+    override val reply: TweetId? = null,
+    override val quote: TweetId? = null,
+    override val media: List<AppFilePath> = emptyList(),
+) : InputTweet {
     val isExpanded: Boolean
         get() = taskState.isExpanded
     val hasReply: Boolean
@@ -220,11 +196,7 @@ data class InputViewState(
             quote = withQuote
         )
 
-        fun InputViewState.toCanceled(): InputViewState = copy(taskState = InputTaskState.CANCELED)
-        fun InputViewState.toSending(): InputViewState = copy(taskState = InputTaskState.SENDING)
-        fun InputViewState.toSucceeded(): InputViewState =
-            copy(taskState = InputTaskState.SUCCEEDED)
-
-        fun InputViewState.toFailed(): InputViewState = copy(taskState = InputTaskState.FAILED)
+        fun InputViewState.transTaskState(taskState: InputTaskState): InputViewState =
+            copy(taskState = taskState)
     }
 }

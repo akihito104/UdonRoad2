@@ -28,14 +28,14 @@ import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.ViewState
 import com.freshdigitable.udonroad2.model.app.navigation.toActionFlow
+import com.freshdigitable.udonroad2.model.app.onEvent
 import com.freshdigitable.udonroad2.model.app.stateSourceBuilder
 import com.freshdigitable.udonroad2.shortcut.ShortcutViewModel
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.getTimelineEvent
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.mapLatest
 import javax.inject.Inject
 
@@ -63,36 +63,23 @@ internal class MainViewModelSource @Inject constructor(
         listOwnerGenerator.getTimelineEvent(type, NavigationEvent.Type.INIT)
     }
     internal val states: Flow<MainActivityViewState> = stateSourceBuilder(
-        { MainActivityViewState() }
-    ) {
-        eventOf(navDelegate.containerState) { state, container ->
-            state.copy(
-                navHostState = container,
-                selectedItem = when (container) {
-                    is MainNavHostState.Timeline -> selectedItemRepository.find(container.owner)
-                    else -> null
-                }
-            )
-        }
-        eventOf(tweetInputSharedState.isExpanded) { state, expanded ->
+        init = MainActivityViewState(),
+        navDelegate.containerState.flatMapLatest { host ->
+            when (host) {
+                is MainNavHostState.Timeline -> selectedItemRepository.getSource(host.owner)
+                    .mapLatest { host to it }
+                else -> flowOf(host to null)
+            }
+        }.onEvent { state, (container: MainNavHostState, item: SelectedItemId?) ->
+            state.copy(navHostState = container, selectedItem = item)
+        },
+        tweetInputSharedState.isExpanded.onEvent { state, expanded ->
             state.copy(isTweetInputExpanded = expanded)
-        }
-        eventOf(navDelegate.isInTopLevelDest) { state, isInTopLevel ->
+        },
+        navDelegate.isInTopLevelDest.onEvent { state, isInTopLevel ->
             state.copy(isInTopLevelDestination = isInTopLevel)
-        }
-        flatMap({
-            mapLatest { it.navHostState }
-                .distinctUntilChanged()
-                .flatMapLatest {
-                    when (it) {
-                        is MainNavHostState.Timeline -> selectedItemRepository.getSource(it.owner)
-                        else -> emptyFlow()
-                    }
-                }
-        }) { s, item ->
-            s.copy(selectedItem = item)
-        }
-    }
+        },
+    )
 }
 
 internal data class MainActivityViewState(

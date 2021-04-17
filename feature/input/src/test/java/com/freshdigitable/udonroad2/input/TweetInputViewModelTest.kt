@@ -287,7 +287,8 @@ class TweetInputViewModelTest {
                 sut.updateText.dispatch(editable("a"))
 
                 // exercise
-                sut.sendTweet.dispatch()
+                val tweet = requireNotNull(sut.state.value)
+                sut.sendTweet.dispatch(tweet)
             }
 
             // verify
@@ -321,7 +322,8 @@ class TweetInputViewModelTest {
                     sut.updateText.dispatch(editable("a"))
 
                     // exercise
-                    sut.sendTweet.dispatch()
+                    val tweet = requireNotNull(sut.state.value)
+                    sut.sendTweet.dispatch(tweet)
                 }
 
                 // verify
@@ -348,7 +350,8 @@ class TweetInputViewModelTest {
                 sut.updateText.dispatch(editable("a"))
 
                 // exercise
-                sut.sendTweet.dispatch()
+                val tweet = requireNotNull(sut.state.value)
+                sut.sendTweet.dispatch(tweet)
             }
 
             // verify
@@ -443,7 +446,8 @@ class TweetInputViewModelTest {
 
             // exercise
             coroutineTestRule.runBlockingTest {
-                sut.sendTweet.dispatch()
+                val tweet = requireNotNull(sut.state.value)
+                sut.sendTweet.dispatch(tweet)
             }
 
             // verify
@@ -513,7 +517,8 @@ class TweetInputViewModelTest {
             // exercise
             coroutineTestRule.runBlockingTest {
                 sut.updateText.dispatch(editable("aaa"))
-                sut.sendTweet.dispatch()
+                val tweet = requireNotNull(sut.state.value)
+                sut.sendTweet.dispatch(tweet)
             }
 
             // verify
@@ -566,9 +571,8 @@ class TweetInputViewModelRule(
                 collapsible,
                 TweetInputActions(eventDispatcher),
                 createReplyTextUseCaseRule.mock,
-                createQuoteTextUseCaseRule.mock,
+                PostTweetUseCase(repository.mock, createQuoteTextUseCaseRule.mock),
                 TweetInputSharedState(),
-                repository.mock,
                 appSettingRepositoryRule.mock,
                 userRepositoryRule.mock,
                 AppExecutor(dispatcher = coroutineTestRule.coroutineContextProvider),
