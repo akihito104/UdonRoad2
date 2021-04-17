@@ -89,6 +89,7 @@ class TweetDetailViewModelTest {
             TweetDetailViewStates(
                 tweet.originalId,
                 TweetDetailActions(eventDispatcher),
+                GetTweetDetailItemUseCase(tweetRepositoryRule.mock),
                 tweetRepositoryRule.mock,
                 mockk(),
                 appSettingRepositoryRule.mock,

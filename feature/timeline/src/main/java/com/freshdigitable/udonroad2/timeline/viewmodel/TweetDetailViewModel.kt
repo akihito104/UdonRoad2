@@ -15,6 +15,7 @@ import com.freshdigitable.udonroad2.model.TwitterCard
 import com.freshdigitable.udonroad2.model.UrlItem
 import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.app.AppTwitterException.ErrorType
+import com.freshdigitable.udonroad2.model.app.LoadingResult
 import com.freshdigitable.udonroad2.model.app.isTwitterExceptionOf
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventStream
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
@@ -39,9 +40,12 @@ import com.freshdigitable.udonroad2.timeline.UserIconClickListener
 import com.freshdigitable.udonroad2.timeline.UserIconViewModelSource
 import com.freshdigitable.udonroad2.timeline.getTimelineEvent
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.merge
 import java.io.IOException
 import javax.inject.Inject
@@ -164,6 +168,7 @@ internal class TweetDetailActions @Inject constructor(
 internal class TweetDetailViewStates @Inject constructor(
     tweetId: TweetId,
     actions: TweetDetailActions,
+    getTweetDetailItem: GetTweetDetailItemUseCase,
     repository: TweetRepository,
     twitterCardRepository: TwitterCardRepository,
     appSettingRepository: AppSettingRepository,
@@ -175,25 +180,23 @@ internal class TweetDetailViewStates @Inject constructor(
     internal val viewModelState: Flow<TweetDetailViewModel.State> = stateSourceBuilder(
         { ViewModelState(currentUserId = appSettingRepository.currentUserId) }
     ) {
-        eventOf(repository.getDetailTweetItemSource(tweetId)) { s, item ->
-            when {
-                item != null -> s.copy(tweetItem = item)
-                s.isTweetItemDeleted -> s
-                else -> {
-                    repository.runCatching { findDetailTweetItem(tweetId) }.fold(
-                        onSuccess = { tweetItem ->
-                            s.copy(tweetItem = tweetItem, isTweetItemDeleted = tweetItem == null)
-                        },
-                        onFailure = {
-                            when {
-                                it.isTwitterExceptionOf(ErrorType.TWEET_NOT_FOUND) -> {
-                                    s.copy(tweetItem = null, isTweetItemDeleted = false)
-                                }
-                                it is IOException -> s
-                                else -> throw it
-                            }
-                        }
-                    )
+        eventOf(getTweetDetailItem(tweetId)) { s, loadingItem ->
+            if (s.isTweetItemDeleted) {
+                return@eventOf s
+            }
+            when (loadingItem) {
+                is LoadingResult.Started -> s
+                is LoadingResult.Loaded -> {
+                    val item = loadingItem.value
+                    s.copy(tweetItem = item, isTweetItemDeleted = item == null)
+                }
+                is LoadingResult.Failed -> {
+                    when {
+                        loadingItem.cause == ErrorType.TWEET_NOT_FOUND ->
+                            s.copy(tweetItem = null, isTweetItemDeleted = false)
+                        loadingItem.exception is IOException -> s
+                        else -> throw IllegalStateException(loadingItem.exception)
+                    }
                 }
             }
         }
@@ -212,9 +215,9 @@ internal class TweetDetailViewStates @Inject constructor(
         }
         flatMap(
             flow = {
-                this.mapLatest { it.tweetItem?.body?.urlItems?.firstOrNull() }
-                    .filterNotNull()
-                    .flatMapLatest { twitterCardRepository.getTwitterCardSource(it.expandedUrl) }
+                this.mapNotNull { it.urlForCard }
+                    .distinctUntilChanged()
+                    .flatMapLatest { twitterCardRepository.getTwitterCardSource(it) }
             }
         ) { s, card -> s.copy(twitterCard = card) }
     }
@@ -253,6 +256,8 @@ internal class TweetDetailViewStates @Inject constructor(
                         ?: false
                 )
             }
+        val urlForCard: String?
+            get() = tweetItem?.body?.urlItems?.firstOrNull()?.expandedUrl
     }
 }
 
@@ -262,3 +267,30 @@ data class MenuItemState(
     val isFavChecked: Boolean = false,
     val isDeleteVisible: Boolean = false,
 )
+
+class GetTweetDetailItemUseCase @Inject constructor(
+    private val repository: TweetRepository,
+) {
+    operator fun invoke(tweetId: TweetId): Flow<LoadingResult<DetailTweetListItem?>> {
+        return flow {
+            emit(LoadingResult.Started)
+
+            repository.getDetailTweetItemSource(tweetId).collect { item ->
+                if (item != null) {
+                    emit(LoadingResult.Loaded(item))
+                } else {
+                    repository.runCatching { findDetailTweetItem(tweetId) }
+                        .onSuccess { emit(LoadingResult.Loaded(it)) }
+                        .onFailure {
+                            when {
+                                it.isTwitterExceptionOf(ErrorType.TWEET_NOT_FOUND) ->
+                                    emit(LoadingResult.Failed(ErrorType.TWEET_NOT_FOUND, it))
+                                it is IOException -> emit(LoadingResult.Failed(exception = it))
+                                else -> throw it
+                            }
+                        }
+                }
+            }
+        }
+    }
+}
