@@ -36,7 +36,7 @@ class AppTwitterException(
 
     enum class ErrorType(
         val statusCode: Int,
-        val errorCode: Int
+        val errorCode: Int,
     ) {
         // https://developer.twitter.com/ja/docs/basics/response-codes
         ALREADY_FAVORITED(STATUS_FORBIDDEN, 139),
@@ -44,6 +44,8 @@ class AppTwitterException(
         ALREADY_FOLLOW_REQUESTED(STATUS_FORBIDDEN, 160),
         REACHED_FOLLOW_LIMIT(STATUS_FORBIDDEN, 161),
         TWEET_NOT_FOUND(STATUS_NOT_FOUND, 144),
+
+        UNKNOWN(Int.MIN_VALUE, Int.MIN_VALUE),
     }
 }
 
