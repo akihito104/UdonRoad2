@@ -20,6 +20,8 @@ import com.freshdigitable.udonroad2.data.impl.TweetInputRepository
 import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.app.AppFilePath
 import com.freshdigitable.udonroad2.model.app.AppTwitterException
+import com.freshdigitable.udonroad2.model.app.LoadingResult
+import com.freshdigitable.udonroad2.model.tweet.TweetEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import java.io.IOException
@@ -29,11 +31,8 @@ class PostTweetUseCase @Inject constructor(
     private val repository: TweetInputRepository,
     private val createQuoteText: CreateQuoteTextUseCase,
 ) {
-    operator fun invoke(
-        tweet: InputTweet,
-        idlingState: InputTaskState,
-    ): Flow<InputTaskState> = flow {
-        emit(InputTaskState.SENDING)
+    operator fun invoke(tweet: InputTweet): Flow<LoadingResult<TweetEntity>> = flow {
+        emit(LoadingResult.Started)
 
         val mediaIds = tweet.media.map { repository.uploadMedia(it) }
         val quoteText = tweet.quote?.let { createQuoteText(it) }
@@ -42,11 +41,10 @@ class PostTweetUseCase @Inject constructor(
         kotlin.runCatching {
             repository.post(text, mediaIds, tweet.reply)
         }.onSuccess {
-            emit(InputTaskState.SUCCEEDED)
-            emit(idlingState)
+            emit(LoadingResult.Loaded(it))
         }.onFailure { exception ->
             if (exception is AppTwitterException || exception is IOException) {
-                emit(InputTaskState.FAILED)
+                emit(LoadingResult.Failed(exception = exception))
             } else {
                 throw exception
             }
