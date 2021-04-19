@@ -28,7 +28,7 @@ import com.freshdigitable.udonroad2.data.impl.MediaRepository
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
 import com.freshdigitable.udonroad2.model.MediaEntity
 import com.freshdigitable.udonroad2.model.TweetId
-import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
+import com.freshdigitable.udonroad2.model.app.navigation.ActivityEffectDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventStream
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.AppEventListener
@@ -146,9 +146,9 @@ internal class MediaViewModelViewStates @Inject constructor(
     }
 }
 
-internal class MediaActivityEventDelegate @Inject constructor(
+internal class MediaActivityEffectDelegate @Inject constructor(
     activity: MediaActivity,
-) : ActivityEventDelegate,
+) : ActivityEffectDelegate,
     FeedbackMessageDelegate by SnackbarFeedbackMessageDelegate(
         weakRef(activity) { it.findViewById(R.id.media_container) }
     )

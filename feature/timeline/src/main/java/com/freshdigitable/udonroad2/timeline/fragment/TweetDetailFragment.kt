@@ -51,7 +51,7 @@ class TweetDetailFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View = FragmentDetailBinding.inflate(inflater, container, false).root
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -89,15 +89,15 @@ class TweetDetailFragment : Fragment() {
             }
         }
 
-        val eventDelegate = component.activityEventDelegate
+        val eventDelegate = component.activityEffectDelegate
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.navigationEvent.collect(eventDelegate::dispatchNavHostNavigate)
+            viewModel.navigationEvent.collect(eventDelegate::accept)
         }
     }
 
     companion object {
         private fun TweetDetailViewModelComponent.viewModel(
-            owner: ViewModelStoreOwner
+            owner: ViewModelStoreOwner,
         ): TweetDetailViewModel {
             val viewModelProvider = ViewModelProvider(owner, viewModelProviderFactory)
             return viewModelProvider[TweetDetailViewModel::class.java]
@@ -124,7 +124,7 @@ fun TweetDetailContextMenuView.updateMenuItemState(item: MenuItemState?) {
 @BindingAdapter("textWithLinkableUrl", "spanClickListener", requireAll = true)
 fun TextView.makeUrlLinkable(
     tweetItem: DetailTweetListItem?,
-    spanClickListener: SpanClickListener?
+    spanClickListener: SpanClickListener?,
 ) {
     if (tweetItem == null) {
         text = ""

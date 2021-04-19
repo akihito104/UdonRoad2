@@ -25,7 +25,7 @@ import com.freshdigitable.udonroad2.main.MainActivityNavigationDelegate
 import com.freshdigitable.udonroad2.main.MainViewModel
 import com.freshdigitable.udonroad2.main.MainViewModelSource
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
-import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
+import com.freshdigitable.udonroad2.model.app.navigation.ActivityEffectDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.settings.di.AppSettingFragmentModule
 import dagger.Binds
@@ -47,8 +47,8 @@ internal interface MainActivityModule {
 
     @Binds
     fun bindActivityEventDelegate(
-        navDelegate: MainActivityNavigationDelegate
-    ): ActivityEventDelegate
+        navDelegate: MainActivityNavigationDelegate,
+    ): ActivityEffectDelegate
 
     companion object {
         @Provides

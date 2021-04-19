@@ -36,7 +36,7 @@ import com.freshdigitable.udonroad2.timeline.di.ListItemViewModelComponent
 import com.freshdigitable.udonroad2.timeline.di.TimelineAdapterModules
 import com.freshdigitable.udonroad2.timeline.di.TimelineListItemFragmentEventDelegateModule
 import com.freshdigitable.udonroad2.timeline.di.TimelineViewModelModules
-import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentEventDelegate
+import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentEffectDelegate
 import dagger.BindsInstance
 import dagger.Module
 import dagger.Provides
@@ -50,7 +50,7 @@ interface ListItemViewModelModule {
     companion object {
         @Provides
         fun provideListItemViewModelComponentBuilder(
-            builder: ListItemViewModelComponentImpl.Builder
+            builder: ListItemViewModelComponentImpl.Builder,
         ): ListItemViewModelComponent.Builder = builder
     }
 }
@@ -89,7 +89,7 @@ interface ListItemViewModelComponentImpl : ListItemViewModelComponent {
 object ViewModelClassProvider {
     @Provides
     fun ClassKeyMap<QueryType, KClass<out ViewModel>>.provideViewModelClass(
-        owner: ListOwner<*>
+        owner: ListOwner<*>,
     ): Class<out ViewModel> = this.valueByAssignableClassObject(owner.query).java
 
     @Provides
@@ -117,7 +117,7 @@ interface ListItemAdapterModule {
     companion object {
         @Provides
         fun provideListItemAdapterComponentFactory(
-            factory: ListItemAdapterComponentImpl.Factory
+            factory: ListItemAdapterComponentImpl.Factory,
         ): ListItemAdapterComponent.Factory = factory
     }
 }
@@ -134,7 +134,7 @@ interface ListItemAdapterComponentImpl : ListItemAdapterComponent {
     interface Factory : ListItemAdapterComponent.Factory {
         override fun create(
             @BindsInstance viewModel: ViewModel,
-            @BindsInstance lifecycleOwner: LifecycleOwner
+            @BindsInstance lifecycleOwner: LifecycleOwner,
         ): ListItemAdapterComponentImpl
     }
 }
@@ -143,7 +143,7 @@ interface ListItemAdapterComponentImpl : ListItemAdapterComponent {
 object ListItemAdapterProvider {
     @Provides
     fun ClassKeyMap<ViewModel, Provider<PagingDataAdapter<out Any, *>>>.provideItemAdapter(
-        viewModel: ViewModel
+        viewModel: ViewModel,
     ): PagingDataAdapter<out Any, *> = this.valueByAssignableClassObject(viewModel).get()
 }
 
@@ -158,7 +158,7 @@ interface ListItemFragmentEventDelegateComponentImpl : ListItemFragmentEventDele
     @Subcomponent.Factory
     interface Factory : ListItemFragmentEventDelegateComponent.Factory {
         override fun create(
-            @BindsInstance viewModel: ViewModel
+            @BindsInstance viewModel: ViewModel,
         ): ListItemFragmentEventDelegateComponentImpl
     }
 }
@@ -166,9 +166,9 @@ interface ListItemFragmentEventDelegateComponentImpl : ListItemFragmentEventDele
 @Module
 object ListItemFragmentEventDelegateProvider {
     @Provides
-    fun ClassKeyMap<ViewModel, Provider<ListItemFragmentEventDelegate>>.provideEventDelegate(
-        viewModel: ViewModel
-    ): ListItemFragmentEventDelegate = this.valueByAssignableClassObject(viewModel).get()
+    fun ClassKeyMap<ViewModel, Provider<ListItemFragmentEffectDelegate>>.provideEventDelegate(
+        viewModel: ViewModel,
+    ): ListItemFragmentEffectDelegate = this.valueByAssignableClassObject(viewModel).get()
 }
 
 @Module(subcomponents = [ListItemFragmentEventDelegateComponentImpl::class])
@@ -176,7 +176,7 @@ interface ListItemFragmentEventDelegateModule {
     companion object {
         @Provides
         fun provideFactory(
-            factory: ListItemFragmentEventDelegateComponentImpl.Factory
+            factory: ListItemFragmentEventDelegateComponentImpl.Factory,
         ): ListItemFragmentEventDelegateComponent.Factory = factory
     }
 }

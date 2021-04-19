@@ -24,7 +24,7 @@ import androidx.lifecycle.ViewModelStoreOwner
 import androidx.paging.PagingDataAdapter
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.timeline.ListItemLoadableViewModel
-import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentEventDelegate
+import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentEffectDelegate
 
 interface ListItemViewModelComponent {
 
@@ -47,7 +47,7 @@ interface ListItemAdapterComponent {
     interface Factory {
         fun create(
             viewModel: ViewModel,
-            lifecycleOwner: LifecycleOwner
+            lifecycleOwner: LifecycleOwner,
         ): ListItemAdapterComponent
     }
 
@@ -57,9 +57,9 @@ interface ListItemAdapterComponent {
 interface ListItemFragmentEventDelegateComponent {
     interface Factory {
         fun create(
-            viewModel: ViewModel
+            viewModel: ViewModel,
         ): ListItemFragmentEventDelegateComponent
     }
 
-    val eventDelegate: ListItemFragmentEventDelegate
+    val eventDelegate: ListItemFragmentEffectDelegate
 }

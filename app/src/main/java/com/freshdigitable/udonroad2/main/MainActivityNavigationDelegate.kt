@@ -22,7 +22,7 @@ import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.app.di.ActivityScope
-import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
+import com.freshdigitable.udonroad2.model.app.navigation.ActivityEffectDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
 import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessageDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.FragmentContainerState
@@ -45,7 +45,7 @@ import javax.inject.Inject
 internal class MainActivityNavigationDelegate @Inject constructor(
     mainActivity: MainActivity,
     private val state: MainActivityNavState,
-) : ActivityEventDelegate,
+) : ActivityEffectDelegate,
     FeedbackMessageDelegate by SnackbarFeedbackMessageDelegate(
         weakRef(mainActivity) { it.findViewById(R.id.main_container) }
     ),
@@ -81,7 +81,7 @@ internal class MainActivityNavigationDelegate @Inject constructor(
         }
     }
 
-    override fun dispatchNavHostNavigate(event: AppEffect) {
+    override fun accept(event: AppEffect) {
         when (event) {
             is TimelineEffect.Navigate.Timeline,
             is TimelineEffect.Navigate.Detail,

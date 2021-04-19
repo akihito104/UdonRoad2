@@ -19,8 +19,8 @@ package com.freshdigitable.udonroad2.model.app.navigation
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 
-interface ActivityEventDelegate : FeedbackMessageDelegate {
-    fun dispatchNavHostNavigate(event: AppEffect) {}
+interface ActivityEffectDelegate : FeedbackMessageDelegate {
+    fun accept(event: AppEffect) {}
 }
 
 interface ActivityEventStream {

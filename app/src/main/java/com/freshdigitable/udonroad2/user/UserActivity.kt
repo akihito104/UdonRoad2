@@ -14,7 +14,7 @@ import androidx.viewpager.widget.ViewPager
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.databinding.ActivityUserBinding
 import com.freshdigitable.udonroad2.di.UserViewModelComponent
-import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
+import com.freshdigitable.udonroad2.model.app.navigation.ActivityEffectDelegate
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.model.user.UserEntity
 import com.google.android.material.appbar.AppBarLayout
@@ -36,7 +36,7 @@ class UserActivity : HasAndroidInjector, AppCompatActivity() {
     }
 
     @Inject
-    lateinit var eventDelegate: ActivityEventDelegate
+    lateinit var effectDelegate: ActivityEffectDelegate
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AndroidInjection.inject(this)
@@ -59,7 +59,7 @@ class UserActivity : HasAndroidInjector, AppCompatActivity() {
             }
         }
         lifecycleScope.launch {
-            viewModel.feedbackMessage.collect(eventDelegate::dispatchFeedbackMessage)
+            viewModel.feedbackMessage.collect(effectDelegate::dispatchFeedbackMessage)
         }
     }
 

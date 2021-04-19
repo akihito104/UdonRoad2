@@ -28,7 +28,7 @@ import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.app.di.IntoSavedStateFactory
 import com.freshdigitable.udonroad2.model.app.di.QueryTypeKey
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
-import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
+import com.freshdigitable.udonroad2.model.app.navigation.ActivityEffectDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.oauth.LoginUseCase
 import com.freshdigitable.udonroad2.oauth.OauthAction
@@ -39,7 +39,7 @@ import com.freshdigitable.udonroad2.oauth.OauthSavedStates
 import com.freshdigitable.udonroad2.oauth.OauthViewModel
 import com.freshdigitable.udonroad2.oauth.OauthViewModelSource
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragment
-import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentEventDelegate
+import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentEffectDelegate
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -62,9 +62,9 @@ interface OauthViewModelModule {
         @ViewModelKey(OauthViewModel::class)
         fun provideOauthNavigationDelegate(
             fragment: ListItemFragment,
-            activityEventDelegate: ActivityEventDelegate
-        ): ListItemFragmentEventDelegate {
-            return OauthNavigationDelegate(fragment, activityEventDelegate)
+            activityEffectDelegate: ActivityEffectDelegate,
+        ): ListItemFragmentEffectDelegate {
+            return OauthNavigationDelegate(fragment, activityEffectDelegate)
         }
 
         @Provides

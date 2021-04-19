@@ -21,7 +21,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
 import com.freshdigitable.udonroad2.model.app.di.ViewModelScope
-import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
+import com.freshdigitable.udonroad2.model.app.navigation.ActivityEffectDelegate
 import com.freshdigitable.udonroad2.timeline.TweetMediaViewModelSource
 import com.freshdigitable.udonroad2.timeline.UserIconViewModelSource
 import com.freshdigitable.udonroad2.timeline.viewmodel.TweetDetailViewModel
@@ -62,7 +62,7 @@ interface TweetDetailViewModelComponent {
     }
 
     val viewModelProviderFactory: ViewModelProvider.Factory
-    val activityEventDelegate: ActivityEventDelegate
+    val activityEffectDelegate: ActivityEffectDelegate
 }
 
 @Module(subcomponents = [TweetDetailViewModelComponent::class])

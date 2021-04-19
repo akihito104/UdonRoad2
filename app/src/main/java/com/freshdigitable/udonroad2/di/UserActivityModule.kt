@@ -19,7 +19,7 @@ package com.freshdigitable.udonroad2.di
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
-import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
+import com.freshdigitable.udonroad2.model.app.navigation.ActivityEffectDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.user.UserActivity
@@ -42,8 +42,8 @@ import dagger.multibindings.IntoMap
 interface UserActivityModule {
     @Binds
     fun bindActivityEventDelegate(
-        eventDelegate: UserActivityNavigationDelegate
-    ): ActivityEventDelegate
+        eventDelegate: UserActivityNavigationDelegate,
+    ): ActivityEffectDelegate
 
     companion object {
         @Provides

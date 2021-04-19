@@ -42,7 +42,7 @@ class MediaActivity : AppCompatActivity(), HasAndroidInjector {
     lateinit var viewModelComponentFactory: MediaViewModelComponent.Factory
 
     @Inject
-    internal lateinit var activityEventDelegate: MediaActivityEventDelegate
+    internal lateinit var activityEventDelegate: MediaActivityEffectDelegate
     private val viewModel: MediaViewModel by viewModels {
         viewModelComponentFactory.create(args.id, args.index).viewModelProviderFactory
     }

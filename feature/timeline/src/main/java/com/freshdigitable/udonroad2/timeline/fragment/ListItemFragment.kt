@@ -20,9 +20,8 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.freshdigitable.udonroad2.model.ListOwner
-import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
+import com.freshdigitable.udonroad2.model.app.navigation.ActivityEffectDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
-import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
 import com.freshdigitable.udonroad2.timeline.ListItemLoadableViewModel
 import com.freshdigitable.udonroad2.timeline.R
 import com.freshdigitable.udonroad2.timeline.TimelineEffect
@@ -96,7 +95,7 @@ class ListItemFragment : Fragment() {
                         }
                         binding.mainList.smoothScrollToPosition(0)
                     }
-                    else -> eventDelegate.dispatchNavHostNavigate(it)
+                    else -> eventDelegate.accept(it)
                 }
             }
         }
@@ -169,7 +168,7 @@ class ListItemFragment : Fragment() {
     }
 }
 
-interface ListItemFragmentEventDelegate : ActivityEventDelegate {
-    override fun dispatchNavHostNavigate(event: AppEffect)
-    override fun dispatchFeedbackMessage(message: FeedbackMessage)
+interface ListItemFragmentEffectDelegate : ActivityEffectDelegate {
+    override fun accept(event: AppEffect)
+    override fun dispatchFeedbackMessage(message: AppEffect.Feedback)
 }

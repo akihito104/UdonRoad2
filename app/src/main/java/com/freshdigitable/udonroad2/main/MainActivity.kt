@@ -71,7 +71,7 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
         lifecycleScope.launch {
             viewModel.navigationEvent.collect {
                 Timber.tag("MainActivity").d("navigationEvent: $it")
-                navigation.dispatchNavHostNavigate(it)
+                navigation.accept(it)
             }
         }
 
