@@ -37,26 +37,20 @@ class AppTwitterException(
     enum class ErrorType(
         val statusCode: Int,
         val errorCode: Int,
-    ) {
+    ) : AppErrorType {
         // https://developer.twitter.com/ja/docs/basics/response-codes
         ALREADY_FAVORITED(STATUS_FORBIDDEN, 139),
         ALREADY_RETWEETED(STATUS_FORBIDDEN, 327),
         ALREADY_FOLLOW_REQUESTED(STATUS_FORBIDDEN, 160),
         REACHED_FOLLOW_LIMIT(STATUS_FORBIDDEN, 161),
         TWEET_NOT_FOUND(STATUS_NOT_FOUND, 144),
-
-        UNKNOWN(Int.MIN_VALUE, Int.MIN_VALUE),
     }
 }
 
-fun Throwable.isTwitterExceptionOf(type: AppTwitterException.ErrorType? = null): Boolean {
-    return when (this) {
-        is AppTwitterException -> {
-            when (type) {
-                null -> true
-                else -> this.errorType == type
-            }
-        }
-        else -> false
-    }
+interface AppErrorType
+
+enum class RecoverableErrorType : AppErrorType {
+    API_ACCESS_TROUBLE,
+    NETWORK_TROUBLE,
+    UNKNOWN,
 }

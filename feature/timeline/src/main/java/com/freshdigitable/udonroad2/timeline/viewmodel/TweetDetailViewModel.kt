@@ -16,7 +16,8 @@ import com.freshdigitable.udonroad2.model.UrlItem
 import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.app.AppTwitterException.ErrorType
 import com.freshdigitable.udonroad2.model.app.LoadingResult
-import com.freshdigitable.udonroad2.model.app.isTwitterExceptionOf
+import com.freshdigitable.udonroad2.model.app.RecoverableErrorType
+import com.freshdigitable.udonroad2.model.app.load
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventStream
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
@@ -47,7 +48,6 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.merge
-import java.io.IOException
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 
@@ -191,10 +191,10 @@ internal class TweetDetailViewStates @Inject constructor(
                     s.copy(tweetItem = item, isTweetItemDeleted = item == null)
                 }
                 is LoadingResult.Failed -> {
-                    when {
-                        loadingItem.cause == ErrorType.TWEET_NOT_FOUND ->
+                    when (loadingItem.errorType) {
+                        ErrorType.TWEET_NOT_FOUND ->
                             s.copy(tweetItem = null, isTweetItemDeleted = false)
-                        loadingItem.exception is IOException -> s
+                        RecoverableErrorType.API_ACCESS_TROUBLE -> s // TODO feedback
                         else -> throw IllegalStateException(loadingItem.exception)
                     }
                 }
@@ -276,19 +276,12 @@ class GetTweetDetailItemUseCase @Inject constructor(
             emit(LoadingResult.Started)
 
             repository.getDetailTweetItemSource(tweetId).collect { item ->
-                if (item != null) {
-                    emit(LoadingResult.Loaded(item))
-                } else {
-                    repository.runCatching { findDetailTweetItem(tweetId) }
-                        .onSuccess { emit(LoadingResult.Loaded(it)) }
-                        .onFailure {
-                            when {
-                                it.isTwitterExceptionOf(ErrorType.TWEET_NOT_FOUND) ->
-                                    emit(LoadingResult.Failed(ErrorType.TWEET_NOT_FOUND, it))
-                                it is IOException -> emit(LoadingResult.Failed(exception = it))
-                                else -> throw it
-                            }
-                        }
+                when {
+                    item != null -> emit(LoadingResult.Loaded(item))
+                    else -> {
+                        val state = repository.load { findDetailTweetItem(tweetId) }
+                        emit(state)
+                    }
                 }
             }
         }

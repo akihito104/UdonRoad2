@@ -16,11 +16,29 @@
 
 package com.freshdigitable.udonroad2.model.app
 
+import timber.log.Timber
+import java.io.IOException
+
 sealed class LoadingResult<out T> {
     object Started : LoadingResult<Nothing>()
     data class Loaded<T>(val value: T) : LoadingResult<T>()
     data class Failed(
-        val cause: AppTwitterException.ErrorType = AppTwitterException.ErrorType.UNKNOWN,
+        val errorType: AppErrorType,
         val exception: Throwable,
     ) : LoadingResult<Nothing>()
+}
+
+inline fun <T, R> T.load(block: T.() -> R): LoadingResult<R> {
+    return this.runCatching(block).fold(
+        onSuccess = { LoadingResult.Loaded(it) },
+        onFailure = {
+            Timber.tag("LoadingResult").e(it)
+            val cause = when (it) {
+                is AppTwitterException -> it.errorType ?: RecoverableErrorType.UNKNOWN
+                is IOException -> RecoverableErrorType.API_ACCESS_TROUBLE // ???
+                else -> throw it
+            }
+            LoadingResult.Failed(errorType = cause, exception = it)
+        }
+    )
 }
