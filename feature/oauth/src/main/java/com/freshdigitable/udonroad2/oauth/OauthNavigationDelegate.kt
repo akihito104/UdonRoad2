@@ -34,7 +34,7 @@ internal class OauthNavigationDelegate(
 
     override fun dispatchNavHostNavigate(event: AppEffect) {
         when (event) {
-            is OauthEvent.Navigation.LaunchTwitter -> launchTwitterOauth(event.url)
+            is OauthNavigation.LaunchTwitter -> launchTwitterOauth(event.url)
             else -> activityEventDelegate.dispatchNavHostNavigate(event)
         }
     }

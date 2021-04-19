@@ -67,8 +67,8 @@ sealed class OauthEvent : AppEvent {
     object LoginClicked : OauthEvent()
     data class PinTextChanged(val text: CharSequence) : OauthEvent()
     object SendPinClicked : OauthEvent()
+}
 
-    sealed class Navigation : AppEffect.Navigation {
-        data class LaunchTwitter(val url: String) : Navigation()
-    }
+sealed class OauthNavigation : AppEffect.Navigation {
+    data class LaunchTwitter(val url: String) : OauthNavigation()
 }

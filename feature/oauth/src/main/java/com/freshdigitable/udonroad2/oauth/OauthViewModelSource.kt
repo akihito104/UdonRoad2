@@ -57,7 +57,7 @@ internal class OauthViewModelSource(
         init = OauthViewState(),
         actions.authApp.onEvent { s, _ ->
             val token = repository.getRequestTokenItem()
-            navigationChannel.send(OauthEvent.Navigation.LaunchTwitter(token.authorizationUrl))
+            navigationChannel.send(OauthNavigation.LaunchTwitter(token.authorizationUrl))
             s.copy(requestToken = token)
         },
         actions.inputPin.onEvent { s, e -> s.copy(pinText = e.text) },
