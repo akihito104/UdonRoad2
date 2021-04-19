@@ -34,7 +34,7 @@ import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentArgs
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentDirections
 import com.freshdigitable.udonroad2.timeline.fragment.TweetDetailFragmentArgs
 import com.freshdigitable.udonroad2.timeline.fragment.TweetDetailFragmentDirections
-import com.freshdigitable.udonroad2.timeline.viewmodel.DetailEvent
+import com.freshdigitable.udonroad2.timeline.viewmodel.ExternalAppNavigation
 import com.freshdigitable.udonroad2.user.UserActivityDirections
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -99,7 +99,7 @@ internal class MainActivityNavigationDelegate @Inject constructor(
                     MediaActivityArgs(event.tweetId, event.index).toBundle()
                 )
             }
-            is DetailEvent.NavigationExternalApp -> {
+            is ExternalAppNavigation -> {
                 val intent = Intent(Intent.ACTION_VIEW)
                 val uri = event.appUrl?.let { appUrl ->
                     val i = Intent(intent).apply {

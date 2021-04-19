@@ -91,12 +91,12 @@ sealed class DetailEvent : AppEvent {
 
     internal data class SpanClicked(val urlItem: UrlItem) : DetailEvent()
     internal data class TwitterCardClicked(val card: TwitterCard) : DetailEvent()
-
-    data class NavigationExternalApp(
-        val url: String,
-        val appUrl: String? = null,
-    ) : AppEffect.Navigation
 }
+
+data class ExternalAppNavigation(
+    val url: String,
+    val appUrl: String? = null,
+) : AppEffect.Navigation
 
 interface SpanClickListener {
     fun onSpanClicked(urlItem: UrlItem)
@@ -231,10 +231,10 @@ internal class TweetDetailViewStates @Inject constructor(
             )
         },
         actions.launchAppForCard.mapLatest {
-            DetailEvent.NavigationExternalApp(url = it.card.url, appUrl = it.card.appUrl)
+            ExternalAppNavigation(url = it.card.url, appUrl = it.card.appUrl)
         },
         actions.launchExternalApp.mapLatest {
-            DetailEvent.NavigationExternalApp(url = it.urlItem.url)
+            ExternalAppNavigation(url = it.urlItem.url)
         },
     )
     override val feedbackMessage: Flow<FeedbackMessage> = updateTweet
