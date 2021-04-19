@@ -22,8 +22,8 @@ import com.freshdigitable.udonroad2.data.impl.create
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.UserId
+import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
-import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.user.UserEntity
 import com.freshdigitable.udonroad2.oauth.LoginUseCase
 import com.freshdigitable.udonroad2.test_common.MockVerified
@@ -223,7 +223,7 @@ class DrawerViewStateSourceTestRule(
     }
     internal val actualStates: List<DrawerViewModel.State>
         get() = eventCollector.nonNullEventsOf(sut.state)
-    internal val navigationEventActual: List<NavigationEvent>
+    internal val navigationEventActual: List<AppEffect.Navigation>
         get() = eventCollector.nonNullEventsOf(sut.navEventSource)
 
     override fun starting(description: Description?) {

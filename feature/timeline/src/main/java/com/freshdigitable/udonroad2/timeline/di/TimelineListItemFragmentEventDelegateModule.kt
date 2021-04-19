@@ -17,8 +17,8 @@
 package com.freshdigitable.udonroad2.timeline.di
 
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
+import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
 import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
-import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.timeline.TimelineNavigationDelegate
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentEventDelegate
 import com.freshdigitable.udonroad2.timeline.viewmodel.CustomTimelineListViewModel
@@ -35,14 +35,14 @@ interface TimelineListItemFragmentEventDelegateModule {
     @IntoMap
     @ViewModelKey(TimelineViewModel::class)
     fun bindTimelineEventDelegate(
-        eventDelegate: TimelineNavigationDelegate
+        eventDelegate: TimelineNavigationDelegate,
     ): ListItemFragmentEventDelegate
 
     @Binds
     @IntoMap
     @ViewModelKey(CustomTimelineListViewModel::class)
     fun bindCustomTimelineListEventDelegate(
-        eventDelegate: TimelineNavigationDelegate
+        eventDelegate: TimelineNavigationDelegate,
     ): ListItemFragmentEventDelegate
 
     companion object {
@@ -51,7 +51,7 @@ interface TimelineListItemFragmentEventDelegateModule {
         @ViewModelKey(UserListViewModel::class)
         fun provideUserListEventDelegate(): ListItemFragmentEventDelegate {
             return object : ListItemFragmentEventDelegate {
-                override fun dispatchNavHostNavigate(event: NavigationEvent) {}
+                override fun dispatchNavHostNavigate(event: AppEffect.Navigation) {}
                 override fun dispatchFeedbackMessage(message: FeedbackMessage) {}
             }
         }

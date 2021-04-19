@@ -10,10 +10,10 @@ import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventStream
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction1
+import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
 import com.freshdigitable.udonroad2.model.app.navigation.AppEventListener
 import com.freshdigitable.udonroad2.model.app.navigation.AppEventListener1
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
-import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
 import com.freshdigitable.udonroad2.model.app.onEvent
 import com.freshdigitable.udonroad2.model.app.stateSourceBuilder
@@ -77,7 +77,7 @@ internal class ListItemLoadableViewStateImpl(
     ActivityEventStream by ActivityEventStream.EmptyStream {
 
     override val pagedList: Flow<PagingData<Any>> = pagedListProvider.getList(owner.query, owner.id)
-    private val channel = Channel<NavigationEvent>()
+    private val channel = Channel<AppEffect.Navigation>()
 
     override val state: Flow<Snapshot> = stateSourceBuilder(
         init = Snapshot(),
@@ -104,7 +104,7 @@ internal class ListItemLoadableViewStateImpl(
         },
     )
 
-    override val navigationEvent: Flow<NavigationEvent> = channel.receiveAsFlow()
+    override val navigationEvent: Flow<AppEffect.Navigation> = channel.receiveAsFlow()
 
     override suspend fun clear() {
         channel.close()

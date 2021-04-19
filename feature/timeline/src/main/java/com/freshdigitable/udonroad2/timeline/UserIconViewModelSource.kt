@@ -18,9 +18,9 @@ package com.freshdigitable.udonroad2.timeline
 
 import com.freshdigitable.udonroad2.model.app.di.ActivityScope
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction1
+import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
 import com.freshdigitable.udonroad2.model.app.navigation.AppEventListener1
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
-import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import kotlinx.coroutines.flow.Flow
@@ -48,6 +48,6 @@ class UserIconClickedAction @Inject constructor(
 class UserIconViewModelSource @Inject constructor(
     actions: UserIconClickedAction,
 ) : UserIconClickListener by actions {
-    val navEvent: Flow<NavigationEvent> = actions.launchUserInfo
+    val navEvent: Flow<AppEffect.Navigation> = actions.launchUserInfo
         .map { TimelineEvent.Navigate.UserInfo(it.user) }
 }

@@ -21,8 +21,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
+import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
 import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
-import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.timeline.ListItemLoadableViewModel
 import com.freshdigitable.udonroad2.timeline.R
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
@@ -170,6 +170,6 @@ class ListItemFragment : Fragment() {
 }
 
 interface ListItemFragmentEventDelegate : ActivityEventDelegate {
-    override fun dispatchNavHostNavigate(event: NavigationEvent)
+    override fun dispatchNavHostNavigate(event: AppEffect.Navigation)
     override fun dispatchFeedbackMessage(message: FeedbackMessage)
 }

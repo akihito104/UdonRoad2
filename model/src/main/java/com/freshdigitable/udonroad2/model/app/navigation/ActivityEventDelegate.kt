@@ -20,15 +20,15 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 
 interface ActivityEventDelegate : FeedbackMessageDelegate {
-    fun dispatchNavHostNavigate(event: NavigationEvent) {}
+    fun dispatchNavHostNavigate(event: AppEffect.Navigation) {}
 }
 
 interface ActivityEventStream {
-    val navigationEvent: Flow<NavigationEvent>
+    val navigationEvent: Flow<AppEffect.Navigation>
     val feedbackMessage: Flow<FeedbackMessage>
 
     object EmptyStream : ActivityEventStream {
-        override val navigationEvent: Flow<NavigationEvent> = emptyFlow()
+        override val navigationEvent: Flow<AppEffect.Navigation> = emptyFlow()
         override val feedbackMessage: Flow<FeedbackMessage> = emptyFlow()
     }
 }

@@ -19,10 +19,10 @@ import com.freshdigitable.udonroad2.model.app.LoadingResult
 import com.freshdigitable.udonroad2.model.app.RecoverableErrorType
 import com.freshdigitable.udonroad2.model.app.load
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventStream
+import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
-import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.toActionFlow
 import com.freshdigitable.udonroad2.model.app.stateSourceBuilder
 import com.freshdigitable.udonroad2.model.tweet.DetailTweetListItem
@@ -68,7 +68,7 @@ internal class TweetDetailViewModel(
     val state: LiveData<State> = viewStates.viewModelState.asLiveData(this.coroutineContext)
     override val mediaState: LiveData<TweetMediaItemViewModel.State> =
         mediaViewModelSource.mediaState.asLiveData(this.coroutineContext)
-    override val navigationEvent: Flow<NavigationEvent> = merge(
+    override val navigationEvent: Flow<AppEffect.Navigation> = merge(
         viewStates.navigationEvent,
         userIconViewModelSource.navEvent,
         mediaViewModelSource.navigationEvent
@@ -94,7 +94,7 @@ sealed class DetailEvent : AppEvent {
     data class NavigationExternalApp(
         val url: String,
         val appUrl: String? = null,
-    ) : NavigationEvent
+    ) : AppEffect.Navigation
 }
 
 interface SpanClickListener {
@@ -222,12 +222,11 @@ internal class TweetDetailViewStates @Inject constructor(
         ) { s, card -> s.copy(twitterCard = card) }
     }
 
-    override val navigationEvent: Flow<NavigationEvent> = merge(
+    override val navigationEvent: Flow<AppEffect.Navigation> = merge(
         actions.launchOriginalTweetUserInfo.mapLatest { TimelineEvent.Navigate.UserInfo(it.user) },
         actions.showConversation.mapLatest {
             listOwnerGenerator.getTimelineEvent(
                 QueryType.TweetQueryType.Conversation(it.tweetId),
-                NavigationEvent.Type.NAVIGATE
             )
         },
         actions.launchAppForCard.mapLatest {

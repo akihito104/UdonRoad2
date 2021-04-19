@@ -17,8 +17,14 @@
 package com.freshdigitable.udonroad2.model.app.navigation
 
 interface AppEvent
-interface NavigationEvent : AppEvent {
-    enum class Type { INIT, NAVIGATE }
+
+interface AppEffect {
+    interface Navigation : AppEffect {
+        val type: Type
+            get() = Type.NAVIGATE
+
+        enum class Type { INIT, NAVIGATE }
+    }
 }
 
 interface ViewState

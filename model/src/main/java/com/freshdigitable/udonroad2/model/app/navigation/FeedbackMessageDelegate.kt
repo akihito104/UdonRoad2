@@ -41,7 +41,7 @@ fun Context.getString(feedback: FeedbackMessage): String {
 }
 
 class SnackbarFeedbackMessageDelegate(
-    prop: ReadOnlyProperty<Any, View>
+    prop: ReadOnlyProperty<Any, View>,
 ) : FeedbackMessageDelegate {
     private val snackbarContainer: View by prop
 

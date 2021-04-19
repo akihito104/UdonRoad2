@@ -20,8 +20,8 @@ import android.content.Intent
 import android.net.Uri
 import androidx.fragment.app.FragmentActivity
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
+import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
 import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
-import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.weakRef
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragment
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentEventDelegate
@@ -32,7 +32,7 @@ internal class OauthNavigationDelegate(
 ) : ListItemFragmentEventDelegate {
     private val activity: FragmentActivity by weakRef(listItemFragment) { it.requireActivity() }
 
-    override fun dispatchNavHostNavigate(event: NavigationEvent) {
+    override fun dispatchNavHostNavigate(event: AppEffect.Navigation) {
         when (event) {
             is OauthEvent.Navigation.LaunchTwitter -> launchTwitterOauth(event.url)
             else -> activityEventDelegate.dispatchNavHostNavigate(event)

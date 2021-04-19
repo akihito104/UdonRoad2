@@ -28,7 +28,7 @@ import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.RequestTokenItem
 import com.freshdigitable.udonroad2.model.app.DispatcherProvider
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventStream
-import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
+import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
 import com.freshdigitable.udonroad2.model.app.onEvent
 import com.freshdigitable.udonroad2.model.app.stateSourceBuilder
 import com.freshdigitable.udonroad2.timeline.ListItemLoadableEventListener
@@ -52,7 +52,7 @@ internal class OauthViewModelSource(
     ListItemLoadableEventListener by actions,
     OauthEventListener by actions,
     ActivityEventStream by ActivityEventStream.EmptyStream {
-    private val navigationChannel = Channel<NavigationEvent>()
+    private val navigationChannel = Channel<AppEffect.Navigation>()
     override val state: Flow<OauthViewState> = stateSourceBuilder(
         init = OauthViewState(),
         actions.authApp.onEvent { s, _ ->
@@ -66,7 +66,7 @@ internal class OauthViewModelSource(
             val t = repository.getAccessToken(token, s.pinText.toString())
             login(t.userId)
             val timelineEvent = listOwnerGenerator.getTimelineEvent(
-                QueryType.TweetQueryType.Timeline(), NavigationEvent.Type.INIT
+                QueryType.TweetQueryType.Timeline(), AppEffect.Navigation.Type.INIT
             )
             navigationChannel.send(timelineEvent)
             OauthViewState()
@@ -85,7 +85,7 @@ internal class OauthViewModelSource(
         pagingSourceFactory = { dataSource }
     ).flow as Flow<PagingData<Any>>
 
-    override val navigationEvent: Flow<NavigationEvent> = navigationChannel.receiveAsFlow()
+    override val navigationEvent: Flow<AppEffect.Navigation> = navigationChannel.receiveAsFlow()
 
     override suspend fun clear() {
         super.clear()
@@ -104,7 +104,7 @@ data class OauthViewState(
 
 class OauthSavedStates(
     handle: SavedStateHandle,
-    private val dispatcherProvider: DispatcherProvider = DispatcherProvider()
+    private val dispatcherProvider: DispatcherProvider = DispatcherProvider(),
 ) {
     private val requestTokenItem: MutableLiveData<RequestTokenItem?> =
         handle.getLiveData(SAVED_STATE_REQUEST_TOKEN)

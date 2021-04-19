@@ -26,10 +26,10 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventStream
+import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.AppEventListener
 import com.freshdigitable.udonroad2.model.app.navigation.AppEventListener1
-import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.timeline.ListItemLoadableEventListener
 import com.freshdigitable.udonroad2.timeline.ListItemLoadableViewModel
 import kotlinx.coroutines.flow.Flow
@@ -68,7 +68,7 @@ sealed class OauthEvent : AppEvent {
     data class PinTextChanged(val text: CharSequence) : OauthEvent()
     object SendPinClicked : OauthEvent()
 
-    sealed class Navigation : NavigationEvent {
+    sealed class Navigation : AppEffect.Navigation {
         data class LaunchTwitter(val url: String) : Navigation()
     }
 }

@@ -6,8 +6,8 @@ import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.TweetId
+import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
-import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import java.io.Serializable
 
@@ -46,40 +46,33 @@ sealed class TimelineEvent : AppEvent {
     data class HeadingClicked(val owner: ListOwner<*>) : TimelineEvent()
     object SwipedToRefresh : TimelineEvent()
 
-    sealed class Navigate : TimelineEvent(), NavigationEvent {
+    sealed class Navigate : TimelineEvent(), AppEffect.Navigation {
         data class Timeline(
             val owner: ListOwner<*>,
-            override val type: NavigationEvent.Type = NavigationEvent.Type.NAVIGATE,
+            override val type: AppEffect.Navigation.Type = AppEffect.Navigation.Type.NAVIGATE,
         ) : Navigate()
 
         data class ToTopOfList(val needsSkip: Boolean) : Navigate() {
-            override val type: NavigationEvent.Type
+            override val type: AppEffect.Navigation.Type
                 get() = throw UnsupportedOperationException()
         }
 
         data class Detail(
             val id: TweetId,
-            override val type: NavigationEvent.Type = NavigationEvent.Type.NAVIGATE,
         ) : Navigate()
 
-        data class UserInfo(val tweetUserItem: TweetUserItem) : Navigate() {
-            override val type: NavigationEvent.Type = NavigationEvent.Type.NAVIGATE
-        }
+        data class UserInfo(val tweetUserItem: TweetUserItem) : Navigate()
 
         data class MediaViewer(
             val tweetId: TweetId,
             val index: Int = 0,
         ) : Navigate() {
             internal constructor(event: MediaItemClicked) : this(event.tweetId, event.index)
-
-            override val type: NavigationEvent.Type = NavigationEvent.Type.NAVIGATE
         }
-
-        abstract val type: NavigationEvent.Type
     }
 }
 
 suspend fun ListOwnerGenerator.getTimelineEvent(
     queryType: QueryType,
-    navType: NavigationEvent.Type,
+    navType: AppEffect.Navigation.Type = AppEffect.Navigation.Type.NAVIGATE,
 ): TimelineEvent.Navigate.Timeline = TimelineEvent.Navigate.Timeline(generate(queryType), navType)

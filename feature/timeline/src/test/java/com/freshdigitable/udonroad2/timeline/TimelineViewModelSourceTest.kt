@@ -27,9 +27,9 @@ import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.app.AppTwitterException
+import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
-import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.postEvents
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
@@ -211,7 +211,7 @@ class TimelineViewStatesTestRule(
             )
         )
     }
-    val navEvents: List<NavigationEvent>
+    val navEvents: List<AppEffect.Navigation>
         get() = requireNotNull(eventCollector).nonNullEventsOf(sut.navigationEvent)
     val messageEvents: List<FeedbackMessage>
         get() = requireNotNull(eventCollector).nonNullEventsOf(sut.feedbackMessage)

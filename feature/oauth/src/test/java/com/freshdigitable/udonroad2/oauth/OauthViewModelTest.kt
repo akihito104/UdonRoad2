@@ -24,9 +24,9 @@ import com.freshdigitable.udonroad2.data.impl.create
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.UserId
+import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
-import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.user.UserEntity
 import com.freshdigitable.udonroad2.test_common.MockVerified
 import com.freshdigitable.udonroad2.test_common.RxExceptionHandler
@@ -139,7 +139,7 @@ class OauthViewModelTestRule : TestWatcher() {
         )
     }
     val dispatcherObserver: TestObserver<AppEvent> = dispatcher.emitter.test()
-    val navEvents: List<NavigationEvent> get() = eventCollector.nonNullEventsOf(sut.navigationEvent)
+    val navEvents: List<AppEffect.Navigation> get() = eventCollector.nonNullEventsOf(sut.navigationEvent)
 
     override fun starting(description: Description?) {
         super.starting(description)

@@ -24,8 +24,8 @@ import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventStream
+import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
 import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
-import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.onEvent
 import com.freshdigitable.udonroad2.model.app.stateSourceBuilder
 import com.freshdigitable.udonroad2.shortcut.ShortcutViewStates
@@ -74,12 +74,12 @@ internal class TimelineViewModelSource(
 
     internal val selectedItemId: Flow<SelectedItemId?> = selectedItemRepository.getSource(owner)
 
-    override val navigationEvent: Flow<NavigationEvent> = merge(
+    override val navigationEvent: Flow<AppEffect.Navigation> = merge(
         actions.showTweetDetail.map { TimelineEvent.Navigate.Detail(it.tweetId) },
         actions.showConversation.map {
             listOwnerGenerator.getTimelineEvent(
                 QueryType.TweetQueryType.Conversation(it.tweetId),
-                NavigationEvent.Type.NAVIGATE
+                AppEffect.Navigation.Type.NAVIGATE
             )
         },
         mediaViewModelSource.navigationEvent,

@@ -11,8 +11,8 @@ import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.QueryType.CustomTimelineListQueryType
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventStream
+import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
-import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
 import com.freshdigitable.udonroad2.timeline.ListItemClickListener
 import com.freshdigitable.udonroad2.timeline.ListItemLoadableEventListener
@@ -40,7 +40,7 @@ internal class CustomTimelineListViewModel(
         viewModelSource.state.asLiveData(viewModelScope.coroutineContext)
     override val timeline: Flow<PagingData<Any>> =
         viewModelSource.pagedList.cachedIn(viewModelScope)
-    override val navigationEvent: Flow<NavigationEvent> = merge(
+    override val navigationEvent: Flow<AppEffect.Navigation> = merge(
         viewModelSource.navigationEvent,
         userIconViewModelSource.navEvent,
     )
@@ -60,14 +60,14 @@ internal class CustomTimelineListItemLoadableViewState(
     listOwner: ListOwnerGenerator,
 ) : ListItemLoadableViewModelSource by viewModelSource,
     ListItemClickListener<CustomTimelineItem> by actions {
-    override val navigationEvent: Flow<NavigationEvent> = merge(
+    override val navigationEvent: Flow<AppEffect.Navigation> = merge(
         viewModelSource.navigationEvent,
         actions.selectBodyItem.mapLatest {
             val queryType = QueryType.TweetQueryType.CustomTimeline(
                 it.customTimeline.id,
                 it.customTimeline.name
             )
-            listOwner.getTimelineEvent(queryType, NavigationEvent.Type.NAVIGATE)
+            listOwner.getTimelineEvent(queryType, AppEffect.Navigation.Type.NAVIGATE)
         }
     )
 }

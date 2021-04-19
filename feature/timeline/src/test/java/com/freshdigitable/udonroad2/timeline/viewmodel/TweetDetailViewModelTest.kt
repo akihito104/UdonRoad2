@@ -21,8 +21,8 @@ import com.freshdigitable.udonroad2.data.impl.create
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.UserId
+import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
-import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.tweet.DetailTweetElement
 import com.freshdigitable.udonroad2.model.tweet.DetailTweetListItem
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
@@ -104,7 +104,7 @@ class TweetDetailViewModelTest {
         )
     }
     private val tweetSource: Channel<TweetListItem?> = Channel()
-    private val navigationEvents: List<NavigationEvent>
+    private val navigationEvents: List<AppEffect.Navigation>
         get() = eventCollector.nonNullEventsOf(sut.navigationEvent)
 
     @Before

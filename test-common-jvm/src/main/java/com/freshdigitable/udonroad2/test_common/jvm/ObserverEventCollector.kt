@@ -20,7 +20,7 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventStream
-import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
+import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
@@ -111,16 +111,16 @@ fun ObserverEventCollector.setupForActivate(block: ObserverEventCollector.() -> 
     activateAll()
 }
 
-inline fun <reified T : NavigationEvent> ObserverEventCollector.assertLatestNavigationEvent(
-    flow: Flow<NavigationEvent>,
+inline fun <reified T : AppEffect.Navigation> ObserverEventCollector.assertLatestNavigationEvent(
+    flow: Flow<AppEffect.Navigation>,
     assertBlock: (T) -> Unit,
 ) {
     assertNavigationEvent(flow, { it.last() }, assertBlock)
 }
 
-inline fun <reified T : NavigationEvent> ObserverEventCollector.assertNavigationEvent(
-    flow: Flow<NavigationEvent>,
-    eventPicker: (List<NavigationEvent>) -> NavigationEvent,
+inline fun <reified T : AppEffect.Navigation> ObserverEventCollector.assertNavigationEvent(
+    flow: Flow<AppEffect.Navigation>,
+    eventPicker: (List<AppEffect.Navigation>) -> AppEffect.Navigation,
     assertBlock: (T) -> Unit,
 ) {
     val events = nonNullEventsOf(flow)

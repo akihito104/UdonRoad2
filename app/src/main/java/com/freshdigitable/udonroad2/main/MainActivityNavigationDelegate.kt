@@ -23,9 +23,9 @@ import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.app.di.ActivityScope
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
+import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
 import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessageDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.FragmentContainerState
-import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.SnackbarFeedbackMessageDelegate
 import com.freshdigitable.udonroad2.model.app.weakRef
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
@@ -81,10 +81,11 @@ internal class MainActivityNavigationDelegate @Inject constructor(
         }
     }
 
-    override fun dispatchNavHostNavigate(event: NavigationEvent) {
+    override fun dispatchNavHostNavigate(event: AppEffect.Navigation) {
         when (event) {
             is TimelineEvent.Navigate.Timeline,
-            is TimelineEvent.Navigate.Detail -> {
+            is TimelineEvent.Navigate.Detail,
+            -> {
                 activity.navigateTo(event)
             }
             is TimelineEvent.Navigate.UserInfo -> {
@@ -117,7 +118,7 @@ internal class MainActivityNavigationDelegate @Inject constructor(
         }
     }
 
-    private fun AppCompatActivity.navigateTo(nextState: NavigationEvent) {
+    private fun AppCompatActivity.navigateTo(nextState: AppEffect.Navigation) {
         if (state._containerState.value?.isDestinationEqualTo(nextState) == true) {
             return
         }
@@ -133,13 +134,13 @@ internal class MainActivityNavigationDelegate @Inject constructor(
 
     private fun AppCompatActivity.toTimeline(nextState: TimelineEvent.Navigate.Timeline) {
         when (nextState.type) {
-            NavigationEvent.Type.INIT -> {
+            AppEffect.Navigation.Type.INIT -> {
                 navController.setGraph(
                     R.navigation.nav_main,
                     ListItemFragment.bundle(nextState.owner, nextState.label(this))
                 )
             }
-            NavigationEvent.Type.NAVIGATE -> {
+            AppEffect.Navigation.Type.NAVIGATE -> {
                 val dir = when (val container = state._containerState.value) {
                     is MainNavHostState.Timeline -> {
                         ListItemFragmentDirections.actionTimelineToTimeline(
@@ -185,18 +186,18 @@ sealed class MainNavHostState : FragmentContainerState {
     ) : MainNavHostState() {
         override val fragmentId: Int = R.id.fragment_timeline
 
-        override fun isDestinationEqualTo(other: NavigationEvent?): Boolean {
+        override fun isDestinationEqualTo(other: AppEffect.Navigation?): Boolean {
             return (other as? TimelineEvent.Navigate.Timeline)?.owner == this.owner
         }
     }
 
     data class TweetDetail(
-        val tweetId: TweetId
+        val tweetId: TweetId,
     ) : MainNavHostState() {
         override val fragmentId: Int = R.id.fragment_detail
         override val appBarTitle: AppBarTitle = { it.getString(R.string.title_detail) }
 
-        override fun isDestinationEqualTo(other: NavigationEvent?): Boolean {
+        override fun isDestinationEqualTo(other: AppEffect.Navigation?): Boolean {
             return (other as? TimelineEvent.Navigate.Detail)?.id == this.tweetId
         }
     }
@@ -204,18 +205,18 @@ sealed class MainNavHostState : FragmentContainerState {
     object Settings : MainNavHostState() {
         override val fragmentId: Int = R.id.fragment_settings
         override val appBarTitle: AppBarTitle = { it.getString(R.string.drawer_menu_settings) }
-        override fun isDestinationEqualTo(other: NavigationEvent?): Boolean = false
+        override fun isDestinationEqualTo(other: AppEffect.Navigation?): Boolean = false
     }
 
     object License : MainNavHostState() {
         override val fragmentId: Int = R.id.fragment_license
         override val appBarTitle: AppBarTitle = { it.getString(R.string.drawer_menu_license) }
-        override fun isDestinationEqualTo(other: NavigationEvent?): Boolean = false
+        override fun isDestinationEqualTo(other: AppEffect.Navigation?): Boolean = false
     }
 
     abstract val fragmentId: Int
     abstract val appBarTitle: AppBarTitle
-    abstract fun isDestinationEqualTo(other: NavigationEvent?): Boolean
+    abstract fun isDestinationEqualTo(other: AppEffect.Navigation?): Boolean
 
     companion object
 }
@@ -236,7 +237,7 @@ private fun TimelineEvent.Navigate.Timeline.label(context: Context): String {
 
 private fun MainNavHostState.Companion.create(
     destination: NavDestination?,
-    arguments: Bundle?
+    arguments: Bundle?,
 ): MainNavHostState? {
     return when (destination?.id) {
         R.id.fragment_timeline -> {

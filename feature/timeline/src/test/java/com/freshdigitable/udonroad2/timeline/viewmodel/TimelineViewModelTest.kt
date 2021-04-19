@@ -17,7 +17,7 @@
 package com.freshdigitable.udonroad2.timeline.viewmodel
 
 import com.freshdigitable.udonroad2.model.TweetId
-import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
+import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import com.freshdigitable.udonroad2.test_common.jvm.ObserverEventCollector
@@ -54,7 +54,7 @@ class TimelineViewModelTest {
 
     private val isHeadingEnabledFlow: List<Boolean>
         get() = eventCollector.nonNullEventsOf(sut.listState).map { it.isHeadingEnabled }
-    private val navigationEvents: List<NavigationEvent>
+    private val navigationEvents: List<AppEffect.Navigation>
         get() = eventCollector.nonNullEventsOf(sut.navigationEvent)
 
     @Before
