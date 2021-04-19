@@ -36,7 +36,7 @@ import com.freshdigitable.udonroad2.model.app.stateSourceBuilder
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.model.user.UserEntity
 import com.freshdigitable.udonroad2.oauth.LoginUseCase
-import com.freshdigitable.udonroad2.timeline.TimelineEvent
+import com.freshdigitable.udonroad2.timeline.TimelineEffect
 import com.freshdigitable.udonroad2.timeline.getTimelineEvent
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -140,7 +140,7 @@ internal class DrawerViewModelSource @Inject constructor(
 
         actions.showCurrentUser.onEvent { state, _ ->
             state.currentUser?.let {
-                navEventChannel.send(TimelineEvent.Navigate.UserInfo(it))
+                navEventChannel.send(TimelineEffect.Navigate.UserInfo(it))
             }
             state
         },

@@ -23,7 +23,7 @@ import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import com.freshdigitable.udonroad2.test_common.jvm.ObserverEventCollector
 import com.freshdigitable.udonroad2.test_common.jvm.createMock
 import com.freshdigitable.udonroad2.test_common.jvm.setupForActivate
-import com.freshdigitable.udonroad2.timeline.TimelineEvent
+import com.freshdigitable.udonroad2.timeline.TimelineEffect
 import com.freshdigitable.udonroad2.timeline.TimelineViewStatesTestRule
 import com.freshdigitable.udonroad2.timeline.UserIconClickedAction
 import com.freshdigitable.udonroad2.timeline.UserIconViewModelSource
@@ -54,7 +54,7 @@ class TimelineViewModelTest {
 
     private val isHeadingEnabledFlow: List<Boolean>
         get() = eventCollector.nonNullEventsOf(sut.listState).map { it.isHeadingEnabled }
-    private val navigationEvents: List<AppEffect.Navigation>
+    private val navigationEvents: List<AppEffect>
         get() = eventCollector.nonNullEventsOf(sut.navigationEvent)
 
     @Before
@@ -178,7 +178,7 @@ class TimelineViewModelTest {
         }
 
         // verify
-        assertThat(navigationEvents.last()).isEqualTo(TimelineEvent.Navigate.ToTopOfList(false))
+        assertThat(navigationEvents.last()).isEqualTo(TimelineEffect.ToTopOfList(false))
     }
 
     @Test
@@ -192,7 +192,7 @@ class TimelineViewModelTest {
         }
 
         // verify
-        assertThat(navigationEvents.last()).isEqualTo(TimelineEvent.Navigate.ToTopOfList(true))
+        assertThat(navigationEvents.last()).isEqualTo(TimelineEffect.ToTopOfList(true))
     }
 
     @Test

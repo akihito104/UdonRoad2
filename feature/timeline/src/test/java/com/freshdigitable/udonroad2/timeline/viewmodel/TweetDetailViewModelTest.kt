@@ -33,7 +33,7 @@ import com.freshdigitable.udonroad2.test_common.jvm.ObserverEventCollector
 import com.freshdigitable.udonroad2.test_common.jvm.TweetRepositoryRule
 import com.freshdigitable.udonroad2.test_common.jvm.setupForActivate
 import com.freshdigitable.udonroad2.timeline.LaunchMediaViewerAction
-import com.freshdigitable.udonroad2.timeline.TimelineEvent
+import com.freshdigitable.udonroad2.timeline.TimelineEffect
 import com.freshdigitable.udonroad2.timeline.TweetMediaViewModelSource
 import com.freshdigitable.udonroad2.timeline.UserIconClickedAction
 import com.freshdigitable.udonroad2.timeline.UserIconViewModelSource
@@ -104,7 +104,7 @@ class TweetDetailViewModelTest {
         )
     }
     private val tweetSource: Channel<TweetListItem?> = Channel()
-    private val navigationEvents: List<AppEffect.Navigation>
+    private val navigationEvents: List<AppEffect>
         get() = eventCollector.nonNullEventsOf(sut.navigationEvent)
 
     @Before
@@ -215,7 +215,7 @@ class TweetDetailViewModelTest {
         // verify
         assertThat(sut.state.value?.tweetItem).isEqualTo(tweet)
         val tweetingUser = tweet.originalUser
-        assertThat(navigationEvents).containsExactly(TimelineEvent.Navigate.UserInfo(tweetingUser))
+        assertThat(navigationEvents).containsExactly(TimelineEffect.Navigate.UserInfo(tweetingUser))
     }
 
     @Test
@@ -231,7 +231,7 @@ class TweetDetailViewModelTest {
         // verify
         assertThat(sut.state.value?.tweetItem).isEqualTo(tweet)
         val tweetingUser = tweet.body.user
-        assertThat(navigationEvents).containsExactly(TimelineEvent.Navigate.UserInfo(tweetingUser))
+        assertThat(navigationEvents).containsExactly(TimelineEffect.Navigate.UserInfo(tweetingUser))
     }
 
     @Test
@@ -247,6 +247,6 @@ class TweetDetailViewModelTest {
 
         // verify
         assertThat(sut.state.value?.tweetItem).isEqualTo(tweet)
-        assertThat(navigationEvents).containsExactly(TimelineEvent.Navigate.MediaViewer(tweetId))
+        assertThat(navigationEvents).containsExactly(TimelineEffect.Navigate.MediaViewer(tweetId))
     }
 }

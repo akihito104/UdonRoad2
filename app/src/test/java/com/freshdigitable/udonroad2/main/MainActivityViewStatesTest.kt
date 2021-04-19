@@ -33,6 +33,7 @@ import com.freshdigitable.udonroad2.test_common.jvm.OAuthTokenRepositoryRule
 import com.freshdigitable.udonroad2.test_common.jvm.ObserverEventCollector
 import com.freshdigitable.udonroad2.test_common.jvm.assertLatestNavigationEvent
 import com.freshdigitable.udonroad2.test_common.jvm.setupForActivate
+import com.freshdigitable.udonroad2.timeline.TimelineEffect
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.google.common.truth.Truth.assertThat
 import io.mockk.every
@@ -58,7 +59,7 @@ class MainActivityViewStatesTest {
         dispatcher.postEvent(TimelineEvent.Setup())
 
         // verify
-        eventCollector.assertLatestNavigationEvent<TimelineEvent.Navigate.Timeline>(
+        eventCollector.assertLatestNavigationEvent<TimelineEffect.Navigate.Timeline>(
             sut.initContainer
         ) {
             assertThat(it.owner.query).isEqualTo(QueryType.Oauth)
@@ -74,7 +75,7 @@ class MainActivityViewStatesTest {
         dispatcher.postEvent(TimelineEvent.Setup())
 
         // verify
-        eventCollector.assertLatestNavigationEvent<TimelineEvent.Navigate.Timeline>(
+        eventCollector.assertLatestNavigationEvent<TimelineEffect.Navigate.Timeline>(
             sut.initContainer
         ) {
             assertThat(it.owner.query).isInstanceOf(QueryType.TweetQueryType.Timeline::class.java)
@@ -90,7 +91,7 @@ class MainActivityViewStatesTest {
         dispatchEvents(TimelineEvent.Setup())
 
         // verify
-        eventCollector.assertLatestNavigationEvent<TimelineEvent.Navigate.Timeline>(
+        eventCollector.assertLatestNavigationEvent<TimelineEffect.Navigate.Timeline>(
             sut.initContainer
         ) {
             assertThat(it.owner.query).isEqualTo(QueryType.Oauth)
@@ -100,7 +101,7 @@ class MainActivityViewStatesTest {
 
 internal class MainActivityNavigationDelegateRule(
     private val _mock: MockVerified<MainActivityNavigationDelegate> = MockVerified.create(true),
-    val state: MainActivityNavState = MainActivityNavState()
+    val state: MainActivityNavState = MainActivityNavState(),
 ) : TestRule by _mock {
 
     fun setupContainerState(state: MainNavHostState) {

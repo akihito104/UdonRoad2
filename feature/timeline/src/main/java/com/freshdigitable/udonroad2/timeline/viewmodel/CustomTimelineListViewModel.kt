@@ -40,7 +40,7 @@ internal class CustomTimelineListViewModel(
         viewModelSource.state.asLiveData(viewModelScope.coroutineContext)
     override val timeline: Flow<PagingData<Any>> =
         viewModelSource.pagedList.cachedIn(viewModelScope)
-    override val navigationEvent: Flow<AppEffect.Navigation> = merge(
+    override val navigationEvent: Flow<AppEffect> = merge(
         viewModelSource.navigationEvent,
         userIconViewModelSource.navEvent,
     )
@@ -60,7 +60,7 @@ internal class CustomTimelineListItemLoadableViewState(
     listOwner: ListOwnerGenerator,
 ) : ListItemLoadableViewModelSource by viewModelSource,
     ListItemClickListener<CustomTimelineItem> by actions {
-    override val navigationEvent: Flow<AppEffect.Navigation> = merge(
+    override val navigationEvent: Flow<AppEffect> = merge(
         viewModelSource.navigationEvent,
         actions.selectBodyItem.mapLatest {
             val queryType = QueryType.TweetQueryType.CustomTimeline(

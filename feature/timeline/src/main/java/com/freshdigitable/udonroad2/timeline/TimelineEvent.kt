@@ -45,17 +45,16 @@ sealed class TimelineEvent : AppEvent {
 
     data class HeadingClicked(val owner: ListOwner<*>) : TimelineEvent()
     object SwipedToRefresh : TimelineEvent()
+}
 
-    sealed class Navigate : TimelineEvent(), AppEffect.Navigation {
+sealed class TimelineEffect : AppEffect {
+    data class ToTopOfList(val needsSkip: Boolean) : TimelineEffect()
+
+    sealed class Navigate : AppEffect.Navigation, TimelineEffect() {
         data class Timeline(
             val owner: ListOwner<*>,
             override val type: AppEffect.Navigation.Type = AppEffect.Navigation.Type.NAVIGATE,
         ) : Navigate()
-
-        data class ToTopOfList(val needsSkip: Boolean) : Navigate() {
-            override val type: AppEffect.Navigation.Type
-                get() = throw UnsupportedOperationException()
-        }
 
         data class Detail(
             val id: TweetId,
@@ -67,7 +66,8 @@ sealed class TimelineEvent : AppEvent {
             val tweetId: TweetId,
             val index: Int = 0,
         ) : Navigate() {
-            internal constructor(event: MediaItemClicked) : this(event.tweetId, event.index)
+            internal constructor(event: TimelineEvent.MediaItemClicked) :
+                this(event.tweetId, event.index)
         }
     }
 }
@@ -75,4 +75,4 @@ sealed class TimelineEvent : AppEvent {
 suspend fun ListOwnerGenerator.getTimelineEvent(
     queryType: QueryType,
     navType: AppEffect.Navigation.Type = AppEffect.Navigation.Type.NAVIGATE,
-): TimelineEvent.Navigate.Timeline = TimelineEvent.Navigate.Timeline(generate(queryType), navType)
+): TimelineEffect.Navigate.Timeline = TimelineEffect.Navigate.Timeline(generate(queryType), navType)

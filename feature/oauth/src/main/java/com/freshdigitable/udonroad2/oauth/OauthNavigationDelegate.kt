@@ -32,7 +32,7 @@ internal class OauthNavigationDelegate(
 ) : ListItemFragmentEventDelegate {
     private val activity: FragmentActivity by weakRef(listItemFragment) { it.requireActivity() }
 
-    override fun dispatchNavHostNavigate(event: AppEffect.Navigation) {
+    override fun dispatchNavHostNavigate(event: AppEffect) {
         when (event) {
             is OauthEvent.Navigation.LaunchTwitter -> launchTwitterOauth(event.url)
             else -> activityEventDelegate.dispatchNavHostNavigate(event)

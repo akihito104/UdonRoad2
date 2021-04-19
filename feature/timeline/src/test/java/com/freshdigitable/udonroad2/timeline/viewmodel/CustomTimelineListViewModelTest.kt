@@ -36,7 +36,7 @@ import com.freshdigitable.udonroad2.test_common.jvm.setupForActivate
 import com.freshdigitable.udonroad2.timeline.ListItemLoadableActions
 import com.freshdigitable.udonroad2.timeline.ListItemLoadableViewModelSource
 import com.freshdigitable.udonroad2.timeline.ListItemLoadableViewStateImpl
-import com.freshdigitable.udonroad2.timeline.TimelineEvent
+import com.freshdigitable.udonroad2.timeline.TimelineEffect
 import com.freshdigitable.udonroad2.timeline.UserIconClickedAction
 import com.freshdigitable.udonroad2.timeline.UserIconViewModelSource
 import com.google.common.truth.Truth.assertThat
@@ -92,7 +92,7 @@ class CustomTimelineListViewModelTest {
         sut.launchUserInfo.dispatch(user)
 
         // verify
-        eventCollector.assertLatestNavigationEvent<TimelineEvent.Navigate.UserInfo>(
+        eventCollector.assertLatestNavigationEvent<TimelineEffect.Navigate.UserInfo>(
             sut.navigationEvent
         ) {
             assertThat(it.tweetUserItem.id).isEqualTo(user.id)
@@ -111,7 +111,7 @@ class CustomTimelineListViewModelTest {
         sut.selectBodyItem.dispatch(item)
 
         // verify
-        eventCollector.assertLatestNavigationEvent<TimelineEvent.Navigate.Timeline>(
+        eventCollector.assertLatestNavigationEvent<TimelineEffect.Navigate.Timeline>(
             sut.navigationEvent
         ) { actualEvent ->
             assertThat((actualEvent.owner.query as QueryType.TweetQueryType.CustomTimeline).id)

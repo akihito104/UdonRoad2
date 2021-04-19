@@ -77,7 +77,7 @@ internal class ListItemLoadableViewStateImpl(
     ActivityEventStream by ActivityEventStream.EmptyStream {
 
     override val pagedList: Flow<PagingData<Any>> = pagedListProvider.getList(owner.query, owner.id)
-    private val channel = Channel<AppEffect.Navigation>()
+    private val channel = Channel<AppEffect>()
 
     override val state: Flow<Snapshot> = stateSourceBuilder(
         init = Snapshot(),
@@ -98,13 +98,13 @@ internal class ListItemLoadableViewStateImpl(
         actions.heading.onEvent { s, _ ->
             if (s.firstVisibleItemPosition > 0) {
                 val needsSkip = s.firstVisibleItemPosition >= 4
-                channel.send(TimelineEvent.Navigate.ToTopOfList(needsSkip))
+                channel.send(TimelineEffect.ToTopOfList(needsSkip))
             }
             s
         },
     )
 
-    override val navigationEvent: Flow<AppEffect.Navigation> = channel.receiveAsFlow()
+    override val navigationEvent: Flow<AppEffect> = channel.receiveAsFlow()
 
     override suspend fun clear() {
         channel.close()

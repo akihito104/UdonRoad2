@@ -33,6 +33,7 @@ import com.freshdigitable.udonroad2.shortcut.ShortcutActions
 import com.freshdigitable.udonroad2.shortcut.ShortcutViewStates
 import com.freshdigitable.udonroad2.shortcut.TweetContextMenuEvent
 import com.freshdigitable.udonroad2.timeline.R
+import com.freshdigitable.udonroad2.timeline.TimelineEffect
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.TweetMediaEventListener
 import com.freshdigitable.udonroad2.timeline.TweetMediaItemViewModel
@@ -68,7 +69,7 @@ internal class TweetDetailViewModel(
     val state: LiveData<State> = viewStates.viewModelState.asLiveData(this.coroutineContext)
     override val mediaState: LiveData<TweetMediaItemViewModel.State> =
         mediaViewModelSource.mediaState.asLiveData(this.coroutineContext)
-    override val navigationEvent: Flow<AppEffect.Navigation> = merge(
+    override val navigationEvent: Flow<AppEffect> = merge(
         viewStates.navigationEvent,
         userIconViewModelSource.navEvent,
         mediaViewModelSource.navigationEvent
@@ -223,7 +224,7 @@ internal class TweetDetailViewStates @Inject constructor(
     }
 
     override val navigationEvent: Flow<AppEffect.Navigation> = merge(
-        actions.launchOriginalTweetUserInfo.mapLatest { TimelineEvent.Navigate.UserInfo(it.user) },
+        actions.launchOriginalTweetUserInfo.mapLatest { TimelineEffect.Navigate.UserInfo(it.user) },
         actions.showConversation.mapLatest {
             listOwnerGenerator.getTimelineEvent(
                 QueryType.TweetQueryType.Conversation(it.tweetId),

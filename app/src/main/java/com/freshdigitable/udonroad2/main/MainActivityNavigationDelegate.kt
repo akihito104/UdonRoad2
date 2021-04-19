@@ -28,7 +28,7 @@ import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessageDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.FragmentContainerState
 import com.freshdigitable.udonroad2.model.app.navigation.SnackbarFeedbackMessageDelegate
 import com.freshdigitable.udonroad2.model.app.weakRef
-import com.freshdigitable.udonroad2.timeline.TimelineEvent
+import com.freshdigitable.udonroad2.timeline.TimelineEffect
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragment
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentArgs
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentDirections
@@ -81,19 +81,19 @@ internal class MainActivityNavigationDelegate @Inject constructor(
         }
     }
 
-    override fun dispatchNavHostNavigate(event: AppEffect.Navigation) {
+    override fun dispatchNavHostNavigate(event: AppEffect) {
         when (event) {
-            is TimelineEvent.Navigate.Timeline,
-            is TimelineEvent.Navigate.Detail,
+            is TimelineEffect.Navigate.Timeline,
+            is TimelineEffect.Navigate.Detail,
             -> {
-                activity.navigateTo(event)
+                activity.navigateTo(event as AppEffect.Navigation)
             }
-            is TimelineEvent.Navigate.UserInfo -> {
+            is TimelineEffect.Navigate.UserInfo -> {
                 navController.navigate(
                     UserActivityDirections.actionTimelineToActivityUser(event.tweetUserItem)
                 )
             }
-            is TimelineEvent.Navigate.MediaViewer -> {
+            is TimelineEffect.Navigate.MediaViewer -> {
                 navController.navigate(
                     R.id.action_global_toMedia,
                     MediaActivityArgs(event.tweetId, event.index).toBundle()
@@ -123,8 +123,8 @@ internal class MainActivityNavigationDelegate @Inject constructor(
             return
         }
         when (nextState) {
-            is TimelineEvent.Navigate.Timeline -> toTimeline(nextState)
-            is TimelineEvent.Navigate.Detail -> {
+            is TimelineEffect.Navigate.Timeline -> toTimeline(nextState)
+            is TimelineEffect.Navigate.Detail -> {
                 navController.navigate(
                     ListItemFragmentDirections.actionTimelineToDetail(nextState.id)
                 )
@@ -132,7 +132,7 @@ internal class MainActivityNavigationDelegate @Inject constructor(
         }
     }
 
-    private fun AppCompatActivity.toTimeline(nextState: TimelineEvent.Navigate.Timeline) {
+    private fun AppCompatActivity.toTimeline(nextState: TimelineEffect.Navigate.Timeline) {
         when (nextState.type) {
             AppEffect.Navigation.Type.INIT -> {
                 navController.setGraph(
@@ -187,7 +187,7 @@ sealed class MainNavHostState : FragmentContainerState {
         override val fragmentId: Int = R.id.fragment_timeline
 
         override fun isDestinationEqualTo(other: AppEffect.Navigation?): Boolean {
-            return (other as? TimelineEvent.Navigate.Timeline)?.owner == this.owner
+            return (other as? TimelineEffect.Navigate.Timeline)?.owner == this.owner
         }
     }
 
@@ -198,7 +198,7 @@ sealed class MainNavHostState : FragmentContainerState {
         override val appBarTitle: AppBarTitle = { it.getString(R.string.title_detail) }
 
         override fun isDestinationEqualTo(other: AppEffect.Navigation?): Boolean {
-            return (other as? TimelineEvent.Navigate.Detail)?.id == this.tweetId
+            return (other as? TimelineEffect.Navigate.Detail)?.id == this.tweetId
         }
     }
 
@@ -221,7 +221,7 @@ sealed class MainNavHostState : FragmentContainerState {
     companion object
 }
 
-private fun TimelineEvent.Navigate.Timeline.label(context: Context): String {
+private fun TimelineEffect.Navigate.Timeline.label(context: Context): String {
     return when (val type = owner.query) {
         QueryType.Oauth -> context.getString(R.string.title_oauth)
         is QueryType.TweetQueryType.Timeline -> {

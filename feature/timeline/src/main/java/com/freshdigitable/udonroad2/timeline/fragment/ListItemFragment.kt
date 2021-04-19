@@ -25,7 +25,7 @@ import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
 import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
 import com.freshdigitable.udonroad2.timeline.ListItemLoadableViewModel
 import com.freshdigitable.udonroad2.timeline.R
-import com.freshdigitable.udonroad2.timeline.TimelineEvent
+import com.freshdigitable.udonroad2.timeline.TimelineEffect
 import com.freshdigitable.udonroad2.timeline.databinding.FragmentTimelineBinding
 import com.freshdigitable.udonroad2.timeline.di.ListItemAdapterComponent
 import com.freshdigitable.udonroad2.timeline.di.ListItemFragmentEventDelegateComponent
@@ -90,7 +90,7 @@ class ListItemFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.navigationEvent.collect {
                 when (it) {
-                    is TimelineEvent.Navigate.ToTopOfList -> {
+                    is TimelineEffect.ToTopOfList -> {
                         if (it.needsSkip) {
                             binding.mainList.scrollToPosition(4)
                         }
@@ -170,6 +170,6 @@ class ListItemFragment : Fragment() {
 }
 
 interface ListItemFragmentEventDelegate : ActivityEventDelegate {
-    override fun dispatchNavHostNavigate(event: AppEffect.Navigation)
+    override fun dispatchNavHostNavigate(event: AppEffect)
     override fun dispatchFeedbackMessage(message: FeedbackMessage)
 }

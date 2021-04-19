@@ -60,7 +60,7 @@ internal class TimelineViewModel(
         .asLiveData(viewModelScope.coroutineContext)
     override val timeline: Flow<PagingData<Any>> = viewModelSource.pagedList
         .cachedIn(viewModelScope)
-    override val navigationEvent: Flow<AppEffect.Navigation> = merge(
+    override val navigationEvent: Flow<AppEffect> = merge(
         viewModelSource.navigationEvent,
         userIconViewModelSource.navEvent
     )

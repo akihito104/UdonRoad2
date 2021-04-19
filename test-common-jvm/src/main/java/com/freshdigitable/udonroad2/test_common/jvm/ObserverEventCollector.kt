@@ -111,16 +111,16 @@ fun ObserverEventCollector.setupForActivate(block: ObserverEventCollector.() -> 
     activateAll()
 }
 
-inline fun <reified T : AppEffect.Navigation> ObserverEventCollector.assertLatestNavigationEvent(
-    flow: Flow<AppEffect.Navigation>,
+inline fun <reified T : AppEffect> ObserverEventCollector.assertLatestNavigationEvent(
+    flow: Flow<AppEffect>,
     assertBlock: (T) -> Unit,
 ) {
     assertNavigationEvent(flow, { it.last() }, assertBlock)
 }
 
-inline fun <reified T : AppEffect.Navigation> ObserverEventCollector.assertNavigationEvent(
-    flow: Flow<AppEffect.Navigation>,
-    eventPicker: (List<AppEffect.Navigation>) -> AppEffect.Navigation,
+inline fun <reified T : AppEffect> ObserverEventCollector.assertNavigationEvent(
+    flow: Flow<AppEffect>,
+    eventPicker: (List<AppEffect>) -> AppEffect,
     assertBlock: (T) -> Unit,
 ) {
     val events = nonNullEventsOf(flow)

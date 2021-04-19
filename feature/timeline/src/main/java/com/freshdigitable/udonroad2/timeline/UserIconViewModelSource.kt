@@ -49,5 +49,5 @@ class UserIconViewModelSource @Inject constructor(
     actions: UserIconClickedAction,
 ) : UserIconClickListener by actions {
     val navEvent: Flow<AppEffect.Navigation> = actions.launchUserInfo
-        .map { TimelineEvent.Navigate.UserInfo(it.user) }
+        .map { TimelineEffect.Navigate.UserInfo(it.user) }
 }

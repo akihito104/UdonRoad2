@@ -32,7 +32,7 @@ import com.freshdigitable.udonroad2.test_common.jvm.CoroutineTestRule
 import com.freshdigitable.udonroad2.test_common.jvm.OAuthTokenRepositoryRule
 import com.freshdigitable.udonroad2.test_common.jvm.ObserverEventCollector
 import com.freshdigitable.udonroad2.test_common.jvm.setupForActivate
-import com.freshdigitable.udonroad2.timeline.TimelineEvent
+import com.freshdigitable.udonroad2.timeline.TimelineEffect
 import com.google.common.truth.Truth.assertThat
 import io.mockk.every
 import io.mockk.mockk
@@ -185,8 +185,8 @@ class DrawerViewModelSourceTest {
             assertThat(actualStates.last().isOpened).isFalse()
             assertThat(actualStates.last().isAccountSwitcherOpened).isFalse()
             assertThat(navigationEventActual.last())
-                .isInstanceOf(TimelineEvent.Navigate.Timeline::class.java)
-            val event = navigationEventActual.last() as TimelineEvent.Navigate.Timeline
+                .isInstanceOf(TimelineEffect.Navigate.Timeline::class.java)
+            val event = navigationEventActual.last() as TimelineEffect.Navigate.Timeline
             assertThat(event.owner.query)
                 .isInstanceOf(QueryType.CustomTimelineListQueryType.Ownership::class.java)
             assertThat(event.owner.query.userId).isEqualTo(authenticatedUser)

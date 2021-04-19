@@ -70,7 +70,7 @@ class TimelineViewModelSourceTest {
 
             // verify
             assertThat(selectedItems.last()?.originalId).isEqualTo(TweetId(1000L))
-            assertThat(navEvents[0]).isInstanceOf(TimelineEvent.Navigate.MediaViewer::class.java)
+            assertThat(navEvents[0]).isInstanceOf(TimelineEffect.Navigate.MediaViewer::class.java)
         }
 
     @Test
@@ -211,7 +211,7 @@ class TimelineViewStatesTestRule(
             )
         )
     }
-    val navEvents: List<AppEffect.Navigation>
+    val navEvents: List<AppEffect>
         get() = requireNotNull(eventCollector).nonNullEventsOf(sut.navigationEvent)
     val messageEvents: List<FeedbackMessage>
         get() = requireNotNull(eventCollector).nonNullEventsOf(sut.feedbackMessage)

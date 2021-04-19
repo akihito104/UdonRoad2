@@ -76,8 +76,8 @@ private class TweetMediaViewModelSourceImpl(
         },
     )
 
-    override val navigationEvent: Flow<TimelineEvent.Navigate.MediaViewer> =
-        launchMediaViewer.map { TimelineEvent.Navigate.MediaViewer(it) }
+    override val navigationEvent: Flow<TimelineEffect.Navigate.MediaViewer> =
+        launchMediaViewer.map { TimelineEffect.Navigate.MediaViewer(it) }
 
     data class Snapshot(
         override val isPossiblySensitiveHidden: Boolean = false,

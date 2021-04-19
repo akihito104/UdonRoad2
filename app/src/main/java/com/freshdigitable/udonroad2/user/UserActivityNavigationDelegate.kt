@@ -9,7 +9,7 @@ import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
 import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessageDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.SnackbarFeedbackMessageDelegate
 import com.freshdigitable.udonroad2.model.app.weakRef
-import com.freshdigitable.udonroad2.timeline.TimelineEvent
+import com.freshdigitable.udonroad2.timeline.TimelineEffect
 
 class UserActivityNavigationDelegate(
     userActivity: UserActivity,
@@ -19,10 +19,10 @@ class UserActivityNavigationDelegate(
     ) {
     private val activity: UserActivity by weakRef(userActivity)
 
-    override fun dispatchNavHostNavigate(event: AppEffect.Navigation) {
+    override fun dispatchNavHostNavigate(event: AppEffect) {
         when (event) {
-            is TimelineEvent.Navigate.UserInfo -> UserActivity.start(activity, event.tweetUserItem)
-            is TimelineEvent.Navigate.MediaViewer -> MediaActivity.start(
+            is TimelineEffect.Navigate.UserInfo -> UserActivity.start(activity, event.tweetUserItem)
+            is TimelineEffect.Navigate.MediaViewer -> MediaActivity.start(
                 activity,
                 MediaActivityArgs(event.tweetId, event.index)
             )
