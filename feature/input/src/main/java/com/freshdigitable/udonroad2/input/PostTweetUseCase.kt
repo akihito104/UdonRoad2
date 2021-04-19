@@ -19,38 +19,26 @@ package com.freshdigitable.udonroad2.input
 import com.freshdigitable.udonroad2.data.impl.TweetInputRepository
 import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.app.AppFilePath
-import com.freshdigitable.udonroad2.model.app.AppTwitterException
+import com.freshdigitable.udonroad2.model.app.LoadingResult
+import com.freshdigitable.udonroad2.model.app.load
+import com.freshdigitable.udonroad2.model.tweet.TweetEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import java.io.IOException
 import javax.inject.Inject
 
 class PostTweetUseCase @Inject constructor(
     private val repository: TweetInputRepository,
     private val createQuoteText: CreateQuoteTextUseCase,
 ) {
-    operator fun invoke(
-        tweet: InputTweet,
-        idlingState: InputTaskState,
-    ): Flow<InputTaskState> = flow {
-        emit(InputTaskState.SENDING)
-
-        val mediaIds = tweet.media.map { repository.uploadMedia(it) }
-        val quoteText = tweet.quote?.let { createQuoteText(it) }
-        val text = if (quoteText == null) tweet.text else "${tweet.text} $quoteText"
-
-        kotlin.runCatching {
-            repository.post(text, mediaIds, tweet.reply)
-        }.onSuccess {
-            emit(InputTaskState.SUCCEEDED)
-            emit(idlingState)
-        }.onFailure { exception ->
-            if (exception is AppTwitterException || exception is IOException) {
-                emit(InputTaskState.FAILED)
-            } else {
-                throw exception
-            }
+    operator fun invoke(tweet: InputTweet): Flow<LoadingResult<TweetEntity>> = flow {
+        emit(LoadingResult.Started)
+        val state = repository.load {
+            val mediaIds = tweet.media.map { uploadMedia(it) }
+            val quoteText = tweet.quote?.let { createQuoteText(it) }
+            val text = if (quoteText == null) tweet.text else "${tweet.text} $quoteText"
+            post(text, mediaIds, tweet.reply)
         }
+        emit(state)
     }
 }
 

@@ -27,6 +27,7 @@ import com.freshdigitable.udonroad2.input.MediaChooserResultContract.MediaChoose
 import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.AppFilePath
+import com.freshdigitable.udonroad2.model.app.LoadingResult
 import com.freshdigitable.udonroad2.model.app.ioContext
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
@@ -106,7 +107,14 @@ internal class TweetInputViewModelSource @Inject constructor(
         },
         actions.cancelInput.flatMapLatest { flowOf(InputTaskState.CANCELED, idlingState) }
             .onEvent { state, taskState -> transitTaskState(state, taskState) },
-        actions.sendTweet.flatMapLatest { postTweet(it.tweet, idlingState) }
+        actions.sendTweet.flatMapLatest { postTweet(it.tweet) }
+            .flatMapLatest {
+                when (it) {
+                    is LoadingResult.Started -> flowOf(InputTaskState.SENDING)
+                    is LoadingResult.Loaded -> flowOf(InputTaskState.SUCCEEDED, idlingState)
+                    is LoadingResult.Failed -> flowOf(InputTaskState.FAILED)
+                }
+            }
             .onEvent { state, taskState -> transitTaskState(state, taskState) },
     ).onEach {
         sharedState.taskStateSource.value = it

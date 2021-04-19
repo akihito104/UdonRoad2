@@ -18,12 +18,12 @@ package com.freshdigitable.udonroad2.shortcut
 
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
 import com.freshdigitable.udonroad2.model.app.AppTwitterException.ErrorType
-import com.freshdigitable.udonroad2.model.app.isTwitterExceptionOf
+import com.freshdigitable.udonroad2.model.app.LoadingResult
+import com.freshdigitable.udonroad2.model.app.load
 import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.merge
-import java.io.IOException
 
 interface ShortcutViewStates {
     val updateTweet: Flow<FeedbackMessage>
@@ -42,33 +42,28 @@ private class ShortcutViewStateImpl(
 ) : ShortcutViewStates {
     override val updateTweet: Flow<FeedbackMessage> = merge(
         actions.favTweet.mapLatest { event ->
-            tweetRepository.runCatching { updateLike(event.tweetId, true) }
-                .fold(
-                    onSuccess = { TweetFeedbackMessage.FAV_CREATE_SUCCESS },
-                    onFailure = {
-                        when {
-                            it.isTwitterExceptionOf(ErrorType.ALREADY_FAVORITED) ->
-                                TweetFeedbackMessage.ALREADY_FAV
-                            it is IOException -> TweetFeedbackMessage.FAV_CREATE_FAILURE
-                            else -> throw it
-                        }
+            when (val state = tweetRepository.load { updateLike(event.tweetId, true) }) {
+                is LoadingResult.Loaded -> TweetFeedbackMessage.FAV_CREATE_SUCCESS
+                is LoadingResult.Failed -> {
+                    when (state.errorType) {
+                        ErrorType.ALREADY_FAVORITED -> TweetFeedbackMessage.ALREADY_FAV
+                        else -> TweetFeedbackMessage.FAV_CREATE_FAILURE
                     }
-                )
+                }
+                else -> throw IllegalStateException()
+            }
         },
         actions.retweet.mapLatest { event ->
-            tweetRepository.runCatching { updateRetweet(event.tweetId, true) }
-                .fold(
-                    onSuccess = { TweetFeedbackMessage.RT_CREATE_SUCCESS },
-                    onFailure = {
-                        when {
-                            it.isTwitterExceptionOf(ErrorType.ALREADY_RETWEETED) -> {
-                                TweetFeedbackMessage.ALREADY_RT
-                            }
-                            it is IOException -> TweetFeedbackMessage.RT_CREATE_FAILURE
-                            else -> throw it
-                        }
+            when (val state = tweetRepository.load { updateRetweet(event.tweetId, true) }) {
+                is LoadingResult.Loaded -> TweetFeedbackMessage.RT_CREATE_SUCCESS
+                is LoadingResult.Failed -> {
+                    when (state.errorType) {
+                        ErrorType.ALREADY_RETWEETED -> TweetFeedbackMessage.ALREADY_RT
+                        else -> TweetFeedbackMessage.RT_CREATE_FAILURE
                     }
-                )
+                }
+                else -> throw IllegalStateException()
+            }
         }
     )
 }
