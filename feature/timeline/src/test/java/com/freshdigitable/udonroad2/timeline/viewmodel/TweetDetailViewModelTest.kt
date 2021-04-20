@@ -21,8 +21,8 @@ import com.freshdigitable.udonroad2.data.impl.create
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.UserId
+import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
-import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.tweet.DetailTweetElement
 import com.freshdigitable.udonroad2.model.tweet.DetailTweetListItem
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
@@ -33,7 +33,7 @@ import com.freshdigitable.udonroad2.test_common.jvm.ObserverEventCollector
 import com.freshdigitable.udonroad2.test_common.jvm.TweetRepositoryRule
 import com.freshdigitable.udonroad2.test_common.jvm.setupForActivate
 import com.freshdigitable.udonroad2.timeline.LaunchMediaViewerAction
-import com.freshdigitable.udonroad2.timeline.TimelineEvent
+import com.freshdigitable.udonroad2.timeline.TimelineEffect
 import com.freshdigitable.udonroad2.timeline.TweetMediaViewModelSource
 import com.freshdigitable.udonroad2.timeline.UserIconClickedAction
 import com.freshdigitable.udonroad2.timeline.UserIconViewModelSource
@@ -104,8 +104,8 @@ class TweetDetailViewModelTest {
         )
     }
     private val tweetSource: Channel<TweetListItem?> = Channel()
-    private val navigationEvents: List<NavigationEvent>
-        get() = eventCollector.nonNullEventsOf(sut.navigationEvent)
+    private val navigationEvents: List<AppEffect>
+        get() = eventCollector.nonNullEventsOf(sut.effect)
 
     @Before
     fun setup() {
@@ -215,7 +215,7 @@ class TweetDetailViewModelTest {
         // verify
         assertThat(sut.state.value?.tweetItem).isEqualTo(tweet)
         val tweetingUser = tweet.originalUser
-        assertThat(navigationEvents).containsExactly(TimelineEvent.Navigate.UserInfo(tweetingUser))
+        assertThat(navigationEvents).containsExactly(TimelineEffect.Navigate.UserInfo(tweetingUser))
     }
 
     @Test
@@ -231,7 +231,7 @@ class TweetDetailViewModelTest {
         // verify
         assertThat(sut.state.value?.tweetItem).isEqualTo(tweet)
         val tweetingUser = tweet.body.user
-        assertThat(navigationEvents).containsExactly(TimelineEvent.Navigate.UserInfo(tweetingUser))
+        assertThat(navigationEvents).containsExactly(TimelineEffect.Navigate.UserInfo(tweetingUser))
     }
 
     @Test
@@ -247,6 +247,6 @@ class TweetDetailViewModelTest {
 
         // verify
         assertThat(sut.state.value?.tweetItem).isEqualTo(tweet)
-        assertThat(navigationEvents).containsExactly(TimelineEvent.Navigate.MediaViewer(tweetId))
+        assertThat(navigationEvents).containsExactly(TimelineEffect.Navigate.MediaViewer(tweetId))
     }
 }

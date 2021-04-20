@@ -28,19 +28,15 @@ import com.freshdigitable.udonroad2.data.impl.MediaRepository
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
 import com.freshdigitable.udonroad2.model.MediaEntity
 import com.freshdigitable.udonroad2.model.TweetId
-import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
-import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventStream
+import com.freshdigitable.udonroad2.model.app.navigation.ActivityEffectStream
+import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.AppEventListener
 import com.freshdigitable.udonroad2.model.app.navigation.AppEventListener1
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
-import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
-import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessageDelegate
-import com.freshdigitable.udonroad2.model.app.navigation.SnackbarFeedbackMessageDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
 import com.freshdigitable.udonroad2.model.app.onEvent
 import com.freshdigitable.udonroad2.model.app.stateSourceBuilder
-import com.freshdigitable.udonroad2.model.app.weakRef
 import com.freshdigitable.udonroad2.shortcut.ShortcutActions
 import com.freshdigitable.udonroad2.shortcut.ShortcutEventListener
 import com.freshdigitable.udonroad2.shortcut.ShortcutViewModel
@@ -55,7 +51,7 @@ internal class MediaViewModel @Inject constructor(
 ) : MediaEventListener by viewStates,
     ShortcutViewModel,
     ShortcutEventListener by ShortcutEventListener.create(eventDispatcher),
-    ActivityEventStream by viewStates,
+    ActivityEffectStream by viewStates,
     ViewModel() {
     val state = viewStates.state.asLiveData(viewModelScope.coroutineContext)
     internal val mediaItems: LiveData<List<MediaEntity>> = state.map { it.mediaItems }
@@ -111,7 +107,7 @@ internal class MediaViewModelViewStates @Inject constructor(
     tweetRepository: TweetRepository,
 ) : MediaEventListener by actions,
     ShortcutViewStates by ShortcutViewStates.create(actions, tweetRepository),
-    ActivityEventStream by ActivityEventStream.EmptyStream {
+    ActivityEffectStream {
     internal val state: Flow<MediaViewModel.State> = stateSourceBuilder(
         init = Snapshot(tweetId = tweetId, position = firstPosition),
         repository.getMediaItemSource(tweetId).onEvent { s, items ->
@@ -130,7 +126,7 @@ internal class MediaViewModelViewStates @Inject constructor(
         },
         actions.changeCurrentPosition.onEvent { s, e -> s.copy(position = e.index) }
     )
-    override val feedbackMessage: Flow<FeedbackMessage> = updateTweet
+    override val effect: Flow<AppEffect> = updateTweet
 
     private data class Snapshot(
         override val tweetId: TweetId,
@@ -145,13 +141,6 @@ internal class MediaViewModelViewStates @Inject constructor(
             }
     }
 }
-
-internal class MediaActivityEventDelegate @Inject constructor(
-    activity: MediaActivity,
-) : ActivityEventDelegate,
-    FeedbackMessageDelegate by SnackbarFeedbackMessageDelegate(
-        weakRef(activity) { it.findViewById(R.id.media_container) }
-    )
 
 enum class SystemUiVisibility(val visibility: Int) {
     SHOW(

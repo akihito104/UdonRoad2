@@ -31,12 +31,12 @@ import com.freshdigitable.udonroad2.model.app.valueByAssignableClassObject
 import com.freshdigitable.udonroad2.oauth.di.OauthListAdapterModule
 import com.freshdigitable.udonroad2.oauth.di.OauthViewModelModule
 import com.freshdigitable.udonroad2.timeline.di.ListItemAdapterComponent
-import com.freshdigitable.udonroad2.timeline.di.ListItemFragmentEventDelegateComponent
+import com.freshdigitable.udonroad2.timeline.di.ListItemFragmentEffectDelegateComponent
 import com.freshdigitable.udonroad2.timeline.di.ListItemViewModelComponent
 import com.freshdigitable.udonroad2.timeline.di.TimelineAdapterModules
-import com.freshdigitable.udonroad2.timeline.di.TimelineListItemFragmentEventDelegateModule
+import com.freshdigitable.udonroad2.timeline.di.TimelineListItemFragmentEffectDelegateModule
 import com.freshdigitable.udonroad2.timeline.di.TimelineViewModelModules
-import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentEventDelegate
+import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentEffectDelegate
 import dagger.BindsInstance
 import dagger.Module
 import dagger.Provides
@@ -50,7 +50,7 @@ interface ListItemViewModelModule {
     companion object {
         @Provides
         fun provideListItemViewModelComponentBuilder(
-            builder: ListItemViewModelComponentImpl.Builder
+            builder: ListItemViewModelComponentImpl.Builder,
         ): ListItemViewModelComponent.Builder = builder
     }
 }
@@ -89,7 +89,7 @@ interface ListItemViewModelComponentImpl : ListItemViewModelComponent {
 object ViewModelClassProvider {
     @Provides
     fun ClassKeyMap<QueryType, KClass<out ViewModel>>.provideViewModelClass(
-        owner: ListOwner<*>
+        owner: ListOwner<*>,
     ): Class<out ViewModel> = this.valueByAssignableClassObject(owner.query).java
 
     @Provides
@@ -117,7 +117,7 @@ interface ListItemAdapterModule {
     companion object {
         @Provides
         fun provideListItemAdapterComponentFactory(
-            factory: ListItemAdapterComponentImpl.Factory
+            factory: ListItemAdapterComponentImpl.Factory,
         ): ListItemAdapterComponent.Factory = factory
     }
 }
@@ -134,7 +134,7 @@ interface ListItemAdapterComponentImpl : ListItemAdapterComponent {
     interface Factory : ListItemAdapterComponent.Factory {
         override fun create(
             @BindsInstance viewModel: ViewModel,
-            @BindsInstance lifecycleOwner: LifecycleOwner
+            @BindsInstance lifecycleOwner: LifecycleOwner,
         ): ListItemAdapterComponentImpl
     }
 }
@@ -143,40 +143,40 @@ interface ListItemAdapterComponentImpl : ListItemAdapterComponent {
 object ListItemAdapterProvider {
     @Provides
     fun ClassKeyMap<ViewModel, Provider<PagingDataAdapter<out Any, *>>>.provideItemAdapter(
-        viewModel: ViewModel
+        viewModel: ViewModel,
     ): PagingDataAdapter<out Any, *> = this.valueByAssignableClassObject(viewModel).get()
 }
 
 @Subcomponent(
     modules = [
-        TimelineListItemFragmentEventDelegateModule::class,
+        TimelineListItemFragmentEffectDelegateModule::class,
         OauthViewModelModule::class,
         ListItemFragmentEventDelegateProvider::class
     ]
 )
-interface ListItemFragmentEventDelegateComponentImpl : ListItemFragmentEventDelegateComponent {
+interface ListItemFragmentEffectDelegateComponentImpl : ListItemFragmentEffectDelegateComponent {
     @Subcomponent.Factory
-    interface Factory : ListItemFragmentEventDelegateComponent.Factory {
+    interface Factory : ListItemFragmentEffectDelegateComponent.Factory {
         override fun create(
-            @BindsInstance viewModel: ViewModel
-        ): ListItemFragmentEventDelegateComponentImpl
+            @BindsInstance viewModel: ViewModel,
+        ): ListItemFragmentEffectDelegateComponentImpl
     }
 }
 
 @Module
 object ListItemFragmentEventDelegateProvider {
     @Provides
-    fun ClassKeyMap<ViewModel, Provider<ListItemFragmentEventDelegate>>.provideEventDelegate(
-        viewModel: ViewModel
-    ): ListItemFragmentEventDelegate = this.valueByAssignableClassObject(viewModel).get()
+    fun ClassKeyMap<ViewModel, Provider<ListItemFragmentEffectDelegate>>.provideEventDelegate(
+        viewModel: ViewModel,
+    ): ListItemFragmentEffectDelegate = this.valueByAssignableClassObject(viewModel).get()
 }
 
-@Module(subcomponents = [ListItemFragmentEventDelegateComponentImpl::class])
+@Module(subcomponents = [ListItemFragmentEffectDelegateComponentImpl::class])
 interface ListItemFragmentEventDelegateModule {
     companion object {
         @Provides
         fun provideFactory(
-            factory: ListItemFragmentEventDelegateComponentImpl.Factory
-        ): ListItemFragmentEventDelegateComponent.Factory = factory
+            factory: ListItemFragmentEffectDelegateComponentImpl.Factory,
+        ): ListItemFragmentEffectDelegateComponent.Factory = factory
     }
 }

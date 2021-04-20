@@ -33,6 +33,7 @@ import com.freshdigitable.udonroad2.shortcut.SelectedItemShortcut
 import com.freshdigitable.udonroad2.test_common.jvm.ObserverEventCollector
 import com.freshdigitable.udonroad2.test_common.jvm.assertLatestNavigationEvent
 import com.freshdigitable.udonroad2.test_common.jvm.setupForActivate
+import com.freshdigitable.udonroad2.timeline.TimelineEffect
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.google.common.truth.Truth.assertThat
 import io.mockk.every
@@ -122,7 +123,7 @@ class MainViewModelTest {
             sut.initialEvent()
 
             // verify
-            eventCollector.assertLatestNavigationEvent<TimelineEvent.Navigate.Timeline>(
+            eventCollector.assertLatestNavigationEvent<TimelineEffect.Navigate.Timeline>(
                 sut.navigationEvent,
             ) {
                 assertThat(it.owner.query).isEqualTo(QueryType.Oauth)
@@ -360,7 +361,7 @@ class MainViewModelTest {
             assertThat(actualConsumed).isTrue()
             assertThat(sut.drawerState.value?.isOpened).isFalse()
             assertThat(sut.drawerState.value?.isAccountSwitcherOpened).isFalse()
-            eventCollector.assertLatestNavigationEvent<TimelineEvent.Navigate.Timeline>(
+            eventCollector.assertLatestNavigationEvent<TimelineEffect.Navigate.Timeline>(
                 sut.navigationEvent,
             ) { event ->
                 assertThat(event.owner.query)
@@ -375,7 +376,7 @@ class MainViewModelTest {
             sut.showCurrentUser.dispatch()
 
             // verify
-            eventCollector.assertLatestNavigationEvent<TimelineEvent.Navigate.UserInfo>(
+            eventCollector.assertLatestNavigationEvent<TimelineEffect.Navigate.UserInfo>(
                 sut.navigationEvent
             ) {
                 assertThat(it.tweetUserItem.id).isEqualTo(authenticatedUserId)

@@ -24,8 +24,8 @@ import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.app.di.ActivityScope
+import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
-import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.ViewState
 import com.freshdigitable.udonroad2.model.app.navigation.toActionFlow
 import com.freshdigitable.udonroad2.model.app.onEvent
@@ -55,12 +55,12 @@ internal class MainViewModelSource @Inject constructor(
     listOwnerGenerator: ListOwnerGenerator,
     navDelegate: MainActivityNavState,
 ) {
-    internal val initContainer: Flow<NavigationEvent> = actions.showFirstView.mapLatest {
+    internal val initContainer: Flow<AppEffect.Navigation> = actions.showFirstView.mapLatest {
         val type = when {
             appSettingRepository.currentUserId != null -> QueryType.TweetQueryType.Timeline()
             else -> QueryType.Oauth
         }
-        listOwnerGenerator.getTimelineEvent(type, NavigationEvent.Type.INIT)
+        listOwnerGenerator.getTimelineEvent(type, AppEffect.Navigation.Type.INIT)
     }
     internal val states: Flow<MainActivityViewState> = stateSourceBuilder(
         init = MainActivityViewState(),

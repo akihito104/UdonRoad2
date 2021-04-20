@@ -24,10 +24,10 @@ import java.io.Serializable
 import kotlin.properties.ReadOnlyProperty
 
 interface FeedbackMessageDelegate {
-    fun dispatchFeedbackMessage(message: FeedbackMessage)
+    fun dispatchFeedbackMessage(message: AppEffect.Feedback)
 }
 
-interface FeedbackMessage : Serializable {
+interface FeedbackMessage : AppEffect.Feedback, Serializable {
     @get:StringRes
     val messageRes: Int
     val args: List<Any>? get() = null
@@ -41,12 +41,16 @@ fun Context.getString(feedback: FeedbackMessage): String {
 }
 
 class SnackbarFeedbackMessageDelegate(
-    prop: ReadOnlyProperty<Any, View>
+    prop: ReadOnlyProperty<Any, View>,
 ) : FeedbackMessageDelegate {
     private val snackbarContainer: View by prop
 
-    override fun dispatchFeedbackMessage(message: FeedbackMessage) {
+    override fun dispatchFeedbackMessage(message: AppEffect.Feedback) {
         val context = snackbarContainer.context
-        Snackbar.make(snackbarContainer, context.getString(message), Snackbar.LENGTH_SHORT).show()
+        Snackbar.make(
+            snackbarContainer,
+            context.getString(message as FeedbackMessage),
+            Snackbar.LENGTH_SHORT
+        ).show()
     }
 }

@@ -25,10 +25,10 @@ import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.app.di.ActivityScope
+import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.AppEventListener
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
-import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.ViewState
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
 import com.freshdigitable.udonroad2.model.app.onEvent
@@ -36,7 +36,7 @@ import com.freshdigitable.udonroad2.model.app.stateSourceBuilder
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.model.user.UserEntity
 import com.freshdigitable.udonroad2.oauth.LoginUseCase
-import com.freshdigitable.udonroad2.timeline.TimelineEvent
+import com.freshdigitable.udonroad2.timeline.TimelineEffect
 import com.freshdigitable.udonroad2.timeline.getTimelineEvent
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -121,8 +121,8 @@ internal class DrawerViewModelSource @Inject constructor(
     appSettingRepository: AppSettingRepository,
     userRepository: UserDataSource,
 ) : DrawerEventListener by actions {
-    private val navEventChannel: Channel<NavigationEvent> = Channel()
-    internal val navEventSource: Flow<NavigationEvent> = navEventChannel.receiveAsFlow()
+    private val navEventChannel: Channel<AppEffect.Navigation> = Channel()
+    internal val navEventSource: Flow<AppEffect.Navigation> = navEventChannel.receiveAsFlow()
 
     internal val state: Flow<DrawerViewModel.State> = stateSourceBuilder(
         init = DrawerViewState(),
@@ -134,14 +134,13 @@ internal class DrawerViewModelSource @Inject constructor(
             val userId = requireNotNull(state.currentUser).id
             navEventChannel.sendTimelineEvent(
                 QueryType.CustomTimelineListQueryType.Ownership(userId),
-                NavigationEvent.Type.NAVIGATE
             )
             state.toClosedState()
         },
 
         actions.showCurrentUser.onEvent { state, _ ->
             state.currentUser?.let {
-                navEventChannel.send(TimelineEvent.Navigate.UserInfo(it))
+                navEventChannel.send(TimelineEffect.Navigate.UserInfo(it))
             }
             state
         },
@@ -149,7 +148,7 @@ internal class DrawerViewModelSource @Inject constructor(
             state.copy(isAccountSwitcherOpened = !state.isAccountSwitcherOpened)
         },
         actions.launchOAuth.onEvent { state, _ ->
-            navEventChannel.sendTimelineEvent(QueryType.Oauth, NavigationEvent.Type.NAVIGATE)
+            navEventChannel.sendTimelineEvent(QueryType.Oauth)
             state.toClosedState()
         },
         actions.switchAccount.onEvent { state, event ->
@@ -158,7 +157,7 @@ internal class DrawerViewModelSource @Inject constructor(
             login(user.id)
             navEventChannel.sendTimelineEvent(
                 QueryType.TweetQueryType.Timeline(),
-                NavigationEvent.Type.INIT
+                AppEffect.Navigation.Type.INIT
             )
             state.toClosedState()
         },
@@ -178,9 +177,9 @@ internal class DrawerViewModelSource @Inject constructor(
         },
     )
 
-    private suspend fun Channel<NavigationEvent>.sendTimelineEvent(
+    private suspend fun Channel<AppEffect.Navigation>.sendTimelineEvent(
         queryType: QueryType,
-        navType: NavigationEvent.Type,
+        navType: AppEffect.Navigation.Type = AppEffect.Navigation.Type.NAVIGATE,
     ) {
         val timelineEvent = listOwnerGenerator.getTimelineEvent(queryType, navType)
         send(timelineEvent)

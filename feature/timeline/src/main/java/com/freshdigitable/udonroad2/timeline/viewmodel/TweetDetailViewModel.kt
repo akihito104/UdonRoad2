@@ -18,11 +18,10 @@ import com.freshdigitable.udonroad2.model.app.AppTwitterException.ErrorType
 import com.freshdigitable.udonroad2.model.app.LoadingResult
 import com.freshdigitable.udonroad2.model.app.RecoverableErrorType
 import com.freshdigitable.udonroad2.model.app.load
-import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventStream
+import com.freshdigitable.udonroad2.model.app.navigation.ActivityEffectStream
+import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
-import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
-import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.toActionFlow
 import com.freshdigitable.udonroad2.model.app.stateSourceBuilder
 import com.freshdigitable.udonroad2.model.tweet.DetailTweetListItem
@@ -33,6 +32,7 @@ import com.freshdigitable.udonroad2.shortcut.ShortcutActions
 import com.freshdigitable.udonroad2.shortcut.ShortcutViewStates
 import com.freshdigitable.udonroad2.shortcut.TweetContextMenuEvent
 import com.freshdigitable.udonroad2.timeline.R
+import com.freshdigitable.udonroad2.timeline.TimelineEffect
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.TweetMediaEventListener
 import com.freshdigitable.udonroad2.timeline.TweetMediaItemViewModel
@@ -60,7 +60,7 @@ internal class TweetDetailViewModel(
     UserIconClickListener by userIconViewModelSource,
     TweetMediaItemViewModel,
     TweetMediaEventListener by mediaViewModelSource,
-    ActivityEventStream by viewStates,
+    ActivityEffectStream,
     ViewModel() {
     private val coroutineContext: CoroutineContext =
         coroutineContext ?: viewModelScope.coroutineContext
@@ -68,10 +68,10 @@ internal class TweetDetailViewModel(
     val state: LiveData<State> = viewStates.viewModelState.asLiveData(this.coroutineContext)
     override val mediaState: LiveData<TweetMediaItemViewModel.State> =
         mediaViewModelSource.mediaState.asLiveData(this.coroutineContext)
-    override val navigationEvent: Flow<NavigationEvent> = merge(
-        viewStates.navigationEvent,
+    override val effect: Flow<AppEffect> = merge(
+        viewStates.effect,
         userIconViewModelSource.navEvent,
-        mediaViewModelSource.navigationEvent
+        mediaViewModelSource.effect
     )
 
     interface State {
@@ -90,12 +90,12 @@ sealed class DetailEvent : AppEvent {
 
     internal data class SpanClicked(val urlItem: UrlItem) : DetailEvent()
     internal data class TwitterCardClicked(val card: TwitterCard) : DetailEvent()
-
-    data class NavigationExternalApp(
-        val url: String,
-        val appUrl: String? = null,
-    ) : NavigationEvent
 }
+
+data class ExternalAppNavigation(
+    val url: String,
+    val appUrl: String? = null,
+) : AppEffect.Navigation
 
 interface SpanClickListener {
     fun onSpanClicked(urlItem: UrlItem)
@@ -175,7 +175,7 @@ internal class TweetDetailViewStates @Inject constructor(
     listOwnerGenerator: ListOwnerGenerator,
 ) : TweetDetailEventListener by actions,
     ShortcutViewStates by ShortcutViewStates.create(actions, repository),
-    ActivityEventStream {
+    ActivityEffectStream {
 
     internal val viewModelState: Flow<TweetDetailViewModel.State> = stateSourceBuilder(
         { ViewModelState(currentUserId = appSettingRepository.currentUserId) }
@@ -222,22 +222,21 @@ internal class TweetDetailViewStates @Inject constructor(
         ) { s, card -> s.copy(twitterCard = card) }
     }
 
-    override val navigationEvent: Flow<NavigationEvent> = merge(
-        actions.launchOriginalTweetUserInfo.mapLatest { TimelineEvent.Navigate.UserInfo(it.user) },
+    override val effect: Flow<AppEffect> = merge(
+        actions.launchOriginalTweetUserInfo.mapLatest { TimelineEffect.Navigate.UserInfo(it.user) },
         actions.showConversation.mapLatest {
             listOwnerGenerator.getTimelineEvent(
                 QueryType.TweetQueryType.Conversation(it.tweetId),
-                NavigationEvent.Type.NAVIGATE
             )
         },
         actions.launchAppForCard.mapLatest {
-            DetailEvent.NavigationExternalApp(url = it.card.url, appUrl = it.card.appUrl)
+            ExternalAppNavigation(url = it.card.url, appUrl = it.card.appUrl)
         },
         actions.launchExternalApp.mapLatest {
-            DetailEvent.NavigationExternalApp(url = it.urlItem.url)
+            ExternalAppNavigation(url = it.urlItem.url)
         },
+        updateTweet,
     )
-    override val feedbackMessage: Flow<FeedbackMessage> = updateTweet
 
     private data class ViewModelState(
         override val tweetItem: DetailTweetListItem? = null,

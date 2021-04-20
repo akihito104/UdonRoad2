@@ -4,28 +4,29 @@ import android.view.View
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.media.MediaActivity
 import com.freshdigitable.udonroad2.media.MediaActivityArgs
-import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
-import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessageDelegate
-import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
+import com.freshdigitable.udonroad2.model.app.navigation.ActivityEffectDelegate
+import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
+import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
 import com.freshdigitable.udonroad2.model.app.navigation.SnackbarFeedbackMessageDelegate
 import com.freshdigitable.udonroad2.model.app.weakRef
-import com.freshdigitable.udonroad2.timeline.TimelineEvent
+import com.freshdigitable.udonroad2.timeline.TimelineEffect
 
 class UserActivityNavigationDelegate(
     userActivity: UserActivity,
-) : ActivityEventDelegate,
-    FeedbackMessageDelegate by SnackbarFeedbackMessageDelegate(
+) : ActivityEffectDelegate {
+    private val feedbackDelegate = SnackbarFeedbackMessageDelegate(
         weakRef(userActivity) { it.findViewById<View>(R.id.user_pager).parent as View }
-    ) {
+    )
     private val activity: UserActivity by weakRef(userActivity)
 
-    override fun dispatchNavHostNavigate(event: NavigationEvent) {
+    override fun accept(event: AppEffect) {
         when (event) {
-            is TimelineEvent.Navigate.UserInfo -> UserActivity.start(activity, event.tweetUserItem)
-            is TimelineEvent.Navigate.MediaViewer -> MediaActivity.start(
+            is TimelineEffect.Navigate.UserInfo -> UserActivity.start(activity, event.tweetUserItem)
+            is TimelineEffect.Navigate.MediaViewer -> MediaActivity.start(
                 activity,
                 MediaActivityArgs(event.tweetId, event.index)
             )
+            is FeedbackMessage -> feedbackDelegate.dispatchFeedbackMessage(event)
         }
     }
 }

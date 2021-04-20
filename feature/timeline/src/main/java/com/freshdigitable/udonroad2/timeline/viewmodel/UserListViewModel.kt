@@ -7,7 +7,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.freshdigitable.udonroad2.model.QueryType
-import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventStream
+import com.freshdigitable.udonroad2.model.app.navigation.ActivityEffectStream
 import com.freshdigitable.udonroad2.model.app.navigation.AppEventListener1
 import com.freshdigitable.udonroad2.model.user.UserListItem
 import com.freshdigitable.udonroad2.timeline.ListItemClickListener
@@ -25,7 +25,7 @@ class UserListViewModel(
     ListItemLoadableEventListener by viewModelSource,
     ListItemClickListener<UserListItem>,
     UserIconClickListener by userIconViewModelSource,
-    ActivityEventStream by viewModelSource,
+    ActivityEffectStream by viewModelSource,
     ViewModel() {
 
     override val listState: LiveData<ListItemLoadableViewModel.State> =

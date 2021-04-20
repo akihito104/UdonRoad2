@@ -24,8 +24,8 @@ import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
 import com.freshdigitable.udonroad2.input.TweetInputEvent
 import com.freshdigitable.udonroad2.model.TweetId
+import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
-import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.shortcut.ShortcutEventListener
 import com.freshdigitable.udonroad2.shortcut.ShortcutViewModel
@@ -57,7 +57,7 @@ internal class MainViewModel(
     override val drawerState: LiveData<DrawerViewModel.State> =
         drawerViewStates.state.asLiveData(viewModelScope.coroutineContext)
 
-    internal val navigationEvent: Flow<NavigationEvent> = merge(
+    internal val navigationEvent: Flow<AppEffect.Navigation> = merge(
         viewStates.initContainer,
         drawerViewStates.navEventSource
     )

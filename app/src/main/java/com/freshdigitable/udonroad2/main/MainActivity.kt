@@ -45,7 +45,6 @@ import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasAndroidInjector
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
-import timber.log.Timber
 import javax.inject.Inject
 
 class MainActivity : AppCompatActivity(), HasAndroidInjector {
@@ -69,10 +68,7 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
 
         lifecycle.addObserver(navigation)
         lifecycleScope.launch {
-            viewModel.navigationEvent.collect {
-                Timber.tag("MainActivity").d("navigationEvent: $it")
-                navigation.dispatchNavHostNavigate(it)
-            }
+            viewModel.navigationEvent.collect { navigation.accept(it) }
         }
 
         supportActionBar?.apply {

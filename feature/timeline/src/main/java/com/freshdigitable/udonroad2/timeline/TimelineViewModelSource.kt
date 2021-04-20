@@ -22,14 +22,13 @@ import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
-import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
-import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventStream
-import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
-import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
+import com.freshdigitable.udonroad2.model.app.navigation.ActivityEffectDelegate
+import com.freshdigitable.udonroad2.model.app.navigation.ActivityEffectStream
+import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
 import com.freshdigitable.udonroad2.model.app.onEvent
 import com.freshdigitable.udonroad2.model.app.stateSourceBuilder
 import com.freshdigitable.udonroad2.shortcut.ShortcutViewStates
-import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentEventDelegate
+import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentEffectDelegate
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
@@ -46,7 +45,7 @@ internal class TimelineViewModelSource(
     mediaViewModelSource: TweetMediaViewModelSource,
 ) : ListItemLoadableViewModelSource by baseViewModelSource,
     TweetMediaViewModelSource by mediaViewModelSource,
-    ActivityEventStream,
+    ActivityEffectStream,
     ShortcutViewStates by ShortcutViewStates.create(actions, tweetRepository),
     TweetListItemEventListener by actions {
 
@@ -74,18 +73,18 @@ internal class TimelineViewModelSource(
 
     internal val selectedItemId: Flow<SelectedItemId?> = selectedItemRepository.getSource(owner)
 
-    override val navigationEvent: Flow<NavigationEvent> = merge(
-        actions.showTweetDetail.map { TimelineEvent.Navigate.Detail(it.tweetId) },
+    override val effect: Flow<AppEffect> = merge(
+        actions.showTweetDetail.map { TimelineEffect.Navigate.Detail(it.tweetId) },
         actions.showConversation.map {
             listOwnerGenerator.getTimelineEvent(
                 QueryType.TweetQueryType.Conversation(it.tweetId),
-                NavigationEvent.Type.NAVIGATE
+                AppEffect.Navigation.Type.NAVIGATE
             )
         },
-        mediaViewModelSource.navigationEvent,
-        baseViewModelSource.navigationEvent,
+        mediaViewModelSource.effect,
+        baseViewModelSource.effect,
+        updateTweet,
     )
-    override val feedbackMessage: Flow<FeedbackMessage> = updateTweet
 
     override suspend fun clear() {
         super.clear()
@@ -101,7 +100,7 @@ data class TimelineState(
         get() = baseState?.isHeadingEnabled == true || selectedItemId != null
 }
 
-class TimelineNavigationDelegate @Inject constructor(
-    activityEventDelegate: ActivityEventDelegate,
-) : ListItemFragmentEventDelegate,
-    ActivityEventDelegate by activityEventDelegate
+class TimelineEffectDelegate @Inject constructor(
+    activityEffectDelegate: ActivityEffectDelegate,
+) : ListItemFragmentEffectDelegate,
+    ActivityEffectDelegate by activityEffectDelegate

@@ -27,9 +27,9 @@ import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.app.AppTwitterException
+import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
-import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.postEvents
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
@@ -70,7 +70,7 @@ class TimelineViewModelSourceTest {
 
             // verify
             assertThat(selectedItems.last()?.originalId).isEqualTo(TweetId(1000L))
-            assertThat(navEvents[0]).isInstanceOf(TimelineEvent.Navigate.MediaViewer::class.java)
+            assertThat(navEvents[0]).isInstanceOf(TimelineEffect.Navigate.MediaViewer::class.java)
         }
 
     @Test
@@ -171,7 +171,7 @@ class TimelineViewStatesTestRule(
 ) : TestWatcher() {
     @ExperimentalCoroutinesApi
     internal val coroutineTestRule = CoroutineTestRule()
-    private val eventCollector =
+    internal val eventCollector =
         if (isStateCollected) ObserverEventCollector(coroutineTestRule) else null
     internal val actionsRule: TimelineActionsTestRule =
         TimelineActionsTestRule(coroutineTestRule, false)
@@ -211,10 +211,10 @@ class TimelineViewStatesTestRule(
             )
         )
     }
-    val navEvents: List<NavigationEvent>
-        get() = requireNotNull(eventCollector).nonNullEventsOf(sut.navigationEvent)
+    val navEvents: List<AppEffect>
+        get() = requireNotNull(eventCollector).nonNullEventsOf(sut.effect)
     val messageEvents: List<FeedbackMessage>
-        get() = requireNotNull(eventCollector).nonNullEventsOf(sut.feedbackMessage)
+        get() = navEvents.filterIsInstance<FeedbackMessage>()
     val selectedItems: List<SelectedItemId?>
         get() = requireNotNull(eventCollector).nonNullEventsOf(sut.selectedItemId)
 
@@ -233,7 +233,7 @@ class TimelineViewStatesTestRule(
         super.starting(description)
         eventCollector?.setupForActivate {
             with(sut) {
-                addAll(state, mediaState, navigationEvent, updateTweet, selectedItemId)
+                addAll(state, mediaState, effect, selectedItemId)
             }
         }
     }

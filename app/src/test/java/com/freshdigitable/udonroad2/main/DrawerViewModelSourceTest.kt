@@ -22,8 +22,8 @@ import com.freshdigitable.udonroad2.data.impl.create
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.UserId
+import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
-import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.user.UserEntity
 import com.freshdigitable.udonroad2.oauth.LoginUseCase
 import com.freshdigitable.udonroad2.test_common.MockVerified
@@ -32,7 +32,7 @@ import com.freshdigitable.udonroad2.test_common.jvm.CoroutineTestRule
 import com.freshdigitable.udonroad2.test_common.jvm.OAuthTokenRepositoryRule
 import com.freshdigitable.udonroad2.test_common.jvm.ObserverEventCollector
 import com.freshdigitable.udonroad2.test_common.jvm.setupForActivate
-import com.freshdigitable.udonroad2.timeline.TimelineEvent
+import com.freshdigitable.udonroad2.timeline.TimelineEffect
 import com.google.common.truth.Truth.assertThat
 import io.mockk.every
 import io.mockk.mockk
@@ -185,8 +185,8 @@ class DrawerViewModelSourceTest {
             assertThat(actualStates.last().isOpened).isFalse()
             assertThat(actualStates.last().isAccountSwitcherOpened).isFalse()
             assertThat(navigationEventActual.last())
-                .isInstanceOf(TimelineEvent.Navigate.Timeline::class.java)
-            val event = navigationEventActual.last() as TimelineEvent.Navigate.Timeline
+                .isInstanceOf(TimelineEffect.Navigate.Timeline::class.java)
+            val event = navigationEventActual.last() as TimelineEffect.Navigate.Timeline
             assertThat(event.owner.query)
                 .isInstanceOf(QueryType.CustomTimelineListQueryType.Ownership::class.java)
             assertThat(event.owner.query.userId).isEqualTo(authenticatedUser)
@@ -223,7 +223,7 @@ class DrawerViewStateSourceTestRule(
     }
     internal val actualStates: List<DrawerViewModel.State>
         get() = eventCollector.nonNullEventsOf(sut.state)
-    internal val navigationEventActual: List<NavigationEvent>
+    internal val navigationEventActual: List<AppEffect.Navigation>
         get() = eventCollector.nonNullEventsOf(sut.navEventSource)
 
     override fun starting(description: Description?) {

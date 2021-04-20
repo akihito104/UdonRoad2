@@ -20,15 +20,14 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.freshdigitable.udonroad2.model.ListOwner
-import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
-import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
-import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
+import com.freshdigitable.udonroad2.model.app.navigation.ActivityEffectDelegate
+import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
 import com.freshdigitable.udonroad2.timeline.ListItemLoadableViewModel
 import com.freshdigitable.udonroad2.timeline.R
-import com.freshdigitable.udonroad2.timeline.TimelineEvent
+import com.freshdigitable.udonroad2.timeline.TimelineEffect
 import com.freshdigitable.udonroad2.timeline.databinding.FragmentTimelineBinding
 import com.freshdigitable.udonroad2.timeline.di.ListItemAdapterComponent
-import com.freshdigitable.udonroad2.timeline.di.ListItemFragmentEventDelegateComponent
+import com.freshdigitable.udonroad2.timeline.di.ListItemFragmentEffectDelegateComponent
 import com.freshdigitable.udonroad2.timeline.di.ListItemViewModelComponent
 import com.freshdigitable.udonroad2.timeline.di.viewModel
 import dagger.android.support.AndroidSupportInjection
@@ -45,7 +44,7 @@ class ListItemFragment : Fragment() {
     lateinit var listItemAdapterFactory: ListItemAdapterComponent.Factory
 
     @Inject
-    lateinit var eventDelegate: ListItemFragmentEventDelegateComponent.Factory
+    lateinit var effectDelegate: ListItemFragmentEffectDelegateComponent.Factory
     private lateinit var viewModel: ListItemLoadableViewModel<*>
 
     override fun onAttach(context: Context) {
@@ -86,22 +85,19 @@ class ListItemFragment : Fragment() {
             }
         }
 
-        val eventDelegate = eventDelegate.create(viewModel as ViewModel).eventDelegate
+        val eventDelegate = effectDelegate.create(viewModel as ViewModel).eventDelegate
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.navigationEvent.collect {
+            viewModel.effect.collect {
                 when (it) {
-                    is TimelineEvent.Navigate.ToTopOfList -> {
+                    is TimelineEffect.ToTopOfList -> {
                         if (it.needsSkip) {
                             binding.mainList.scrollToPosition(4)
                         }
                         binding.mainList.smoothScrollToPosition(0)
                     }
-                    else -> eventDelegate.dispatchNavHostNavigate(it)
+                    else -> eventDelegate.accept(it)
                 }
             }
-        }
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.feedbackMessage.collect(eventDelegate::dispatchFeedbackMessage)
         }
     }
 
@@ -169,7 +165,6 @@ class ListItemFragment : Fragment() {
     }
 }
 
-interface ListItemFragmentEventDelegate : ActivityEventDelegate {
-    override fun dispatchNavHostNavigate(event: NavigationEvent)
-    override fun dispatchFeedbackMessage(message: FeedbackMessage)
+interface ListItemFragmentEffectDelegate : ActivityEffectDelegate {
+    override fun accept(event: AppEffect)
 }

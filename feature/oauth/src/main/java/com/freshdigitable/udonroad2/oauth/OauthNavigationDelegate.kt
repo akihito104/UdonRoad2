@@ -19,28 +19,23 @@ package com.freshdigitable.udonroad2.oauth
 import android.content.Intent
 import android.net.Uri
 import androidx.fragment.app.FragmentActivity
-import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventDelegate
-import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
-import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
+import com.freshdigitable.udonroad2.model.app.navigation.ActivityEffectDelegate
+import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
 import com.freshdigitable.udonroad2.model.app.weakRef
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragment
-import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentEventDelegate
+import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentEffectDelegate
 
 internal class OauthNavigationDelegate(
     listItemFragment: ListItemFragment,
-    private val activityEventDelegate: ActivityEventDelegate,
-) : ListItemFragmentEventDelegate {
+    private val activityEffectDelegate: ActivityEffectDelegate,
+) : ListItemFragmentEffectDelegate {
     private val activity: FragmentActivity by weakRef(listItemFragment) { it.requireActivity() }
 
-    override fun dispatchNavHostNavigate(event: NavigationEvent) {
+    override fun accept(event: AppEffect) {
         when (event) {
-            is OauthEvent.Navigation.LaunchTwitter -> launchTwitterOauth(event.url)
-            else -> activityEventDelegate.dispatchNavHostNavigate(event)
+            is OauthNavigation.LaunchTwitter -> launchTwitterOauth(event.url)
+            else -> activityEffectDelegate.accept(event)
         }
-    }
-
-    override fun dispatchFeedbackMessage(message: FeedbackMessage) {
-        activityEventDelegate.dispatchFeedbackMessage(message)
     }
 
     private fun launchTwitterOauth(authUrl: String) {

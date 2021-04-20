@@ -24,9 +24,9 @@ import com.freshdigitable.udonroad2.data.impl.create
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.UserId
+import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
-import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.user.UserEntity
 import com.freshdigitable.udonroad2.test_common.MockVerified
 import com.freshdigitable.udonroad2.test_common.RxExceptionHandler
@@ -34,7 +34,7 @@ import com.freshdigitable.udonroad2.test_common.jvm.CoroutineTestRule
 import com.freshdigitable.udonroad2.test_common.jvm.OAuthTokenRepositoryRule
 import com.freshdigitable.udonroad2.test_common.jvm.ObserverEventCollector
 import com.freshdigitable.udonroad2.test_common.jvm.setupForActivate
-import com.freshdigitable.udonroad2.timeline.TimelineEvent
+import com.freshdigitable.udonroad2.timeline.TimelineEffect
 import com.google.common.truth.Truth.assertThat
 import io.mockk.every
 import io.mockk.mockk
@@ -107,8 +107,8 @@ class OauthViewModelTest {
             .assertValueAt(0) { actual -> actual is OauthEvent.LoginClicked }
             .assertValueAt(1) { actual -> actual is OauthEvent.PinTextChanged }
             .assertValueAt(2) { actual -> actual is OauthEvent.SendPinClicked }
-        assertThat(navEvents[1]).isInstanceOf(TimelineEvent.Navigate.Timeline::class.java)
-        assertThat((navEvents[1] as TimelineEvent.Navigate.Timeline).owner.query)
+        assertThat(navEvents[1]).isInstanceOf(TimelineEffect.Navigate.Timeline::class.java)
+        assertThat((navEvents[1] as TimelineEffect.Navigate.Timeline).owner.query)
             .isInstanceOf(QueryType.TweetQueryType.Timeline::class.java)
         assertThat(sut.sendPinButtonEnabled.value).isFalse()
     }
@@ -139,7 +139,7 @@ class OauthViewModelTestRule : TestWatcher() {
         )
     }
     val dispatcherObserver: TestObserver<AppEvent> = dispatcher.emitter.test()
-    val navEvents: List<NavigationEvent> get() = eventCollector.nonNullEventsOf(sut.navigationEvent)
+    val navEvents: List<AppEffect> get() = eventCollector.nonNullEventsOf(sut.effect)
 
     override fun starting(description: Description?) {
         super.starting(description)

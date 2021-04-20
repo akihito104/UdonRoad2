@@ -7,13 +7,13 @@ import com.freshdigitable.udonroad2.data.ListRepository
 import com.freshdigitable.udonroad2.data.PagedListProvider
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.QueryType
-import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventStream
+import com.freshdigitable.udonroad2.model.app.navigation.ActivityEffectStream
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction1
+import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
 import com.freshdigitable.udonroad2.model.app.navigation.AppEventListener
 import com.freshdigitable.udonroad2.model.app.navigation.AppEventListener1
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
-import com.freshdigitable.udonroad2.model.app.navigation.NavigationEvent
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
 import com.freshdigitable.udonroad2.model.app.onEvent
 import com.freshdigitable.udonroad2.model.app.stateSourceBuilder
@@ -24,7 +24,7 @@ import javax.inject.Inject
 
 interface ListItemLoadableViewModel<Q : QueryType> :
     ListItemLoadableEventListener,
-    ActivityEventStream {
+    ActivityEffectStream {
     val listState: LiveData<State>
     val timeline: Flow<PagingData<Any>>
 
@@ -60,7 +60,7 @@ internal class ListItemLoadableActions @Inject constructor(
         eventDispatcher.toAction(TimelineEvent.HeadingClicked(owner))
 }
 
-interface ListItemLoadableViewModelSource : ListItemLoadableEventListener, ActivityEventStream {
+interface ListItemLoadableViewModelSource : ListItemLoadableEventListener, ActivityEffectStream {
     val pagedList: Flow<PagingData<Any>>
     val state: Flow<ListItemLoadableViewModel.State>
 
@@ -74,10 +74,10 @@ internal class ListItemLoadableViewStateImpl(
     pagedListProvider: PagedListProvider<QueryType, Any>,
 ) : ListItemLoadableViewModelSource,
     ListItemLoadableEventListener by actions,
-    ActivityEventStream by ActivityEventStream.EmptyStream {
+    ActivityEffectStream {
 
     override val pagedList: Flow<PagingData<Any>> = pagedListProvider.getList(owner.query, owner.id)
-    private val channel = Channel<NavigationEvent>()
+    private val channel = Channel<AppEffect>()
 
     override val state: Flow<Snapshot> = stateSourceBuilder(
         init = Snapshot(),
@@ -98,13 +98,13 @@ internal class ListItemLoadableViewStateImpl(
         actions.heading.onEvent { s, _ ->
             if (s.firstVisibleItemPosition > 0) {
                 val needsSkip = s.firstVisibleItemPosition >= 4
-                channel.send(TimelineEvent.Navigate.ToTopOfList(needsSkip))
+                channel.send(TimelineEffect.ToTopOfList(needsSkip))
             }
             s
         },
     )
 
-    override val navigationEvent: Flow<NavigationEvent> = channel.receiveAsFlow()
+    override val effect: Flow<AppEffect> = channel.receiveAsFlow()
 
     override suspend fun clear() {
         channel.close()
