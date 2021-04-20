@@ -75,7 +75,7 @@ class MediaActivity : AppCompatActivity(), HasAndroidInjector {
             }
         }
         lifecycleScope.launch {
-            viewModel.navigationEvent.collect(activityEventDelegate::accept)
+            viewModel.effect.collect(activityEventDelegate::accept)
         }
         binding.mediaPager.setupPager(viewModel)
     }

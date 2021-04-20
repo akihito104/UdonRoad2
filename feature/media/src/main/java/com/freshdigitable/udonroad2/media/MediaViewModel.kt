@@ -28,7 +28,7 @@ import com.freshdigitable.udonroad2.data.impl.MediaRepository
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
 import com.freshdigitable.udonroad2.model.MediaEntity
 import com.freshdigitable.udonroad2.model.TweetId
-import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventStream
+import com.freshdigitable.udonroad2.model.app.navigation.ActivityEffectStream
 import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.AppEventListener
@@ -51,7 +51,7 @@ internal class MediaViewModel @Inject constructor(
 ) : MediaEventListener by viewStates,
     ShortcutViewModel,
     ShortcutEventListener by ShortcutEventListener.create(eventDispatcher),
-    ActivityEventStream by viewStates,
+    ActivityEffectStream by viewStates,
     ViewModel() {
     val state = viewStates.state.asLiveData(viewModelScope.coroutineContext)
     internal val mediaItems: LiveData<List<MediaEntity>> = state.map { it.mediaItems }
@@ -107,7 +107,7 @@ internal class MediaViewModelViewStates @Inject constructor(
     tweetRepository: TweetRepository,
 ) : MediaEventListener by actions,
     ShortcutViewStates by ShortcutViewStates.create(actions, tweetRepository),
-    ActivityEventStream {
+    ActivityEffectStream {
     internal val state: Flow<MediaViewModel.State> = stateSourceBuilder(
         init = Snapshot(tweetId = tweetId, position = firstPosition),
         repository.getMediaItemSource(tweetId).onEvent { s, items ->
@@ -126,7 +126,7 @@ internal class MediaViewModelViewStates @Inject constructor(
         },
         actions.changeCurrentPosition.onEvent { s, e -> s.copy(position = e.index) }
     )
-    override val navigationEvent: Flow<AppEffect> = updateTweet
+    override val effect: Flow<AppEffect> = updateTweet
 
     private data class Snapshot(
         override val tweetId: TweetId,

@@ -24,7 +24,7 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.freshdigitable.udonroad2.model.QueryType.TweetQueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
-import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventStream
+import com.freshdigitable.udonroad2.model.app.navigation.ActivityEffectStream
 import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
 import com.freshdigitable.udonroad2.timeline.ListItemLoadableEventListener
 import com.freshdigitable.udonroad2.timeline.ListItemLoadableViewModel
@@ -49,7 +49,7 @@ internal class TimelineViewModel(
     TweetListItemEventListener by viewModelSource,
     TweetMediaItemViewModel,
     TweetMediaEventListener by viewModelSource,
-    ActivityEventStream by viewModelSource,
+    ActivityEffectStream,
     ViewModel() {
     override val selectedItemId: LiveData<SelectedItemId?> = viewModelSource.selectedItemId
         .asLiveData(viewModelScope.coroutineContext)
@@ -60,8 +60,8 @@ internal class TimelineViewModel(
         .asLiveData(viewModelScope.coroutineContext)
     override val timeline: Flow<PagingData<Any>> = viewModelSource.pagedList
         .cachedIn(viewModelScope)
-    override val navigationEvent: Flow<AppEffect> = merge(
-        viewModelSource.navigationEvent,
+    override val effect: Flow<AppEffect> = merge(
+        viewModelSource.effect,
         userIconViewModelSource.navEvent
     )
 }

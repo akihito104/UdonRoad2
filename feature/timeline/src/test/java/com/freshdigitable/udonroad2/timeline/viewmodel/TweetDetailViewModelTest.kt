@@ -105,7 +105,7 @@ class TweetDetailViewModelTest {
     }
     private val tweetSource: Channel<TweetListItem?> = Channel()
     private val navigationEvents: List<AppEffect>
-        get() = eventCollector.nonNullEventsOf(sut.navigationEvent)
+        get() = eventCollector.nonNullEventsOf(sut.effect)
 
     @Before
     fun setup() {

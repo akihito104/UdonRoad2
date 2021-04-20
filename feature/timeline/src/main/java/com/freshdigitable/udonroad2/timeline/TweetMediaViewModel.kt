@@ -19,7 +19,7 @@ package com.freshdigitable.udonroad2.timeline
 import androidx.lifecycle.LiveData
 import com.freshdigitable.udonroad2.data.impl.AppSettingRepository
 import com.freshdigitable.udonroad2.model.TweetId
-import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventStream
+import com.freshdigitable.udonroad2.model.app.navigation.ActivityEffectStream
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.toActionFlow
 import com.freshdigitable.udonroad2.model.app.onEvent
@@ -51,7 +51,7 @@ internal class LaunchMediaViewerAction @Inject constructor(
     }
 }
 
-interface TweetMediaViewModelSource : TweetMediaEventListener, ActivityEventStream {
+interface TweetMediaViewModelSource : TweetMediaEventListener, ActivityEffectStream {
     val mediaState: Flow<TweetMediaItemViewModel.State>
 
     companion object {
@@ -67,7 +67,7 @@ private class TweetMediaViewModelSourceImpl(
     appSettingRepository: AppSettingRepository,
 ) : TweetMediaViewModelSource,
     TweetMediaEventListener by launchMediaViewer,
-    ActivityEventStream by ActivityEventStream.EmptyStream {
+    ActivityEffectStream {
 
     override val mediaState: Flow<TweetMediaItemViewModel.State> = stateSourceBuilder(
         init = Snapshot(),
@@ -76,7 +76,7 @@ private class TweetMediaViewModelSourceImpl(
         },
     )
 
-    override val navigationEvent: Flow<TimelineEffect.Navigate.MediaViewer> =
+    override val effect: Flow<TimelineEffect.Navigate.MediaViewer> =
         launchMediaViewer.map { TimelineEffect.Navigate.MediaViewer(it) }
 
     data class Snapshot(

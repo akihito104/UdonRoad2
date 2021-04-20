@@ -139,7 +139,7 @@ class OauthViewModelTestRule : TestWatcher() {
         )
     }
     val dispatcherObserver: TestObserver<AppEvent> = dispatcher.emitter.test()
-    val navEvents: List<AppEffect> get() = eventCollector.nonNullEventsOf(sut.navigationEvent)
+    val navEvents: List<AppEffect> get() = eventCollector.nonNullEventsOf(sut.effect)
 
     override fun starting(description: Description?) {
         super.starting(description)

@@ -7,7 +7,7 @@ import com.freshdigitable.udonroad2.data.ListRepository
 import com.freshdigitable.udonroad2.data.PagedListProvider
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.QueryType
-import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventStream
+import com.freshdigitable.udonroad2.model.app.navigation.ActivityEffectStream
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction1
 import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
@@ -24,7 +24,7 @@ import javax.inject.Inject
 
 interface ListItemLoadableViewModel<Q : QueryType> :
     ListItemLoadableEventListener,
-    ActivityEventStream {
+    ActivityEffectStream {
     val listState: LiveData<State>
     val timeline: Flow<PagingData<Any>>
 
@@ -60,7 +60,7 @@ internal class ListItemLoadableActions @Inject constructor(
         eventDispatcher.toAction(TimelineEvent.HeadingClicked(owner))
 }
 
-interface ListItemLoadableViewModelSource : ListItemLoadableEventListener, ActivityEventStream {
+interface ListItemLoadableViewModelSource : ListItemLoadableEventListener, ActivityEffectStream {
     val pagedList: Flow<PagingData<Any>>
     val state: Flow<ListItemLoadableViewModel.State>
 
@@ -74,7 +74,7 @@ internal class ListItemLoadableViewStateImpl(
     pagedListProvider: PagedListProvider<QueryType, Any>,
 ) : ListItemLoadableViewModelSource,
     ListItemLoadableEventListener by actions,
-    ActivityEventStream by ActivityEventStream.EmptyStream {
+    ActivityEffectStream {
 
     override val pagedList: Flow<PagingData<Any>> = pagedListProvider.getList(owner.query, owner.id)
     private val channel = Channel<AppEffect>()
@@ -104,7 +104,7 @@ internal class ListItemLoadableViewStateImpl(
         },
     )
 
-    override val navigationEvent: Flow<AppEffect> = channel.receiveAsFlow()
+    override val effect: Flow<AppEffect> = channel.receiveAsFlow()
 
     override suspend fun clear() {
         channel.close()

@@ -27,7 +27,7 @@ import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.RequestTokenItem
 import com.freshdigitable.udonroad2.model.app.DispatcherProvider
-import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventStream
+import com.freshdigitable.udonroad2.model.app.navigation.ActivityEffectStream
 import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
 import com.freshdigitable.udonroad2.model.app.onEvent
 import com.freshdigitable.udonroad2.model.app.stateSourceBuilder
@@ -51,7 +51,7 @@ internal class OauthViewModelSource(
 ) : ListItemLoadableViewModelSource,
     ListItemLoadableEventListener by actions,
     OauthEventListener by actions,
-    ActivityEventStream by ActivityEventStream.EmptyStream {
+    ActivityEffectStream {
     private val navigationChannel = Channel<AppEffect.Navigation>()
     override val state: Flow<OauthViewState> = stateSourceBuilder(
         init = OauthViewState(),
@@ -85,7 +85,7 @@ internal class OauthViewModelSource(
         pagingSourceFactory = { dataSource }
     ).flow as Flow<PagingData<Any>>
 
-    override val navigationEvent: Flow<AppEffect.Navigation> = navigationChannel.receiveAsFlow()
+    override val effect: Flow<AppEffect.Navigation> = navigationChannel.receiveAsFlow()
 
     override suspend fun clear() {
         super.clear()

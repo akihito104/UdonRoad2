@@ -212,7 +212,7 @@ class TimelineViewStatesTestRule(
         )
     }
     val navEvents: List<AppEffect>
-        get() = requireNotNull(eventCollector).nonNullEventsOf(sut.navigationEvent)
+        get() = requireNotNull(eventCollector).nonNullEventsOf(sut.effect)
     val messageEvents: List<FeedbackMessage>
         get() = navEvents.filterIsInstance<FeedbackMessage>()
     val selectedItems: List<SelectedItemId?>
@@ -233,7 +233,7 @@ class TimelineViewStatesTestRule(
         super.starting(description)
         eventCollector?.setupForActivate {
             with(sut) {
-                addAll(state, mediaState, navigationEvent, selectedItemId)
+                addAll(state, mediaState, effect, selectedItemId)
             }
         }
     }

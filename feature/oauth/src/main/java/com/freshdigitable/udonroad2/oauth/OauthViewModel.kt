@@ -25,7 +25,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.freshdigitable.udonroad2.model.QueryType
-import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventStream
+import com.freshdigitable.udonroad2.model.app.navigation.ActivityEffectStream
 import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.AppEventListener
@@ -40,7 +40,7 @@ internal class OauthViewModel(
 ) : OauthEventListener by viewModelSource,
     ListItemLoadableViewModel<QueryType.Oauth>,
     ListItemLoadableEventListener by viewModelSource,
-    ActivityEventStream by viewModelSource,
+    ActivityEffectStream by viewModelSource,
     ViewModel() {
     val state = viewModelSource.state.asLiveData(viewModelScope.coroutineContext)
     override val listState: LiveData<ListItemLoadableViewModel.State> = state.map { it }

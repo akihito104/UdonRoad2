@@ -93,7 +93,7 @@ class CustomTimelineListViewModelTest {
 
         // verify
         eventCollector.assertLatestNavigationEvent<TimelineEffect.Navigate.UserInfo>(
-            sut.navigationEvent
+            sut.effect
         ) {
             assertThat(it.tweetUserItem.id).isEqualTo(user.id)
         }
@@ -112,7 +112,7 @@ class CustomTimelineListViewModelTest {
 
         // verify
         eventCollector.assertLatestNavigationEvent<TimelineEffect.Navigate.Timeline>(
-            sut.navigationEvent
+            sut.effect
         ) { actualEvent ->
             assertThat((actualEvent.owner.query as QueryType.TweetQueryType.CustomTimeline).id)
                 .isEqualTo(item.id)

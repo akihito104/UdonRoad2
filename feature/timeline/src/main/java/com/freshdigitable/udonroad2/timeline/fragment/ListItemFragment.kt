@@ -87,7 +87,7 @@ class ListItemFragment : Fragment() {
 
         val eventDelegate = effectDelegate.create(viewModel as ViewModel).eventDelegate
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.navigationEvent.collect {
+            viewModel.effect.collect {
                 when (it) {
                     is TimelineEffect.ToTopOfList -> {
                         if (it.needsSkip) {

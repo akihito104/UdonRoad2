@@ -18,7 +18,7 @@ import com.freshdigitable.udonroad2.model.app.AppTwitterException.ErrorType
 import com.freshdigitable.udonroad2.model.app.LoadingResult
 import com.freshdigitable.udonroad2.model.app.RecoverableErrorType
 import com.freshdigitable.udonroad2.model.app.load
-import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventStream
+import com.freshdigitable.udonroad2.model.app.navigation.ActivityEffectStream
 import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
@@ -60,7 +60,7 @@ internal class TweetDetailViewModel(
     UserIconClickListener by userIconViewModelSource,
     TweetMediaItemViewModel,
     TweetMediaEventListener by mediaViewModelSource,
-    ActivityEventStream by viewStates,
+    ActivityEffectStream,
     ViewModel() {
     private val coroutineContext: CoroutineContext =
         coroutineContext ?: viewModelScope.coroutineContext
@@ -68,10 +68,10 @@ internal class TweetDetailViewModel(
     val state: LiveData<State> = viewStates.viewModelState.asLiveData(this.coroutineContext)
     override val mediaState: LiveData<TweetMediaItemViewModel.State> =
         mediaViewModelSource.mediaState.asLiveData(this.coroutineContext)
-    override val navigationEvent: Flow<AppEffect> = merge(
-        viewStates.navigationEvent,
+    override val effect: Flow<AppEffect> = merge(
+        viewStates.effect,
         userIconViewModelSource.navEvent,
-        mediaViewModelSource.navigationEvent
+        mediaViewModelSource.effect
     )
 
     interface State {
@@ -175,7 +175,7 @@ internal class TweetDetailViewStates @Inject constructor(
     listOwnerGenerator: ListOwnerGenerator,
 ) : TweetDetailEventListener by actions,
     ShortcutViewStates by ShortcutViewStates.create(actions, repository),
-    ActivityEventStream {
+    ActivityEffectStream {
 
     internal val viewModelState: Flow<TweetDetailViewModel.State> = stateSourceBuilder(
         { ViewModelState(currentUserId = appSettingRepository.currentUserId) }
@@ -222,7 +222,7 @@ internal class TweetDetailViewStates @Inject constructor(
         ) { s, card -> s.copy(twitterCard = card) }
     }
 
-    override val navigationEvent: Flow<AppEffect> = merge(
+    override val effect: Flow<AppEffect> = merge(
         actions.launchOriginalTweetUserInfo.mapLatest { TimelineEffect.Navigate.UserInfo(it.user) },
         actions.showConversation.mapLatest {
             listOwnerGenerator.getTimelineEvent(

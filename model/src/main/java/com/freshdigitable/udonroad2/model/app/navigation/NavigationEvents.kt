@@ -31,7 +31,3 @@ interface AppEffect {
 
 interface ViewState
 interface FragmentContainerState
-
-sealed class CommonEvent : AppEvent {
-    object Back : CommonEvent()
-}

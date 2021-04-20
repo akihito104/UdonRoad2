@@ -23,7 +23,7 @@ import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEffectDelegate
-import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventStream
+import com.freshdigitable.udonroad2.model.app.navigation.ActivityEffectStream
 import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
 import com.freshdigitable.udonroad2.model.app.onEvent
 import com.freshdigitable.udonroad2.model.app.stateSourceBuilder
@@ -45,7 +45,7 @@ internal class TimelineViewModelSource(
     mediaViewModelSource: TweetMediaViewModelSource,
 ) : ListItemLoadableViewModelSource by baseViewModelSource,
     TweetMediaViewModelSource by mediaViewModelSource,
-    ActivityEventStream,
+    ActivityEffectStream,
     ShortcutViewStates by ShortcutViewStates.create(actions, tweetRepository),
     TweetListItemEventListener by actions {
 
@@ -73,7 +73,7 @@ internal class TimelineViewModelSource(
 
     internal val selectedItemId: Flow<SelectedItemId?> = selectedItemRepository.getSource(owner)
 
-    override val navigationEvent: Flow<AppEffect> = merge(
+    override val effect: Flow<AppEffect> = merge(
         actions.showTweetDetail.map { TimelineEffect.Navigate.Detail(it.tweetId) },
         actions.showConversation.map {
             listOwnerGenerator.getTimelineEvent(
@@ -81,8 +81,8 @@ internal class TimelineViewModelSource(
                 AppEffect.Navigation.Type.NAVIGATE
             )
         },
-        mediaViewModelSource.navigationEvent,
-        baseViewModelSource.navigationEvent,
+        mediaViewModelSource.effect,
+        baseViewModelSource.effect,
         updateTweet,
     )
 
