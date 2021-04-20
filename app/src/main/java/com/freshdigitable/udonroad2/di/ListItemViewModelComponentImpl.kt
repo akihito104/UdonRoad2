@@ -31,10 +31,10 @@ import com.freshdigitable.udonroad2.model.app.valueByAssignableClassObject
 import com.freshdigitable.udonroad2.oauth.di.OauthListAdapterModule
 import com.freshdigitable.udonroad2.oauth.di.OauthViewModelModule
 import com.freshdigitable.udonroad2.timeline.di.ListItemAdapterComponent
-import com.freshdigitable.udonroad2.timeline.di.ListItemFragmentEventDelegateComponent
+import com.freshdigitable.udonroad2.timeline.di.ListItemFragmentEffectDelegateComponent
 import com.freshdigitable.udonroad2.timeline.di.ListItemViewModelComponent
 import com.freshdigitable.udonroad2.timeline.di.TimelineAdapterModules
-import com.freshdigitable.udonroad2.timeline.di.TimelineListItemFragmentEventDelegateModule
+import com.freshdigitable.udonroad2.timeline.di.TimelineListItemFragmentEffectDelegateModule
 import com.freshdigitable.udonroad2.timeline.di.TimelineViewModelModules
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentEffectDelegate
 import dagger.BindsInstance
@@ -149,17 +149,17 @@ object ListItemAdapterProvider {
 
 @Subcomponent(
     modules = [
-        TimelineListItemFragmentEventDelegateModule::class,
+        TimelineListItemFragmentEffectDelegateModule::class,
         OauthViewModelModule::class,
         ListItemFragmentEventDelegateProvider::class
     ]
 )
-interface ListItemFragmentEventDelegateComponentImpl : ListItemFragmentEventDelegateComponent {
+interface ListItemFragmentEffectDelegateComponentImpl : ListItemFragmentEffectDelegateComponent {
     @Subcomponent.Factory
-    interface Factory : ListItemFragmentEventDelegateComponent.Factory {
+    interface Factory : ListItemFragmentEffectDelegateComponent.Factory {
         override fun create(
             @BindsInstance viewModel: ViewModel,
-        ): ListItemFragmentEventDelegateComponentImpl
+        ): ListItemFragmentEffectDelegateComponentImpl
     }
 }
 
@@ -171,12 +171,12 @@ object ListItemFragmentEventDelegateProvider {
     ): ListItemFragmentEffectDelegate = this.valueByAssignableClassObject(viewModel).get()
 }
 
-@Module(subcomponents = [ListItemFragmentEventDelegateComponentImpl::class])
+@Module(subcomponents = [ListItemFragmentEffectDelegateComponentImpl::class])
 interface ListItemFragmentEventDelegateModule {
     companion object {
         @Provides
         fun provideFactory(
-            factory: ListItemFragmentEventDelegateComponentImpl.Factory,
-        ): ListItemFragmentEventDelegateComponent.Factory = factory
+            factory: ListItemFragmentEffectDelegateComponentImpl.Factory,
+        ): ListItemFragmentEffectDelegateComponent.Factory = factory
     }
 }

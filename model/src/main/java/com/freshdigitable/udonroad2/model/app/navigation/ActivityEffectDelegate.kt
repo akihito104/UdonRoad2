@@ -19,16 +19,14 @@ package com.freshdigitable.udonroad2.model.app.navigation
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 
-interface ActivityEffectDelegate : FeedbackMessageDelegate {
-    fun accept(event: AppEffect) {}
+interface ActivityEffectDelegate {
+    fun accept(event: AppEffect)
 }
 
 interface ActivityEventStream {
     val navigationEvent: Flow<AppEffect>
-    val feedbackMessage: Flow<FeedbackMessage>
 
     object EmptyStream : ActivityEventStream {
         override val navigationEvent: Flow<AppEffect> = emptyFlow()
-        override val feedbackMessage: Flow<FeedbackMessage> = emptyFlow()
     }
 }

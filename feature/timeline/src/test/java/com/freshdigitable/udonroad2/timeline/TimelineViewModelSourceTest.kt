@@ -171,7 +171,7 @@ class TimelineViewStatesTestRule(
 ) : TestWatcher() {
     @ExperimentalCoroutinesApi
     internal val coroutineTestRule = CoroutineTestRule()
-    private val eventCollector =
+    internal val eventCollector =
         if (isStateCollected) ObserverEventCollector(coroutineTestRule) else null
     internal val actionsRule: TimelineActionsTestRule =
         TimelineActionsTestRule(coroutineTestRule, false)
@@ -214,7 +214,7 @@ class TimelineViewStatesTestRule(
     val navEvents: List<AppEffect>
         get() = requireNotNull(eventCollector).nonNullEventsOf(sut.navigationEvent)
     val messageEvents: List<FeedbackMessage>
-        get() = requireNotNull(eventCollector).nonNullEventsOf(sut.feedbackMessage)
+        get() = navEvents.filterIsInstance<FeedbackMessage>()
     val selectedItems: List<SelectedItemId?>
         get() = requireNotNull(eventCollector).nonNullEventsOf(sut.selectedItemId)
 
@@ -233,7 +233,7 @@ class TimelineViewStatesTestRule(
         super.starting(description)
         eventCollector?.setupForActivate {
             with(sut) {
-                addAll(state, mediaState, navigationEvent, updateTweet, selectedItemId)
+                addAll(state, mediaState, navigationEvent, selectedItemId)
             }
         }
     }

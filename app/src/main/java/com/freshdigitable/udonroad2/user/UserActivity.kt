@@ -59,7 +59,7 @@ class UserActivity : HasAndroidInjector, AppCompatActivity() {
             }
         }
         lifecycleScope.launch {
-            viewModel.feedbackMessage.collect(effectDelegate::dispatchFeedbackMessage)
+            viewModel.feedbackMessage.collect(effectDelegate::accept)
         }
     }
 

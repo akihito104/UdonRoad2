@@ -61,7 +61,7 @@ class ObserverEventCollector(
     }
 
     fun addActivityEventStream(stream: ActivityEventStream) {
-        addAll(stream.feedbackMessage, stream.navigationEvent)
+        addAll(stream.navigationEvent)
     }
 
     fun <T> eventsOf(flow: Flow<T>): List<T?> = requireNotNull(collectors[flow]).events as List<T?>

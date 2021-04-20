@@ -22,7 +22,6 @@ import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventStream
 import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
-import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
 import com.freshdigitable.udonroad2.model.app.navigation.toActionFlow
 import com.freshdigitable.udonroad2.model.app.stateSourceBuilder
 import com.freshdigitable.udonroad2.model.tweet.DetailTweetListItem
@@ -223,7 +222,7 @@ internal class TweetDetailViewStates @Inject constructor(
         ) { s, card -> s.copy(twitterCard = card) }
     }
 
-    override val navigationEvent: Flow<AppEffect.Navigation> = merge(
+    override val navigationEvent: Flow<AppEffect> = merge(
         actions.launchOriginalTweetUserInfo.mapLatest { TimelineEffect.Navigate.UserInfo(it.user) },
         actions.showConversation.mapLatest {
             listOwnerGenerator.getTimelineEvent(
@@ -236,8 +235,8 @@ internal class TweetDetailViewStates @Inject constructor(
         actions.launchExternalApp.mapLatest {
             ExternalAppNavigation(url = it.urlItem.url)
         },
+        updateTweet,
     )
-    override val feedbackMessage: Flow<FeedbackMessage> = updateTweet
 
     private data class ViewModelState(
         override val tweetItem: DetailTweetListItem? = null,

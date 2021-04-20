@@ -26,7 +26,7 @@ interface AppEffect {
         enum class Type { INIT, NAVIGATE }
     }
 
-    interface Feedback
+    interface Feedback : AppEffect
 }
 
 interface ViewState

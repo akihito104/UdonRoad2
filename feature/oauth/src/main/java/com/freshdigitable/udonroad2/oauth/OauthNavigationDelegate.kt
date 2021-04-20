@@ -38,10 +38,6 @@ internal class OauthNavigationDelegate(
         }
     }
 
-    override fun dispatchFeedbackMessage(message: AppEffect.Feedback) {
-        activityEffectDelegate.dispatchFeedbackMessage(message)
-    }
-
     private fun launchTwitterOauth(authUrl: String) {
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(authUrl))
         activity.startActivity(intent)

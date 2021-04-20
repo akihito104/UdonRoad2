@@ -24,7 +24,7 @@ import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.app.di.ActivityScope
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEffectDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
-import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessageDelegate
+import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
 import com.freshdigitable.udonroad2.model.app.navigation.FragmentContainerState
 import com.freshdigitable.udonroad2.model.app.navigation.SnackbarFeedbackMessageDelegate
 import com.freshdigitable.udonroad2.model.app.weakRef
@@ -45,11 +45,10 @@ import javax.inject.Inject
 internal class MainActivityNavigationDelegate @Inject constructor(
     mainActivity: MainActivity,
     private val state: MainActivityNavState,
-) : ActivityEffectDelegate,
-    FeedbackMessageDelegate by SnackbarFeedbackMessageDelegate(
+) : ActivityEffectDelegate, LifecycleEventObserver {
+    private val feedbackDelegate = SnackbarFeedbackMessageDelegate(
         weakRef(mainActivity) { it.findViewById(R.id.main_container) }
-    ),
-    LifecycleEventObserver {
+    )
     private val activity: MainActivity by weakRef(mainActivity)
     private val drawerLayout: DrawerLayout by weakRef(mainActivity) {
         it.findViewById<DrawerLayout>(R.id.main_drawer)
@@ -115,6 +114,7 @@ internal class MainActivityNavigationDelegate @Inject constructor(
                 intent.data = Uri.parse(uri)
                 activity.startActivity(intent)
             }
+            is FeedbackMessage -> feedbackDelegate.dispatchFeedbackMessage(event)
         }
     }
 

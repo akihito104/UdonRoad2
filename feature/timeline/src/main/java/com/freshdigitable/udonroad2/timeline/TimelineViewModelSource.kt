@@ -25,7 +25,6 @@ import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEffectDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEventStream
 import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
-import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
 import com.freshdigitable.udonroad2.model.app.onEvent
 import com.freshdigitable.udonroad2.model.app.stateSourceBuilder
 import com.freshdigitable.udonroad2.shortcut.ShortcutViewStates
@@ -84,8 +83,8 @@ internal class TimelineViewModelSource(
         },
         mediaViewModelSource.navigationEvent,
         baseViewModelSource.navigationEvent,
+        updateTweet,
     )
-    override val feedbackMessage: Flow<FeedbackMessage> = updateTweet
 
     override suspend fun clear() {
         super.clear()
@@ -101,7 +100,7 @@ data class TimelineState(
         get() = baseState?.isHeadingEnabled == true || selectedItemId != null
 }
 
-class TimelineNavigationDelegate @Inject constructor(
+class TimelineEffectDelegate @Inject constructor(
     activityEffectDelegate: ActivityEffectDelegate,
 ) : ListItemFragmentEffectDelegate,
     ActivityEffectDelegate by activityEffectDelegate

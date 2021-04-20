@@ -28,6 +28,11 @@ import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.ViewPager2
 import com.freshdigitable.udonroad2.media.databinding.ActivityMediaBinding
 import com.freshdigitable.udonroad2.media.di.MediaViewModelComponent
+import com.freshdigitable.udonroad2.model.app.navigation.ActivityEffectDelegate
+import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
+import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
+import com.freshdigitable.udonroad2.model.app.navigation.SnackbarFeedbackMessageDelegate
+import com.freshdigitable.udonroad2.model.app.weakRef
 import dagger.android.AndroidInjection
 import dagger.android.AndroidInjector
 import dagger.android.DispatchingAndroidInjector
@@ -70,7 +75,7 @@ class MediaActivity : AppCompatActivity(), HasAndroidInjector {
             }
         }
         lifecycleScope.launch {
-            viewModel.feedbackMessage.collect(activityEventDelegate::dispatchFeedbackMessage)
+            viewModel.navigationEvent.collect(activityEventDelegate::accept)
         }
         binding.mediaPager.setupPager(viewModel)
     }
@@ -113,5 +118,17 @@ fun Toolbar.setCurrentPositionTitle(currentPosition: Int?, size: Int?) {
     title = when {
         currentPosition == null || size == null || size <= 0 -> ""
         else -> context.getString(R.string.media_current_position, currentPosition + 1, size)
+    }
+}
+
+internal class MediaActivityEffectDelegate @Inject constructor(
+    activity: MediaActivity,
+) : ActivityEffectDelegate {
+    private val feedbackDelegate = SnackbarFeedbackMessageDelegate(
+        weakRef(activity) { it.findViewById(R.id.media_container) }
+    )
+
+    override fun accept(event: AppEffect) {
+        feedbackDelegate.dispatchFeedbackMessage(event as FeedbackMessage)
     }
 }

@@ -54,11 +54,11 @@ interface ListItemAdapterComponent {
     val adapter: PagingDataAdapter<out Any, *>
 }
 
-interface ListItemFragmentEventDelegateComponent {
+interface ListItemFragmentEffectDelegateComponent {
     interface Factory {
         fun create(
             viewModel: ViewModel,
-        ): ListItemFragmentEventDelegateComponent
+        ): ListItemFragmentEffectDelegateComponent
     }
 
     val eventDelegate: ListItemFragmentEffectDelegate

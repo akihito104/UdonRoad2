@@ -18,7 +18,7 @@ package com.freshdigitable.udonroad2.timeline.di
 
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
 import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
-import com.freshdigitable.udonroad2.timeline.TimelineNavigationDelegate
+import com.freshdigitable.udonroad2.timeline.TimelineEffectDelegate
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentEffectDelegate
 import com.freshdigitable.udonroad2.timeline.viewmodel.CustomTimelineListViewModel
 import com.freshdigitable.udonroad2.timeline.viewmodel.TimelineViewModel
@@ -29,29 +29,28 @@ import dagger.Provides
 import dagger.multibindings.IntoMap
 
 @Module
-interface TimelineListItemFragmentEventDelegateModule {
+interface TimelineListItemFragmentEffectDelegateModule {
     @Binds
     @IntoMap
     @ViewModelKey(TimelineViewModel::class)
-    fun bindTimelineEventDelegate(
-        eventDelegate: TimelineNavigationDelegate,
+    fun bindTimelineEffectDelegate(
+        eventDelegate: TimelineEffectDelegate,
     ): ListItemFragmentEffectDelegate
 
     @Binds
     @IntoMap
     @ViewModelKey(CustomTimelineListViewModel::class)
-    fun bindCustomTimelineListEventDelegate(
-        eventDelegate: TimelineNavigationDelegate,
+    fun bindCustomTimelineListEffectDelegate(
+        eventDelegate: TimelineEffectDelegate,
     ): ListItemFragmentEffectDelegate
 
     companion object {
         @Provides
         @IntoMap
         @ViewModelKey(UserListViewModel::class)
-        fun provideUserListEventDelegate(): ListItemFragmentEffectDelegate {
+        fun provideUserListEffectDelegate(): ListItemFragmentEffectDelegate {
             return object : ListItemFragmentEffectDelegate {
                 override fun accept(event: AppEffect) {}
-                override fun dispatchFeedbackMessage(message: AppEffect.Feedback) {}
             }
         }
     }
