@@ -60,7 +60,7 @@ import com.google.android.material.textview.MaterialTextView
 class TweetDetailContextMenuView @JvmOverloads constructor(
     context: Context,
     attributeSet: AttributeSet? = null,
-    defStyleAttr: Int = 0
+    defStyleAttr: Int = 0,
 ) : ConstraintLayout(context, attributeSet, defStyleAttr) {
 
     private val mainContextMenuList: LinearLayout
@@ -148,14 +148,12 @@ class TweetDetailContextMenuView @JvmOverloads constructor(
 
     class UpdateScope(private val view: TweetDetailContextMenuView) {
         fun onMenuItem(@IdRes menuId: Int, block: MenuItem.() -> Unit) {
-            val item = view.findMenuItemById(menuId) as DetailMenu.Item?
-            item?.let {
-                it.block()
-                val button = view.mainContextMenuList.findViewById<ImageButton>(item.itemId)
-                button?.apply {
-                    setImageState(it.parseToState(), false)
-                    isVisible = it.isVisible
-                }
+            val item = view.findMenuItemById(menuId) as? DetailMenu.Item ?: return
+            item.block()
+            val button = view.mainContextMenuList.findViewById<ImageButton>(item.itemId) ?: return
+            button.apply {
+                setImageState(item.parseToState(), false)
+                isVisible = item.isVisible
             }
         }
 
@@ -188,7 +186,7 @@ class TweetDetailContextMenuView @JvmOverloads constructor(
 
         private fun LinearLayout.addMainMenuItemView(
             @IdRes viewId: Int,
-            block: AppCompatImageButton.() -> Unit
+            block: AppCompatImageButton.() -> Unit,
         ): AppCompatImageButton {
             val iconSize = resources.getDimensionPixelSize(R.dimen.menu_main_item_size)
             val iconPadding = resources.getDimensionPixelSize(R.dimen.menu_main_item_padding)
@@ -315,7 +313,7 @@ internal class DetailMenu : Menu {
         specifics: Array<out Intent>?,
         intent: Intent?,
         flags: Int,
-        outSpecificItems: Array<out MenuItem>?
+        outSpecificItems: Array<out MenuItem>?,
     ): Int = unsupported()
 
     override fun performShortcut(keyCode: Int, event: KeyEvent?, flags: Int): Boolean {
@@ -343,7 +341,7 @@ internal class DetailMenu : Menu {
         private val itemId: Int = 0,
         private val order: Int = 0,
         @StringRes internal var titleRes: Int = 0,
-        private var title: CharSequence? = null
+        private var title: CharSequence? = null,
     ) : MenuItem {
         override fun getItemId(): Int = itemId
         override fun getGroupId(): Int = groupId
@@ -433,7 +431,7 @@ internal class DetailMenu : Menu {
         override fun hasSubMenu(): Boolean = TODO("Not yet implemented")
         override fun getSubMenu(): SubMenu = TODO("Not yet implemented")
         override fun setOnMenuItemClickListener(
-            menuItemClickListener: MenuItem.OnMenuItemClickListener?
+            menuItemClickListener: MenuItem.OnMenuItemClickListener?,
         ): MenuItem = TODO("Not yet implemented")
 
         override fun getMenuInfo(): ContextMenu.ContextMenuInfo = TODO("Not yet implemented")
@@ -451,7 +449,7 @@ internal class DetailMenu : Menu {
         override fun collapseActionView(): Boolean = unsupported()
         override fun isActionViewExpanded(): Boolean = unsupported()
         override fun setOnActionExpandListener(
-            listener: MenuItem.OnActionExpandListener?
+            listener: MenuItem.OnActionExpandListener?,
         ): MenuItem = unsupported()
     }
 
@@ -469,7 +467,7 @@ private val DetailMenu.visibleItems: List<MenuItem>
 
 internal class MoreItemAdapter(
     private val moreMenu: DetailMenu,
-    private val callback: OnClickListener
+    private val callback: OnClickListener,
 ) : RecyclerView.Adapter<MoreItemViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MoreItemViewHolder {
