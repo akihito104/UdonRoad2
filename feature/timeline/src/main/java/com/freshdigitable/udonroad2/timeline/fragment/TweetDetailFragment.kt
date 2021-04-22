@@ -23,9 +23,9 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.map
 import androidx.navigation.fragment.navArgs
 import com.bumptech.glide.Glide
+import com.freshdigitable.fabshortcut.ExpandableBottomContextMenuView
 import com.freshdigitable.udonroad2.model.TwitterCard
 import com.freshdigitable.udonroad2.model.tweet.DetailTweetListItem
-import com.freshdigitable.udonroad2.shortcut.TweetDetailContextMenuView
 import com.freshdigitable.udonroad2.timeline.R
 import com.freshdigitable.udonroad2.timeline.databinding.FragmentDetailBinding
 import com.freshdigitable.udonroad2.timeline.di.TweetDetailViewModelComponent
@@ -106,7 +106,7 @@ class TweetDetailFragment : Fragment() {
 }
 
 @BindingAdapter("menuItemState")
-fun TweetDetailContextMenuView.updateMenuItemState(item: MenuItemState?) {
+fun ExpandableBottomContextMenuView.updateMenuItemState(item: MenuItemState?) {
     updateMenuItem {
         changeGroupEnabled(R.id.menuGroup_detailMain, item?.isMainGroupEnabled ?: false)
         onMenuItem(R.id.detail_main_rt) {

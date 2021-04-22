@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020. Matsuda, Akihit (akihito104)
+ * Copyright (c) 2021. Matsuda, Akihit (akihito104)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.freshdigitable.udonroad2.shortcut
+package com.freshdigitable.fabshortcut
 
 import android.os.Bundle
 import android.os.Looper
@@ -42,7 +42,7 @@ import org.robolectric.Shadows.shadowOf
 import org.robolectric.android.AttributeSetBuilder
 
 @RunWith(AndroidJUnit4::class)
-class TweetDetailContextMenuViewTest {
+class ExpandableBottomContextMenuViewTest {
     @Test
     fun init() {
         // setup
@@ -165,14 +165,14 @@ class TweetDetailContextMenuViewTest {
             .contains(android.R.attr.state_enabled)
     }
 
-    private fun checkPeekHeight(sut: TweetDetailContextMenuView) {
+    private fun checkPeekHeight(sut: ExpandableBottomContextMenuView) {
         assertThat(sut.y).isEqualTo((sut.parent as View).height - sut.mainList.height)
     }
 }
 
 internal fun launchContainerFragment(
     initialState: Lifecycle.State = Lifecycle.State.CREATED,
-    additionalAttrs: (AttributeSetBuilder.() -> Unit)? = null
+    additionalAttrs: (AttributeSetBuilder.() -> Unit)? = null,
 ): FragmentScenario<ContainerFragment> {
     return launchFragmentInContainer<ContainerFragment>(
         initialState = initialState,
@@ -190,26 +190,26 @@ internal fun launchContainerFragment(
     )
 }
 
-private val TweetDetailContextMenuView.mainList: ViewGroup
-    get() = findViewById(R.id.detail_menu_main)
-private val TweetDetailContextMenuView.moreList: ViewGroup
-    get() = findViewById(R.id.detail_menu_more)
-private val TweetDetailContextMenuView.toggle: ImageButton?
-    get() = findViewById(R.id.detail_menu_main_toggle)
+private val ExpandableBottomContextMenuView.mainList: ViewGroup
+    get() = findViewById(R.id.bottom_menu_main)
+private val ExpandableBottomContextMenuView.moreList: ViewGroup
+    get() = findViewById(R.id.bottom_menu_more)
+private val ExpandableBottomContextMenuView.toggle: ImageButton?
+    get() = findViewById(R.id.expandable_bottom_main_toggle)
 
-private fun TweetDetailContextMenuView.mainListChildByMenuItem(itemId: Int): ImageButton {
+private fun ExpandableBottomContextMenuView.mainListChildByMenuItem(itemId: Int): ImageButton {
     return mainList.children.first { it.id == itemId } as ImageButton
 }
 
 internal class ContainerFragment(
-    private val attrs: AttributeSet? = null
+    private val attrs: AttributeSet? = null,
 ) : Fragment() {
-    lateinit var sut: TweetDetailContextMenuView
+    lateinit var sut: ExpandableBottomContextMenuView
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View = CoordinatorLayout(requireContext()).apply {
         addView(
             FrameLayout(requireContext()),
@@ -217,7 +217,7 @@ internal class ContainerFragment(
             ViewGroup.LayoutParams.MATCH_PARENT
         )
         addView(
-            TweetDetailContextMenuView(requireContext(), attrs),
+            ExpandableBottomContextMenuView(requireContext(), attrs),
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.WRAP_CONTENT,
         )
@@ -225,6 +225,6 @@ internal class ContainerFragment(
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        sut = (view as ViewGroup).getChildAt(1) as TweetDetailContextMenuView
+        sut = (view as ViewGroup).getChildAt(1) as ExpandableBottomContextMenuView
     }
 }

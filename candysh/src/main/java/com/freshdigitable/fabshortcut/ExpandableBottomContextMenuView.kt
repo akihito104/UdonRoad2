@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020. Matsuda, Akihit (akihito104)
+ * Copyright (c) 2021. Matsuda, Akihit (akihito104)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.freshdigitable.udonroad2.shortcut
+package com.freshdigitable.fabshortcut
 
 import android.content.ComponentName
 import android.content.Context
@@ -57,7 +57,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.textview.MaterialTextView
 
-class TweetDetailContextMenuView @JvmOverloads constructor(
+class ExpandableBottomContextMenuView @JvmOverloads constructor(
     context: Context,
     attributeSet: AttributeSet? = null,
     defStyleAttr: Int = 0,
@@ -65,9 +65,10 @@ class TweetDetailContextMenuView @JvmOverloads constructor(
 
     private val mainContextMenuList: LinearLayout
     private val moreContextMenuList: RecyclerView
+    private val toggle: View?
     private val bottomSheetBehavior = BottomSheetBehavior<View>()
-    private val mainMenu = DetailMenu()
-    private val moreMenu = DetailMenu()
+    private val mainMenu = BottomMenu()
+    private val moreMenu = BottomMenu()
 
     var itemClickListener: ItemClickListener? = null
     private val callback: OnClickListener = OnClickListener { v ->
@@ -76,60 +77,62 @@ class TweetDetailContextMenuView @JvmOverloads constructor(
     }
 
     init {
-        View.inflate(context, R.layout.view_detail_menu_list, this).also {
-            mainContextMenuList = it.findViewById(R.id.detail_menu_main)
-            moreContextMenuList = it.findViewById(R.id.detail_menu_more)
+        View.inflate(context, R.layout.view_bottom_menu_list, this).also {
+            mainContextMenuList = it.findViewById(R.id.bottom_menu_main)
+            moreContextMenuList = it.findViewById(R.id.bottom_menu_more)
         }
 
         context.withStyledAttributes(
-            attributeSet, R.styleable.TweetDetailContextMenuView, defStyleAttr, 0
+            attributeSet, R.styleable.ExpandableBottomContextMenuView, defStyleAttr, 0
         ) {
-            val mainMenuId = getResourceId(R.styleable.TweetDetailContextMenuView_menu_main, 0)
+            val mainMenuId = getResourceId(R.styleable.ExpandableBottomContextMenuView_menu_main, 0)
             if (mainMenuId != 0) {
                 MenuInflater(context).inflate(mainMenuId, mainMenu)
             }
-            val moreMenuId = getResourceId(R.styleable.TweetDetailContextMenuView_menu_more, 0)
+            val moreMenuId = getResourceId(R.styleable.ExpandableBottomContextMenuView_menu_more, 0)
             if (moreMenuId != 0) {
                 MenuInflater(context).inflate(moreMenuId, moreMenu)
             }
         }
 
         setupMenuItems()
+        toggle = findViewById(R.id.expandable_bottom_main_toggle)
         bottomSheetBehavior.peekHeight = mainContextMenuList.layoutParams.height
         bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
     }
 
     private fun setupMenuItems() {
         mainContextMenuList.setupMainMenu(mainMenu, callback)
-        if (moreMenu.size() > 0) {
-            mainContextMenuList.addView(
-                Space(context),
-                LinearLayout.LayoutParams(0, 0, 1f)
-            )
-            val toggle = mainContextMenuList.addMainMenuItemView(R.id.detail_menu_main_toggle) {
-                setImageResource(R.drawable.ic_toggle)
-                setOnClickListener {
-                    bottomSheetBehavior.state = when (bottomSheetBehavior.state) {
-                        BottomSheetBehavior.STATE_COLLAPSED -> BottomSheetBehavior.STATE_EXPANDED
-                        BottomSheetBehavior.STATE_EXPANDED -> BottomSheetBehavior.STATE_COLLAPSED
-                        else -> bottomSheetBehavior.state
+
+        if (moreMenu.size() <= 0) return
+
+        mainContextMenuList.addView(
+            Space(context),
+            LinearLayout.LayoutParams(0, 0, 1f)
+        )
+        val toggle = mainContextMenuList.addMainMenuItemView(R.id.expandable_bottom_main_toggle) {
+            setImageResource(R.drawable.ic_toggle)
+            setOnClickListener {
+                bottomSheetBehavior.state = when (bottomSheetBehavior.state) {
+                    BottomSheetBehavior.STATE_COLLAPSED -> BottomSheetBehavior.STATE_EXPANDED
+                    BottomSheetBehavior.STATE_EXPANDED -> BottomSheetBehavior.STATE_COLLAPSED
+                    else -> bottomSheetBehavior.state
+                }
+            }
+        }
+        bottomSheetBehavior.addBottomSheetCallback(
+            object : BottomSheetBehavior.BottomSheetCallback() {
+                override fun onStateChanged(bottomSheet: View, newState: Int) {}
+
+                override fun onSlide(bottomSheet: View, slideOffset: Float) {
+                    if (!slideOffset.isNaN()) {
+                        toggle.rotation = -180f * slideOffset
                     }
                 }
             }
-            bottomSheetBehavior.addBottomSheetCallback(
-                object : BottomSheetBehavior.BottomSheetCallback() {
-                    override fun onStateChanged(bottomSheet: View, newState: Int) {}
+        )
 
-                    override fun onSlide(bottomSheet: View, slideOffset: Float) {
-                        if (!slideOffset.isNaN()) {
-                            toggle.rotation = -180f * slideOffset
-                        }
-                    }
-                }
-            )
-
-            moreContextMenuList.setupMoreMenu(moreMenu, callback)
-        }
+        moreContextMenuList.setupMoreMenu(moreMenu, callback)
     }
 
     private fun findMenuItemById(@IdRes menuId: Int): MenuItem? {
@@ -141,14 +144,14 @@ class TweetDetailContextMenuView @JvmOverloads constructor(
         updateScope.block()
         moreContextMenuList.adapter?.let {
             it.notifyDataSetChanged()
-            findViewById<View>(R.id.detail_menu_main_toggle)?.isInvisible = it.itemCount == 0
+            toggle?.isInvisible = it.itemCount == 0
         }
         invalidate()
     }
 
-    class UpdateScope(private val view: TweetDetailContextMenuView) {
+    class UpdateScope(private val view: ExpandableBottomContextMenuView) {
         fun onMenuItem(@IdRes menuId: Int, block: MenuItem.() -> Unit) {
-            val item = view.findMenuItemById(menuId) as? DetailMenu.Item ?: return
+            val item = view.findMenuItemById(menuId) as? BottomMenu.Item ?: return
             item.block()
             val button = view.mainContextMenuList.findViewById<ImageButton>(item.itemId) ?: return
             button.apply {
@@ -172,9 +175,9 @@ class TweetDetailContextMenuView @JvmOverloads constructor(
     }
 
     companion object {
-        private fun LinearLayout.setupMainMenu(mainMenu: DetailMenu, callback: OnClickListener) {
+        private fun LinearLayout.setupMainMenu(mainMenu: BottomMenu, callback: OnClickListener) {
             for (i in 0 until mainMenu.size()) {
-                val item = mainMenu[i] as DetailMenu.Item
+                val item = mainMenu[i] as BottomMenu.Item
                 addMainMenuItemView(item.itemId) {
                     setIcon(item)
                     setContentDescription(item)
@@ -208,26 +211,26 @@ class TweetDetailContextMenuView @JvmOverloads constructor(
             return button
         }
 
-        private fun RecyclerView.setupMoreMenu(moreMenu: DetailMenu, callback: OnClickListener) {
+        private fun RecyclerView.setupMoreMenu(moreMenu: BottomMenu, callback: OnClickListener) {
             layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
             adapter = MoreItemAdapter(moreMenu, callback)
         }
 
-        private fun AppCompatImageButton.setIcon(item: DetailMenu.Item) {
+        private fun AppCompatImageButton.setIcon(item: BottomMenu.Item) {
             when {
                 item.iconRes != 0 -> setImageResource(item.iconRes)
                 else -> setImageDrawable(item.icon)
             }
         }
 
-        private fun AppCompatImageButton.setContentDescription(item: DetailMenu.Item) {
+        private fun AppCompatImageButton.setContentDescription(item: BottomMenu.Item) {
             contentDescription = when {
                 item.titleRes != 0 -> resources.getString(item.titleRes)
                 else -> item.title
             }
         }
 
-        private fun DetailMenu.Item.parseToState(): IntArray {
+        private fun BottomMenu.Item.parseToState(): IntArray {
             return listOfNotNull(
                 if (isCheckable) android.R.attr.state_checkable else null,
                 if (isChecked) android.R.attr.state_checked else null,
@@ -237,7 +240,7 @@ class TweetDetailContextMenuView @JvmOverloads constructor(
     }
 }
 
-internal class DetailMenu : Menu {
+internal class BottomMenu : Menu {
     private val items: MutableList<Item> = mutableListOf()
     override fun size(): Int = items.size
 
@@ -462,11 +465,11 @@ internal class MoreItemViewHolder(itemView: View) : RecyclerView.ViewHolder(item
     val text: TextView = itemView as TextView
 }
 
-private val DetailMenu.visibleItems: List<MenuItem>
+private val BottomMenu.visibleItems: List<MenuItem>
     get() = (0 until size()).map { this[it] }.filter { it.isVisible }
 
 internal class MoreItemAdapter(
-    private val moreMenu: DetailMenu,
+    private val moreMenu: BottomMenu,
     private val callback: OnClickListener,
 ) : RecyclerView.Adapter<MoreItemViewHolder>() {
 
@@ -489,7 +492,7 @@ internal class MoreItemAdapter(
     override fun onBindViewHolder(holder: MoreItemViewHolder, position: Int) {
         val context = holder.itemView.context
         val iconSize = context.resources.getDimensionPixelSize(R.dimen.menu_more_icon_size)
-        val item = moreMenu.visibleItems[position] as DetailMenu.Item
+        val item = moreMenu.visibleItems[position] as BottomMenu.Item
         holder.itemView.id = item.itemId
         holder.text.text = item.title
         val drawable = when {

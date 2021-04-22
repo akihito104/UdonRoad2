@@ -53,7 +53,6 @@ dependencies {
     implementation(Libs.ANDROIDX_CONSTRAINT_LAYOUT)
 
     testImplementation(Libs.JUNIT)
-    testImplementation("androidx.fragment:fragment-testing:${Versions.ANDROIDX_FRAGMENT}")
     testImplementation(Libs.ANDROIDX_TEST_CORE)
     testImplementation(Libs.ANDROIDX_TEST_ESPRESSO)
     testImplementation(Libs.ANDROIDX_TEST_EXT_JUNIT)
