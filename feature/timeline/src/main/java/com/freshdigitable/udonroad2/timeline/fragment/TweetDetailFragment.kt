@@ -107,15 +107,15 @@ class TweetDetailFragment : Fragment() {
 
 @BindingAdapter("menuItemState")
 fun ExpandableBottomContextMenuView.updateMenuItemState(item: MenuItemState?) {
-    updateMenuItem {
+    updateMenu {
         changeGroupEnabled(R.id.menuGroup_detailMain, item?.isMainGroupEnabled ?: false)
-        onMenuItem(R.id.detail_main_rt) {
+        updateItemOf(R.id.detail_main_rt) {
             isChecked = item?.isRetweetChecked ?: false
         }
-        onMenuItem(R.id.detail_main_fav) {
+        updateItemOf(R.id.detail_main_fav) {
             isChecked = item?.isFavChecked ?: false
         }
-        onMenuItem(R.id.detail_more_delete) {
+        updateItemOf(R.id.detail_more_delete) {
             isVisible = item?.isDeleteVisible ?: false
         }
     }

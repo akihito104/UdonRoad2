@@ -139,7 +139,7 @@ class ExpandableBottomContextMenuView @JvmOverloads constructor(
         return mainMenu.findItem(menuId) ?: moreMenu.findItem(menuId)
     }
 
-    fun updateMenuItem(block: UpdateScope.() -> Unit) {
+    fun updateMenu(block: UpdateScope.() -> Unit) {
         val updateScope = UpdateScope(this)
         updateScope.block()
         moreContextMenuList.adapter?.let {
@@ -150,7 +150,7 @@ class ExpandableBottomContextMenuView @JvmOverloads constructor(
     }
 
     class UpdateScope(private val view: ExpandableBottomContextMenuView) {
-        fun onMenuItem(@IdRes menuId: Int, block: MenuItem.() -> Unit) {
+        fun updateItemOf(@IdRes menuId: Int, block: MenuItem.() -> Unit) {
             val item = view.findMenuItemById(menuId) as? BottomMenu.Item ?: return
             item.block()
             val button = view.mainContextMenuList.findViewById<ImageButton>(item.itemId) ?: return

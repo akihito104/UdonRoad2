@@ -103,8 +103,8 @@ class ExpandableBottomContextMenuViewTest {
         }.moveToState(Lifecycle.State.RESUMED)
             .withFragment {
                 // exercise
-                sut.updateMenuItem {
-                    onMenuItem(R.id.detail_main_rt) {
+                sut.updateMenu {
+                    updateItemOf(R.id.detail_main_rt) {
                         isChecked = true
                     }
                 }
@@ -126,8 +126,8 @@ class ExpandableBottomContextMenuViewTest {
         }.moveToState(Lifecycle.State.RESUMED)
             .withFragment {
                 // exercise
-                sut.updateMenuItem {
-                    onMenuItem(R.id.detail_more_delete) {
+                sut.updateMenu {
+                    updateItemOf(R.id.detail_more_delete) {
                         isVisible = false
                     }
                 }
@@ -150,7 +150,7 @@ class ExpandableBottomContextMenuViewTest {
         }.moveToState(Lifecycle.State.RESUMED)
             .withFragment {
                 // exercise
-                sut.updateMenuItem {
+                sut.updateMenu {
                     changeGroupEnabled(R.id.menuGroup_detailMain, true)
                 }
                 shadowOf(Looper.getMainLooper()).idle()
