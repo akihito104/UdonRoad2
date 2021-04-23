@@ -23,13 +23,13 @@
 
     <!-- FIXME: targetApi -->
     <LinearLayout
-        android:id="@+id/detail_menu_main"
+        android:id="@+id/bottom_menu_main"
         android:layout_width="0dp"
         android:layout_height="?android:attr/actionBarSize"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/detail_menu_more"
+        app:layout_constraintBottom_toTopOf="@id/bottom_menu_more"
         app:layout_constraintVertical_chainStyle="packed"
         app:layout_constraintVertical_bias="0"
         android:background="?android:attr/colorAccent"
@@ -39,10 +39,10 @@
         />
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/detail_menu_more"
+        android:id="@+id/bottom_menu_more"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/detail_menu_main"
+        app:layout_constraintTop_toBottomOf="@id/bottom_menu_main"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"

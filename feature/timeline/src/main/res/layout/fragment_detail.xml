@@ -212,7 +212,7 @@
             </androidx.constraintlayout.widget.ConstraintLayout>
         </ScrollView>
 
-        <com.freshdigitable.udonroad2.shortcut.TweetDetailContextMenuView
+        <com.freshdigitable.fabshortcut.ExpandableBottomContextMenuView
             android:id="@+id/detail_menu_list"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

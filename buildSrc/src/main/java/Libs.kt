@@ -45,6 +45,8 @@ object Libs {
         "androidx.swiperefreshlayout:swiperefreshlayout:${Versions.ANDROIDX_SWIPE_REFRESH_LAYOUT}"
     const val ANDROIDX_PREFERENCE = "androidx.preference:preference:${Versions.ANDROIDX_PREFERENCE}"
     const val ANDROIDX_TEST_CORE = "androidx.test:core:${Versions.ANDROIDX_TEST_CORE}"
+    const val ANDROIDX_FRAGMENT_TESTING =
+        "androidx.fragment:fragment-testing:${Versions.ANDROIDX_FRAGMENT}"
     const val ANDROIDX_TEST_ESPRESSO =
         "androidx.test.espresso:espresso-core:${Versions.ANDROIDX_TEST_ESPRESSO}"
     const val ANDROIDX_TEST_ESPRESSO_INTENTS =
