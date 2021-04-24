@@ -32,7 +32,6 @@ import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentEffectDele
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
-import kotlinx.coroutines.flow.onEach
 import javax.inject.Inject
 
 internal class TimelineViewModelSource(
@@ -54,24 +53,29 @@ internal class TimelineViewModelSource(
             selectedItemId = selectedItemRepository.find(owner)
         ),
         baseViewModelSource.state.onEvent { s, base -> s.copy(baseState = base) },
-        actions.selectItem.onEvent { s, e -> s.copy(selectedItemId = e.selectedItemId) },
-        actions.unselectItem.onEvent { s, _ -> s.copy(selectedItemId = null) },
+        actions.selectItem.onEvent { s, e ->
+            selectedItemRepository.put(e.selectedItemId)
+            s
+        },
+        actions.unselectItem.onEvent { s, _ ->
+            selectedItemRepository.remove(owner)
+            s
+        },
         actions.toggleItem.onEvent { s, e ->
             when (s.selectedItemId) {
-                e.item -> s.copy(selectedItemId = null)
-                else -> s.copy(selectedItemId = e.item)
+                e.item -> selectedItemRepository.remove(owner)
+                else -> selectedItemRepository.put(e.item)
             }
+            s
         },
-        actions.heading.onEvent { s, _ -> s.copy(selectedItemId = null) },
-    ).onEach {
-        if (it.selectedItemId != null) {
-            selectedItemRepository.put(it.selectedItemId)
-        } else {
+        actions.heading.onEvent { s, _ ->
             selectedItemRepository.remove(owner)
+            s
+        },
+        selectedItemRepository.getSource(owner).onEvent { s, item ->
+            s.copy(selectedItemId = item)
         }
-    }
-
-    internal val selectedItemId: Flow<SelectedItemId?> = selectedItemRepository.getSource(owner)
+    )
 
     override val effect: Flow<AppEffect> = merge(
         actions.showTweetDetail.map { TimelineEffect.Navigate.Detail(it.tweetId) },
@@ -94,8 +98,8 @@ internal class TimelineViewModelSource(
 
 data class TimelineState(
     val baseState: ListItemLoadableViewModel.State? = null,
-    val selectedItemId: SelectedItemId? = null,
-) : ListItemLoadableViewModel.State {
+    override val selectedItemId: SelectedItemId? = null,
+) : ListItemLoadableViewModel.State, TweetListItemViewModel.State {
     override val isHeadingEnabled: Boolean
         get() = baseState?.isHeadingEnabled == true || selectedItemId != null
 }

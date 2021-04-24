@@ -216,7 +216,7 @@ class TimelineViewStatesTestRule(
     val messageEvents: List<FeedbackMessage>
         get() = navEvents.filterIsInstance<FeedbackMessage>()
     val selectedItems: List<SelectedItemId?>
-        get() = requireNotNull(eventCollector).nonNullEventsOf(sut.selectedItemId)
+        get() = requireNotNull(eventCollector).nonNullEventsOf(sut.state).map { it.selectedItemId }
 
     fun setupPrependListResponse(res: List<TweetEntity> = emptyList()) = with(listRepositoryRule) {
         coSetupResponseWithVerify(
@@ -233,7 +233,7 @@ class TimelineViewStatesTestRule(
         super.starting(description)
         eventCollector?.setupForActivate {
             with(sut) {
-                addAll(state, mediaState, effect, selectedItemId)
+                addAll(state, mediaState, effect)
             }
         }
     }

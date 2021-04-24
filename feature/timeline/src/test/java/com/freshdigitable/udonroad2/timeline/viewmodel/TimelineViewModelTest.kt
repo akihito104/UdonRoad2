@@ -60,7 +60,7 @@ class TimelineViewModelTest {
     @Before
     fun setup() {
         eventCollector.setupForActivate {
-            addAll(sut.listState, sut.selectedItemId, sut.mediaState)
+            addAll(sut.listState, sut.tweetListState, sut.mediaState)
             addAll(sut.timeline)
             addActivityEventStream(sut)
         }
@@ -68,7 +68,7 @@ class TimelineViewModelTest {
 
     @Test
     fun init() {
-        assertThat(sut.selectedItemId.value).isNull()
+        assertThat(sut.tweetListState.value?.selectedItemId).isNull()
         assertThat(sut.listState.value?.isHeadingEnabled).isFalse()
         assertThat(sut.mediaState.value?.isPossiblySensitiveHidden).isTrue()
     }
@@ -129,7 +129,7 @@ class TimelineViewModelTest {
         }
 
         // verify
-        assertThat(sut.selectedItemId.value?.originalId).isEqualTo(TweetId(1000))
+        assertThat(sut.tweetListState.value?.selectedItemId?.originalId).isEqualTo(TweetId(1000))
         assertThat(sut.listState.value?.isHeadingEnabled).isTrue()
     }
 
@@ -164,7 +164,7 @@ class TimelineViewModelTest {
 
         // verify
         assertThat(navigationEvents).isEmpty()
-        assertThat(sut.selectedItemId.value).isNull()
+        assertThat(sut.tweetListState.value?.selectedItemId).isNull()
     }
 
     @Test
