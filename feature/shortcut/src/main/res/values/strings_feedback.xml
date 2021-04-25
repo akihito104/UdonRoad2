@@ -16,9 +16,17 @@
 
 <resources>
     <string name="msg_rt_create_failure">RT failure…</string>
-    <string name="msg_rt_create_success">RT successed</string>
-    <string name="msg_fav_create_success">fav successed</string>
+    <string name="msg_rt_create_success">RT succeeded</string>
+    <string name="msg_rt_destroy_failure">delete RT failure…</string>
+    <string name="msg_rt_destroy_success">delete RT succeeded</string>
+
+    <string name="msg_fav_create_success">fav succeeded</string>
     <string name="msg_fav_create_failure">fav failure…</string>
     <string name="msg_already_fav">already faved</string>
     <string name="msg_already_rt">already retweeted…</string>
+    <string name="msg_fav_destroy_success">fav deleted</string>
+    <string name="msg_fav_destroy_failure">delete fav failure…</string>
+
+    <string name="msg_delete_tweet_success">deleted tweet</string>
+    <string name="msg_delete_tweet_failure">failed to delete tweet…</string>
 </resources>
