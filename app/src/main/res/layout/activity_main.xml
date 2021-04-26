@@ -2,9 +2,14 @@
 <layout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     >
 
     <data>
+
+        <import type="com.freshdigitable.udonroad2.shortcut.ShortcutViewModel.State" />
+
+        <import type="android.view.View" />
 
         <variable
             name="viewModel"
@@ -61,7 +66,19 @@
                 app:menu="@menu/shortcut_main"
                 style="@style/Widget.FlingFAB"
                 app:menuListener="@{item -> viewModel.onShortcutMenuSelected(item, viewModel.requireSelectedTweetId)}"
-                app:isVisible="@{viewModel.shortcutState.visible}"
+                app:isVisible="@{viewModel.shortcutState.mode == State.Mode.FAB}"
+                />
+
+            <com.freshdigitable.fabshortcut.ExpandableBottomContextMenuView
+                android:id="@+id/main_bottom_menu"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:menu_main="@menu/detail_main"
+                app:menu_more="@menu/detail_more"
+                app:menuItemState="@{viewModel.shortcutState.menuItemState}"
+                app:itemClickListener="@{item -> viewModel.onShortcutMenuSelected(item, viewModel.requireSelectedTweetId)}"
+                android:visibility="@{viewModel.shortcutState.mode == State.Mode.TOOLBAR ? View.VISIBLE : View.INVISIBLE}"
+                tools:visibility="visible"
                 />
         </androidx.coordinatorlayout.widget.CoordinatorLayout>
 

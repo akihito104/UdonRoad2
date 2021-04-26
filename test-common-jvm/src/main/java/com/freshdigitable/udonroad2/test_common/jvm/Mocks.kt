@@ -18,10 +18,14 @@ package com.freshdigitable.udonroad2.test_common.jvm
 
 import com.freshdigitable.udonroad2.model.MediaEntity
 import com.freshdigitable.udonroad2.model.TweetId
+import com.freshdigitable.udonroad2.model.UserId
+import com.freshdigitable.udonroad2.model.tweet.DetailTweetElement
+import com.freshdigitable.udonroad2.model.tweet.DetailTweetListItem
 import com.freshdigitable.udonroad2.model.tweet.TweetElement
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import com.freshdigitable.udonroad2.model.tweet.UserReplyEntity
+import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import io.mockk.every
 import io.mockk.mockk
 
@@ -68,7 +72,7 @@ fun TweetEntity.Companion.createMock(
 
 fun TweetListItem.Companion.createMock(
     originalTweetId: TweetId,
-    body: TweetElement? = null
+    body: TweetElement? = null,
 ): TweetListItem = mockk<TweetListItem>().also {
     every { it.originalId } returns originalTweetId
 
@@ -80,8 +84,29 @@ fun TweetListItem.Companion.createMock(
 
 fun TweetElement.Companion.createMock(
     id: TweetId,
-    media: List<MediaEntity> = emptyList()
+    media: List<MediaEntity> = emptyList(),
 ): TweetElement = mockk<TweetElement>().also {
     every { it.id } returns id
     every { it.media } returns media
+}
+
+fun DetailTweetListItem.Companion.createMock(
+    originalId: TweetId = TweetId(1000),
+    originalUserId: UserId = UserId(3000),
+): DetailTweetListItem { // TODO
+    return mockk<DetailTweetListItem>().also {
+        every { it.originalId } returns originalId
+        every { it.originalUser } returns mockk<TweetUserItem>().also {
+            every { it.id } returns originalUserId
+        }
+        every { it.body } returns mockk<DetailTweetElement>().also {
+            every { it.id } returns TweetId(1001)
+            every { it.user } returns mockk<TweetUserItem>().also {
+                every { it.id } returns UserId(3001)
+            }
+            every { it.isRetweeted } returns false
+            every { it.isFavorited } returns false
+            every { it.urlItems } returns emptyList()
+        }
+    }
 }

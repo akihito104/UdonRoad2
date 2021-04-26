@@ -20,20 +20,27 @@ import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.toActionFlow
 import kotlinx.coroutines.flow.Flow
 
-interface ShortcutActions {
+interface ShortcutActions : ShortcutEventListener {
     val showTweetDetail: Flow<SelectedItemShortcut.TweetDetail>
     val favTweet: Flow<SelectedItemShortcut.Like>
     val retweet: Flow<SelectedItemShortcut.Retweet>
     val showConversation: Flow<SelectedItemShortcut.Conversation>
+    val unlikeTweet: Flow<SelectedItemShortcut.Unlike>
+    val unretweetTweet: Flow<SelectedItemShortcut.Unretweet>
+    val deleteTweet: Flow<SelectedItemShortcut.DeleteTweet>
 
     companion object {
-        fun create(dispatcher: EventDispatcher): ShortcutActions = TweetShortcutActions(dispatcher)
+        fun create(
+            dispatcher: EventDispatcher,
+            listener: ShortcutEventListener = ShortcutEventListener.create(dispatcher),
+        ): ShortcutActions = TweetShortcutActions(dispatcher, listener)
     }
 }
 
 private class TweetShortcutActions(
     dispatcher: EventDispatcher,
-) : ShortcutActions {
+    listener: ShortcutEventListener,
+) : ShortcutActions, ShortcutEventListener by listener {
     override val showTweetDetail: Flow<SelectedItemShortcut.TweetDetail> =
         dispatcher.toActionFlow()
     override val favTweet: Flow<SelectedItemShortcut.Like> =
@@ -42,4 +49,7 @@ private class TweetShortcutActions(
         dispatcher.toActionFlow()
     override val showConversation: Flow<SelectedItemShortcut.Conversation> =
         dispatcher.toActionFlow()
+    override val unlikeTweet = dispatcher.toActionFlow<SelectedItemShortcut.Unlike>()
+    override val unretweetTweet = dispatcher.toActionFlow<SelectedItemShortcut.Unretweet>()
+    override val deleteTweet = dispatcher.toActionFlow<SelectedItemShortcut.DeleteTweet>()
 }

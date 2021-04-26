@@ -110,4 +110,6 @@ interface DetailTweetElement : TweetElement {
 interface DetailTweetListItem : TweetListItem {
     override val body: DetailTweetElement
     override val quoted: DetailTweetElement?
+
+    companion object
 }

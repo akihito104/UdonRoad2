@@ -21,23 +21,29 @@ import com.freshdigitable.udonroad2.data.impl.create
 import com.freshdigitable.udonroad2.input.TweetInputSharedState
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
+import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
+import com.freshdigitable.udonroad2.model.app.navigation.TimelineEffect
 import com.freshdigitable.udonroad2.model.app.navigation.postEvents
+import com.freshdigitable.udonroad2.model.tweet.DetailTweetListItem
+import com.freshdigitable.udonroad2.shortcut.ShortcutViewModel
 import com.freshdigitable.udonroad2.test_common.MockVerified
 import com.freshdigitable.udonroad2.test_common.RxExceptionHandler
 import com.freshdigitable.udonroad2.test_common.jvm.AppSettingRepositoryRule
 import com.freshdigitable.udonroad2.test_common.jvm.CoroutineTestRule
 import com.freshdigitable.udonroad2.test_common.jvm.OAuthTokenRepositoryRule
 import com.freshdigitable.udonroad2.test_common.jvm.ObserverEventCollector
+import com.freshdigitable.udonroad2.test_common.jvm.TweetRepositoryRule
 import com.freshdigitable.udonroad2.test_common.jvm.assertLatestNavigationEvent
+import com.freshdigitable.udonroad2.test_common.jvm.createMock
 import com.freshdigitable.udonroad2.test_common.jvm.setupForActivate
-import com.freshdigitable.udonroad2.timeline.TimelineEffect
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.google.common.truth.Truth.assertThat
 import io.mockk.every
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flowOf
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.RuleChain
@@ -46,9 +52,9 @@ import org.junit.rules.TestWatcher
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
 
-class MainActivityViewStatesTest {
+class MainViewModelSourceTest {
     @get:Rule
-    internal val rule = MainActivityStateModelTestRule()
+    internal val rule = MainViewModelSourceTestRule()
 
     @Test
     fun updateContainer_dispatchSetupEvent_then_flowInitOauthEvent(): Unit = with(rule) {
@@ -97,6 +103,23 @@ class MainActivityViewStatesTest {
             assertThat(it.owner.query).isEqualTo(QueryType.Oauth)
         }
     }
+
+    @Test
+    fun containerUpdatedToDetail_then_shortcutStateIsToolbar(): Unit = with(rule) {
+        // setup
+        appSettingRepositoryRule.setupCurrentUserId(authenticatedUserId.value)
+        tweetRepositoryRule.setupShowTweet(TweetId(4000),
+            flowOf(DetailTweetListItem.createMock(TweetId(4000))))
+        dispatchEvents(TimelineEvent.Setup())
+
+        // exercise
+        navDelegateRule.setupContainerState(MainNavHostState.TweetDetail(TweetId(4000)))
+
+        // verify
+        val state = eventCollector.eventsOf(sut.states).last()
+        assertThat(state?.mode).isEqualTo(ShortcutViewModel.State.Mode.TOOLBAR)
+        assertThat(state?.menuItemState?.isMainGroupEnabled).isTrue()
+    }
 }
 
 internal class MainActivityNavigationDelegateRule(
@@ -113,7 +136,7 @@ internal class MainActivityNavigationDelegateRule(
     }
 }
 
-internal class MainActivityStateModelTestRule(
+internal class MainViewModelSourceTestRule(
     val dispatcher: EventDispatcher = EventDispatcher(),
     val appSettingRepositoryRule: AppSettingRepositoryRule = AppSettingRepositoryRule(),
     val oauthTokenRepository: OAuthTokenRepositoryRule = OAuthTokenRepositoryRule(
@@ -131,11 +154,13 @@ internal class MainActivityStateModelTestRule(
         every { mock.isExpanded } returns isExpandedSource
     }
     val authenticatedUserId = UserId(10000)
+    val tweetRepositoryRule = TweetRepositoryRule()
     val sut: MainViewModelSource by lazy {
         MainViewModelSource(
             MainActivityActions(dispatcher),
             selectedItemRepository,
             oauthTokenRepository.appSettingMock,
+            tweetRepositoryRule.mock,
             tweetInputSharedState.mock,
             ListOwnerGenerator.create(),
             navDelegateRule.state,
@@ -148,6 +173,7 @@ internal class MainActivityStateModelTestRule(
 
     override fun starting(description: Description?) {
         super.starting(description)
+        appSettingRepositoryRule.setupCurrentUserIdSource(authenticatedUserId.value)
         if (isStateCollected) {
             eventCollector.setupForActivate {
                 addAll(sut.states, sut.initContainer)
@@ -159,6 +185,7 @@ internal class MainActivityStateModelTestRule(
         return RuleChain.outerRule(eventCollector)
             .around(navDelegateRule)
             .around(oauthTokenRepository)
+            .around(tweetRepositoryRule)
             .around(RxExceptionHandler())
             .apply(super.apply(base, description), description)
     }

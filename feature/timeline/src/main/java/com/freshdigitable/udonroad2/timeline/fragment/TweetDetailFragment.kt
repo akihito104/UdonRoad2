@@ -26,10 +26,10 @@ import com.bumptech.glide.Glide
 import com.freshdigitable.fabshortcut.ExpandableBottomContextMenuView
 import com.freshdigitable.udonroad2.model.TwitterCard
 import com.freshdigitable.udonroad2.model.tweet.DetailTweetListItem
+import com.freshdigitable.udonroad2.shortcut.MenuItemState
 import com.freshdigitable.udonroad2.timeline.R
 import com.freshdigitable.udonroad2.timeline.databinding.FragmentDetailBinding
 import com.freshdigitable.udonroad2.timeline.di.TweetDetailViewModelComponent
-import com.freshdigitable.udonroad2.timeline.viewmodel.MenuItemState
 import com.freshdigitable.udonroad2.timeline.viewmodel.SpanClickListener
 import com.freshdigitable.udonroad2.timeline.viewmodel.TweetDetailViewModel
 import dagger.android.support.AndroidSupportInjection

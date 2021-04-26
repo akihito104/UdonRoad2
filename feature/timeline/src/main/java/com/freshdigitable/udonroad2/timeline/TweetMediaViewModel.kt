@@ -21,6 +21,7 @@ import com.freshdigitable.udonroad2.data.impl.AppSettingRepository
 import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEffectStream
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
+import com.freshdigitable.udonroad2.model.app.navigation.TimelineEffect
 import com.freshdigitable.udonroad2.model.app.navigation.toActionFlow
 import com.freshdigitable.udonroad2.model.app.onEvent
 import com.freshdigitable.udonroad2.model.app.stateSourceBuilder
@@ -77,7 +78,7 @@ private class TweetMediaViewModelSourceImpl(
     )
 
     override val effect: Flow<TimelineEffect.Navigate.MediaViewer> =
-        launchMediaViewer.map { TimelineEffect.Navigate.MediaViewer(it) }
+        launchMediaViewer.map { TimelineEffect.Navigate.MediaViewer.create(it) }
 
     data class Snapshot(
         override val isPossiblySensitiveHidden: Boolean = false,

@@ -14,6 +14,7 @@ import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
 import com.freshdigitable.udonroad2.model.app.navigation.AppEventListener
 import com.freshdigitable.udonroad2.model.app.navigation.AppEventListener1
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
+import com.freshdigitable.udonroad2.model.app.navigation.TimelineEffect
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
 import com.freshdigitable.udonroad2.model.app.onEvent
 import com.freshdigitable.udonroad2.model.app.stateSourceBuilder

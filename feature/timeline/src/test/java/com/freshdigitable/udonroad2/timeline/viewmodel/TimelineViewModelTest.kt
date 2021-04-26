@@ -18,12 +18,12 @@ package com.freshdigitable.udonroad2.timeline.viewmodel
 
 import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
+import com.freshdigitable.udonroad2.model.app.navigation.TimelineEffect
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import com.freshdigitable.udonroad2.test_common.jvm.ObserverEventCollector
 import com.freshdigitable.udonroad2.test_common.jvm.createMock
 import com.freshdigitable.udonroad2.test_common.jvm.setupForActivate
-import com.freshdigitable.udonroad2.timeline.TimelineEffect
 import com.freshdigitable.udonroad2.timeline.TimelineViewStatesTestRule
 import com.freshdigitable.udonroad2.timeline.UserIconClickedAction
 import com.freshdigitable.udonroad2.timeline.UserIconViewModelSource
@@ -45,10 +45,9 @@ class TimelineViewModelTest {
         .around(viewStatesTestRule)
 
     internal val sut: TimelineViewModel by lazy {
-        val eventDispatcher = viewStatesTestRule.actionsRule.dispatcher
         TimelineViewModel(
             viewStatesTestRule.sut,
-            UserIconViewModelSource(UserIconClickedAction(eventDispatcher))
+            UserIconViewModelSource(UserIconClickedAction(viewStatesTestRule.dispatcher))
         )
     }
 

@@ -29,12 +29,12 @@ import com.freshdigitable.udonroad2.model.RequestTokenItem
 import com.freshdigitable.udonroad2.model.app.DispatcherProvider
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEffectStream
 import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
+import com.freshdigitable.udonroad2.model.app.navigation.getTimelineEvent
 import com.freshdigitable.udonroad2.model.app.onEvent
 import com.freshdigitable.udonroad2.model.app.stateSourceBuilder
 import com.freshdigitable.udonroad2.timeline.ListItemLoadableEventListener
 import com.freshdigitable.udonroad2.timeline.ListItemLoadableViewModel
 import com.freshdigitable.udonroad2.timeline.ListItemLoadableViewModelSource
-import com.freshdigitable.udonroad2.timeline.getTimelineEvent
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.onEach

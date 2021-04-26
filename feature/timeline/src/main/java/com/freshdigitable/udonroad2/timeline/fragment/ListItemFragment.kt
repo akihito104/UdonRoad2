@@ -22,9 +22,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEffectDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
+import com.freshdigitable.udonroad2.model.app.navigation.TimelineEffect
 import com.freshdigitable.udonroad2.timeline.ListItemLoadableViewModel
 import com.freshdigitable.udonroad2.timeline.R
-import com.freshdigitable.udonroad2.timeline.TimelineEffect
 import com.freshdigitable.udonroad2.timeline.databinding.FragmentTimelineBinding
 import com.freshdigitable.udonroad2.timeline.di.ListItemAdapterComponent
 import com.freshdigitable.udonroad2.timeline.di.ListItemFragmentEffectDelegateComponent

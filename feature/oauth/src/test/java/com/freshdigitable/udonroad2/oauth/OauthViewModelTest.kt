@@ -27,6 +27,7 @@ import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
+import com.freshdigitable.udonroad2.model.app.navigation.TimelineEffect
 import com.freshdigitable.udonroad2.model.user.UserEntity
 import com.freshdigitable.udonroad2.test_common.MockVerified
 import com.freshdigitable.udonroad2.test_common.RxExceptionHandler
@@ -34,7 +35,6 @@ import com.freshdigitable.udonroad2.test_common.jvm.CoroutineTestRule
 import com.freshdigitable.udonroad2.test_common.jvm.OAuthTokenRepositoryRule
 import com.freshdigitable.udonroad2.test_common.jvm.ObserverEventCollector
 import com.freshdigitable.udonroad2.test_common.jvm.setupForActivate
-import com.freshdigitable.udonroad2.timeline.TimelineEffect
 import com.google.common.truth.Truth.assertThat
 import io.mockk.every
 import io.mockk.mockk

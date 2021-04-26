@@ -19,20 +19,24 @@ package com.freshdigitable.udonroad2.main
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.data.impl.AppSettingRepository
 import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
+import com.freshdigitable.udonroad2.data.impl.TweetRepository
 import com.freshdigitable.udonroad2.input.TweetInputSharedState
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
+import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.app.di.ActivityScope
 import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.ViewState
+import com.freshdigitable.udonroad2.model.app.navigation.getTimelineEvent
 import com.freshdigitable.udonroad2.model.app.navigation.toActionFlow
 import com.freshdigitable.udonroad2.model.app.onEvent
 import com.freshdigitable.udonroad2.model.app.stateSourceBuilder
+import com.freshdigitable.udonroad2.model.tweet.DetailTweetListItem
+import com.freshdigitable.udonroad2.shortcut.MenuItemState
 import com.freshdigitable.udonroad2.shortcut.ShortcutViewModel
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
-import com.freshdigitable.udonroad2.timeline.getTimelineEvent
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
@@ -51,6 +55,7 @@ internal class MainViewModelSource @Inject constructor(
     actions: MainActivityActions,
     selectedItemRepository: SelectedItemRepository,
     appSettingRepository: AppSettingRepository,
+    tweetRepository: TweetRepository,
     tweetInputSharedState: TweetInputSharedState,
     listOwnerGenerator: ListOwnerGenerator,
     navDelegate: MainActivityNavState,
@@ -64,13 +69,28 @@ internal class MainViewModelSource @Inject constructor(
     }
     internal val states: Flow<MainActivityViewState> = stateSourceBuilder(
         init = MainActivityViewState(),
+        appSettingRepository.currentUserIdSource.onEvent { s, id -> s.copy(currentUserId = id) },
         navDelegate.containerState.flatMapLatest { host ->
             when (host) {
                 is MainNavHostState.Timeline -> selectedItemRepository.getSource(host.owner)
                     .mapLatest { host to it }
                 else -> flowOf(host to null)
             }
-        }.onEvent { state, (container: MainNavHostState, item: SelectedItemId?) ->
+        }.flatMapLatest { (container: MainNavHostState, item: SelectedItemId?) ->
+            when (container) {
+                is MainNavHostState.Timeline -> {
+                    item?.let { i ->
+                        tweetRepository.getDetailTweetItemSource(i.quoteId ?: i.originalId)
+                            .mapLatest { container to it }
+                    } ?: flowOf(container to null)
+                }
+                is MainNavHostState.TweetDetail -> {
+                    tweetRepository.getDetailTweetItemSource(container.tweetId)
+                        .mapLatest { container to it }
+                }
+                else -> flowOf(container to null)
+            }
+        }.onEvent { state, (container: MainNavHostState, item: DetailTweetListItem?) ->
             state.copy(navHostState = container, selectedItem = item)
         },
         tweetInputSharedState.isExpanded.onEvent { state, expanded ->
@@ -86,18 +106,33 @@ internal data class MainActivityViewState(
     val isTweetInputExpanded: Boolean = false,
     val isInTopLevelDestination: Boolean = false,
     val navHostState: MainNavHostState? = null,
-    val selectedItem: SelectedItemId? = null,
+    val selectedItem: DetailTweetListItem? = null,
+    private val currentUserId: UserId? = null,
 ) : ViewState, ShortcutViewModel.State {
     val isTweetInputMenuVisible: Boolean
-        get() = !(
-            navHostState is MainNavHostState.Timeline &&
-                navHostState.owner.query is QueryType.Oauth
-            )
-    override val isVisible: Boolean
+        get() = (navHostState as? MainNavHostState.Timeline)?.owner?.query !is QueryType.Oauth
+
+    override val mode: ShortcutViewModel.State.Mode
+        get() = when (navHostState) {
+            is MainNavHostState.Timeline -> {
+                if (selectedItem != null && !isTweetInputExpanded) {
+                    ShortcutViewModel.State.Mode.FAB
+                } else {
+                    ShortcutViewModel.State.Mode.HIDDEN
+                }
+            }
+            is MainNavHostState.TweetDetail -> ShortcutViewModel.State.Mode.TOOLBAR
+            else -> ShortcutViewModel.State.Mode.HIDDEN
+        }
+    override val menuItemState: MenuItemState
         get() = when {
-            isTweetInputExpanded -> false
-            selectedItem != null -> true
-            else -> false
+            selectedItem != null && mode == ShortcutViewModel.State.Mode.TOOLBAR -> MenuItemState(
+                isMainGroupEnabled = true,
+                isRetweetChecked = selectedItem.body.isRetweeted,
+                isFavChecked = selectedItem.body.isFavorited,
+                isDeleteVisible = selectedItem.originalUser.id == currentUserId
+            )
+            else -> MenuItemState()
         }
     val appBarTitle: AppBarTitle
         get() = when (isTweetInputExpanded) {

@@ -17,53 +17,98 @@
 package com.freshdigitable.udonroad2.shortcut
 
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
+import com.freshdigitable.udonroad2.model.ListOwnerGenerator
+import com.freshdigitable.udonroad2.model.QueryType
+import com.freshdigitable.udonroad2.model.app.AppErrorType
 import com.freshdigitable.udonroad2.model.app.AppTwitterException.ErrorType
 import com.freshdigitable.udonroad2.model.app.LoadingResult
 import com.freshdigitable.udonroad2.model.app.load
-import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
+import com.freshdigitable.udonroad2.model.app.navigation.ActivityEffectStream
+import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
+import com.freshdigitable.udonroad2.model.app.navigation.TimelineEffect
+import com.freshdigitable.udonroad2.model.app.navigation.getTimelineEvent
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.merge
 
-interface ShortcutViewStates {
-    val updateTweet: Flow<FeedbackMessage>
+interface ShortcutViewStates : ShortcutActions, ActivityEffectStream {
 
     companion object {
         fun create(
             actions: ShortcutActions,
             tweetRepository: TweetRepository,
-        ): ShortcutViewStates = ShortcutViewStateImpl(actions, tweetRepository)
+            listOwnerGenerator: ListOwnerGenerator,
+        ): ShortcutViewStates = ShortcutViewStateImpl(actions, tweetRepository, listOwnerGenerator)
     }
 }
 
 private class ShortcutViewStateImpl(
     actions: ShortcutActions,
     tweetRepository: TweetRepository,
-) : ShortcutViewStates {
-    override val updateTweet: Flow<FeedbackMessage> = merge(
+    listOwnerGenerator: ListOwnerGenerator,
+) : ShortcutViewStates, ShortcutActions by actions {
+    override val effect: Flow<AppEffect> = merge(
         actions.favTweet.mapLatest { event ->
-            when (val state = tweetRepository.load { updateLike(event.tweetId, true) }) {
-                is LoadingResult.Loaded -> TweetFeedbackMessage.FAV_CREATE_SUCCESS
-                is LoadingResult.Failed -> {
-                    when (state.errorType) {
+            tweetRepository.load { updateLike(event.tweetId, true) }.fold(
+                loaded = TweetFeedbackMessage.FAV_CREATE_SUCCESS,
+                onFailed = {
+                    when (it) {
                         ErrorType.ALREADY_FAVORITED -> TweetFeedbackMessage.ALREADY_FAV
                         else -> TweetFeedbackMessage.FAV_CREATE_FAILURE
                     }
                 }
-                else -> throw IllegalStateException()
-            }
+            )
+        },
+        actions.unlikeTweet.mapLatest {
+            tweetRepository.load { updateLike(it.tweetId, false) }.fold(
+                loaded = TweetFeedbackMessage.FAV_DESTROY_SUCCESS,
+                failed = TweetFeedbackMessage.FAV_DESTROY_FAILURE
+            )
         },
         actions.retweet.mapLatest { event ->
-            when (val state = tweetRepository.load { updateRetweet(event.tweetId, true) }) {
-                is LoadingResult.Loaded -> TweetFeedbackMessage.RT_CREATE_SUCCESS
-                is LoadingResult.Failed -> {
-                    when (state.errorType) {
+            tweetRepository.load { updateRetweet(event.tweetId, true) }.fold(
+                loaded = TweetFeedbackMessage.RT_CREATE_SUCCESS,
+                onFailed = {
+                    when (it) {
                         ErrorType.ALREADY_RETWEETED -> TweetFeedbackMessage.ALREADY_RT
                         else -> TweetFeedbackMessage.RT_CREATE_FAILURE
                     }
                 }
-                else -> throw IllegalStateException()
-            }
+            )
+        },
+        actions.unretweetTweet.mapLatest {
+            tweetRepository.load { updateRetweet(it.tweetId, false) }.fold(
+                loaded = TweetFeedbackMessage.RT_DESTROY_SUCCESS,
+                failed = TweetFeedbackMessage.RT_DESTROY_FAILURE
+            )
+        },
+        actions.deleteTweet.mapLatest {
+            val detailTweetItem = tweetRepository.findDetailTweetItem(it.tweetId) // TODO
+            val id = detailTweetItem?.body?.retweetIdByCurrentUser ?: it.tweetId
+            tweetRepository.load { deleteTweet(id) }.fold(
+                loaded = TweetFeedbackMessage.DELETE_TWEET_SUCCESS,
+                failed = TweetFeedbackMessage.DELETE_TWEET_FAILURE
+            )
+        },
+        actions.showTweetDetail.mapLatest {
+            TimelineEffect.Navigate.Detail(it.tweetId)
+        },
+        actions.showConversation.mapLatest {
+            val queryType = QueryType.TweetQueryType.Conversation(it.tweetId)
+            listOwnerGenerator.getTimelineEvent(queryType)
         }
     )
+
+    companion object {
+        private fun <T, R> LoadingResult<T>.fold(
+            loaded: R? = null,
+            onLoaded: (T) -> R = { requireNotNull(loaded) },
+            failed: R? = null,
+            onFailed: (AppErrorType) -> R = { requireNotNull(failed) },
+        ): R = when (this) {
+            is LoadingResult.Loaded -> loaded ?: onLoaded(this.value)
+            is LoadingResult.Failed -> failed ?: onFailed(this.errorType)
+            else -> throw IllegalStateException()
+        }
+    }
 }

@@ -18,11 +18,15 @@ package com.freshdigitable.udonroad2.media
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.freshdigitable.udonroad2.data.impl.MediaRepository
+import com.freshdigitable.udonroad2.data.impl.create
+import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.MediaEntity
 import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.tweet.TweetElement
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
+import com.freshdigitable.udonroad2.shortcut.ShortcutActions
+import com.freshdigitable.udonroad2.shortcut.ShortcutViewStates
 import com.freshdigitable.udonroad2.test_common.MockVerified
 import com.freshdigitable.udonroad2.test_common.jvm.CoroutineTestRule
 import com.freshdigitable.udonroad2.test_common.jvm.TweetRepositoryRule
@@ -64,7 +68,11 @@ class MediaViewModelTest {
             mediaRepositoryRule.mock,
             tweetRepositoryRule.mock,
         )
-        MediaViewModel(eventDispatcher, viewStates)
+        MediaViewModel(viewStates, ShortcutViewStates.create(
+            ShortcutActions.create(eventDispatcher),
+            tweetRepositoryRule.mock,
+            ListOwnerGenerator.create()
+        ))
     }
 
     @Before

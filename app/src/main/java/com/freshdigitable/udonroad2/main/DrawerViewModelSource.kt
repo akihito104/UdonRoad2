@@ -29,15 +29,15 @@ import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.AppEventListener
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
+import com.freshdigitable.udonroad2.model.app.navigation.TimelineEffect
 import com.freshdigitable.udonroad2.model.app.navigation.ViewState
+import com.freshdigitable.udonroad2.model.app.navigation.getTimelineEvent
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
 import com.freshdigitable.udonroad2.model.app.onEvent
 import com.freshdigitable.udonroad2.model.app.stateSourceBuilder
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.model.user.UserEntity
 import com.freshdigitable.udonroad2.oauth.LoginUseCase
-import com.freshdigitable.udonroad2.timeline.TimelineEffect
-import com.freshdigitable.udonroad2.timeline.getTimelineEvent
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapLatest

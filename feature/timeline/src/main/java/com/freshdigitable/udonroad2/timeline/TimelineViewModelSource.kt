@@ -17,9 +17,7 @@
 package com.freshdigitable.udonroad2.timeline
 
 import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
-import com.freshdigitable.udonroad2.data.impl.TweetRepository
 import com.freshdigitable.udonroad2.model.ListOwner
-import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEffectDelegate
@@ -27,10 +25,8 @@ import com.freshdigitable.udonroad2.model.app.navigation.ActivityEffectStream
 import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
 import com.freshdigitable.udonroad2.model.app.onEvent
 import com.freshdigitable.udonroad2.model.app.stateSourceBuilder
-import com.freshdigitable.udonroad2.shortcut.ShortcutViewStates
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentEffectDelegate
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 import javax.inject.Inject
 
@@ -38,14 +34,11 @@ internal class TimelineViewModelSource(
     owner: ListOwner<QueryType.TweetQueryType>,
     actions: TimelineActions,
     selectedItemRepository: SelectedItemRepository,
-    tweetRepository: TweetRepository,
-    listOwnerGenerator: ListOwnerGenerator,
     private val baseViewModelSource: ListItemLoadableViewModelSource,
     mediaViewModelSource: TweetMediaViewModelSource,
 ) : ListItemLoadableViewModelSource by baseViewModelSource,
     TweetMediaViewModelSource by mediaViewModelSource,
     ActivityEffectStream,
-    ShortcutViewStates by ShortcutViewStates.create(actions, tweetRepository),
     TweetListItemEventListener by actions {
 
     override val state: Flow<TimelineState> = stateSourceBuilder(
@@ -78,16 +71,8 @@ internal class TimelineViewModelSource(
     )
 
     override val effect: Flow<AppEffect> = merge(
-        actions.showTweetDetail.map { TimelineEffect.Navigate.Detail(it.tweetId) },
-        actions.showConversation.map {
-            listOwnerGenerator.getTimelineEvent(
-                QueryType.TweetQueryType.Conversation(it.tweetId),
-                AppEffect.Navigation.Type.NAVIGATE
-            )
-        },
         mediaViewModelSource.effect,
         baseViewModelSource.effect,
-        updateTweet,
     )
 
     override suspend fun clear() {

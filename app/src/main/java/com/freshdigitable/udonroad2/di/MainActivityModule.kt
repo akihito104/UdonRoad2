@@ -18,16 +18,20 @@ package com.freshdigitable.udonroad2.di
 
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModel
+import com.freshdigitable.udonroad2.data.impl.TweetRepository
 import com.freshdigitable.udonroad2.input.di.TweetInputFragmentModule
 import com.freshdigitable.udonroad2.main.DrawerViewModelSource
 import com.freshdigitable.udonroad2.main.MainActivity
 import com.freshdigitable.udonroad2.main.MainActivityNavigationDelegate
 import com.freshdigitable.udonroad2.main.MainViewModel
 import com.freshdigitable.udonroad2.main.MainViewModelSource
+import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEffectDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.settings.di.AppSettingFragmentModule
+import com.freshdigitable.udonroad2.shortcut.ShortcutActions
+import com.freshdigitable.udonroad2.shortcut.ShortcutViewStates
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -58,6 +62,19 @@ internal interface MainActivityModule {
             navigator: EventDispatcher,
             viewState: MainViewModelSource,
             drawerViewModelSource: DrawerViewModelSource,
-        ): ViewModel = MainViewModel(navigator, viewState, drawerViewModelSource)
+            shortcutViewStates: ShortcutViewStates,
+        ): ViewModel =
+            MainViewModel(navigator, viewState, drawerViewModelSource, shortcutViewStates)
+
+        @Provides
+        fun provideShortcutViewStates(
+            dispatcher: EventDispatcher,
+            tweetRepository: TweetRepository,
+            listOwnerGenerator: ListOwnerGenerator,
+        ): ShortcutViewStates {
+            return ShortcutViewStates.create(
+                ShortcutActions.create(dispatcher), tweetRepository, listOwnerGenerator
+            )
+        }
     }
 }

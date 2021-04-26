@@ -31,6 +31,10 @@ sealed class SelectedItemShortcut : TweetContextMenuEvent {
     data class Quote(override val tweetId: TweetId) : SelectedItemShortcut()
     data class Conversation(override val tweetId: TweetId) : SelectedItemShortcut()
 
+    data class Unlike(override val tweetId: TweetId) : SelectedItemShortcut()
+    data class Unretweet(override val tweetId: TweetId) : SelectedItemShortcut()
+    data class DeleteTweet(override val tweetId: TweetId) : SelectedItemShortcut()
+
     companion object
 }
 
@@ -40,7 +44,7 @@ interface TweetContextMenuEvent : AppEvent {
 
 fun EventDispatcher.postSelectedItemShortcutEvent(
     menuItem: MenuItem,
-    selectedItemId: SelectedItemId
+    selectedItemId: SelectedItemId,
 ) {
     val tweetId = selectedItemId.quoteId ?: selectedItemId.originalId
     postSelectedItemShortcutEvent(menuItem, tweetId)
@@ -48,7 +52,7 @@ fun EventDispatcher.postSelectedItemShortcutEvent(
 
 fun EventDispatcher.postSelectedItemShortcutEvent(
     menuItem: MenuItem,
-    tweetId: TweetId
+    tweetId: TweetId,
 ) {
     when (menuItem.itemId) {
         R.id.iffabMenu_main_detail -> postEvent(SelectedItemShortcut.TweetDetail(tweetId))
@@ -61,6 +65,24 @@ fun EventDispatcher.postSelectedItemShortcutEvent(
         R.id.iffabMenu_main_reply -> postEvent(SelectedItemShortcut.Reply(tweetId))
         R.id.iffabMenu_main_quote -> postEvent(SelectedItemShortcut.Quote(tweetId))
         R.id.iffabMenu_main_conv -> postEvent(SelectedItemShortcut.Conversation(tweetId))
+        R.id.detail_main_rt -> {
+            if (menuItem.isChecked) {
+                postEvent(SelectedItemShortcut.Unretweet(tweetId))
+            } else {
+                postEvent(SelectedItemShortcut.Retweet(tweetId))
+            }
+        }
+        R.id.detail_main_fav -> {
+            if (menuItem.isChecked) {
+                postEvent(SelectedItemShortcut.Unlike(tweetId))
+            } else {
+                postEvent(SelectedItemShortcut.Like(tweetId))
+            }
+        }
+        R.id.detail_main_reply -> postEvent(SelectedItemShortcut.Reply(tweetId))
+        R.id.detail_main_quote -> postEvent(SelectedItemShortcut.Quote(tweetId))
+        R.id.detail_more_delete -> postEvent(SelectedItemShortcut.DeleteTweet(tweetId))
+        R.id.detail_main_conv -> postEvent(SelectedItemShortcut.Conversation(tweetId))
         else -> throw IllegalStateException("selected unregistered menu item: $menuItem")
     }
 }
