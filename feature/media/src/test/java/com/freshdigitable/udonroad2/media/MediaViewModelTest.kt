@@ -27,7 +27,7 @@ import com.freshdigitable.udonroad2.model.tweet.TweetElement
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import com.freshdigitable.udonroad2.shortcut.ShortcutActions
 import com.freshdigitable.udonroad2.shortcut.ShortcutViewModel
-import com.freshdigitable.udonroad2.shortcut.ShortcutViewStates
+import com.freshdigitable.udonroad2.shortcut.ShortcutViewModelSource
 import com.freshdigitable.udonroad2.test_common.MockVerified
 import com.freshdigitable.udonroad2.test_common.jvm.CoroutineTestRule
 import com.freshdigitable.udonroad2.test_common.jvm.TweetRepositoryRule
@@ -69,7 +69,7 @@ class MediaViewModelTest {
             mediaRepositoryRule.mock,
             tweetRepositoryRule.mock,
         )
-        MediaViewModel(viewStates, ShortcutViewStates(
+        MediaViewModel(viewStates, ShortcutViewModelSource(
             ShortcutActions(eventDispatcher),
             tweetRepositoryRule.mock,
             ListOwnerGenerator.create()

@@ -39,18 +39,18 @@ import com.freshdigitable.udonroad2.model.app.stateSourceBuilder
 import com.freshdigitable.udonroad2.shortcut.MenuItemState
 import com.freshdigitable.udonroad2.shortcut.ShortcutEventListener
 import com.freshdigitable.udonroad2.shortcut.ShortcutViewModel
-import com.freshdigitable.udonroad2.shortcut.ShortcutViewStates
+import com.freshdigitable.udonroad2.shortcut.ShortcutViewModelSource
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 import kotlin.math.min
 
 internal class MediaViewModel @Inject constructor(
     viewStates: MediaViewModelViewStates,
-    shortcutViewStates: ShortcutViewStates,
+    shortcutViewModelSource: ShortcutViewModelSource,
 ) : MediaEventListener by viewStates,
     ShortcutViewModel,
-    ShortcutEventListener by shortcutViewStates,
-    ActivityEffectStream by shortcutViewStates,
+    ShortcutEventListener by shortcutViewModelSource,
+    ActivityEffectStream by shortcutViewModelSource,
     ViewModel() {
     val state = viewStates.state.asLiveData(viewModelScope.coroutineContext)
     internal val mediaItems: LiveData<List<MediaEntity>> = state.map { it.mediaItems }

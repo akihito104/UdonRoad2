@@ -38,7 +38,7 @@ import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.model.user.UserEntity
 import com.freshdigitable.udonroad2.shortcut.ShortcutActions
 import com.freshdigitable.udonroad2.shortcut.ShortcutViewModel
-import com.freshdigitable.udonroad2.shortcut.ShortcutViewStates
+import com.freshdigitable.udonroad2.shortcut.ShortcutViewModelSource
 import com.freshdigitable.udonroad2.test_common.jvm.ObserverEventCollector
 import com.freshdigitable.udonroad2.test_common.jvm.TweetRepositoryRule
 import com.freshdigitable.udonroad2.test_common.jvm.assertLatestNavigationEvent
@@ -465,7 +465,7 @@ internal class MainViewModelTestRule : TestWatcher() {
         MainViewModel(dispatcher,
             stateModelSourceRule.sut,
             drawerViewStateRule.sut,
-            ShortcutViewStates(
+            ShortcutViewModelSource(
                 ShortcutActions(dispatcher),
                 tweetRepositoryMock.mock,
                 ListOwnerGenerator.create()

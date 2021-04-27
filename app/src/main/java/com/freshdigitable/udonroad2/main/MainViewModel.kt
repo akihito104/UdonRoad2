@@ -30,7 +30,7 @@ import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.shortcut.ShortcutEventListener
 import com.freshdigitable.udonroad2.shortcut.ShortcutViewModel
-import com.freshdigitable.udonroad2.shortcut.ShortcutViewStates
+import com.freshdigitable.udonroad2.shortcut.ShortcutViewModelSource
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.merge
@@ -39,9 +39,9 @@ internal class MainViewModel(
     private val eventDispatcher: EventDispatcher,
     viewStates: MainViewModelSource,
     private val drawerViewStates: DrawerViewModelSource,
-    shortcutViewStates: ShortcutViewStates,
+    shortcutViewModelSource: ShortcutViewModelSource,
 ) : ShortcutViewModel,
-    ShortcutEventListener by shortcutViewStates,
+    ShortcutEventListener by shortcutViewModelSource,
     DrawerViewModel,
     DrawerEventListener by drawerViewStates,
     ActivityEffectStream,
@@ -64,7 +64,7 @@ internal class MainViewModel(
     override val effect: Flow<AppEffect> = merge(
         viewStates.initContainer,
         drawerViewStates.navEventSource,
-        shortcutViewStates.effect,
+        shortcutViewModelSource.effect,
     )
 
     internal fun initialEvent() {

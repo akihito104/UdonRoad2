@@ -32,7 +32,7 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.merge
 import javax.inject.Inject
 
-class ShortcutViewStates @Inject constructor(
+class ShortcutViewModelSource @Inject constructor(
     actions: ShortcutActions,
     tweetRepository: TweetRepository,
     listOwnerGenerator: ListOwnerGenerator,

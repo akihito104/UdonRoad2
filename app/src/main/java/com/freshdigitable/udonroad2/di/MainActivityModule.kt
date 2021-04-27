@@ -28,7 +28,7 @@ import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEffectDelegate
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.settings.di.AppSettingFragmentModule
-import com.freshdigitable.udonroad2.shortcut.ShortcutViewStates
+import com.freshdigitable.udonroad2.shortcut.ShortcutViewModelSource
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -59,8 +59,8 @@ internal interface MainActivityModule {
             navigator: EventDispatcher,
             viewState: MainViewModelSource,
             drawerViewModelSource: DrawerViewModelSource,
-            shortcutViewStates: ShortcutViewStates,
+            shortcutViewModelSource: ShortcutViewModelSource,
         ): ViewModel =
-            MainViewModel(navigator, viewState, drawerViewModelSource, shortcutViewStates)
+            MainViewModel(navigator, viewState, drawerViewModelSource, shortcutViewModelSource)
     }
 }
