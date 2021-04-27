@@ -84,7 +84,7 @@
             android:layout_marginBottom="@dimen/shortcut_marginBottom"
             app:menu="@menu/shortcut_main"
             style="@style/Widget.FlingFAB"
-            app:isVisible="@{viewModel.state.shortcutVisible}"
+            app:mode="@{viewModel.state.shortcutMode}"
             app:menuListener="@{viewModel::onFabMenuSelected}"
             />
     </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -16,6 +16,8 @@
 
 package com.freshdigitable.fabshortcut
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -137,6 +139,30 @@ class ExpandableBottomContextMenuView @JvmOverloads constructor(
 
     private fun findMenuItemById(@IdRes menuId: Int): MenuItem? {
         return mainMenu.findItem(menuId) ?: moreMenu.findItem(menuId)
+    }
+
+    fun show() {
+        animate()
+            .setDuration(250)
+            .translationY(0f)
+            .setListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationStart(animation: Animator?) {
+                    translationY = height.toFloat()
+                    visibility = VISIBLE
+                }
+            })
+            .start()
+    }
+
+    fun hide() {
+        animate().setDuration(250)
+            .translationY(height.toFloat())
+            .setListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator?) {
+                    visibility = INVISIBLE
+                }
+            })
+            .start()
     }
 
     fun updateMenu(block: UpdateScope.() -> Unit) {

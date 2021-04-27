@@ -26,7 +26,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 class FlingFAB @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
-    defStyleAttr: Int = R.attr.floatingActionButtonStyle
+    defStyleAttr: Int = R.attr.floatingActionButtonStyle,
 ) : FloatingActionButton(context, attrs, defStyleAttr) {
 
     private val presenter = FlingFabPresenter(this, attrs, defStyleAttr)

@@ -23,11 +23,8 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.map
 import androidx.navigation.fragment.navArgs
 import com.bumptech.glide.Glide
-import com.freshdigitable.fabshortcut.ExpandableBottomContextMenuView
 import com.freshdigitable.udonroad2.model.TwitterCard
 import com.freshdigitable.udonroad2.model.tweet.DetailTweetListItem
-import com.freshdigitable.udonroad2.shortcut.MenuItemState
-import com.freshdigitable.udonroad2.timeline.R
 import com.freshdigitable.udonroad2.timeline.databinding.FragmentDetailBinding
 import com.freshdigitable.udonroad2.timeline.di.TweetDetailViewModelComponent
 import com.freshdigitable.udonroad2.timeline.viewmodel.SpanClickListener
@@ -101,22 +98,6 @@ class TweetDetailFragment : Fragment() {
         ): TweetDetailViewModel {
             val viewModelProvider = ViewModelProvider(owner, viewModelProviderFactory)
             return viewModelProvider[TweetDetailViewModel::class.java]
-        }
-    }
-}
-
-@BindingAdapter("menuItemState")
-fun ExpandableBottomContextMenuView.updateMenuItemState(item: MenuItemState?) {
-    updateMenu {
-        changeGroupEnabled(R.id.menuGroup_detailMain, item?.isMainGroupEnabled ?: false)
-        updateItemOf(R.id.detail_main_rt) {
-            isChecked = item?.isRetweetChecked ?: false
-        }
-        updateItemOf(R.id.detail_main_fav) {
-            isChecked = item?.isFavChecked ?: false
-        }
-        updateItemOf(R.id.detail_more_delete) {
-            isVisible = item?.isDeleteVisible ?: false
         }
     }
 }

@@ -28,10 +28,6 @@ interface ShortcutViewModel : ShortcutEventListener, ActivityEffectStream {
         val mode: Mode
         val menuItemState: MenuItemState
 
-        @Deprecated("use `mode`", ReplaceWith("mode"))
-        val isVisible: Boolean
-            get() = mode != Mode.HIDDEN
-
         enum class Mode { HIDDEN, FAB, TOOLBAR }
     }
 }

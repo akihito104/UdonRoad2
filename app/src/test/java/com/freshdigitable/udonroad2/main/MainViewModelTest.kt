@@ -37,6 +37,7 @@ import com.freshdigitable.udonroad2.model.tweet.DetailTweetListItem
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.model.user.UserEntity
 import com.freshdigitable.udonroad2.shortcut.ShortcutActions
+import com.freshdigitable.udonroad2.shortcut.ShortcutViewModel
 import com.freshdigitable.udonroad2.shortcut.ShortcutViewStates
 import com.freshdigitable.udonroad2.test_common.jvm.ObserverEventCollector
 import com.freshdigitable.udonroad2.test_common.jvm.TweetRepositoryRule
@@ -235,7 +236,7 @@ class MainViewModelTest {
             )
 
             // verify
-            assertThat(sut.shortcutState.value?.isVisible).isTrue()
+            assertThat(sut.shortcutState.value?.mode).isEqualTo(ShortcutViewModel.State.Mode.FAB)
             assertThat((navEvents.last() as FeedbackMessage).messageRes)
                 .isEqualTo(R.string.msg_fav_create_success)
         }
@@ -343,7 +344,7 @@ class MainViewModelTest {
             stateModelSourceRule.isExpandedSource.value = true
 
             // verify
-            assertThat(sut.shortcutState.value?.isVisible).isFalse()
+            assertThat(sut.shortcutState.value?.mode).isEqualTo(ShortcutViewModel.State.Mode.HIDDEN)
         }
     }
 
