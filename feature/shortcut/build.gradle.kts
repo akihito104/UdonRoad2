@@ -52,6 +52,11 @@ dependencies {
     implementation(Libs.MATERIAL_DESIGN)
     implementation(Libs.ANDROIDX_CONSTRAINT_LAYOUT)
 
+    kapt(Libs.DAGGER_COMPILER)
+    implementation(Libs.DAGGER_ANDROID)
+    implementation(Libs.DAGGER_ANDROID_SUPPORT)
+    kapt(Libs.DAGGER_ANDROID_PROCESSOR)
+
     testImplementation(Libs.JUNIT)
     testImplementation(Libs.ANDROIDX_TEST_CORE)
     testImplementation(Libs.ANDROIDX_TEST_ESPRESSO)

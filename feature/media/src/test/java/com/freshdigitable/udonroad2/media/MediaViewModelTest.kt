@@ -68,8 +68,8 @@ class MediaViewModelTest {
             mediaRepositoryRule.mock,
             tweetRepositoryRule.mock,
         )
-        MediaViewModel(viewStates, ShortcutViewStates.create(
-            ShortcutActions.create(eventDispatcher),
+        MediaViewModel(viewStates, ShortcutViewStates(
+            ShortcutActions(eventDispatcher),
             tweetRepositoryRule.mock,
             ListOwnerGenerator.create()
         ))

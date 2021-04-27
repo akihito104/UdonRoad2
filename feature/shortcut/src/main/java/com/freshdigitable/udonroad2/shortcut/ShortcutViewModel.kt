@@ -20,7 +20,6 @@ import android.view.MenuItem
 import androidx.lifecycle.LiveData
 import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEffectStream
-import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 
 interface ShortcutViewModel : ShortcutEventListener, ActivityEffectStream {
     val shortcutState: LiveData<State>
@@ -46,17 +45,4 @@ data class MenuItemState(
 
 interface ShortcutEventListener {
     fun onShortcutMenuSelected(item: MenuItem, id: TweetId)
-
-    companion object {
-        fun create(dispatcher: EventDispatcher): ShortcutEventListener =
-            TweetShortcutEventListener(dispatcher)
-    }
-}
-
-private class TweetShortcutEventListener(
-    private val dispatcher: EventDispatcher,
-) : ShortcutEventListener {
-    override fun onShortcutMenuSelected(item: MenuItem, id: TweetId) {
-        dispatcher.postSelectedItemShortcutEvent(item, id)
-    }
 }

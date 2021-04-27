@@ -18,21 +18,15 @@ package com.freshdigitable.udonroad2.media.di
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.freshdigitable.udonroad2.data.impl.TweetRepository
 import com.freshdigitable.udonroad2.media.MediaViewModel
 import com.freshdigitable.udonroad2.media.MovieMediaFragment
 import com.freshdigitable.udonroad2.media.PhotoMediaFragment
-import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.app.di.FragmentScope
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
-import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
-import com.freshdigitable.udonroad2.shortcut.ShortcutActions
-import com.freshdigitable.udonroad2.shortcut.ShortcutViewStates
 import dagger.Binds
 import dagger.BindsInstance
 import dagger.Module
-import dagger.Provides
 import dagger.Subcomponent
 import dagger.android.ContributesAndroidInjector
 import dagger.multibindings.IntoMap
@@ -54,19 +48,6 @@ internal interface MediaViewModelModule {
     @IntoMap
     @ViewModelKey(MediaViewModel::class)
     fun bindMediaViewModel(viewModel: MediaViewModel): ViewModel
-
-    companion object {
-        @Provides
-        fun provideShortcutViewModelSource(
-            eventDispatcher: EventDispatcher,
-            tweetRepository: TweetRepository,
-            listOwnerGenerator: ListOwnerGenerator,
-        ): ShortcutViewStates = ShortcutViewStates.create(
-            ShortcutActions.create(eventDispatcher),
-            tweetRepository,
-            listOwnerGenerator
-        )
-    }
 }
 
 @Subcomponent(modules = [MediaViewModelModule::class])

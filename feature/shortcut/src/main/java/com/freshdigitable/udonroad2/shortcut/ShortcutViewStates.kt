@@ -30,23 +30,13 @@ import com.freshdigitable.udonroad2.model.app.navigation.getTimelineEvent
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.merge
+import javax.inject.Inject
 
-interface ShortcutViewStates : ShortcutActions, ActivityEffectStream {
-
-    companion object {
-        fun create(
-            actions: ShortcutActions,
-            tweetRepository: TweetRepository,
-            listOwnerGenerator: ListOwnerGenerator,
-        ): ShortcutViewStates = ShortcutViewStateImpl(actions, tweetRepository, listOwnerGenerator)
-    }
-}
-
-private class ShortcutViewStateImpl(
+class ShortcutViewStates @Inject constructor(
     actions: ShortcutActions,
     tweetRepository: TweetRepository,
     listOwnerGenerator: ListOwnerGenerator,
-) : ShortcutViewStates, ShortcutActions by actions {
+) : ShortcutEventListener by actions, ActivityEffectStream {
     override val effect: Flow<AppEffect> = merge(
         actions.favTweet.mapLatest { event ->
             tweetRepository.load { updateLike(event.tweetId, true) }.fold(

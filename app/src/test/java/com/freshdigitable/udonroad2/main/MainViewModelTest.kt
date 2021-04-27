@@ -464,8 +464,8 @@ internal class MainViewModelTestRule : TestWatcher() {
         MainViewModel(dispatcher,
             stateModelSourceRule.sut,
             drawerViewStateRule.sut,
-            ShortcutViewStates.create(
-                ShortcutActions.create(dispatcher),
+            ShortcutViewStates(
+                ShortcutActions(dispatcher),
                 tweetRepositoryMock.mock,
                 ListOwnerGenerator.create()
             ))
