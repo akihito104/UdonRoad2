@@ -80,7 +80,7 @@ class FlingFAB @JvmOverloads constructor(
         presenter.onDetached()
     }
 
-    fun setMenuListener(menuSelectedListener: OnMenuSelectedListener) {
+    fun setMenuListener(menuSelectedListener: OnMenuSelectedListener?) {
         presenter.menuSelectedListener = menuSelectedListener
     }
 }

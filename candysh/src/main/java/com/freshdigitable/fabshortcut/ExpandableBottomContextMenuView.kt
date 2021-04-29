@@ -65,7 +65,7 @@ class ExpandableBottomContextMenuView @JvmOverloads constructor(
     defStyleAttr: Int = 0,
 ) : ConstraintLayout(context, attributeSet, defStyleAttr) {
 
-    private val mainContextMenuList: LinearLayout
+    val mainContextMenuList: LinearLayout
     private val moreContextMenuList: RecyclerView
     private val toggle: View?
     private val bottomSheetBehavior = BottomSheetBehavior<View>()
