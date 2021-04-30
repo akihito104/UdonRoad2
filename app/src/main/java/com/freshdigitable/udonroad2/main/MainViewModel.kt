@@ -24,11 +24,13 @@ import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
 import com.freshdigitable.udonroad2.input.TweetInputEvent
 import com.freshdigitable.udonroad2.model.TweetId
+import com.freshdigitable.udonroad2.model.app.navigation.ActivityEffectStream
 import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.shortcut.ShortcutEventListener
 import com.freshdigitable.udonroad2.shortcut.ShortcutViewModel
+import com.freshdigitable.udonroad2.shortcut.ShortcutViewModelSource
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.merge
@@ -37,10 +39,12 @@ internal class MainViewModel(
     private val eventDispatcher: EventDispatcher,
     viewStates: MainViewModelSource,
     private val drawerViewStates: DrawerViewModelSource,
+    shortcutViewModelSource: ShortcutViewModelSource,
 ) : ShortcutViewModel,
-    ShortcutEventListener by ShortcutEventListener.create(eventDispatcher),
+    ShortcutEventListener by shortcutViewModelSource,
     DrawerViewModel,
     DrawerEventListener by drawerViewStates,
+    ActivityEffectStream,
     ViewModel() {
 
     val mainState: LiveData<MainActivityViewState> =
@@ -57,9 +61,10 @@ internal class MainViewModel(
     override val drawerState: LiveData<DrawerViewModel.State> =
         drawerViewStates.state.asLiveData(viewModelScope.coroutineContext)
 
-    internal val navigationEvent: Flow<AppEffect.Navigation> = merge(
+    override val effect: Flow<AppEffect> = merge(
         viewStates.initContainer,
-        drawerViewStates.navEventSource
+        drawerViewStates.navEventSource,
+        shortcutViewModelSource.effect,
     )
 
     internal fun initialEvent() {
@@ -72,14 +77,15 @@ internal class MainViewModel(
     }
 
     fun onBackPressed(): Boolean {
-        val selectedItem = currentState.selectedItem
+        val currentOwner = (currentState.navHostState as? MainNavHostState.Timeline)?.owner
         val event = when {
             drawerState.value?.isOpened == true -> {
                 drawerViewStates.hideDrawerMenu.dispatch()
                 return true
             }
             currentState.isTweetInputExpanded -> TweetInputEvent.Cancel
-            selectedItem != null -> TimelineEvent.TweetItemSelection.Unselected(selectedItem.owner)
+            currentOwner != null && currentState.selectedItem != null ->
+                TimelineEvent.TweetItemSelection.Unselected(currentOwner)
             else -> return false
         }
         eventDispatcher.postEvent(event)
@@ -90,9 +96,7 @@ internal class MainViewModel(
         get() = mainState.value ?: throw IllegalStateException()
 
     val requireSelectedTweetId: TweetId
-        get() = requireNotNull(
-            currentState.selectedItem?.quoteId ?: currentState.selectedItem?.originalId
-        )
+        get() = requireNotNull(currentState.selectedItem?.originalId)
 }
 
 val TweetUserItem.account: String

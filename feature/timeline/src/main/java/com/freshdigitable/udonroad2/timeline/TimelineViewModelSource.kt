@@ -17,9 +17,7 @@
 package com.freshdigitable.udonroad2.timeline
 
 import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
-import com.freshdigitable.udonroad2.data.impl.TweetRepository
 import com.freshdigitable.udonroad2.model.ListOwner
-import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEffectDelegate
@@ -27,26 +25,20 @@ import com.freshdigitable.udonroad2.model.app.navigation.ActivityEffectStream
 import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
 import com.freshdigitable.udonroad2.model.app.onEvent
 import com.freshdigitable.udonroad2.model.app.stateSourceBuilder
-import com.freshdigitable.udonroad2.shortcut.ShortcutViewStates
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragmentEffectDelegate
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
-import kotlinx.coroutines.flow.onEach
 import javax.inject.Inject
 
 internal class TimelineViewModelSource(
     owner: ListOwner<QueryType.TweetQueryType>,
     actions: TimelineActions,
     selectedItemRepository: SelectedItemRepository,
-    tweetRepository: TweetRepository,
-    listOwnerGenerator: ListOwnerGenerator,
     private val baseViewModelSource: ListItemLoadableViewModelSource,
     mediaViewModelSource: TweetMediaViewModelSource,
 ) : ListItemLoadableViewModelSource by baseViewModelSource,
     TweetMediaViewModelSource by mediaViewModelSource,
     ActivityEffectStream,
-    ShortcutViewStates by ShortcutViewStates.create(actions, tweetRepository),
     TweetListItemEventListener by actions {
 
     override val state: Flow<TimelineState> = stateSourceBuilder(
@@ -54,36 +46,33 @@ internal class TimelineViewModelSource(
             selectedItemId = selectedItemRepository.find(owner)
         ),
         baseViewModelSource.state.onEvent { s, base -> s.copy(baseState = base) },
-        actions.selectItem.onEvent { s, e -> s.copy(selectedItemId = e.selectedItemId) },
-        actions.unselectItem.onEvent { s, _ -> s.copy(selectedItemId = null) },
+        actions.selectItem.onEvent { s, e ->
+            selectedItemRepository.put(e.selectedItemId)
+            s
+        },
+        actions.unselectItem.onEvent { s, _ ->
+            selectedItemRepository.remove(owner)
+            s
+        },
         actions.toggleItem.onEvent { s, e ->
             when (s.selectedItemId) {
-                e.item -> s.copy(selectedItemId = null)
-                else -> s.copy(selectedItemId = e.item)
+                e.item -> selectedItemRepository.remove(owner)
+                else -> selectedItemRepository.put(e.item)
             }
+            s
         },
-        actions.heading.onEvent { s, _ -> s.copy(selectedItemId = null) },
-    ).onEach {
-        if (it.selectedItemId != null) {
-            selectedItemRepository.put(it.selectedItemId)
-        } else {
+        actions.heading.onEvent { s, _ ->
             selectedItemRepository.remove(owner)
+            s
+        },
+        selectedItemRepository.getSource(owner).onEvent { s, item ->
+            s.copy(selectedItemId = item)
         }
-    }
-
-    internal val selectedItemId: Flow<SelectedItemId?> = selectedItemRepository.getSource(owner)
+    )
 
     override val effect: Flow<AppEffect> = merge(
-        actions.showTweetDetail.map { TimelineEffect.Navigate.Detail(it.tweetId) },
-        actions.showConversation.map {
-            listOwnerGenerator.getTimelineEvent(
-                QueryType.TweetQueryType.Conversation(it.tweetId),
-                AppEffect.Navigation.Type.NAVIGATE
-            )
-        },
         mediaViewModelSource.effect,
         baseViewModelSource.effect,
-        updateTweet,
     )
 
     override suspend fun clear() {
@@ -94,8 +83,8 @@ internal class TimelineViewModelSource(
 
 data class TimelineState(
     val baseState: ListItemLoadableViewModel.State? = null,
-    val selectedItemId: SelectedItemId? = null,
-) : ListItemLoadableViewModel.State {
+    override val selectedItemId: SelectedItemId? = null,
+) : ListItemLoadableViewModel.State, TweetListItemViewModel.State {
     override val isHeadingEnabled: Boolean
         get() = baseState?.isHeadingEnabled == true || selectedItemId != null
 }

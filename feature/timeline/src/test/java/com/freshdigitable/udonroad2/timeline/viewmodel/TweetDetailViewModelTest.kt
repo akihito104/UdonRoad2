@@ -17,28 +17,23 @@
 package com.freshdigitable.udonroad2.timeline.viewmodel
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import com.freshdigitable.udonroad2.data.impl.create
-import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.TweetId
-import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
-import com.freshdigitable.udonroad2.model.tweet.DetailTweetElement
+import com.freshdigitable.udonroad2.model.app.navigation.TimelineEffect
 import com.freshdigitable.udonroad2.model.tweet.DetailTweetListItem
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
-import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.test_common.jvm.AppSettingRepositoryRule
 import com.freshdigitable.udonroad2.test_common.jvm.CoroutineTestRule
 import com.freshdigitable.udonroad2.test_common.jvm.ObserverEventCollector
 import com.freshdigitable.udonroad2.test_common.jvm.TweetRepositoryRule
+import com.freshdigitable.udonroad2.test_common.jvm.createMock
 import com.freshdigitable.udonroad2.test_common.jvm.setupForActivate
 import com.freshdigitable.udonroad2.timeline.LaunchMediaViewerAction
-import com.freshdigitable.udonroad2.timeline.TimelineEffect
 import com.freshdigitable.udonroad2.timeline.TweetMediaViewModelSource
 import com.freshdigitable.udonroad2.timeline.UserIconClickedAction
 import com.freshdigitable.udonroad2.timeline.UserIconViewModelSource
 import com.google.common.truth.Truth.assertThat
-import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -67,21 +62,7 @@ class TweetDetailViewModelTest {
         .around(appSettingRepositoryRule)
         .around(eventCollector)
 
-    private val tweet = mockk<DetailTweetListItem>().apply {
-        every { originalId } returns TweetId(1000)
-        every { originalUser } returns mockk<TweetUserItem>().apply {
-            every { id } returns UserId(3000)
-        }
-        every { body } returns mockk<DetailTweetElement>().apply {
-            every { id } returns TweetId(1001)
-            every { user } returns mockk<TweetUserItem>().apply {
-                every { id } returns UserId(3001)
-            }
-            every { isRetweeted } returns false
-            every { isFavorited } returns false
-            every { urlItems } returns emptyList()
-        }
-    }
+    private val tweet = DetailTweetListItem.createMock(TweetId(1000))
 
     private val sut: TweetDetailViewModel by lazy {
         val eventDispatcher = EventDispatcher()
@@ -90,10 +71,7 @@ class TweetDetailViewModelTest {
                 tweet.originalId,
                 TweetDetailActions(eventDispatcher),
                 GetTweetDetailItemUseCase(tweetRepositoryRule.mock),
-                tweetRepositoryRule.mock,
                 mockk(),
-                appSettingRepositoryRule.mock,
-                ListOwnerGenerator.create(),
             ),
             UserIconViewModelSource(UserIconClickedAction(eventDispatcher)),
             TweetMediaViewModelSource.create(
@@ -111,9 +89,6 @@ class TweetDetailViewModelTest {
     fun setup() {
         tweetRepositoryRule.setupShowTweet(tweet.originalId, tweetSource.receiveAsFlow())
         appSettingRepositoryRule.setupIsPossiblySensitiveHidden()
-        val userId = tweet.originalId.value + 10
-        appSettingRepositoryRule.setupCurrentUserId(userId)
-        appSettingRepositoryRule.setupCurrentUserIdSource(userId)
         eventCollector.setupForActivate {
             addAll(sut.state, sut.mediaState)
             addActivityEventStream(sut)
@@ -125,7 +100,6 @@ class TweetDetailViewModelTest {
         // verify
         assertThat(sut).isNotNull()
         assertThat(sut.state.value?.tweetItem).isNull()
-        assertThat(sut.state.value?.menuItemState).isEqualTo(MenuItemState())
     }
 
     @Test
@@ -134,7 +108,6 @@ class TweetDetailViewModelTest {
             tweetSource.send(tweet)
         }
         assertThat(sut.state.value?.tweetItem).isEqualTo(tweet)
-        assertThat(sut.state.value?.menuItemState).isEqualTo(MenuItemState(true))
 
         eventCollector.deactivateAll()
         assertThat(sut.state.value?.tweetItem).isEqualTo(tweet)
@@ -154,7 +127,6 @@ class TweetDetailViewModelTest {
 
         // verify
         assertThat(sut.state.value?.tweetItem).isEqualTo(tweet)
-        assertThat(sut.state.value?.menuItemState).isEqualTo(MenuItemState(true))
     }
 
     @Test

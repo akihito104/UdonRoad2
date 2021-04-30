@@ -18,11 +18,16 @@ package com.freshdigitable.udonroad2.media
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.freshdigitable.udonroad2.data.impl.MediaRepository
+import com.freshdigitable.udonroad2.data.impl.create
+import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.MediaEntity
 import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.tweet.TweetElement
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
+import com.freshdigitable.udonroad2.shortcut.ShortcutActions
+import com.freshdigitable.udonroad2.shortcut.ShortcutViewModel
+import com.freshdigitable.udonroad2.shortcut.ShortcutViewModelSource
 import com.freshdigitable.udonroad2.test_common.MockVerified
 import com.freshdigitable.udonroad2.test_common.jvm.CoroutineTestRule
 import com.freshdigitable.udonroad2.test_common.jvm.TweetRepositoryRule
@@ -64,7 +69,11 @@ class MediaViewModelTest {
             mediaRepositoryRule.mock,
             tweetRepositoryRule.mock,
         )
-        MediaViewModel(eventDispatcher, viewStates)
+        MediaViewModel(viewStates, ShortcutViewModelSource(
+            ShortcutActions(eventDispatcher),
+            tweetRepositoryRule.mock,
+            ListOwnerGenerator.create()
+        ))
     }
 
     @Before
@@ -87,7 +96,7 @@ class MediaViewModelTest {
         assertThat(sut.mediaItems.value).isEmpty()
         assertThat(sut.state.value?.currentPosition).isNull()
         assertThat(sut.systemUiVisibility.value).isEqualTo(SystemUiVisibility.SHOW)
-        assertThat(sut.shortcutState.value?.isVisible).isTrue()
+        assertThat(sut.shortcutState.value?.mode).isEqualTo(ShortcutViewModel.State.Mode.FAB)
     }
 
     @Test
@@ -109,6 +118,6 @@ class MediaViewModelTest {
 
         // verify
         assertThat(sut.systemUiVisibility.value).isEqualTo(SystemUiVisibility.HIDE)
-        assertThat(sut.shortcutState.value?.isVisible).isFalse()
+        assertThat(sut.shortcutState.value?.mode).isEqualTo(ShortcutViewModel.State.Mode.HIDDEN)
     }
 }

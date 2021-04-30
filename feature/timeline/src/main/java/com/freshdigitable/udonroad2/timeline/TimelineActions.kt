@@ -24,16 +24,14 @@ import com.freshdigitable.udonroad2.model.app.navigation.toAction
 import com.freshdigitable.udonroad2.model.app.navigation.toActionFlow
 import com.freshdigitable.udonroad2.model.app.navigation.toListener
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
-import com.freshdigitable.udonroad2.shortcut.ShortcutActions
 import com.freshdigitable.udonroad2.timeline.TimelineEvent.TweetItemSelection
 
 internal class TimelineActions(
     private val owner: ListOwner<*>,
-    private val dispatcher: EventDispatcher,
+    dispatcher: EventDispatcher,
     listItemLoadableActions: ListItemLoadableAction,
     mediaViewerAction: LaunchMediaViewerAction,
 ) : ListItemLoadableAction by listItemLoadableActions,
-    ShortcutActions by ShortcutActions.create(dispatcher),
     TweetMediaAction by mediaViewerAction,
     TweetListItemEventListener {
 

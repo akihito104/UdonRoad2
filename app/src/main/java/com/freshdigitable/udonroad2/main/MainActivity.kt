@@ -68,7 +68,7 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
 
         lifecycle.addObserver(navigation)
         lifecycleScope.launch {
-            viewModel.navigationEvent.collect { navigation.accept(it) }
+            viewModel.effect.collect { navigation.accept(it) }
         }
 
         supportActionBar?.apply {

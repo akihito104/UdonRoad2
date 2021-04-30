@@ -211,15 +211,5 @@
                     />
             </androidx.constraintlayout.widget.ConstraintLayout>
         </ScrollView>
-
-        <com.freshdigitable.fabshortcut.ExpandableBottomContextMenuView
-            android:id="@+id/detail_menu_list"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:menu_main="@menu/detail_main"
-            app:menu_more="@menu/detail_more"
-            app:menuItemState="@{viewModel.state.menuItemState}"
-            app:itemClickListener="@{item -> viewModel.onMenuItemClicked(item, viewModel.state.tweetItem)}"
-            />
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </layout>

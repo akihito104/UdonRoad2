@@ -21,7 +21,6 @@ import com.freshdigitable.udonroad2.data.ListRepository
 import com.freshdigitable.udonroad2.data.PagedListProvider
 import com.freshdigitable.udonroad2.data.impl.AppSettingRepository
 import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
-import com.freshdigitable.udonroad2.data.impl.TweetRepository
 import com.freshdigitable.udonroad2.data.impl.di.ListRepositoryComponent
 import com.freshdigitable.udonroad2.data.impl.di.ListRepositoryComponentModule
 import com.freshdigitable.udonroad2.data.impl.di.listRepository
@@ -114,15 +113,11 @@ internal interface TimelineViewModelModule {
             actions: TimelineActions,
             selectedItemRepository: SelectedItemRepository,
             appSettingRepository: AppSettingRepository,
-            tweetRepository: TweetRepository,
-            listOwnerGenerator: ListOwnerGenerator,
             viewModelSource: ListItemLoadableViewModelSource,
         ): TimelineViewModelSource = TimelineViewModelSource(
             owner as ListOwner<QueryType.TweetQueryType>,
             actions,
             selectedItemRepository,
-            tweetRepository,
-            listOwnerGenerator,
             viewModelSource,
             TweetMediaViewModelSource.create(actions, appSettingRepository),
         )

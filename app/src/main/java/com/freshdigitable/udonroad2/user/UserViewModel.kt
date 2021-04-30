@@ -18,6 +18,7 @@ import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
 import com.freshdigitable.udonroad2.model.user.Relationship
 import com.freshdigitable.udonroad2.model.user.UserEntity
+import com.freshdigitable.udonroad2.shortcut.ShortcutViewModel
 import com.freshdigitable.udonroad2.shortcut.postSelectedItemShortcutEvent
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.user.UserActivityEvent.Relationships
@@ -80,7 +81,7 @@ interface UserViewState {
     val relationshipMenuItems: Set<RelationshipMenu>
     val titleAlpha: Float
     val pages: Map<UserPage, ListOwner<*>>
-    val isShortcutVisible: Boolean
+    val shortcutMode: ShortcutViewModel.State.Mode
     val selectedItemId: SelectedItemId?
 }
 

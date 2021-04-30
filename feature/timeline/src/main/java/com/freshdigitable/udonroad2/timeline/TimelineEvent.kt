@@ -2,12 +2,10 @@ package com.freshdigitable.udonroad2.timeline
 
 import com.freshdigitable.udonroad2.model.CustomTimelineItem
 import com.freshdigitable.udonroad2.model.ListOwner
-import com.freshdigitable.udonroad2.model.ListOwnerGenerator
-import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.TweetId
-import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
+import com.freshdigitable.udonroad2.model.app.navigation.TimelineEffect
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import java.io.Serializable
 
@@ -47,32 +45,7 @@ sealed class TimelineEvent : AppEvent {
     object SwipedToRefresh : TimelineEvent()
 }
 
-sealed class TimelineEffect : AppEffect {
-    data class ToTopOfList(val needsSkip: Boolean) : TimelineEffect()
-
-    sealed class Navigate : AppEffect.Navigation, TimelineEffect() {
-        data class Timeline(
-            val owner: ListOwner<*>,
-            override val type: AppEffect.Navigation.Type = AppEffect.Navigation.Type.NAVIGATE,
-        ) : Navigate()
-
-        data class Detail(
-            val id: TweetId,
-        ) : Navigate()
-
-        data class UserInfo(val tweetUserItem: TweetUserItem) : Navigate()
-
-        data class MediaViewer(
-            val tweetId: TweetId,
-            val index: Int = 0,
-        ) : Navigate() {
-            internal constructor(event: TimelineEvent.MediaItemClicked) :
-                this(event.tweetId, event.index)
-        }
-    }
-}
-
-suspend fun ListOwnerGenerator.getTimelineEvent(
-    queryType: QueryType,
-    navType: AppEffect.Navigation.Type = AppEffect.Navigation.Type.NAVIGATE,
-): TimelineEffect.Navigate.Timeline = TimelineEffect.Navigate.Timeline(generate(queryType), navType)
+internal fun TimelineEffect.Navigate.MediaViewer.Companion.create(
+    event: TimelineEvent.MediaItemClicked,
+): TimelineEffect.Navigate.MediaViewer =
+    TimelineEffect.Navigate.MediaViewer(event.tweetId, event.index)

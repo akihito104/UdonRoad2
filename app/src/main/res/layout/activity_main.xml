@@ -2,9 +2,14 @@
 <layout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     >
 
     <data>
+
+        <import type="com.freshdigitable.udonroad2.shortcut.ShortcutViewModel.State" />
+
+        <import type="android.view.View" />
 
         <variable
             name="viewModel"
@@ -60,8 +65,25 @@
                 android:layout_gravity="center_horizontal|bottom"
                 app:menu="@menu/shortcut_main"
                 style="@style/Widget.FlingFAB"
-                app:menuListener="@{item -> viewModel.onShortcutMenuSelected(item, viewModel.requireSelectedTweetId)}"
-                app:isVisible="@{viewModel.shortcutState.visible}"
+                />
+
+            <com.freshdigitable.fabshortcut.ExpandableBottomContextMenuView
+                android:id="@+id/main_bottom_menu"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:menu_main="@menu/detail_main"
+                app:menu_more="@menu/detail_more"
+                app:menuItemState="@{viewModel.shortcutState.menuItemState}"
+                tools:visibility="visible"
+                />
+
+            <com.freshdigitable.udonroad2.shortcut.ShortcutViewHolder
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                app:fabId="@{@id/main_fab}"
+                app:toolbarId="@{@id/main_bottom_menu}"
+                app:itemListener="@{item -> viewModel.onShortcutMenuSelected(item, viewModel.requireSelectedTweetId)}"
+                app:mode="@{viewModel.shortcutState.mode}"
                 />
         </androidx.coordinatorlayout.widget.CoordinatorLayout>
 

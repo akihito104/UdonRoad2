@@ -18,12 +18,12 @@ package com.freshdigitable.udonroad2.timeline.viewmodel
 
 import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
+import com.freshdigitable.udonroad2.model.app.navigation.TimelineEffect
 import com.freshdigitable.udonroad2.model.tweet.TweetEntity
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
 import com.freshdigitable.udonroad2.test_common.jvm.ObserverEventCollector
 import com.freshdigitable.udonroad2.test_common.jvm.createMock
 import com.freshdigitable.udonroad2.test_common.jvm.setupForActivate
-import com.freshdigitable.udonroad2.timeline.TimelineEffect
 import com.freshdigitable.udonroad2.timeline.TimelineViewStatesTestRule
 import com.freshdigitable.udonroad2.timeline.UserIconClickedAction
 import com.freshdigitable.udonroad2.timeline.UserIconViewModelSource
@@ -45,10 +45,9 @@ class TimelineViewModelTest {
         .around(viewStatesTestRule)
 
     internal val sut: TimelineViewModel by lazy {
-        val eventDispatcher = viewStatesTestRule.actionsRule.dispatcher
         TimelineViewModel(
             viewStatesTestRule.sut,
-            UserIconViewModelSource(UserIconClickedAction(eventDispatcher))
+            UserIconViewModelSource(UserIconClickedAction(viewStatesTestRule.dispatcher))
         )
     }
 
@@ -60,7 +59,7 @@ class TimelineViewModelTest {
     @Before
     fun setup() {
         eventCollector.setupForActivate {
-            addAll(sut.listState, sut.selectedItemId, sut.mediaState)
+            addAll(sut.listState, sut.tweetListState, sut.mediaState)
             addAll(sut.timeline)
             addActivityEventStream(sut)
         }
@@ -68,7 +67,7 @@ class TimelineViewModelTest {
 
     @Test
     fun init() {
-        assertThat(sut.selectedItemId.value).isNull()
+        assertThat(sut.tweetListState.value?.selectedItemId).isNull()
         assertThat(sut.listState.value?.isHeadingEnabled).isFalse()
         assertThat(sut.mediaState.value?.isPossiblySensitiveHidden).isTrue()
     }
@@ -129,7 +128,7 @@ class TimelineViewModelTest {
         }
 
         // verify
-        assertThat(sut.selectedItemId.value?.originalId).isEqualTo(TweetId(1000))
+        assertThat(sut.tweetListState.value?.selectedItemId?.originalId).isEqualTo(TweetId(1000))
         assertThat(sut.listState.value?.isHeadingEnabled).isTrue()
     }
 
@@ -164,7 +163,7 @@ class TimelineViewModelTest {
 
         // verify
         assertThat(navigationEvents).isEmpty()
-        assertThat(sut.selectedItemId.value).isNull()
+        assertThat(sut.tweetListState.value?.selectedItemId).isNull()
     }
 
     @Test

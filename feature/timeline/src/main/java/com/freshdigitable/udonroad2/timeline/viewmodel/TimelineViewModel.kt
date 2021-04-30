@@ -23,7 +23,6 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.freshdigitable.udonroad2.model.QueryType.TweetQueryType
-import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEffectStream
 import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
 import com.freshdigitable.udonroad2.timeline.ListItemLoadableEventListener
@@ -36,8 +35,10 @@ import com.freshdigitable.udonroad2.timeline.TweetMediaItemViewModel
 import com.freshdigitable.udonroad2.timeline.UserIconClickListener
 import com.freshdigitable.udonroad2.timeline.UserIconViewModelSource
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.shareIn
 
 internal class TimelineViewModel(
     viewModelSource: TimelineViewModelSource,
@@ -51,11 +52,13 @@ internal class TimelineViewModel(
     TweetMediaEventListener by viewModelSource,
     ActivityEffectStream,
     ViewModel() {
-    override val selectedItemId: LiveData<SelectedItemId?> = viewModelSource.selectedItemId
+    private val state = viewModelSource.state.shareIn(viewModelScope, SharingStarted.Eagerly, 1)
+    override val tweetListState: LiveData<TweetListItemViewModel.State> = state
+        .distinctUntilChangedBy { it.selectedItemId }
         .asLiveData(viewModelScope.coroutineContext)
     override val mediaState: LiveData<TweetMediaItemViewModel.State> = viewModelSource.mediaState
         .asLiveData(viewModelScope.coroutineContext)
-    override val listState: LiveData<ListItemLoadableViewModel.State> = viewModelSource.state
+    override val listState: LiveData<ListItemLoadableViewModel.State> = state
         .distinctUntilChangedBy { it.isHeadingEnabled }
         .asLiveData(viewModelScope.coroutineContext)
     override val timeline: Flow<PagingData<Any>> = viewModelSource.pagedList

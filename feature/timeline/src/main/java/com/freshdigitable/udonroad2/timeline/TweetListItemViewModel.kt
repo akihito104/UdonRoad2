@@ -20,5 +20,9 @@ interface TweetListItemEventListener : ListItemClickListener<TweetListItem> {
 }
 
 interface TweetListItemViewModel : TweetListItemEventListener {
-    val selectedItemId: LiveData<SelectedItemId?>
+    val tweetListState: LiveData<State>
+
+    interface State {
+        val selectedItemId: SelectedItemId?
+    }
 }

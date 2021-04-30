@@ -16,14 +16,10 @@
 
 package com.freshdigitable.udonroad2.shortcut
 
-import android.view.MenuItem
-import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
-import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
-import com.freshdigitable.udonroad2.model.app.navigation.postEvents
 
-sealed class SelectedItemShortcut : TweetContextMenuEvent {
+sealed class SelectedItemShortcut : AppEvent {
     data class TweetDetail(override val tweetId: TweetId) : SelectedItemShortcut()
     data class Like(override val tweetId: TweetId) : SelectedItemShortcut()
     data class Retweet(override val tweetId: TweetId) : SelectedItemShortcut()
@@ -31,36 +27,11 @@ sealed class SelectedItemShortcut : TweetContextMenuEvent {
     data class Quote(override val tweetId: TweetId) : SelectedItemShortcut()
     data class Conversation(override val tweetId: TweetId) : SelectedItemShortcut()
 
+    data class Unlike(override val tweetId: TweetId) : SelectedItemShortcut()
+    data class Unretweet(override val tweetId: TweetId) : SelectedItemShortcut()
+    data class DeleteTweet(override val tweetId: TweetId) : SelectedItemShortcut()
+
+    abstract val tweetId: TweetId
+
     companion object
-}
-
-interface TweetContextMenuEvent : AppEvent {
-    val tweetId: TweetId
-}
-
-fun EventDispatcher.postSelectedItemShortcutEvent(
-    menuItem: MenuItem,
-    selectedItemId: SelectedItemId
-) {
-    val tweetId = selectedItemId.quoteId ?: selectedItemId.originalId
-    postSelectedItemShortcutEvent(menuItem, tweetId)
-}
-
-fun EventDispatcher.postSelectedItemShortcutEvent(
-    menuItem: MenuItem,
-    tweetId: TweetId
-) {
-    when (menuItem.itemId) {
-        R.id.iffabMenu_main_detail -> postEvent(SelectedItemShortcut.TweetDetail(tweetId))
-        R.id.iffabMenu_main_fav -> postEvent(SelectedItemShortcut.Like(tweetId))
-        R.id.iffabMenu_main_rt -> postEvent(SelectedItemShortcut.Retweet(tweetId))
-        R.id.iffabMenu_main_favRt -> postEvents(
-            SelectedItemShortcut.Like(tweetId),
-            SelectedItemShortcut.Retweet(tweetId)
-        )
-        R.id.iffabMenu_main_reply -> postEvent(SelectedItemShortcut.Reply(tweetId))
-        R.id.iffabMenu_main_quote -> postEvent(SelectedItemShortcut.Quote(tweetId))
-        R.id.iffabMenu_main_conv -> postEvent(SelectedItemShortcut.Conversation(tweetId))
-        else -> throw IllegalStateException("selected unregistered menu item: $menuItem")
-    }
 }

@@ -29,7 +29,6 @@ import com.freshdigitable.udonroad2.data.impl.TweetRepository
 import com.freshdigitable.udonroad2.model.MediaEntity
 import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEffectStream
-import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.AppEventListener
 import com.freshdigitable.udonroad2.model.app.navigation.AppEventListener1
@@ -37,21 +36,21 @@ import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
 import com.freshdigitable.udonroad2.model.app.onEvent
 import com.freshdigitable.udonroad2.model.app.stateSourceBuilder
-import com.freshdigitable.udonroad2.shortcut.ShortcutActions
+import com.freshdigitable.udonroad2.shortcut.MenuItemState
 import com.freshdigitable.udonroad2.shortcut.ShortcutEventListener
 import com.freshdigitable.udonroad2.shortcut.ShortcutViewModel
-import com.freshdigitable.udonroad2.shortcut.ShortcutViewStates
+import com.freshdigitable.udonroad2.shortcut.ShortcutViewModelSource
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 import kotlin.math.min
 
 internal class MediaViewModel @Inject constructor(
-    eventDispatcher: EventDispatcher,
     viewStates: MediaViewModelViewStates,
+    shortcutViewModelSource: ShortcutViewModelSource,
 ) : MediaEventListener by viewStates,
     ShortcutViewModel,
-    ShortcutEventListener by ShortcutEventListener.create(eventDispatcher),
-    ActivityEffectStream by viewStates,
+    ShortcutEventListener by shortcutViewModelSource,
+    ActivityEffectStream by shortcutViewModelSource,
     ViewModel() {
     val state = viewStates.state.asLiveData(viewModelScope.coroutineContext)
     internal val mediaItems: LiveData<List<MediaEntity>> = state.map { it.mediaItems }
@@ -68,8 +67,11 @@ internal class MediaViewModel @Inject constructor(
         val mediaItems: List<MediaEntity>
         val systemUiVisibility: SystemUiVisibility
         val currentPosition: Int?
-        override val isVisible: Boolean
-            get() = systemUiVisibility == SystemUiVisibility.SHOW
+        override val mode: ShortcutViewModel.State.Mode
+            get() = when (systemUiVisibility) {
+                SystemUiVisibility.SHOW -> ShortcutViewModel.State.Mode.FAB
+                else -> ShortcutViewModel.State.Mode.HIDDEN
+            }
     }
 }
 
@@ -80,9 +82,8 @@ interface MediaEventListener {
 }
 
 internal class MediaViewModelActions @Inject constructor(
-    private val eventDispatcher: EventDispatcher,
-) : MediaEventListener,
-    ShortcutActions by ShortcutActions.create(eventDispatcher) {
+    eventDispatcher: EventDispatcher,
+) : MediaEventListener {
     internal sealed class Event : AppEvent {
         data class CurrentPositionChanged(val index: Int) : Event()
         data class SystemUiVisibilityChanged(val visibility: SystemUiVisibility) : Event()
@@ -105,9 +106,7 @@ internal class MediaViewModelViewStates @Inject constructor(
     actions: MediaViewModelActions,
     repository: MediaRepository,
     tweetRepository: TweetRepository,
-) : MediaEventListener by actions,
-    ShortcutViewStates by ShortcutViewStates.create(actions, tweetRepository),
-    ActivityEffectStream {
+) : MediaEventListener by actions {
     internal val state: Flow<MediaViewModel.State> = stateSourceBuilder(
         init = Snapshot(tweetId = tweetId, position = firstPosition),
         repository.getMediaItemSource(tweetId).onEvent { s, items ->
@@ -126,7 +125,6 @@ internal class MediaViewModelViewStates @Inject constructor(
         },
         actions.changeCurrentPosition.onEvent { s, e -> s.copy(position = e.index) }
     )
-    override val effect: Flow<AppEffect> = updateTweet
 
     private data class Snapshot(
         override val tweetId: TweetId,
@@ -139,6 +137,7 @@ internal class MediaViewModelViewStates @Inject constructor(
                 mediaItems.isNotEmpty() -> min(position.coerceAtLeast(0), mediaItems.lastIndex)
                 else -> null
             }
+        override val menuItemState: MenuItemState = MenuItemState()
     }
 }
 

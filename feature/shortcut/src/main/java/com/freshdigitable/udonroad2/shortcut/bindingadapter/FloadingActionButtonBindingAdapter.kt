@@ -17,10 +17,36 @@
 package com.freshdigitable.udonroad2.shortcut.bindingadapter
 
 import androidx.databinding.BindingAdapter
+import com.freshdigitable.fabshortcut.ExpandableBottomContextMenuView
+import com.freshdigitable.udonroad2.shortcut.MenuItemState
+import com.freshdigitable.udonroad2.shortcut.R
+import com.freshdigitable.udonroad2.shortcut.ShortcutViewModel
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
-@BindingAdapter("isVisible")
-fun FloatingActionButton.isVisible(isVisible: Boolean?) = when (isVisible) {
-    true -> this.show()
+@BindingAdapter("mode")
+fun FloatingActionButton.setMode(mode: ShortcutViewModel.State.Mode?) = when (mode) {
+    ShortcutViewModel.State.Mode.FAB -> this.show()
     else -> this.hide()
+}
+
+@BindingAdapter("mode")
+fun ExpandableBottomContextMenuView.setMode(mode: ShortcutViewModel.State.Mode?) = when (mode) {
+    ShortcutViewModel.State.Mode.TOOLBAR -> this.show()
+    else -> this.hide()
+}
+
+@BindingAdapter("menuItemState")
+fun ExpandableBottomContextMenuView.updateMenuItemState(item: MenuItemState?) {
+    updateMenu {
+        changeGroupEnabled(R.id.menuGroup_detailMain, item?.isMainGroupEnabled ?: false)
+        updateItemOf(R.id.detail_main_rt) {
+            isChecked = item?.isRetweetChecked ?: false
+        }
+        updateItemOf(R.id.detail_main_fav) {
+            isChecked = item?.isFavChecked ?: false
+        }
+        updateItemOf(R.id.detail_more_delete) {
+            isVisible = item?.isDeleteVisible ?: false
+        }
+    }
 }

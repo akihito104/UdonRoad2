@@ -20,13 +20,22 @@ import androidx.annotation.StringRes
 import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
 
 internal enum class TweetFeedbackMessage(
-    @StringRes override val messageRes: Int
+    @StringRes override val messageRes: Int,
 ) : FeedbackMessage {
     FAV_CREATE_SUCCESS(R.string.msg_fav_create_success),
     FAV_CREATE_FAILURE(R.string.msg_fav_create_failure),
     ALREADY_FAV(R.string.msg_already_fav),
 
+    FAV_DESTROY_SUCCESS(R.string.msg_fav_destroy_success),
+    FAV_DESTROY_FAILURE(R.string.msg_fav_destroy_failure),
+
     RT_CREATE_SUCCESS(R.string.msg_rt_create_success),
     RT_CREATE_FAILURE(R.string.msg_rt_create_failure),
     ALREADY_RT(R.string.msg_already_rt),
+
+    RT_DESTROY_SUCCESS(R.string.msg_rt_destroy_success),
+    RT_DESTROY_FAILURE(R.string.msg_rt_destroy_failure),
+
+    DELETE_TWEET_SUCCESS(R.string.msg_delete_tweet_success),
+    DELETE_TWEET_FAILURE(R.string.msg_delete_tweet_failure),
 }

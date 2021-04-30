@@ -34,6 +34,7 @@ import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
 import com.freshdigitable.udonroad2.model.user.Relationship
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.model.user.UserEntity
+import com.freshdigitable.udonroad2.shortcut.ShortcutViewModel
 import com.freshdigitable.udonroad2.test_common.MatcherScopedSuspendBlock
 import com.freshdigitable.udonroad2.test_common.MockVerified
 import com.freshdigitable.udonroad2.test_common.jvm.CoroutineTestRule
@@ -79,7 +80,7 @@ class UserViewModelTest {
             assertThat(sut.state.value?.relationship).isEqualTo(relationship)
             assertThat(sut.relationshipMenuItems.value)
                 .isEqualTo(setOf(FOLLOW, BLOCK, MUTE, REPORT_SPAM))
-            assertThat(sut.state.value?.isShortcutVisible).isFalse()
+            assertThat(sut.state.value?.shortcutMode).isEqualTo(ShortcutViewModel.State.Mode.HIDDEN)
             assertThat(sut.state.value?.titleAlpha).isEqualTo(0)
         }
 
@@ -105,7 +106,7 @@ class UserViewModelTest {
             )
 
             // verify
-            assertThat(sut.state.value?.isShortcutVisible).isTrue()
+            assertThat(sut.state.value?.shortcutMode).isEqualTo(ShortcutViewModel.State.Mode.FAB)
         }
     }
 
@@ -168,7 +169,7 @@ class UserViewModelTest {
                 sut.changePage.dispatch(1)
             }
             // verify
-            assertThat(sut.state.value?.isShortcutVisible).isFalse()
+            assertThat(sut.state.value?.shortcutMode).isEqualTo(ShortcutViewModel.State.Mode.HIDDEN)
         }
 
         @Test
@@ -180,7 +181,7 @@ class UserViewModelTest {
             sut.changePage.dispatch(0)
 
             // verify
-            assertThat(sut.state.value?.isShortcutVisible).isTrue()
+            assertThat(sut.state.value?.shortcutMode).isEqualTo(ShortcutViewModel.State.Mode.FAB)
         }
     }
 

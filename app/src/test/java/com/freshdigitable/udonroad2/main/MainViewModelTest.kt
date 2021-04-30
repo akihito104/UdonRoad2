@@ -20,24 +20,35 @@ import android.view.MenuItem
 import androidx.annotation.IdRes
 import androidx.lifecycle.LiveData
 import com.freshdigitable.udonroad2.R
+import com.freshdigitable.udonroad2.data.impl.create
 import com.freshdigitable.udonroad2.input.TweetInputEvent
 import com.freshdigitable.udonroad2.main.MainViewModelTestRule.Companion.currentUser
 import com.freshdigitable.udonroad2.model.ListOwner
+import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.UserId
+import com.freshdigitable.udonroad2.model.app.AppTwitterException
+import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
+import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
+import com.freshdigitable.udonroad2.model.app.navigation.TimelineEffect
+import com.freshdigitable.udonroad2.model.tweet.DetailTweetListItem
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.model.user.UserEntity
-import com.freshdigitable.udonroad2.shortcut.SelectedItemShortcut
+import com.freshdigitable.udonroad2.shortcut.ShortcutActions
+import com.freshdigitable.udonroad2.shortcut.ShortcutViewModel
+import com.freshdigitable.udonroad2.shortcut.ShortcutViewModelSource
 import com.freshdigitable.udonroad2.test_common.jvm.ObserverEventCollector
+import com.freshdigitable.udonroad2.test_common.jvm.TweetRepositoryRule
 import com.freshdigitable.udonroad2.test_common.jvm.assertLatestNavigationEvent
+import com.freshdigitable.udonroad2.test_common.jvm.createMock
 import com.freshdigitable.udonroad2.test_common.jvm.setupForActivate
-import com.freshdigitable.udonroad2.timeline.TimelineEffect
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.google.common.truth.Truth.assertThat
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.flow.flowOf
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -124,7 +135,7 @@ class MainViewModelTest {
 
             // verify
             eventCollector.assertLatestNavigationEvent<TimelineEffect.Navigate.Timeline>(
-                sut.navigationEvent,
+                sut.effect,
             ) {
                 assertThat(it.owner.query).isEqualTo(QueryType.Oauth)
             }
@@ -134,7 +145,7 @@ class MainViewModelTest {
         fun navIconType_WhenInTopLevelDestination_then_navIconIsMenu(): Unit =
             with(rule) {
                 // setup
-                stateModelRule.navDelegateRule.setIsInTopLevelDestination(true)
+                stateModelSourceRule.navDelegateRule.setIsInTopLevelDestination(true)
 
                 // verify
                 assertThat(sut.mainState.value?.navIconType).isEqualTo(NavigationIconType.MENU)
@@ -144,7 +155,7 @@ class MainViewModelTest {
         fun navIconType_WhenNotInTopLevelDestination_then_navIconIsUp(): Unit =
             with(rule) {
                 // setup
-                stateModelRule.navDelegateRule.setIsInTopLevelDestination(false)
+                stateModelSourceRule.navDelegateRule.setIsInTopLevelDestination(false)
 
                 // verify
                 assertThat(sut.mainState.value?.navIconType).isEqualTo(NavigationIconType.UP)
@@ -154,8 +165,8 @@ class MainViewModelTest {
         fun navIconType_WhenInTopLevelDestinationAndTweetInputIsExpanded_then_navIconIsClose(): Unit =
             with(rule) {
                 // setup
-                stateModelRule.navDelegateRule.setIsInTopLevelDestination(true)
-                stateModelRule.isExpandedSource.value = true
+                stateModelSourceRule.navDelegateRule.setIsInTopLevelDestination(true)
+                stateModelSourceRule.isExpandedSource.value = true
 
                 // verify
                 assertThat(sut.mainState.value?.navIconType).isEqualTo(NavigationIconType.CLOSE)
@@ -165,8 +176,8 @@ class MainViewModelTest {
         fun navIconType_WhenNotInTopLevelDestinationAndTweetInputIsExpanded_then_navIconIsClose(): Unit =
             with(rule) {
                 // setup
-                stateModelRule.navDelegateRule.setIsInTopLevelDestination(false)
-                stateModelRule.isExpandedSource.value = true
+                stateModelSourceRule.navDelegateRule.setIsInTopLevelDestination(false)
+                stateModelSourceRule.isExpandedSource.value = true
 
                 // verify
                 assertThat(sut.mainState.value?.navIconType).isEqualTo(NavigationIconType.CLOSE)
@@ -177,7 +188,7 @@ class MainViewModelTest {
             with(rule) {
                 // setup
                 val eventObserver = dispatcher.emitter.test()
-                stateModelRule.isExpandedSource.value = true
+                stateModelSourceRule.isExpandedSource.value = true
 
                 // exercise
                 sut.collapseTweetInput()
@@ -191,7 +202,7 @@ class MainViewModelTest {
         fun collapseTweetInput_whenTweetInputIsNotExpanded_then_throwIllegalStateException(): Unit =
             with(rule) {
                 // setup
-                stateModelRule.isExpandedSource.value = false
+                stateModelSourceRule.isExpandedSource.value = false
 
                 // exercise
                 Assert.assertThrows(java.lang.IllegalStateException::class.java) {
@@ -203,35 +214,83 @@ class MainViewModelTest {
     class WhenItemSelected {
         @get:Rule
         internal val rule = MainViewModelTestRule()
+        private val targetId = TweetId(200)
 
         @Before
         fun setup(): Unit = with(rule) {
-            stateModelRule.navDelegateRule.setupContainerState(
-                MainNavHostState.Timeline(ListOwner(0, QueryType.TweetQueryType.Timeline()))
-            )
-            stateModelRule.selectedItemRepository.put(
-                SelectedItemId(
-                    ListOwner(0, QueryType.TweetQueryType.Timeline()), TweetId(200)
-                )
-            )
+            val owner = ListOwner(0, QueryType.TweetQueryType.Timeline())
+            stateModelSourceRule.tweetRepositoryRule.setupShowTweet(targetId,
+                flowOf(DetailTweetListItem.createMock(targetId)))
+            stateModelSourceRule.navDelegateRule.setupContainerState(MainNavHostState.Timeline(owner))
+            stateModelSourceRule.selectedItemRepository.put(SelectedItemId(owner, targetId))
         }
 
         @Test
         fun onFabMenuSelected_selectedFav_then_favDispatched(): Unit = with(rule) {
             // setup
-            val dispatcherObserver = dispatcher.emitter.test()
+            tweetRepositoryMock.setupPostLikeForSuccess(targetId)
 
             // exercise
             sut.onShortcutMenuSelected(
-                menuItem(R.id.iffabMenu_main_fav),
-                sut.requireSelectedTweetId
+                menuItem(R.id.iffabMenu_main_fav), sut.requireSelectedTweetId
             )
 
             // verify
-            assertThat(sut.shortcutState.value?.isVisible).isTrue()
-            dispatcherObserver
-                .assertValueCount(1)
-                .assertValueAt(0) { it is SelectedItemShortcut.Like }
+            assertThat(sut.shortcutState.value?.mode).isEqualTo(ShortcutViewModel.State.Mode.FAB)
+            assertThat((navEvents.last() as FeedbackMessage).messageRes)
+                .isEqualTo(R.string.msg_fav_create_success)
+        }
+
+        @Test
+        fun onFabMenuSelected_failedToLike_then_dispatchFeedback(): Unit = with(rule) {
+            // setup
+            tweetRepositoryMock.setupPostLikeForFailure(
+                targetId, AppTwitterException.ErrorType.ALREADY_FAVORITED
+            )
+
+            // exercise
+            sut.onShortcutMenuSelected(
+                menuItem(R.id.iffabMenu_main_fav), sut.requireSelectedTweetId
+            )
+
+            // verify
+            assertThat(sut.mainState.value?.selectedItem?.originalId).isEqualTo(TweetId(200L))
+            assertThat((navEvents.last() as FeedbackMessage).messageRes)
+                .isEqualTo(R.string.msg_already_fav)
+        }
+
+        @Test
+        fun onFabMenuSelected_dispatchRetweetEvent_then_retweetDispatched(): Unit = with(rule) {
+            // setup
+            tweetRepositoryMock.setupPostRetweetForSuccess(targetId)
+
+            // exercise
+            sut.onShortcutMenuSelected(
+                menuItem(R.id.iffabMenu_main_rt), sut.requireSelectedTweetId
+            )
+
+            // verify
+            assertThat(sut.mainState.value?.selectedItem?.originalId).isEqualTo(TweetId(200L))
+            assertThat((navEvents.last() as FeedbackMessage).messageRes)
+                .isEqualTo(R.string.msg_rt_create_success)
+        }
+
+        @Test
+        fun onFabMenuSelected_failedToRT_then_dispatchFeedback(): Unit = with(rule) {
+            // setup
+            tweetRepositoryMock.setupPostRetweetForFailure(
+                targetId, AppTwitterException.ErrorType.ALREADY_RETWEETED
+            )
+
+            // exercise
+            sut.onShortcutMenuSelected(
+                menuItem(R.id.iffabMenu_main_rt), sut.requireSelectedTweetId
+            )
+
+            // verify
+            assertThat(sut.mainState.value?.selectedItem?.originalId).isEqualTo(TweetId(200L))
+            assertThat((navEvents.last() as FeedbackMessage).messageRes)
+                .isEqualTo(R.string.msg_already_rt)
         }
 
         @Test
@@ -268,7 +327,7 @@ class MainViewModelTest {
             with(rule) {
                 // setup
                 val dispatcherObserver = dispatcher.emitter.test()
-                stateModelRule.isExpandedSource.value = true
+                stateModelSourceRule.isExpandedSource.value = true
 
                 // exercise
                 sut.onBackPressed()
@@ -282,10 +341,10 @@ class MainViewModelTest {
         @Test
         fun isFabVisible_tweetInputIsExpanded_then_fabIsDisappeared(): Unit = with(rule) {
             // exercise
-            stateModelRule.isExpandedSource.value = true
+            stateModelSourceRule.isExpandedSource.value = true
 
             // verify
-            assertThat(sut.shortcutState.value?.isVisible).isFalse()
+            assertThat(sut.shortcutState.value?.mode).isEqualTo(ShortcutViewModel.State.Mode.HIDDEN)
         }
     }
 
@@ -362,7 +421,7 @@ class MainViewModelTest {
             assertThat(sut.drawerState.value?.isOpened).isFalse()
             assertThat(sut.drawerState.value?.isAccountSwitcherOpened).isFalse()
             eventCollector.assertLatestNavigationEvent<TimelineEffect.Navigate.Timeline>(
-                sut.navigationEvent,
+                sut.effect,
             ) { event ->
                 assertThat(event.owner.query)
                     .isInstanceOf(QueryType.CustomTimelineListQueryType.Ownership::class.java)
@@ -377,7 +436,7 @@ class MainViewModelTest {
 
             // verify
             eventCollector.assertLatestNavigationEvent<TimelineEffect.Navigate.UserInfo>(
-                sut.navigationEvent
+                sut.effect
             ) {
                 assertThat(it.tweetUserItem.id).isEqualTo(authenticatedUserId)
             }
@@ -386,39 +445,50 @@ class MainViewModelTest {
 }
 
 internal class MainViewModelTestRule : TestWatcher() {
-    val stateModelRule: MainActivityStateModelTestRule =
-        MainActivityStateModelTestRule(isStateCollected = false)
-    val dispatcher = stateModelRule.dispatcher
-    val coroutineRule = stateModelRule.coroutineRule
+    val stateModelSourceRule: MainViewModelSourceTestRule =
+        MainViewModelSourceTestRule(isStateCollected = false)
+    val dispatcher = stateModelSourceRule.dispatcher
+    val coroutineRule = stateModelSourceRule.coroutineRule
     internal val eventCollector = ObserverEventCollector(coroutineRule)
-    val appSettingRepositoryRule = stateModelRule.appSettingRepositoryRule
-    val authenticatedUserId = stateModelRule.authenticatedUserId
+    val tweetRepositoryMock = TweetRepositoryRule()
+    val appSettingRepositoryRule = stateModelSourceRule.appSettingRepositoryRule
+    val authenticatedUserId = stateModelSourceRule.authenticatedUserId
     val drawerViewStateRule = DrawerViewStateSourceTestRule(
         dispatcher,
         appSettingRepositoryRule,
-        stateModelRule.oauthTokenRepository,
+        stateModelSourceRule.oauthTokenRepository,
         coroutineRule,
         isStateCollected = false,
     )
 
     val sut: MainViewModel by lazy {
-        MainViewModel(dispatcher, stateModelRule.sut, drawerViewStateRule.sut)
+        MainViewModel(dispatcher,
+            stateModelSourceRule.sut,
+            drawerViewStateRule.sut,
+            ShortcutViewModelSource(
+                ShortcutActions(dispatcher),
+                tweetRepositoryMock.mock,
+                ListOwnerGenerator.create()
+            ))
     }
+    val navEvents: List<AppEffect>
+        get() = eventCollector.nonNullEventsOf(sut.effect)
 
     override fun starting(description: Description?) {
         super.starting(description)
         eventCollector.setupForActivate {
             with(sut) {
                 addAll(mainState, appBarTitle, isTweetInputMenuVisible, shortcutState, drawerState)
-                addAll(navigationEvent)
+                addAll(effect)
             }
         }
     }
 
     override fun apply(base: Statement?, description: Description?): Statement =
-        RuleChain.outerRule(stateModelRule)
+        RuleChain.outerRule(stateModelSourceRule)
             .around(drawerViewStateRule)
             .around(eventCollector)
+            .around(tweetRepositoryMock)
             .apply(super.apply(base, description), description)
 
     companion object {
