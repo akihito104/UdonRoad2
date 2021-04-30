@@ -72,10 +72,10 @@ class ExpandableBottomContextMenuView @JvmOverloads constructor(
     private val mainMenu = BottomMenu()
     private val moreMenu = BottomMenu()
 
-    var itemClickListener: ItemClickListener? = null
+    var itemClickListener: OnMenuSelectedListener? = null
     private val callback: OnClickListener = OnClickListener { v ->
         val item = checkNotNull(mainMenu.findItem(v.id) ?: moreMenu.findItem(v.id))
-        itemClickListener?.onItemClicked(item)
+        itemClickListener?.onMenuSelected(item)
     }
 
     init {
@@ -189,10 +189,6 @@ class ExpandableBottomContextMenuView @JvmOverloads constructor(
         fun changeGroupEnabled(@IdRes groupId: Int, isEnabled: Boolean) {
             view.mainMenu.setGroupEnabled(groupId, isEnabled)
         }
-    }
-
-    interface ItemClickListener {
-        fun onItemClicked(item: MenuItem)
     }
 
     override fun onAttachedToWindow() {

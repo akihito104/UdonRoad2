@@ -22,7 +22,6 @@ import android.content.Context
 import android.graphics.PointF
 import android.os.Build
 import android.util.AttributeSet
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewAnimationUtils
 import android.view.ViewGroup
@@ -223,21 +222,8 @@ class ShortcutViewHolder @JvmOverloads constructor(
     }
 
     fun setItemListener(listener: OnMenuSelectedListener?) {
-        when (listener) {
-            null -> {
-                fab.setMenuListener(null)
-                toolbar.itemClickListener = null
-            }
-            else -> {
-                fab.setMenuListener(listener)
-                toolbar.itemClickListener =
-                    object : ExpandableBottomContextMenuView.ItemClickListener {
-                        override fun onItemClicked(item: MenuItem) {
-                            listener.onMenuSelected(item)
-                        }
-                    }
-            }
-        }
+        fab.setMenuListener(listener)
+        toolbar.itemClickListener = listener
     }
 
     override fun setVisibility(visibility: Int) {
