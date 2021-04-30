@@ -17,6 +17,7 @@
 package com.freshdigitable.udonroad2.user
 
 import androidx.annotation.IdRes
+import com.freshdigitable.fabshortcut.ShortcutViewHolder
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.data.UserDataSource
 import com.freshdigitable.udonroad2.data.impl.RelationshipRepository
@@ -34,7 +35,6 @@ import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
 import com.freshdigitable.udonroad2.model.user.Relationship
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.model.user.UserEntity
-import com.freshdigitable.udonroad2.shortcut.ShortcutViewModel
 import com.freshdigitable.udonroad2.test_common.MatcherScopedSuspendBlock
 import com.freshdigitable.udonroad2.test_common.MockVerified
 import com.freshdigitable.udonroad2.test_common.jvm.CoroutineTestRule
@@ -80,7 +80,7 @@ class UserViewModelTest {
             assertThat(sut.state.value?.relationship).isEqualTo(relationship)
             assertThat(sut.relationshipMenuItems.value)
                 .isEqualTo(setOf(FOLLOW, BLOCK, MUTE, REPORT_SPAM))
-            assertThat(sut.state.value?.shortcutMode).isEqualTo(ShortcutViewModel.State.Mode.HIDDEN)
+            assertThat(sut.state.value?.shortcutMode).isEqualTo(ShortcutViewHolder.Mode.HIDDEN)
             assertThat(sut.state.value?.titleAlpha).isEqualTo(0)
         }
 
@@ -106,7 +106,7 @@ class UserViewModelTest {
             )
 
             // verify
-            assertThat(sut.state.value?.shortcutMode).isEqualTo(ShortcutViewModel.State.Mode.FAB)
+            assertThat(sut.state.value?.shortcutMode).isEqualTo(ShortcutViewHolder.Mode.FAB)
         }
     }
 
@@ -169,7 +169,7 @@ class UserViewModelTest {
                 sut.changePage.dispatch(1)
             }
             // verify
-            assertThat(sut.state.value?.shortcutMode).isEqualTo(ShortcutViewModel.State.Mode.HIDDEN)
+            assertThat(sut.state.value?.shortcutMode).isEqualTo(ShortcutViewHolder.Mode.HIDDEN)
         }
 
         @Test
@@ -181,7 +181,7 @@ class UserViewModelTest {
             sut.changePage.dispatch(0)
 
             // verify
-            assertThat(sut.state.value?.shortcutMode).isEqualTo(ShortcutViewModel.State.Mode.FAB)
+            assertThat(sut.state.value?.shortcutMode).isEqualTo(ShortcutViewHolder.Mode.FAB)
         }
     }
 

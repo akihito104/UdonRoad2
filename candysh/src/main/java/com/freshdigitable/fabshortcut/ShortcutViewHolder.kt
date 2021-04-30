@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.freshdigitable.udonroad2.shortcut
+package com.freshdigitable.fabshortcut
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
@@ -31,13 +31,9 @@ import android.view.animation.AccelerateInterpolator
 import androidx.annotation.IdRes
 import androidx.annotation.RequiresApi
 import androidx.core.graphics.plus
-import com.freshdigitable.fabshortcut.ExpandableBottomContextMenuView
-import com.freshdigitable.fabshortcut.FlingFAB
-import com.freshdigitable.fabshortcut.OnMenuSelectedListener
 import com.google.android.material.animation.AnimationUtils.DECELERATE_INTERPOLATOR
 import kotlin.math.abs
 import kotlin.math.hypot
-
 
 class ShortcutViewHolder @JvmOverloads constructor(
     context: Context,
@@ -57,7 +53,7 @@ class ShortcutViewHolder @JvmOverloads constructor(
     private val fab: FlingFAB by lazy {
         (parent as ViewGroup).findViewById<FlingFAB>(fabId)?.also {
             it.visibility = when (mode) {
-                ShortcutViewModel.State.Mode.FAB -> VISIBLE
+                Mode.FAB -> VISIBLE
                 else -> INVISIBLE
             }
         } ?: throw IllegalStateException()
@@ -65,31 +61,31 @@ class ShortcutViewHolder @JvmOverloads constructor(
     private val toolbar: ExpandableBottomContextMenuView by lazy {
         (parent as ViewGroup).findViewById<ExpandableBottomContextMenuView>(toolbarId)?.also {
             it.visibility = when (mode) {
-                ShortcutViewModel.State.Mode.TOOLBAR -> VISIBLE
+                Mode.TOOLBAR -> VISIBLE
                 else -> INVISIBLE
             }
         } ?: throw IllegalStateException()
     }
 
-    var mode: ShortcutViewModel.State.Mode = ShortcutViewModel.State.Mode.HIDDEN
+    var mode: Mode = Mode.HIDDEN
         set(value) {
             changeMode(value)
             field = value
         }
 
-    private fun changeMode(nextMode: ShortcutViewModel.State.Mode) {
+    private fun changeMode(nextMode: Mode) {
         if (mode == nextMode) {
             return
         }
 
         when (mode) {
-            ShortcutViewModel.State.Mode.HIDDEN -> {
-                if (nextMode == ShortcutViewModel.State.Mode.FAB) fab.show()
-                else if (nextMode == ShortcutViewModel.State.Mode.TOOLBAR) toolbar.show()
+            Mode.HIDDEN -> {
+                if (nextMode == Mode.FAB) fab.show()
+                else if (nextMode == Mode.TOOLBAR) toolbar.show()
             }
-            ShortcutViewModel.State.Mode.FAB -> {
-                if (nextMode == ShortcutViewModel.State.Mode.HIDDEN) fab.hide()
-                else if (nextMode == ShortcutViewModel.State.Mode.TOOLBAR)
+            Mode.FAB -> {
+                if (nextMode == Mode.HIDDEN) fab.hide()
+                else if (nextMode == Mode.TOOLBAR)
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                         fabToToolbarAnim()
                     } else {
@@ -97,9 +93,9 @@ class ShortcutViewHolder @JvmOverloads constructor(
                         toolbar.hide()
                     }
             }
-            ShortcutViewModel.State.Mode.TOOLBAR -> {
-                if (nextMode == ShortcutViewModel.State.Mode.HIDDEN) toolbar.hide()
-                else if (nextMode == ShortcutViewModel.State.Mode.FAB)
+            Mode.TOOLBAR -> {
+                if (nextMode == Mode.HIDDEN) toolbar.hide()
+                else if (nextMode == Mode.FAB)
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                         toolbarToFabAnim()
                     } else {
@@ -265,4 +261,6 @@ class ShortcutViewHolder @JvmOverloads constructor(
                 y = value - centerY
             }
     }
+
+    enum class Mode { HIDDEN, FAB, TOOLBAR }
 }

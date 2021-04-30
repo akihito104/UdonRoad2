@@ -18,20 +18,20 @@ package com.freshdigitable.udonroad2.shortcut.bindingadapter
 
 import androidx.databinding.BindingAdapter
 import com.freshdigitable.fabshortcut.ExpandableBottomContextMenuView
+import com.freshdigitable.fabshortcut.ShortcutViewHolder
 import com.freshdigitable.udonroad2.shortcut.MenuItemState
 import com.freshdigitable.udonroad2.shortcut.R
-import com.freshdigitable.udonroad2.shortcut.ShortcutViewModel
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 @BindingAdapter("mode")
-fun FloatingActionButton.setMode(mode: ShortcutViewModel.State.Mode?) = when (mode) {
-    ShortcutViewModel.State.Mode.FAB -> this.show()
+fun FloatingActionButton.setMode(mode: ShortcutViewHolder.Mode?) = when (mode) {
+    ShortcutViewHolder.Mode.FAB -> this.show()
     else -> this.hide()
 }
 
 @BindingAdapter("mode")
-fun ExpandableBottomContextMenuView.setMode(mode: ShortcutViewModel.State.Mode?) = when (mode) {
-    ShortcutViewModel.State.Mode.TOOLBAR -> this.show()
+fun ExpandableBottomContextMenuView.setMode(mode: ShortcutViewHolder.Mode?) = when (mode) {
+    ShortcutViewHolder.Mode.TOOLBAR -> this.show()
     else -> this.hide()
 }
 
