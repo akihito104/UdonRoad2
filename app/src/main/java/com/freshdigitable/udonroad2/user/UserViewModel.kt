@@ -9,6 +9,7 @@ import androidx.lifecycle.asLiveData
 import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
+import com.freshdigitable.fabshortcut.ShortcutMenuItem
 import com.freshdigitable.fabshortcut.ShortcutViewHolder
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.model.ListOwner
@@ -44,7 +45,7 @@ class UserViewModel(
         .distinctUntilChanged()
     internal val feedbackMessage: Flow<FeedbackMessage> = viewState.feedbackMessage
 
-    fun onFabMenuSelected(item: MenuItem) {
+    fun onFabMenuSelected(item: ShortcutMenuItem) {
         Timber.tag("UserViewModel").d("onFabSelected: $item")
         val selected =
             requireNotNull(state.value?.selectedItemId) { "selectedItem should not be null." }

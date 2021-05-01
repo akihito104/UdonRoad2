@@ -19,6 +19,7 @@ package com.freshdigitable.udonroad2.main
 import android.view.MenuItem
 import androidx.annotation.IdRes
 import androidx.lifecycle.LiveData
+import com.freshdigitable.fabshortcut.ShortcutMenuItem
 import com.freshdigitable.fabshortcut.ShortcutViewHolder
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.data.impl.create
@@ -232,7 +233,7 @@ class MainViewModelTest {
 
             // exercise
             sut.onShortcutMenuSelected(
-                menuItem(R.id.iffabMenu_main_fav), sut.requireSelectedTweetId
+                shortcutMenuItem(R.id.iffabMenu_main_fav), sut.requireSelectedTweetId
             )
 
             // verify
@@ -250,7 +251,7 @@ class MainViewModelTest {
 
             // exercise
             sut.onShortcutMenuSelected(
-                menuItem(R.id.iffabMenu_main_fav), sut.requireSelectedTweetId
+                shortcutMenuItem(R.id.iffabMenu_main_fav), sut.requireSelectedTweetId
             )
 
             // verify
@@ -266,7 +267,7 @@ class MainViewModelTest {
 
             // exercise
             sut.onShortcutMenuSelected(
-                menuItem(R.id.iffabMenu_main_rt), sut.requireSelectedTweetId
+                shortcutMenuItem(R.id.iffabMenu_main_rt), sut.requireSelectedTweetId
             )
 
             // verify
@@ -284,7 +285,7 @@ class MainViewModelTest {
 
             // exercise
             sut.onShortcutMenuSelected(
-                menuItem(R.id.iffabMenu_main_rt), sut.requireSelectedTweetId
+                shortcutMenuItem(R.id.iffabMenu_main_rt), sut.requireSelectedTweetId
             )
 
             // verify
@@ -499,6 +500,12 @@ internal class MainViewModelTestRule : TestWatcher() {
 
 fun menuItem(@IdRes id: Int): MenuItem {
     return mockk<MenuItem>().apply {
+        every { itemId } returns id
+    }
+}
+
+fun shortcutMenuItem(@IdRes id: Int): ShortcutMenuItem {
+    return mockk<ShortcutMenuItem>().apply {
         every { itemId } returns id
     }
 }

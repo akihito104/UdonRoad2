@@ -18,7 +18,6 @@ package com.freshdigitable.fabshortcut
 
 import android.content.Context
 import android.util.AttributeSet
-import android.view.MenuItem
 import android.view.MotionEvent
 import com.google.android.material.R
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -86,7 +85,7 @@ class FlingFAB @JvmOverloads constructor(
 }
 
 interface OnMenuSelectedListener {
-    fun onMenuSelected(item: MenuItem)
+    fun onMenuSelected(item: ShortcutMenuItem)
 }
 
 internal interface OnFlingEventListener {
