@@ -16,14 +16,27 @@
 
 package com.freshdigitable.fabshortcut
 
-interface ShortcutMenu {
+import android.content.Context
+import android.view.Menu
+import androidx.annotation.MenuRes
+
+internal interface ShortcutMenu : Menu {
     fun findByDirection(direction: Direction): ShortcutMenuItem?
     fun isVisibleByDirection(direction: Direction): Boolean = findByDirection(direction) != null
     fun findByItemId(id: Int): ShortcutMenuItem?
 
-    val size: Int
     operator fun get(index: Int): ShortcutMenuItem
+
+    companion object {
+        fun inflate(context: Context, @MenuRes menuRes: Int): ShortcutMenu {
+            val ffabMenu = FfabMenu(context)
+            if (menuRes != 0) {
+                FfabMenuItemInflater.inflate(context, ffabMenu, menuRes)
+            }
+            return ffabMenu
+        }
+    }
 }
 
 internal val ShortcutMenu.visibleItems: List<ShortcutMenuItem>
-    get() = (0 until size).map { this[it] }.filter { it.isVisible }
+    get() = (0 until size()).map { this[it] }.filter { it.isVisible }

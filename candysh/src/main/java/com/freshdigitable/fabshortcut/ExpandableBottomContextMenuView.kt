@@ -21,7 +21,6 @@ import android.animation.AnimatorListenerAdapter
 import android.content.Context
 import android.util.AttributeSet
 import android.view.Gravity
-import android.view.MenuInflater
 import android.view.View
 import android.view.View.OnClickListener
 import android.view.ViewGroup
@@ -35,7 +34,6 @@ import androidx.appcompat.widget.AppCompatImageButton
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.ContextCompat
-import androidx.core.content.withStyledAttributes
 import androidx.core.graphics.drawable.updateBounds
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
@@ -56,12 +54,12 @@ class ExpandableBottomContextMenuView @JvmOverloads constructor(
     private val moreContextMenuList: RecyclerView
     private val toggle: View?
     private val bottomSheetBehavior = BottomSheetBehavior<View>()
-    private val mainMenu = FfabMenu(context)
-    private val moreMenu = FfabMenu(context)
+    private val mainMenu: ShortcutMenu
+    private val moreMenu: ShortcutMenu
 
     var itemClickListener: OnMenuSelectedListener? = null
     private val callback: OnClickListener = OnClickListener { v ->
-        val item = checkNotNull(mainMenu.findByItemId(v.id) ?: moreMenu.findByItemId(v.id))
+        val item = checkNotNull(findMenuItemById(v.id))
         itemClickListener?.onMenuSelected(item)
     }
 
@@ -71,17 +69,21 @@ class ExpandableBottomContextMenuView @JvmOverloads constructor(
             moreContextMenuList = it.findViewById(R.id.bottom_menu_more)
         }
 
-        context.withStyledAttributes(
-            attributeSet, R.styleable.ExpandableBottomContextMenuView, defStyleAttr, 0
-        ) {
-            val mainMenuId = getResourceId(R.styleable.ExpandableBottomContextMenuView_menu_main, 0)
-            if (mainMenuId != 0) {
-                MenuInflater(context).inflate(mainMenuId, mainMenu)
-            }
-            val moreMenuId = getResourceId(R.styleable.ExpandableBottomContextMenuView_menu_more, 0)
-            if (moreMenuId != 0) {
-                MenuInflater(context).inflate(moreMenuId, moreMenu)
-            }
+        val a = context.obtainStyledAttributes(
+            attributeSet,
+            R.styleable.ExpandableBottomContextMenuView,
+            defStyleAttr,
+            0
+        )
+        try {
+            val mainMenuId =
+                a.getResourceId(R.styleable.ExpandableBottomContextMenuView_menu_main, 0)
+            mainMenu = ShortcutMenu.inflate(context, mainMenuId)
+            val moreMenuId =
+                a.getResourceId(R.styleable.ExpandableBottomContextMenuView_menu_more, 0)
+            moreMenu = ShortcutMenu.inflate(context, moreMenuId)
+        } finally {
+            a.recycle()
         }
 
         setupMenuItems()
@@ -185,7 +187,7 @@ class ExpandableBottomContextMenuView @JvmOverloads constructor(
 
     companion object {
         private fun LinearLayout.setupMainMenu(mainMenu: ShortcutMenu, callback: OnClickListener) {
-            for (i in 0 until mainMenu.size) {
+            for (i in 0 until mainMenu.size()) {
                 val item = mainMenu[i]
                 addMainMenuItemView(item.itemId) {
                     setIcon(item)

@@ -69,9 +69,6 @@ internal class FfabMenu(
         return items.firstOrNull { it.itemId == id }
     }
 
-    override val size: Int
-        get() = items.size
-
     override operator fun get(index: Int): ShortcutMenuItem = items[index]
 
     override fun findByDirection(direction: Direction): ShortcutMenuItem? =

@@ -29,7 +29,7 @@ internal class FlingFabPresenter(
     defStyleAttr: Int = 0,
 ) {
     private val indicator = FlingActionIndicator(fab.context, attrs, defStyleAttr)
-    private val menu = FfabMenu(fab.context)
+    private val menu: ShortcutMenu
     internal var menuSelectedListener: OnMenuSelectedListener? = null
     private val marginFromFab: Int
 
@@ -38,14 +38,12 @@ internal class FlingFabPresenter(
             attrs,
             R.styleable.FlingFAB, defStyleAttr, R.style.Widget_FlingFAB
         )
-        if (a.hasValue(R.styleable.FlingFAB_menu)) {
-            val menuRes = a.getResourceId(R.styleable.FlingFAB_menu, 0)
-            FfabMenuItemInflater.inflate(fab.context, menu, menuRes)
+        val menuRes = a.getResourceId(R.styleable.FlingFAB_menu, 0)
+        menu = ShortcutMenu.inflate(fab.context, menuRes)
 
-            for (i in 0 until menu.size) {
-                val item = menu[i]
-                indicator.setDrawable(checkNotNull(item.direction), item.icon)
-            }
+        for (i in 0 until menu.size()) {
+            val item = menu[i]
+            indicator.setDrawable(checkNotNull(item.direction), item.icon)
         }
         marginFromFab = a.getDimensionPixelSize(R.styleable.FlingFAB_marginFabToIndicator, 0)
         val indicatorTint = a.getColor(R.styleable.FlingFAB_indicatorTint, 0)
