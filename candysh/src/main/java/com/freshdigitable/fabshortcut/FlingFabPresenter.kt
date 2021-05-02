@@ -35,8 +35,7 @@ internal class FlingFabPresenter(
 
     init {
         val a = fab.context.obtainStyledAttributes(
-            attrs,
-            R.styleable.FlingFAB, defStyleAttr, R.style.Widget_FlingFAB
+            attrs, R.styleable.FlingFAB, defStyleAttr, R.style.Widget_FlingFAB
         )
         val menuRes = a.getResourceId(R.styleable.FlingFAB_menu, 0)
         menu = ShortcutMenu.inflate(fab.context, menuRes)
