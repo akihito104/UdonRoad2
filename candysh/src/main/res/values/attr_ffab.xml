@@ -42,16 +42,10 @@
         <attr name="direction" />
     </declare-styleable>
 
-    <declare-styleable name="FlingFABTheme">
-        <attr name="iffabStyle" format="reference" />
-    </declare-styleable>
-
     <style name="Widget.FlingFAB" parent="@style/Widget.Design.FloatingActionButton">
         <item name="indicatorTint">#cccc</item>
         <item name="indicatorIconTint">@android:color/white</item>
         <item name="marginFabToIndicator">60dp</item>
-        <item name="srcCompat">@drawable/ic_add</item>
-        <item name="fabSize">normal</item>
     </style>
 
     <item name="indicator" type="id" />
@@ -59,4 +53,10 @@
     <dimen name="ffab_toolbar_icon_padding">12dp</dimen>
     <dimen name="indicator_icon_size">16dp</dimen>
     <dimen name="margin">8dp</dimen>
+
+    <attr name="iffabStyle" format="reference" />
+
+    <style name="Theme.AppCompat.FlingFAB" parent="Theme.AppCompat">
+        <item name="iffabStyle">@style/Widget.FlingFAB</item>
+    </style>
 </resources>

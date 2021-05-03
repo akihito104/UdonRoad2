@@ -22,6 +22,7 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.coordinatorlayout.widget.CoordinatorLayout
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 internal class FlingFabPresenter(
     private val fab: FlingFAB,
@@ -34,6 +35,9 @@ internal class FlingFabPresenter(
     private val marginFromFab: Int
 
     init {
+        fab.setImageResource(R.drawable.ic_add)
+        fab.size = FloatingActionButton.SIZE_NORMAL
+
         val a = fab.context.obtainStyledAttributes(
             attrs, R.styleable.FlingFAB, defStyleAttr, R.style.Widget_FlingFAB
         )

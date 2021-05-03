@@ -19,14 +19,17 @@ package com.freshdigitable.fabshortcut
 import android.content.Context
 import android.util.AttributeSet
 import android.view.MotionEvent
-import com.google.android.material.R
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.theme.overlay.MaterialThemeOverlay
 
 class FlingFAB @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
-    defStyleAttr: Int = R.attr.floatingActionButtonStyle,
-) : FloatingActionButton(context, attrs, defStyleAttr) {
+    defStyleAttr: Int = R.attr.iffabStyle,
+) : FloatingActionButton(
+    MaterialThemeOverlay.wrap(context, attrs, defStyleAttr, R.style.Widget_FlingFAB),
+    attrs,
+    defStyleAttr) {
 
     private val presenter = FlingFabPresenter(this, attrs, defStyleAttr)
 
