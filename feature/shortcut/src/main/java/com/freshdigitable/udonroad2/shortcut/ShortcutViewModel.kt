@@ -16,8 +16,9 @@
 
 package com.freshdigitable.udonroad2.shortcut
 
-import android.view.MenuItem
 import androidx.lifecycle.LiveData
+import com.freshdigitable.fabshortcut.ShortcutMenuItem
+import com.freshdigitable.fabshortcut.ShortcutViewHolder
 import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEffectStream
 
@@ -25,10 +26,8 @@ interface ShortcutViewModel : ShortcutEventListener, ActivityEffectStream {
     val shortcutState: LiveData<State>
 
     interface State {
-        val mode: Mode
+        val mode: ShortcutViewHolder.Mode
         val menuItemState: MenuItemState
-
-        enum class Mode { HIDDEN, FAB, TOOLBAR }
     }
 }
 
@@ -40,5 +39,5 @@ data class MenuItemState(
 )
 
 interface ShortcutEventListener {
-    fun onShortcutMenuSelected(item: MenuItem, id: TweetId)
+    fun onShortcutMenuSelected(item: ShortcutMenuItem, id: TweetId)
 }

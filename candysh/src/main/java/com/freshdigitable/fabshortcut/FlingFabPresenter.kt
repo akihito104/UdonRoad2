@@ -26,10 +26,10 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout
 internal class FlingFabPresenter(
     private val fab: FlingFAB,
     attrs: AttributeSet? = null,
-    defStyleAttr: Int = 0
+    defStyleAttr: Int = 0,
 ) {
     private val indicator = FlingActionIndicator(fab.context, attrs, defStyleAttr)
-    private val menu = FfabMenu(fab.context)
+    private val menu: ShortcutMenu
     internal var menuSelectedListener: OnMenuSelectedListener? = null
     private val marginFromFab: Int
 
@@ -38,15 +38,12 @@ internal class FlingFabPresenter(
             attrs,
             R.styleable.FlingFAB, defStyleAttr, R.style.Widget_FlingFAB
         )
-        if (a.hasValue(R.styleable.FlingFAB_menu)) {
-            val menuRes = a.getResourceId(R.styleable.FlingFAB_menu, 0)
-            FfabMenuItemInflater.inflate(fab.context, menu, menuRes)
+        val menuRes = a.getResourceId(R.styleable.FlingFAB_menu, 0)
+        menu = ShortcutMenu.inflate(fab.context, menuRes)
 
-            (0 until menu.size()).map {
-                menu.getItem(it) as FfabMenuItem
-            }.forEach {
-                indicator.setDrawable(checkNotNull(it.direction), it.icon)
-            }
+        for (i in 0 until menu.size()) {
+            val item = menu[i]
+            indicator.setDrawable(checkNotNull(item.direction), item.icon)
         }
         marginFromFab = a.getDimensionPixelSize(R.styleable.FlingFAB_marginFabToIndicator, 0)
         val indicatorTint = a.getColor(R.styleable.FlingFAB_indicatorTint, 0)
@@ -78,7 +75,7 @@ internal class FlingFabPresenter(
                 }
                 is FlingEvent.FLING -> {
                     indicator.postDelayed({ indicator.visibility = View.INVISIBLE }, 200)
-                    val item = menu.findItem(event.direction) ?: return
+                    val item = menu.findByDirection(event.direction) ?: return
                     menuSelectedListener?.onMenuSelected(item)
                 }
                 is FlingEvent.CANCEL -> {

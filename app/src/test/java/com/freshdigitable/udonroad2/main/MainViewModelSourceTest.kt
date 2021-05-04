@@ -16,6 +16,7 @@
 
 package com.freshdigitable.udonroad2.main
 
+import com.freshdigitable.fabshortcut.ShortcutViewHolder
 import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
 import com.freshdigitable.udonroad2.data.impl.create
 import com.freshdigitable.udonroad2.input.TweetInputSharedState
@@ -28,7 +29,6 @@ import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.TimelineEffect
 import com.freshdigitable.udonroad2.model.app.navigation.postEvents
 import com.freshdigitable.udonroad2.model.tweet.DetailTweetListItem
-import com.freshdigitable.udonroad2.shortcut.ShortcutViewModel
 import com.freshdigitable.udonroad2.test_common.MockVerified
 import com.freshdigitable.udonroad2.test_common.RxExceptionHandler
 import com.freshdigitable.udonroad2.test_common.jvm.AppSettingRepositoryRule
@@ -117,7 +117,7 @@ class MainViewModelSourceTest {
 
         // verify
         val state = eventCollector.eventsOf(sut.states).last()
-        assertThat(state?.mode).isEqualTo(ShortcutViewModel.State.Mode.TOOLBAR)
+        assertThat(state?.mode).isEqualTo(ShortcutViewHolder.Mode.TOOLBAR)
         assertThat(state?.menuItemState?.isMainGroupEnabled).isTrue()
     }
 }

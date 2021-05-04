@@ -16,7 +16,7 @@
 
 package com.freshdigitable.udonroad2.shortcut
 
-import android.view.MenuItem
+import com.freshdigitable.fabshortcut.ShortcutMenuItem
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
@@ -35,13 +35,13 @@ class ShortcutActions @Inject constructor(
     internal val unretweetTweet = dispatcher.toActionFlow<SelectedItemShortcut.Unretweet>()
     internal val deleteTweet = dispatcher.toActionFlow<SelectedItemShortcut.DeleteTweet>()
 
-    override fun onShortcutMenuSelected(item: MenuItem, id: TweetId) {
+    override fun onShortcutMenuSelected(item: ShortcutMenuItem, id: TweetId) {
         dispatcher.postSelectedItemShortcutEvent(item, id)
     }
 }
 
 fun EventDispatcher.postSelectedItemShortcutEvent(
-    menuItem: MenuItem,
+    menuItem: ShortcutMenuItem,
     selectedItemId: SelectedItemId,
 ) {
     val tweetId = selectedItemId.quoteId ?: selectedItemId.originalId
@@ -49,7 +49,7 @@ fun EventDispatcher.postSelectedItemShortcutEvent(
 }
 
 fun EventDispatcher.postSelectedItemShortcutEvent(
-    menuItem: MenuItem,
+    menuItem: ShortcutMenuItem,
     tweetId: TweetId,
 ) {
     when (menuItem.itemId) {

@@ -19,6 +19,8 @@ package com.freshdigitable.udonroad2.main
 import android.view.MenuItem
 import androidx.annotation.IdRes
 import androidx.lifecycle.LiveData
+import com.freshdigitable.fabshortcut.ShortcutMenuItem
+import com.freshdigitable.fabshortcut.ShortcutViewHolder
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.data.impl.create
 import com.freshdigitable.udonroad2.input.TweetInputEvent
@@ -37,7 +39,6 @@ import com.freshdigitable.udonroad2.model.tweet.DetailTweetListItem
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.model.user.UserEntity
 import com.freshdigitable.udonroad2.shortcut.ShortcutActions
-import com.freshdigitable.udonroad2.shortcut.ShortcutViewModel
 import com.freshdigitable.udonroad2.shortcut.ShortcutViewModelSource
 import com.freshdigitable.udonroad2.test_common.jvm.ObserverEventCollector
 import com.freshdigitable.udonroad2.test_common.jvm.TweetRepositoryRule
@@ -232,11 +233,11 @@ class MainViewModelTest {
 
             // exercise
             sut.onShortcutMenuSelected(
-                menuItem(R.id.iffabMenu_main_fav), sut.requireSelectedTweetId
+                shortcutMenuItem(R.id.iffabMenu_main_fav), sut.requireSelectedTweetId
             )
 
             // verify
-            assertThat(sut.shortcutState.value?.mode).isEqualTo(ShortcutViewModel.State.Mode.FAB)
+            assertThat(sut.shortcutState.value?.mode).isEqualTo(ShortcutViewHolder.Mode.FAB)
             assertThat((navEvents.last() as FeedbackMessage).messageRes)
                 .isEqualTo(R.string.msg_fav_create_success)
         }
@@ -250,7 +251,7 @@ class MainViewModelTest {
 
             // exercise
             sut.onShortcutMenuSelected(
-                menuItem(R.id.iffabMenu_main_fav), sut.requireSelectedTweetId
+                shortcutMenuItem(R.id.iffabMenu_main_fav), sut.requireSelectedTweetId
             )
 
             // verify
@@ -266,7 +267,7 @@ class MainViewModelTest {
 
             // exercise
             sut.onShortcutMenuSelected(
-                menuItem(R.id.iffabMenu_main_rt), sut.requireSelectedTweetId
+                shortcutMenuItem(R.id.iffabMenu_main_rt), sut.requireSelectedTweetId
             )
 
             // verify
@@ -284,7 +285,7 @@ class MainViewModelTest {
 
             // exercise
             sut.onShortcutMenuSelected(
-                menuItem(R.id.iffabMenu_main_rt), sut.requireSelectedTweetId
+                shortcutMenuItem(R.id.iffabMenu_main_rt), sut.requireSelectedTweetId
             )
 
             // verify
@@ -344,7 +345,7 @@ class MainViewModelTest {
             stateModelSourceRule.isExpandedSource.value = true
 
             // verify
-            assertThat(sut.shortcutState.value?.mode).isEqualTo(ShortcutViewModel.State.Mode.HIDDEN)
+            assertThat(sut.shortcutState.value?.mode).isEqualTo(ShortcutViewHolder.Mode.HIDDEN)
         }
     }
 
@@ -499,6 +500,12 @@ internal class MainViewModelTestRule : TestWatcher() {
 
 fun menuItem(@IdRes id: Int): MenuItem {
     return mockk<MenuItem>().apply {
+        every { itemId } returns id
+    }
+}
+
+fun shortcutMenuItem(@IdRes id: Int): ShortcutMenuItem {
+    return mockk<ShortcutMenuItem>().apply {
         every { itemId } returns id
     }
 }

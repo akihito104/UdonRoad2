@@ -17,6 +17,7 @@
 package com.freshdigitable.udonroad2.user
 
 import androidx.annotation.Keep
+import com.freshdigitable.fabshortcut.ShortcutViewHolder
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.data.UserDataSource
 import com.freshdigitable.udonroad2.data.impl.RelationshipRepository
@@ -30,7 +31,6 @@ import com.freshdigitable.udonroad2.model.app.stateSourceBuilder
 import com.freshdigitable.udonroad2.model.user.Relationship
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.model.user.UserEntity
-import com.freshdigitable.udonroad2.shortcut.ShortcutViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -207,10 +207,10 @@ class UserViewModelSource @Inject constructor(
         val currentPage: UserPage = UserPage.TWEET,
         override val selectedItemId: SelectedItemId? = null,
     ) : UserViewState {
-        override val shortcutMode: ShortcutViewModel.State.Mode
+        override val shortcutMode: ShortcutViewHolder.Mode
             get() = when (selectedItemId != null) {
-                true -> ShortcutViewModel.State.Mode.FAB
-                else -> ShortcutViewModel.State.Mode.HIDDEN
+                true -> ShortcutViewHolder.Mode.FAB
+                else -> ShortcutViewHolder.Mode.HIDDEN
             }
         val currentOwner: ListOwner<*>?
             get() = pages[currentPage]

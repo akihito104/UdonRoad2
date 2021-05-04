@@ -30,7 +30,7 @@ import org.xmlpull.v1.XmlPullParserException
 import java.io.IOException
 
 internal class FfabMenuItemInflater private constructor(
-    private val context: Context
+    private val context: Context,
 ) {
     companion object {
         internal fun inflate(context: Context, menu: FfabMenu, @MenuRes menuRes: Int) {
@@ -39,9 +39,8 @@ internal class FfabMenuItemInflater private constructor(
         }
     }
 
-    private val menuInflater: MenuInflater = MenuInflater(context)
-
     private fun inflate(menu: FfabMenu, menuRes: Int) {
+        val menuInflater = MenuInflater(context)
         menuInflater.inflate(menuRes, menu)
         context.resources.getLayout(menuRes).use { parser ->
             val attributeSet = Xml.asAttributeSet(parser)
@@ -70,18 +69,28 @@ internal class FfabMenuItemInflater private constructor(
                 eventType = next()
                 continue
             }
-            context.withStyledAttributes(attributeSet, R.styleable.FlingFABMenu) {
-                val id = getResourceIdOrThrow(R.styleable.FlingFABMenu_android_id)
-                val direction = Direction.findByIndex(
-                    getIntOrThrow(R.styleable.FlingFABMenu_direction)
-                )
-                if (direction == Direction.UNDEFINED) {
-                    throw IllegalArgumentException("undefined direction value")
-                }
-                val item = menu.findItem(id) as FfabMenuItem
-                item.direction = direction
-            }
+            readDirection(attributeSet, menu)
             eventType = next()
+        }
+    }
+
+    private fun readDirection(
+        attributeSet: AttributeSet,
+        menu: FfabMenu,
+    ) {
+        context.withStyledAttributes(attributeSet, R.styleable.FlingFABMenu) {
+            if (!hasValue(R.styleable.FlingFABMenu_direction)) {
+                return
+            }
+            val index = getIntOrThrow(R.styleable.FlingFABMenu_direction)
+            val direction = Direction.findByIndex(index)
+            if (direction == Direction.UNDEFINED) {
+                throw IllegalArgumentException("undefined direction value")
+            }
+
+            val id = getResourceIdOrThrow(R.styleable.FlingFABMenu_android_id)
+            val item = menu.findItem(id) as FfabMenuItem
+            item.direction = direction
         }
     }
 }

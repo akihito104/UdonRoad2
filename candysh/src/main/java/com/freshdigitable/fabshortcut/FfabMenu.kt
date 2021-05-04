@@ -25,9 +25,9 @@ import android.view.MenuItem
 import android.view.SubMenu
 
 internal class FfabMenu(
-    private val context: Context
-) : Menu {
-    private val items = mutableListOf<FfabMenuItem>()
+    private val context: Context,
+) : Menu, ShortcutMenu {
+    private val items = mutableListOf<ShortcutMenuItemImpl>()
 
     override fun add(title: CharSequence?): MenuItem = add(0, 0, 0, title)
 
@@ -37,27 +37,27 @@ internal class FfabMenu(
         groupId: Int,
         itemId: Int,
         order: Int,
-        titleRes: Int
+        titleRes: Int,
     ): MenuItem = add(groupId, itemId, order, context.getString(titleRes))
 
     override fun add(
         groupId: Int,
         itemId: Int,
         order: Int,
-        title: CharSequence?
+        title: CharSequence?,
     ): MenuItem = FfabMenuItem(context, itemId, groupId, order).also {
-        items.add(it)
+        items.add(ShortcutMenuItemImpl(it))
     }
 
     override fun removeItem(id: Int) {
         items.firstOrNull { it.itemId == id }?.let { items.remove(it) }
     }
 
-    override fun getItem(index: Int): MenuItem = items[index]
+    override fun getItem(index: Int): MenuItem = items[index].menuItem
 
     override fun hasVisibleItems(): Boolean = items.any { it.isVisible }
 
-    override fun findItem(id: Int): MenuItem = items.first { it.itemId == id }
+    override fun findItem(id: Int): MenuItem = items.first { it.itemId == id }.menuItem
 
     override fun size(): Int = items.size
 
@@ -65,19 +65,39 @@ internal class FfabMenu(
         items.clear()
     }
 
-    override fun close() {
-        TODO("not implemented")
+    override fun findByItemId(id: Int): ShortcutMenuItem? {
+        return items.firstOrNull { it.itemId == id }
     }
 
-    internal fun isVisibleByDirection(
-        direction: Direction
-    ): Boolean = items.any { it.direction == direction }
+    override operator fun get(index: Int): ShortcutMenuItem = items[index]
 
-    internal fun findItem(direction: Direction) = items.firstOrNull { it.direction == direction }
+    override fun findByDirection(direction: Direction): ShortcutMenuItem? =
+        items.firstOrNull { it.direction == direction }
+
+    private fun itemsByGroupId(groupId: Int): List<ShortcutMenuItem> =
+        items.filter { it.groupId == groupId }
+
+    override fun setGroupCheckable(group: Int, checkable: Boolean, exclusive: Boolean) {
+        itemsByGroupId(group).forEach { it.isCheckable = checkable }
+    }
+
+    override fun setGroupVisible(group: Int, visible: Boolean) {
+        itemsByGroupId(group).forEach { it.isVisible = visible }
+    }
+
+    override fun setGroupEnabled(group: Int, enabled: Boolean) {
+        itemsByGroupId(group).forEach { it.isEnabled = enabled }
+    }
+
+    override fun removeGroup(groupId: Int) {
+        items.removeAll { it.groupId == groupId }
+    }
 
     override fun performIdentifierAction(id: Int, flags: Int): Boolean = unsupported()
     override fun performShortcut(keyCode: Int, event: KeyEvent?, flags: Int): Boolean =
         unsupported()
+
+    override fun close() = unsupported()
 
     override fun setQwertyMode(isQwerty: Boolean) = unsupported()
     override fun addIntentOptions(
@@ -88,7 +108,7 @@ internal class FfabMenu(
         specifics: Array<out Intent>?,
         intent: Intent?,
         flags: Int,
-        outSpecificItems: Array<out MenuItem>?
+        outSpecificItems: Array<out MenuItem>?,
     ): Int = unsupported()
 
     override fun addSubMenu(title: CharSequence?): SubMenu = unsupported()
@@ -97,22 +117,16 @@ internal class FfabMenu(
         groupId: Int,
         itemId: Int,
         order: Int,
-        title: CharSequence?
+        title: CharSequence?,
     ): SubMenu = unsupported()
 
     override fun addSubMenu(
         groupId: Int,
         itemId: Int,
         order: Int,
-        titleRes: Int
+        titleRes: Int,
     ): SubMenu = unsupported()
 
-    override fun setGroupEnabled(group: Int, enabled: Boolean) = unsupported()
-    override fun setGroupCheckable(group: Int, checkable: Boolean, exclusive: Boolean) =
-        unsupported()
-
-    override fun removeGroup(groupId: Int) = unsupported()
-    override fun setGroupVisible(group: Int, visible: Boolean) = unsupported()
     override fun isShortcutKey(keyCode: Int, event: KeyEvent?): Boolean = unsupported()
 }
 

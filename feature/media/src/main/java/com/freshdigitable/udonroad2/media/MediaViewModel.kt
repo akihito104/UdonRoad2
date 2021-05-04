@@ -24,6 +24,7 @@ import androidx.lifecycle.asLiveData
 import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
+import com.freshdigitable.fabshortcut.ShortcutViewHolder
 import com.freshdigitable.udonroad2.data.impl.MediaRepository
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
 import com.freshdigitable.udonroad2.model.MediaEntity
@@ -67,10 +68,10 @@ internal class MediaViewModel @Inject constructor(
         val mediaItems: List<MediaEntity>
         val systemUiVisibility: SystemUiVisibility
         val currentPosition: Int?
-        override val mode: ShortcutViewModel.State.Mode
+        override val mode: ShortcutViewHolder.Mode
             get() = when (systemUiVisibility) {
-                SystemUiVisibility.SHOW -> ShortcutViewModel.State.Mode.FAB
-                else -> ShortcutViewModel.State.Mode.HIDDEN
+                SystemUiVisibility.SHOW -> ShortcutViewHolder.Mode.FAB
+                else -> ShortcutViewHolder.Mode.HIDDEN
             }
     }
 }

@@ -9,6 +9,8 @@ import androidx.lifecycle.asLiveData
 import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
+import com.freshdigitable.fabshortcut.ShortcutMenuItem
+import com.freshdigitable.fabshortcut.ShortcutViewHolder
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.SelectedItemId
@@ -18,7 +20,6 @@ import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
 import com.freshdigitable.udonroad2.model.user.Relationship
 import com.freshdigitable.udonroad2.model.user.UserEntity
-import com.freshdigitable.udonroad2.shortcut.ShortcutViewModel
 import com.freshdigitable.udonroad2.shortcut.postSelectedItemShortcutEvent
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.user.UserActivityEvent.Relationships
@@ -44,7 +45,7 @@ class UserViewModel(
         .distinctUntilChanged()
     internal val feedbackMessage: Flow<FeedbackMessage> = viewState.feedbackMessage
 
-    fun onFabMenuSelected(item: MenuItem) {
+    fun onFabMenuSelected(item: ShortcutMenuItem) {
         Timber.tag("UserViewModel").d("onFabSelected: $item")
         val selected =
             requireNotNull(state.value?.selectedItemId) { "selectedItem should not be null." }
@@ -81,7 +82,7 @@ interface UserViewState {
     val relationshipMenuItems: Set<RelationshipMenu>
     val titleAlpha: Float
     val pages: Map<UserPage, ListOwner<*>>
-    val shortcutMode: ShortcutViewModel.State.Mode
+    val shortcutMode: ShortcutViewHolder.Mode
     val selectedItemId: SelectedItemId?
 }
 
