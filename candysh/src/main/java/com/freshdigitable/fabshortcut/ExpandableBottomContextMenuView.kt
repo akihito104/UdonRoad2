@@ -136,11 +136,16 @@ class ExpandableBottomContextMenuView @JvmOverloads constructor(
             .translationY(0f)
             .setListener(object : AnimatorListenerAdapter() {
                 override fun onAnimationStart(animation: Animator?) {
-                    translationY = height.toFloat()
+                    setupToShowAnimForMoreMenu()
+                    translationY = mainContextMenuList.height.toFloat()
                     visibility = VISIBLE
                 }
             })
             .start()
+    }
+
+    internal fun setupToShowAnimForMoreMenu() {
+        bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
     }
 
     internal fun hide() {
@@ -274,7 +279,7 @@ internal class MoreItemAdapter(
     override fun onBindViewHolder(holder: MoreItemViewHolder, position: Int) {
         val context = holder.itemView.context
         val iconSize = context.resources.getDimensionPixelSize(R.dimen.menu_more_icon_size)
-        val item = moreMenu.visibleItems[position] //as BottomMenu.Item
+        val item = moreMenu.visibleItems[position]
         holder.itemView.id = item.itemId
         holder.text.text = item.title
         val drawable = item.icon

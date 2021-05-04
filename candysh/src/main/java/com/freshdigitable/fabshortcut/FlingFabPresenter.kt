@@ -138,10 +138,7 @@ internal class FlingFabPresenterImpl(
     override fun onAttached() {
         fab.post {
             attachIndicator()
-            fab.visibility = when (mode) {
-                FlingFAB.Mode.FAB -> View.VISIBLE
-                else -> View.INVISIBLE
-            }
+            fab.visibility = mode.visibilityForFab
         }
         fab.flingEventListener = flingListener
     }
@@ -180,3 +177,15 @@ internal class FlingFabPresenterImpl(
         bottomMargin = marginFromFab + fab.height + fabLp.bottomMargin
     }
 }
+
+internal val FlingFAB.Mode.visibilityForFab: Int
+    get() = when (this) {
+        FlingFAB.Mode.FAB -> View.VISIBLE
+        else -> View.INVISIBLE
+    }
+
+internal val FlingFAB.Mode.visibilityForToolbar: Int
+    get() = when (this) {
+        FlingFAB.Mode.TOOLBAR -> View.VISIBLE
+        else -> View.INVISIBLE
+    }

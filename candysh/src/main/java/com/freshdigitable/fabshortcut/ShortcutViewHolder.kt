@@ -46,6 +46,7 @@ internal class ShortcutViewHolder(
     override var menuSelectedListener: OnMenuSelectedListener? = null
         set(value) {
             presenter.menuSelectedListener = value
+            toolbar.itemClickListener = value
             field = value
         }
 
@@ -53,10 +54,7 @@ internal class ShortcutViewHolder(
         presenter.onAttached()
         fab.post {
             attachToolbar()
-            toolbar.visibility = when (mode) {
-                FlingFAB.Mode.TOOLBAR -> VISIBLE
-                else -> View.INVISIBLE
-            }
+            toolbar.visibility = mode.visibilityForToolbar
         }
         toolbar.itemClickListener = menuSelectedListener
     }
@@ -77,7 +75,7 @@ internal class ShortcutViewHolder(
 
     override fun onDetached() {
         presenter.onDetached()
-        toolbar.itemClickListener = menuSelectedListener
+        toolbar.itemClickListener = null
     }
 
     override var mode: FlingFAB.Mode = FlingFAB.Mode.HIDDEN
@@ -93,7 +91,7 @@ internal class ShortcutViewHolder(
 
         when (mode) {
             FlingFAB.Mode.HIDDEN -> {
-                if (nextMode == FlingFAB.Mode.FAB) fab.show()
+                if (nextMode == FlingFAB.Mode.FAB) showFab()
                 else if (nextMode == FlingFAB.Mode.TOOLBAR) toolbar.show()
             }
             FlingFAB.Mode.FAB -> {
@@ -102,7 +100,7 @@ internal class ShortcutViewHolder(
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                         fabToToolbarAnim()
                     } else {
-                        fab.show()
+                        showFab()
                         toolbar.hide()
                     }
             }
@@ -117,6 +115,14 @@ internal class ShortcutViewHolder(
                     }
             }
         }
+    }
+
+    private fun showFab() {
+        fab.apply {
+            translationX = 0f
+            translationY = 0f
+        }
+        fab.show()
     }
 
     override fun updateMenu(block: ShortcutMenuUpdateScope.() -> Unit) {
@@ -156,6 +162,7 @@ internal class ShortcutViewHolder(
         toolbar.apply {
             translationX = 0f
             translationY = 0f
+            setupToShowAnimForMoreMenu()
         }
         val transPoint = transitionPoint
 
@@ -237,11 +244,6 @@ internal class ShortcutViewHolder(
         val radiusX = center.x.coerceAtLeast(abs(toolbar.mainContextMenuList.width - center.x))
         val radiusY = center.y.coerceAtLeast(abs(toolbar.mainContextMenuList.height - center.y))
         return hypot(radiusX.toDouble(), radiusY.toDouble()).toFloat()
-    }
-
-    fun setItemListener(listener: OnMenuSelectedListener?) {
-        fab.setMenuListener(listener)
-        toolbar.itemClickListener = listener
     }
 
     companion object {
