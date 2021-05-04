@@ -25,13 +25,13 @@ import com.google.android.material.theme.overlay.MaterialThemeOverlay
 class FlingFAB @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
-    defStyleAttr: Int = R.attr.iffabStyle,
+    defStyleAttr: Int = R.attr.ffabStyle,
 ) : FloatingActionButton(
     MaterialThemeOverlay.wrap(context, attrs, defStyleAttr, R.style.Widget_FlingFAB),
     attrs,
     defStyleAttr) {
 
-    private val presenter = FlingFabPresenter(this, attrs, defStyleAttr)
+    private val presenter = FlingFabPresenter.create(this, attrs, defStyleAttr)
 
     internal var flingEventListener: OnFlingEventListener? = null
 
@@ -85,6 +85,16 @@ class FlingFAB @JvmOverloads constructor(
     fun setMenuListener(menuSelectedListener: OnMenuSelectedListener?) {
         presenter.menuSelectedListener = menuSelectedListener
     }
+
+    fun setMode(mode: Mode) {
+        presenter.mode = mode
+    }
+
+    fun updateMenu(block: ShortcutMenuUpdateScope.() -> Unit) {
+        presenter.updateMenu(block)
+    }
+
+    enum class Mode { HIDDEN, FAB, TOOLBAR }
 }
 
 interface OnMenuSelectedListener {

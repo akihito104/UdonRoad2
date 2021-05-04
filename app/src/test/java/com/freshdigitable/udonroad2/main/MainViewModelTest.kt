@@ -19,8 +19,8 @@ package com.freshdigitable.udonroad2.main
 import android.view.MenuItem
 import androidx.annotation.IdRes
 import androidx.lifecycle.LiveData
+import com.freshdigitable.fabshortcut.FlingFAB
 import com.freshdigitable.fabshortcut.ShortcutMenuItem
-import com.freshdigitable.fabshortcut.ShortcutViewHolder
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.data.impl.create
 import com.freshdigitable.udonroad2.input.TweetInputEvent
@@ -237,7 +237,7 @@ class MainViewModelTest {
             )
 
             // verify
-            assertThat(sut.shortcutState.value?.mode).isEqualTo(ShortcutViewHolder.Mode.FAB)
+            assertThat(sut.shortcutState.value?.mode).isEqualTo(FlingFAB.Mode.FAB)
             assertThat((navEvents.last() as FeedbackMessage).messageRes)
                 .isEqualTo(R.string.msg_fav_create_success)
         }
@@ -345,7 +345,7 @@ class MainViewModelTest {
             stateModelSourceRule.isExpandedSource.value = true
 
             // verify
-            assertThat(sut.shortcutState.value?.mode).isEqualTo(ShortcutViewHolder.Mode.HIDDEN)
+            assertThat(sut.shortcutState.value?.mode).isEqualTo(FlingFAB.Mode.HIDDEN)
         }
     }
 

@@ -79,10 +79,10 @@ internal class FfabMenuItemInflater private constructor(
         menu: FfabMenu,
     ) {
         context.withStyledAttributes(attributeSet, R.styleable.FlingFABMenu) {
-            if (!hasValue(R.styleable.FlingFABMenu_direction)) {
+            if (!hasValue(R.styleable.FlingFABMenu_ffab_direction)) {
                 return
             }
-            val index = getIntOrThrow(R.styleable.FlingFABMenu_direction)
+            val index = getIntOrThrow(R.styleable.FlingFABMenu_ffab_direction)
             val direction = Direction.findByIndex(index)
             if (direction == Direction.UNDEFINED) {
                 throw IllegalArgumentException("undefined direction value")

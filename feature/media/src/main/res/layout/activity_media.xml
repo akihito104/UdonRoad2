@@ -67,7 +67,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:menu="@menu/shortcut_media"
+            app:ffab_menu="@menu/shortcut_media"
             app:menuListener="@{item -> viewModel.onShortcutMenuSelected(item, viewModel.state.tweetId)}"
             app:mode="@{viewModel.shortcutState.mode}"
             />

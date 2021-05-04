@@ -61,7 +61,7 @@ class ExpandableBottomContextMenuViewTest {
     fun initWithMenuMain() {
         // setup
         val sut = launchContainerFragment {
-            addAttribute(R.attr.menu_main, "@menu/detail_main")
+            addAttribute(R.attr.bottomMenu_main, "@menu/detail_main")
         }
             .moveToState(Lifecycle.State.RESUMED)
             .withFragment { sut }
@@ -80,8 +80,8 @@ class ExpandableBottomContextMenuViewTest {
     fun initWithMenuMainAndMore() {
         // setup
         val sut = launchContainerFragment {
-            addAttribute(R.attr.menu_main, "@menu/detail_main")
-            addAttribute(R.attr.menu_more, "@menu/detail_more")
+            addAttribute(R.attr.bottomMenu_main, "@menu/detail_main")
+            addAttribute(R.attr.bottomMenu_more, "@menu/detail_more")
         }
             .moveToState(Lifecycle.State.RESUMED)
             .withFragment { sut }
@@ -99,7 +99,7 @@ class ExpandableBottomContextMenuViewTest {
     fun updateMenuItem_whenCheckableItemIsChecked_then_viewStateIsUpdated() {
         // setup
         val sut = launchContainerFragment {
-            addAttribute(R.attr.menu_main, "@menu/detail_main")
+            addAttribute(R.attr.bottomMenu_main, "@menu/detail_main")
         }.moveToState(Lifecycle.State.RESUMED)
             .withFragment {
                 // exercise
@@ -121,8 +121,8 @@ class ExpandableBottomContextMenuViewTest {
     fun updateMenuItem_changeMoreItemToZero_then_toggleIsInvisible() {
         // setup
         val sut = launchContainerFragment {
-            addAttribute(R.attr.menu_main, "@menu/detail_main")
-            addAttribute(R.attr.menu_more, "@menu/detail_more")
+            addAttribute(R.attr.bottomMenu_main, "@menu/detail_main")
+            addAttribute(R.attr.bottomMenu_more, "@menu/detail_more")
         }.moveToState(Lifecycle.State.RESUMED)
             .withFragment {
                 // exercise
@@ -145,8 +145,8 @@ class ExpandableBottomContextMenuViewTest {
     fun updateMenuItem_changeGroupEnabled_then_applyForGroup() {
         // setup
         val sut = launchContainerFragment {
-            addAttribute(R.attr.menu_main, "@menu/detail_main")
-            addAttribute(R.attr.menu_more, "@menu/detail_more")
+            addAttribute(R.attr.bottomMenu_main, "@menu/detail_main")
+            addAttribute(R.attr.bottomMenu_more, "@menu/detail_more")
         }.moveToState(Lifecycle.State.RESUMED)
             .withFragment {
                 // exercise

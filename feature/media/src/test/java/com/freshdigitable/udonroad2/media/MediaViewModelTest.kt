@@ -17,7 +17,7 @@
 package com.freshdigitable.udonroad2.media
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import com.freshdigitable.fabshortcut.ShortcutViewHolder
+import com.freshdigitable.fabshortcut.FlingFAB
 import com.freshdigitable.udonroad2.data.impl.MediaRepository
 import com.freshdigitable.udonroad2.data.impl.create
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
@@ -96,7 +96,7 @@ class MediaViewModelTest {
         assertThat(sut.mediaItems.value).isEmpty()
         assertThat(sut.state.value?.currentPosition).isNull()
         assertThat(sut.systemUiVisibility.value).isEqualTo(SystemUiVisibility.SHOW)
-        assertThat(sut.shortcutState.value?.mode).isEqualTo(ShortcutViewHolder.Mode.FAB)
+        assertThat(sut.shortcutState.value?.mode).isEqualTo(FlingFAB.Mode.FAB)
     }
 
     @Test
@@ -118,6 +118,6 @@ class MediaViewModelTest {
 
         // verify
         assertThat(sut.systemUiVisibility.value).isEqualTo(SystemUiVisibility.HIDE)
-        assertThat(sut.shortcutState.value?.mode).isEqualTo(ShortcutViewHolder.Mode.HIDDEN)
+        assertThat(sut.shortcutState.value?.mode).isEqualTo(FlingFAB.Mode.HIDDEN)
     }
 }

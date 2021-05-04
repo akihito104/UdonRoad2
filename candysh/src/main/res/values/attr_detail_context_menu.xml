@@ -15,11 +15,11 @@
   -->
 
 <resources>
-    <attr name="menu_main" format="reference" />
-    <attr name="menu_more" format="reference" />
+    <attr name="bottomMenu_main" format="reference" />
+    <attr name="bottomMenu_more" format="reference" />
     <declare-styleable name="ExpandableBottomContextMenuView">
-        <attr name="menu_main" />
-        <attr name="menu_more" />
+        <attr name="bottomMenu_main" />
+        <attr name="bottomMenu_more" />
     </declare-styleable>
 
     <item name="expandable_bottom_main_toggle" type="id" />

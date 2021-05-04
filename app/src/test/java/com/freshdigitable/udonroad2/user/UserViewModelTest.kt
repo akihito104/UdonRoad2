@@ -17,7 +17,7 @@
 package com.freshdigitable.udonroad2.user
 
 import androidx.annotation.IdRes
-import com.freshdigitable.fabshortcut.ShortcutViewHolder
+import com.freshdigitable.fabshortcut.FlingFAB
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.data.UserDataSource
 import com.freshdigitable.udonroad2.data.impl.RelationshipRepository
@@ -80,7 +80,7 @@ class UserViewModelTest {
             assertThat(sut.state.value?.relationship).isEqualTo(relationship)
             assertThat(sut.relationshipMenuItems.value)
                 .isEqualTo(setOf(FOLLOW, BLOCK, MUTE, REPORT_SPAM))
-            assertThat(sut.state.value?.shortcutMode).isEqualTo(ShortcutViewHolder.Mode.HIDDEN)
+            assertThat(sut.state.value?.shortcutMode).isEqualTo(FlingFAB.Mode.HIDDEN)
             assertThat(sut.state.value?.titleAlpha).isEqualTo(0)
         }
 
@@ -106,7 +106,7 @@ class UserViewModelTest {
             )
 
             // verify
-            assertThat(sut.state.value?.shortcutMode).isEqualTo(ShortcutViewHolder.Mode.FAB)
+            assertThat(sut.state.value?.shortcutMode).isEqualTo(FlingFAB.Mode.FAB)
         }
     }
 
@@ -169,7 +169,7 @@ class UserViewModelTest {
                 sut.changePage.dispatch(1)
             }
             // verify
-            assertThat(sut.state.value?.shortcutMode).isEqualTo(ShortcutViewHolder.Mode.HIDDEN)
+            assertThat(sut.state.value?.shortcutMode).isEqualTo(FlingFAB.Mode.HIDDEN)
         }
 
         @Test
@@ -181,7 +181,7 @@ class UserViewModelTest {
             sut.changePage.dispatch(0)
 
             // verify
-            assertThat(sut.state.value?.shortcutMode).isEqualTo(ShortcutViewHolder.Mode.FAB)
+            assertThat(sut.state.value?.shortcutMode).isEqualTo(FlingFAB.Mode.FAB)
         }
     }
 

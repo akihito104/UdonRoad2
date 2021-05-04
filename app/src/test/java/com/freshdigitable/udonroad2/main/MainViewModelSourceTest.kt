@@ -16,7 +16,7 @@
 
 package com.freshdigitable.udonroad2.main
 
-import com.freshdigitable.fabshortcut.ShortcutViewHolder
+import com.freshdigitable.fabshortcut.FlingFAB
 import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
 import com.freshdigitable.udonroad2.data.impl.create
 import com.freshdigitable.udonroad2.input.TweetInputSharedState
@@ -117,7 +117,7 @@ class MainViewModelSourceTest {
 
         // verify
         val state = eventCollector.eventsOf(sut.states).last()
-        assertThat(state?.mode).isEqualTo(ShortcutViewHolder.Mode.TOOLBAR)
+        assertThat(state?.mode).isEqualTo(FlingFAB.Mode.TOOLBAR)
         assertThat(state?.menuItemState?.isMainGroupEnabled).isTrue()
     }
 }

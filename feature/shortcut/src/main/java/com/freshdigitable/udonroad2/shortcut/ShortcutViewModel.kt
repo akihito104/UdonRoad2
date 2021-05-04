@@ -17,8 +17,8 @@
 package com.freshdigitable.udonroad2.shortcut
 
 import androidx.lifecycle.LiveData
+import com.freshdigitable.fabshortcut.FlingFAB
 import com.freshdigitable.fabshortcut.ShortcutMenuItem
-import com.freshdigitable.fabshortcut.ShortcutViewHolder
 import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEffectStream
 
@@ -26,7 +26,7 @@ interface ShortcutViewModel : ShortcutEventListener, ActivityEffectStream {
     val shortcutState: LiveData<State>
 
     interface State {
-        val mode: ShortcutViewHolder.Mode
+        val mode: FlingFAB.Mode
         val menuItemState: MenuItemState
     }
 }

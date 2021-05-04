@@ -21,42 +21,42 @@
     <item
         android:id="@+id/iffabMenu_main_fav"
         android:icon="@drawable/ic_like"
-        app:direction="up"
+        app:ffab_direction="up"
         android:title="fav"
         />
     <item
         android:id="@+id/iffabMenu_main_rt"
         android:icon="@drawable/ic_retweet"
-        app:direction="right"
+        app:ffab_direction="right"
         android:title="retweet"
         />
     <item
         android:id="@+id/iffabMenu_main_favRt"
-        app:direction="up_right"
+        app:ffab_direction="up_right"
         android:title="fav and RT"
         />
     <item
         android:id="@+id/iffabMenu_main_quote"
         android:icon="@drawable/ic_quote"
-        app:direction="down_right"
+        app:ffab_direction="down_right"
         android:title="quote"
         />
     <item
         android:id="@+id/iffabMenu_main_reply"
         android:icon="@drawable/ic_reply"
-        app:direction="down"
+        app:ffab_direction="down"
         android:title="reply"
         />
     <item
         android:id="@+id/iffabMenu_main_detail"
         android:icon="@drawable/ic_menu"
-        app:direction="left"
+        app:ffab_direction="left"
         android:title="detail"
         />
     <item
         android:id="@+id/iffabMenu_main_conv"
         android:icon="@drawable/ic_conversation"
-        app:direction="down_left"
+        app:ffab_direction="down_left"
         android:title="conversation"
         />
 </menu>

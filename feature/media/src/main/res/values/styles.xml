@@ -20,6 +20,6 @@
 
     <style name="Widget.FlingFAB.Immersive" parent="Widget.FlingFAB">
         <item name="backgroundTint">@color/layer_black_immersive</item>
-        <item name="indicatorTint">@color/layer_black_immersive</item>
+        <item name="ffab_indicatorTint">@color/layer_black_immersive</item>
     </style>
 </resources>

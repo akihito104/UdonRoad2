@@ -2,7 +2,6 @@
 <layout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     >
 
     <data>
@@ -63,27 +62,13 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="@dimen/shortcut_marginBottom"
                 android:layout_gravity="center_horizontal|bottom"
-                app:menu="@menu/shortcut_main"
-                style="@style/Widget.FlingFAB"
-                />
-
-            <com.freshdigitable.fabshortcut.ExpandableBottomContextMenuView
-                android:id="@+id/main_bottom_menu"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:menu_main="@menu/detail_main"
-                app:menu_more="@menu/detail_more"
+                app:ffab_menu="@menu/shortcut_main"
+                app:ffab_bottomMenuEnabled="true"
+                app:bottomMenu_main="@menu/detail_main"
+                app:bottomMenu_more="@menu/detail_more"
+                app:menuListener="@{item -> viewModel.onShortcutMenuSelected(item, viewModel.requireSelectedTweetId)}"
+                app:modeNotNull="@{viewModel.shortcutState.mode}"
                 app:menuItemState="@{viewModel.shortcutState.menuItemState}"
-                tools:visibility="visible"
-                />
-
-            <com.freshdigitable.fabshortcut.ShortcutViewHolder
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                app:fabId="@{@id/main_fab}"
-                app:toolbarId="@{@id/main_bottom_menu}"
-                app:itemListener="@{item -> viewModel.onShortcutMenuSelected(item, viewModel.requireSelectedTweetId)}"
-                app:mode="@{viewModel.shortcutState.mode}"
                 />
         </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
