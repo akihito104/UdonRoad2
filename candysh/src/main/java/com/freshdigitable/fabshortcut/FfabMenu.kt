@@ -45,7 +45,7 @@ internal class FfabMenu(
         itemId: Int,
         order: Int,
         title: CharSequence?,
-    ): MenuItem = FfabMenuItem(context, itemId, groupId, order).also {
+    ): MenuItem = FfabMenuItem(context, itemId, groupId, order, title).also {
         items.add(ShortcutMenuItemImpl(it))
     }
 

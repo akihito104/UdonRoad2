@@ -24,8 +24,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.ImageButton
+import android.widget.TextView
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.children
+import androidx.core.view.get
 import androidx.core.view.isInvisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentFactory
@@ -93,6 +95,7 @@ class ExpandableBottomContextMenuViewTest {
         assertThat(sut.mainList.children.count { it is ImageButton }).isEqualTo(6)
         assertThat(sut.moreList.childCount).isEqualTo(1)
         checkPeekHeight(sut)
+        assertThat((sut.moreList[0] as TextView).text).isEqualTo("delete")
     }
 
     @Test
