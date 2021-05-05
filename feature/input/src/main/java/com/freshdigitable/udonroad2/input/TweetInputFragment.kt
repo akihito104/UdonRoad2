@@ -47,6 +47,7 @@ import com.freshdigitable.udonroad2.media.mediaViews
 import com.freshdigitable.udonroad2.model.app.AppFilePath
 import dagger.android.support.AndroidSupportInjection
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -74,6 +75,9 @@ class TweetInputFragment : Fragment() {
     override fun onAttach(context: Context) {
         AndroidSupportInjection.inject(this)
         super.onAttach(context)
+        lifecycleScope.launch {
+            viewModel.chooserForCameraApp.collect { onCameraAppStateChanged(it) }
+        }
         mediaChooser = registerForActivityResult(mediaChooserResultContract) { uris ->
             Timber.tag("TweetInputFragment").d("mediaChooser.onResult: $uris")
             viewModel.updateMedia.dispatch(uris)
@@ -124,36 +128,35 @@ class TweetInputFragment : Fragment() {
                 mediaChooser.launch(Unit)
             }
         }
-        viewLifecycleOwner.lifecycleScope.launchWhenCreated {
-            viewModel.chooserForCameraApp.collect {
-                when (it) {
-                    is CameraApp.State.Selected -> {
-                        requireContext().grantUriPermission(
-                            it.app.packageName, it.path.uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-                        )
-                    }
-                    is CameraApp.State.Finished -> {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                            requireContext().revokeUriPermission(
-                                it.app.packageName,
-                                it.path.uri,
-                                Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-                            )
-                        } else {
-                            requireContext().revokeUriPermission(
-                                it.path.uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-                            )
-                        }
+    }
 
-                        MediaScannerConnection.scanFile(
-                            requireContext(),
-                            arrayOf(checkNotNull(it.path.file).toString()),
-                            arrayOf("image/jpg"), null
-                        )
-                    }
-                    else -> Unit
-                }
+    private fun onCameraAppStateChanged(state: CameraApp.State) {
+        when (state) {
+            is CameraApp.State.Selected -> {
+                requireContext().grantUriPermission(
+                    state.app.packageName, state.path.uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                )
             }
+            is CameraApp.State.Finished -> {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    requireContext().revokeUriPermission(
+                        state.app.packageName,
+                        state.path.uri,
+                        Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                    )
+                } else {
+                    requireContext().revokeUriPermission(
+                        state.path.uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                    )
+                }
+
+                MediaScannerConnection.scanFile(
+                    requireContext(),
+                    arrayOf(checkNotNull(state.path.file).toString()),
+                    arrayOf("image/jpg"), null
+                )
+            }
+            else -> Unit
         }
     }
 
