@@ -15,11 +15,12 @@
   -->
 
 <resources>
-    <attr name="indicatorTint" format="reference|color" />
-    <attr name="indicatorIconTint" format="reference|color" />
-    <attr name="marginFabToIndicator" format="dimension" />
-    <attr name="menu" format="reference" />
-    <attr name="direction" format="enum">
+    <attr name="ffab_indicatorTint" format="reference|color" />
+    <attr name="ffab_indicatorIconTint" format="reference|color" />
+    <attr name="ffab_marginFabToIndicator" format="dimension" />
+    <attr name="ffab_menu" format="reference" />
+    <attr name="ffab_bottomMenuEnabled" format="boolean" />
+    <attr name="ffab_direction" format="enum">
         <enum name="up" value="6" />
         <enum name="up_right" value="7" />
         <enum name="right" value="0" />
@@ -31,27 +32,22 @@
     </attr>
 
     <declare-styleable name="FlingFAB">
-        <attr name="indicatorTint" />
-        <attr name="indicatorIconTint" />
-        <attr name="marginFabToIndicator" />
-        <attr name="menu" />
+        <attr name="ffab_indicatorTint" />
+        <attr name="ffab_indicatorIconTint" />
+        <attr name="ffab_marginFabToIndicator" />
+        <attr name="ffab_menu" />
+        <attr name="ffab_bottomMenuEnabled" />
     </declare-styleable>
 
     <declare-styleable name="FlingFABMenu">
         <attr name="android:id" />
-        <attr name="direction" />
-    </declare-styleable>
-
-    <declare-styleable name="FlingFABTheme">
-        <attr name="iffabStyle" format="reference" />
+        <attr name="ffab_direction" />
     </declare-styleable>
 
     <style name="Widget.FlingFAB" parent="@style/Widget.Design.FloatingActionButton">
-        <item name="indicatorTint">#cccc</item>
-        <item name="indicatorIconTint">@android:color/white</item>
-        <item name="marginFabToIndicator">60dp</item>
-        <item name="srcCompat">@drawable/ic_add</item>
-        <item name="fabSize">normal</item>
+        <item name="ffab_indicatorTint">#cccc</item>
+        <item name="ffab_indicatorIconTint">@android:color/white</item>
+        <item name="ffab_marginFabToIndicator">60dp</item>
     </style>
 
     <item name="indicator" type="id" />
@@ -59,4 +55,10 @@
     <dimen name="ffab_toolbar_icon_padding">12dp</dimen>
     <dimen name="indicator_icon_size">16dp</dimen>
     <dimen name="margin">8dp</dimen>
+
+    <attr name="ffabStyle" format="reference" />
+
+    <style name="Theme.AppCompat.FlingFAB" parent="Theme.AppCompat">
+        <item name="ffabStyle">@style/Widget.FlingFAB</item>
+    </style>
 </resources>

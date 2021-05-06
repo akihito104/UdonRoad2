@@ -57,7 +57,7 @@ class ExpandableBottomContextMenuView @JvmOverloads constructor(
     private val mainMenu: ShortcutMenu
     private val moreMenu: ShortcutMenu
 
-    var itemClickListener: OnMenuSelectedListener? = null
+    internal var itemClickListener: OnMenuSelectedListener? = null
     private val callback: OnClickListener = OnClickListener { v ->
         val item = checkNotNull(findMenuItemById(v.id))
         itemClickListener?.onMenuSelected(item)
@@ -77,10 +77,10 @@ class ExpandableBottomContextMenuView @JvmOverloads constructor(
         )
         try {
             val mainMenuId =
-                a.getResourceId(R.styleable.ExpandableBottomContextMenuView_menu_main, 0)
+                a.getResourceId(R.styleable.ExpandableBottomContextMenuView_bottomMenu_main, 0)
             mainMenu = ShortcutMenu.inflate(context, mainMenuId)
             val moreMenuId =
-                a.getResourceId(R.styleable.ExpandableBottomContextMenuView_menu_more, 0)
+                a.getResourceId(R.styleable.ExpandableBottomContextMenuView_bottomMenu_more, 0)
             moreMenu = ShortcutMenu.inflate(context, moreMenuId)
         } finally {
             a.recycle()
@@ -130,20 +130,25 @@ class ExpandableBottomContextMenuView @JvmOverloads constructor(
         return mainMenu.findByItemId(menuId) ?: moreMenu.findByItemId(menuId)
     }
 
-    fun show() {
+    internal fun show() {
         animate()
             .setDuration(250)
             .translationY(0f)
             .setListener(object : AnimatorListenerAdapter() {
                 override fun onAnimationStart(animation: Animator?) {
-                    translationY = height.toFloat()
+                    setupToShowAnimForMoreMenu()
+                    translationY = mainContextMenuList.height.toFloat()
                     visibility = VISIBLE
                 }
             })
             .start()
     }
 
-    fun hide() {
+    internal fun setupToShowAnimForMoreMenu() {
+        bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+    }
+
+    internal fun hide() {
         animate().setDuration(250)
             .translationY(height.toFloat())
             .setListener(object : AnimatorListenerAdapter() {
@@ -154,8 +159,8 @@ class ExpandableBottomContextMenuView @JvmOverloads constructor(
             .start()
     }
 
-    fun updateMenu(block: UpdateScope.() -> Unit) {
-        val updateScope = UpdateScope(this)
+    internal fun updateMenu(block: ShortcutMenuUpdateScope.() -> Unit) {
+        val updateScope = UpdateScopeImpl(this)
         updateScope.block()
         moreContextMenuList.adapter?.let {
             it.notifyDataSetChanged()
@@ -164,8 +169,9 @@ class ExpandableBottomContextMenuView @JvmOverloads constructor(
         invalidate()
     }
 
-    class UpdateScope(private val view: ExpandableBottomContextMenuView) {
-        fun updateItemOf(@IdRes menuId: Int, block: ShortcutMenuItem.() -> Unit) {
+    private class UpdateScopeImpl(private val view: ExpandableBottomContextMenuView) :
+        ShortcutMenuUpdateScope {
+        override fun updateItemOf(@IdRes menuId: Int, block: ShortcutMenuItem.() -> Unit) {
             val item = view.findMenuItemById(menuId) ?: return
             item.block()
             val button = view.mainContextMenuList.findViewById<ImageButton>(item.itemId) ?: return
@@ -175,7 +181,7 @@ class ExpandableBottomContextMenuView @JvmOverloads constructor(
             }
         }
 
-        fun changeGroupEnabled(@IdRes groupId: Int, isEnabled: Boolean) {
+        override fun changeGroupEnabled(@IdRes groupId: Int, isEnabled: Boolean) {
             view.mainMenu.setGroupEnabled(groupId, isEnabled)
         }
     }
@@ -185,7 +191,7 @@ class ExpandableBottomContextMenuView @JvmOverloads constructor(
         (layoutParams as? CoordinatorLayout.LayoutParams)?.behavior = bottomSheetBehavior
     }
 
-    companion object {
+    internal companion object {
         private fun LinearLayout.setupMainMenu(mainMenu: ShortcutMenu, callback: OnClickListener) {
             for (i in 0 until mainMenu.size()) {
                 val item = mainMenu[i]
@@ -273,7 +279,7 @@ internal class MoreItemAdapter(
     override fun onBindViewHolder(holder: MoreItemViewHolder, position: Int) {
         val context = holder.itemView.context
         val iconSize = context.resources.getDimensionPixelSize(R.dimen.menu_more_icon_size)
-        val item = moreMenu.visibleItems[position] //as BottomMenu.Item
+        val item = moreMenu.visibleItems[position]
         holder.itemView.id = item.itemId
         holder.text.text = item.title
         val drawable = item.icon
@@ -292,4 +298,9 @@ internal class MoreItemAdapter(
     }
 
     override fun getItemCount(): Int = moreMenu.visibleItems.size
+}
+
+interface ShortcutMenuUpdateScope {
+    fun updateItemOf(@IdRes menuId: Int, block: ShortcutMenuItem.() -> Unit)
+    fun changeGroupEnabled(@IdRes groupId: Int, isEnabled: Boolean)
 }

@@ -17,7 +17,7 @@
 package com.freshdigitable.udonroad2.user
 
 import androidx.annotation.Keep
-import com.freshdigitable.fabshortcut.ShortcutViewHolder
+import com.freshdigitable.fabshortcut.FlingFAB
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.data.UserDataSource
 import com.freshdigitable.udonroad2.data.impl.RelationshipRepository
@@ -207,10 +207,10 @@ class UserViewModelSource @Inject constructor(
         val currentPage: UserPage = UserPage.TWEET,
         override val selectedItemId: SelectedItemId? = null,
     ) : UserViewState {
-        override val shortcutMode: ShortcutViewHolder.Mode
+        override val shortcutMode: FlingFAB.Mode
             get() = when (selectedItemId != null) {
-                true -> ShortcutViewHolder.Mode.FAB
-                else -> ShortcutViewHolder.Mode.HIDDEN
+                true -> FlingFAB.Mode.FAB
+                else -> FlingFAB.Mode.HIDDEN
             }
         val currentOwner: ListOwner<*>?
             get() = pages[currentPage]

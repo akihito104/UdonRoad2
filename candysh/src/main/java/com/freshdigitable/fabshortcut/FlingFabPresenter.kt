@@ -22,33 +22,62 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.coordinatorlayout.widget.CoordinatorLayout
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 
-internal class FlingFabPresenter(
-    private val fab: FlingFAB,
+internal interface FlingFabPresenter {
+    val fab: FlingFAB
+    var menuSelectedListener: OnMenuSelectedListener?
+    var mode: FlingFAB.Mode
+    fun onAttached()
+    fun onDetached()
+    fun updateMenu(block: ShortcutMenuUpdateScope.() -> Unit) {}
+
+    companion object {
+        fun create(fab: FlingFAB, attrs: AttributeSet?, defStyleAttr: Int): FlingFabPresenter {
+            val a = fab.context.obtainStyledAttributes(
+                attrs, R.styleable.FlingFAB, defStyleAttr, R.style.Widget_FlingFAB
+            )
+            try {
+                val p = FlingFabPresenterImpl(fab, attrs, defStyleAttr)
+                return when (a.getBoolean(R.styleable.FlingFAB_ffab_bottomMenuEnabled, false)) {
+                    true -> ShortcutViewHolder(p, attrs, defStyleAttr)
+                    false -> p
+                }
+            } finally {
+                a.recycle()
+            }
+        }
+    }
+}
+
+internal class FlingFabPresenterImpl(
+    override val fab: FlingFAB,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0,
-) {
+) : FlingFabPresenter {
     private val indicator = FlingActionIndicator(fab.context, attrs, defStyleAttr)
     private val menu: ShortcutMenu
-    internal var menuSelectedListener: OnMenuSelectedListener? = null
+    override var menuSelectedListener: OnMenuSelectedListener? = null
     private val marginFromFab: Int
 
     init {
+        fab.setImageResource(R.drawable.ic_add)
+        fab.size = FloatingActionButton.SIZE_NORMAL
+
         val a = fab.context.obtainStyledAttributes(
-            attrs,
-            R.styleable.FlingFAB, defStyleAttr, R.style.Widget_FlingFAB
+            attrs, R.styleable.FlingFAB, defStyleAttr, R.style.Widget_FlingFAB
         )
-        val menuRes = a.getResourceId(R.styleable.FlingFAB_menu, 0)
+        val menuRes = a.getResourceId(R.styleable.FlingFAB_ffab_menu, 0)
         menu = ShortcutMenu.inflate(fab.context, menuRes)
 
         for (i in 0 until menu.size()) {
             val item = menu[i]
             indicator.setDrawable(checkNotNull(item.direction), item.icon)
         }
-        marginFromFab = a.getDimensionPixelSize(R.styleable.FlingFAB_marginFabToIndicator, 0)
-        val indicatorTint = a.getColor(R.styleable.FlingFAB_indicatorTint, 0)
+        marginFromFab = a.getDimensionPixelSize(R.styleable.FlingFAB_ffab_marginFabToIndicator, 0)
+        val indicatorTint = a.getColor(R.styleable.FlingFAB_ffab_indicatorTint, 0)
         indicator.setBackgroundColor(indicatorTint)
-        val indicatorIconTint = a.getColor(R.styleable.FlingFAB_indicatorIconTint, 0)
+        val indicatorIconTint = a.getColor(R.styleable.FlingFAB_ffab_indicatorIconTint, 0)
         indicator.setIndicatorIconTint(indicatorIconTint)
         a.recycle()
     }
@@ -87,12 +116,34 @@ internal class FlingFabPresenter(
         }
     }
 
-    internal fun onAttached() {
-        fab.post { attachIndicator() }
+    override var mode: FlingFAB.Mode = FlingFAB.Mode.HIDDEN
+        set(value) {
+            require(value != FlingFAB.Mode.TOOLBAR) { "Mode.TOOLBAR is not accepted." }
+
+            if (field == value) {
+                return
+            }
+            when (field) {
+                FlingFAB.Mode.HIDDEN -> {
+                    if (value == FlingFAB.Mode.FAB) fab.show()
+                }
+                FlingFAB.Mode.FAB -> {
+                    if (value == FlingFAB.Mode.HIDDEN) fab.hide()
+                }
+                FlingFAB.Mode.TOOLBAR -> throw IllegalStateException()
+            }
+            field = value
+        }
+
+    override fun onAttached() {
+        fab.post {
+            attachIndicator()
+            fab.visibility = mode.visibilityForFab
+        }
         fab.flingEventListener = flingListener
     }
 
-    internal fun onDetached() {
+    override fun onDetached() {
         fab.flingEventListener = null
     }
 
@@ -126,3 +177,15 @@ internal class FlingFabPresenter(
         bottomMargin = marginFromFab + fab.height + fabLp.bottomMargin
     }
 }
+
+internal val FlingFAB.Mode.visibilityForFab: Int
+    get() = when (this) {
+        FlingFAB.Mode.FAB -> View.VISIBLE
+        else -> View.INVISIBLE
+    }
+
+internal val FlingFAB.Mode.visibilityForToolbar: Int
+    get() = when (this) {
+        FlingFAB.Mode.TOOLBAR -> View.VISIBLE
+        else -> View.INVISIBLE
+    }

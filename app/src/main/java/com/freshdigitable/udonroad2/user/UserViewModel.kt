@@ -9,8 +9,8 @@ import androidx.lifecycle.asLiveData
 import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
+import com.freshdigitable.fabshortcut.FlingFAB
 import com.freshdigitable.fabshortcut.ShortcutMenuItem
-import com.freshdigitable.fabshortcut.ShortcutViewHolder
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.SelectedItemId
@@ -82,7 +82,7 @@ interface UserViewState {
     val relationshipMenuItems: Set<RelationshipMenu>
     val titleAlpha: Float
     val pages: Map<UserPage, ListOwner<*>>
-    val shortcutMode: ShortcutViewHolder.Mode
+    val shortcutMode: FlingFAB.Mode
     val selectedItemId: SelectedItemId?
 }
 

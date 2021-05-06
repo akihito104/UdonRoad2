@@ -18,83 +18,95 @@ package com.freshdigitable.fabshortcut
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
-import android.content.Context
 import android.graphics.PointF
 import android.os.Build
 import android.util.AttributeSet
 import android.view.View
+import android.view.View.GONE
+import android.view.View.VISIBLE
 import android.view.ViewAnimationUtils
 import android.view.ViewGroup
 import android.view.ViewPropertyAnimator
 import android.view.animation.AccelerateInterpolator
-import androidx.annotation.IdRes
 import androidx.annotation.RequiresApi
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.graphics.plus
 import com.google.android.material.animation.AnimationUtils.DECELERATE_INTERPOLATOR
 import kotlin.math.abs
 import kotlin.math.hypot
 
-class ShortcutViewHolder @JvmOverloads constructor(
-    context: Context,
+internal class ShortcutViewHolder(
+    private val presenter: FlingFabPresenter,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0,
-) : View(context, attrs, defStyleAttr) {
-    init {
-        visibility = INVISIBLE
+) : FlingFabPresenter by presenter {
+    private val toolbar =
+        ExpandableBottomContextMenuView(presenter.fab.context, attrs, defStyleAttr)
+
+    override var menuSelectedListener: OnMenuSelectedListener? = null
+        set(value) {
+            presenter.menuSelectedListener = value
+            toolbar.itemClickListener = value
+            field = value
+        }
+
+    override fun onAttached() {
+        presenter.onAttached()
+        fab.post {
+            attachToolbar()
+            toolbar.visibility = mode.visibilityForToolbar
+        }
+        toolbar.itemClickListener = menuSelectedListener
     }
 
-    @IdRes
-    var fabId: Int = 0
-
-    @IdRes
-    var toolbarId: Int = 0
-
-    private val fab: FlingFAB by lazy {
-        (parent as ViewGroup).findViewById<FlingFAB>(fabId)?.also {
-            it.visibility = when (mode) {
-                Mode.FAB -> VISIBLE
-                else -> INVISIBLE
-            }
-        } ?: throw IllegalStateException()
-    }
-    private val toolbar: ExpandableBottomContextMenuView by lazy {
-        (parent as ViewGroup).findViewById<ExpandableBottomContextMenuView>(toolbarId)?.also {
-            it.visibility = when (mode) {
-                Mode.TOOLBAR -> VISIBLE
-                else -> INVISIBLE
-            }
-        } ?: throw IllegalStateException()
+    private fun attachToolbar() {
+        if (toolbar.parent != null) {
+            return
+        }
+        require(fab.parent is CoordinatorLayout)
+        val lp = CoordinatorLayout.LayoutParams(
+            ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+        )
+        (fab.parent as CoordinatorLayout).addView(toolbar, lp)
     }
 
-    var mode: Mode = Mode.HIDDEN
+    override fun onDetached() {
+        presenter.onDetached()
+        toolbar.itemClickListener = null
+    }
+
+    override var mode: FlingFAB.Mode = FlingFAB.Mode.HIDDEN
         set(value) {
             changeMode(value)
             field = value
         }
 
-    private fun changeMode(nextMode: Mode) {
+    private fun changeMode(nextMode: FlingFAB.Mode) {
         if (mode == nextMode) {
             return
         }
 
         when (mode) {
-            Mode.HIDDEN -> {
-                if (nextMode == Mode.FAB) fab.show()
-                else if (nextMode == Mode.TOOLBAR) toolbar.show()
+            FlingFAB.Mode.HIDDEN -> {
+                if (nextMode == FlingFAB.Mode.FAB) showFab()
+                else if (nextMode == FlingFAB.Mode.TOOLBAR) toolbar.show()
             }
-            Mode.FAB -> {
-                if (nextMode == Mode.HIDDEN) fab.hide()
-                else if (nextMode == Mode.TOOLBAR)
+            FlingFAB.Mode.FAB -> {
+                if (nextMode == FlingFAB.Mode.HIDDEN) fab.hide()
+                else if (nextMode == FlingFAB.Mode.TOOLBAR)
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                         fabToToolbarAnim()
                     } else {
-                        fab.show()
+                        showFab()
                         toolbar.hide()
                     }
             }
-            Mode.TOOLBAR -> {
-                if (nextMode == Mode.HIDDEN) toolbar.hide()
-                else if (nextMode == Mode.FAB)
+            FlingFAB.Mode.TOOLBAR -> {
+                if (nextMode == FlingFAB.Mode.HIDDEN) toolbar.hide()
+                else if (nextMode == FlingFAB.Mode.FAB)
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                         toolbarToFabAnim()
                     } else {
@@ -105,11 +117,23 @@ class ShortcutViewHolder @JvmOverloads constructor(
         }
     }
 
+    private fun showFab() {
+        fab.apply {
+            translationX = 0f
+            translationY = 0f
+        }
+        fab.show()
+    }
+
+    override fun updateMenu(block: ShortcutMenuUpdateScope.() -> Unit) {
+        toolbar.updateMenu(block)
+    }
+
     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     private fun toolbarToFabAnim() {
         val transPoint = transitionPoint
         fab.apply {
-            visibility = INVISIBLE
+            visibility = View.INVISIBLE
             centerX = transPoint.x
             centerY = transPoint.y
             scaleX = FAB_SCALE
@@ -138,6 +162,7 @@ class ShortcutViewHolder @JvmOverloads constructor(
         toolbar.apply {
             translationX = 0f
             translationY = 0f
+            setupToShowAnimForMoreMenu()
         }
         val transPoint = transitionPoint
 
@@ -221,15 +246,6 @@ class ShortcutViewHolder @JvmOverloads constructor(
         return hypot(radiusX.toDouble(), radiusY.toDouble()).toFloat()
     }
 
-    fun setItemListener(listener: OnMenuSelectedListener?) {
-        fab.setMenuListener(listener)
-        toolbar.itemClickListener = listener
-    }
-
-    override fun setVisibility(visibility: Int) {
-        super.setVisibility(INVISIBLE)
-    }
-
     companion object {
         private const val FAB_SCALE = 1.2f
         private const val FAB_MOVE_DURATION: Long = 80
@@ -247,6 +263,4 @@ class ShortcutViewHolder @JvmOverloads constructor(
                 y = value - centerY
             }
     }
-
-    enum class Mode { HIDDEN, FAB, TOOLBAR }
 }

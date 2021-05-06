@@ -16,7 +16,7 @@
 
 package com.freshdigitable.udonroad2.main
 
-import com.freshdigitable.fabshortcut.ShortcutViewHolder
+import com.freshdigitable.fabshortcut.FlingFAB
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.data.impl.AppSettingRepository
 import com.freshdigitable.udonroad2.data.impl.SelectedItemRepository
@@ -113,21 +113,21 @@ internal data class MainActivityViewState(
     val isTweetInputMenuVisible: Boolean
         get() = (navHostState as? MainNavHostState.Timeline)?.owner?.query !is QueryType.Oauth
 
-    override val mode: ShortcutViewHolder.Mode
+    override val mode: FlingFAB.Mode
         get() = when (navHostState) {
             is MainNavHostState.Timeline -> {
                 if (selectedItem != null && !isTweetInputExpanded) {
-                    ShortcutViewHolder.Mode.FAB
+                    FlingFAB.Mode.FAB
                 } else {
-                    ShortcutViewHolder.Mode.HIDDEN
+                    FlingFAB.Mode.HIDDEN
                 }
             }
-            is MainNavHostState.TweetDetail -> ShortcutViewHolder.Mode.TOOLBAR
-            else -> ShortcutViewHolder.Mode.HIDDEN
+            is MainNavHostState.TweetDetail -> FlingFAB.Mode.TOOLBAR
+            else -> FlingFAB.Mode.HIDDEN
         }
     override val menuItemState: MenuItemState
         get() = when {
-            selectedItem != null && mode == ShortcutViewHolder.Mode.TOOLBAR -> MenuItemState(
+            selectedItem != null && mode == FlingFAB.Mode.TOOLBAR -> MenuItemState(
                 isMainGroupEnabled = true,
                 isRetweetChecked = selectedItem.body.isRetweeted,
                 isFavChecked = selectedItem.body.isFavorited,

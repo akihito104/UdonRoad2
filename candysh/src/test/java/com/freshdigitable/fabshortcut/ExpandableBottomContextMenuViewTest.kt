@@ -24,8 +24,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.ImageButton
+import android.widget.TextView
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.children
+import androidx.core.view.get
 import androidx.core.view.isInvisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentFactory
@@ -61,7 +63,7 @@ class ExpandableBottomContextMenuViewTest {
     fun initWithMenuMain() {
         // setup
         val sut = launchContainerFragment {
-            addAttribute(R.attr.menu_main, "@menu/detail_main")
+            addAttribute(R.attr.bottomMenu_main, "@menu/detail_main")
         }
             .moveToState(Lifecycle.State.RESUMED)
             .withFragment { sut }
@@ -80,8 +82,8 @@ class ExpandableBottomContextMenuViewTest {
     fun initWithMenuMainAndMore() {
         // setup
         val sut = launchContainerFragment {
-            addAttribute(R.attr.menu_main, "@menu/detail_main")
-            addAttribute(R.attr.menu_more, "@menu/detail_more")
+            addAttribute(R.attr.bottomMenu_main, "@menu/detail_main")
+            addAttribute(R.attr.bottomMenu_more, "@menu/detail_more")
         }
             .moveToState(Lifecycle.State.RESUMED)
             .withFragment { sut }
@@ -93,13 +95,14 @@ class ExpandableBottomContextMenuViewTest {
         assertThat(sut.mainList.children.count { it is ImageButton }).isEqualTo(6)
         assertThat(sut.moreList.childCount).isEqualTo(1)
         checkPeekHeight(sut)
+        assertThat((sut.moreList[0] as TextView).text).isEqualTo("delete")
     }
 
     @Test
     fun updateMenuItem_whenCheckableItemIsChecked_then_viewStateIsUpdated() {
         // setup
         val sut = launchContainerFragment {
-            addAttribute(R.attr.menu_main, "@menu/detail_main")
+            addAttribute(R.attr.bottomMenu_main, "@menu/detail_main")
         }.moveToState(Lifecycle.State.RESUMED)
             .withFragment {
                 // exercise
@@ -121,8 +124,8 @@ class ExpandableBottomContextMenuViewTest {
     fun updateMenuItem_changeMoreItemToZero_then_toggleIsInvisible() {
         // setup
         val sut = launchContainerFragment {
-            addAttribute(R.attr.menu_main, "@menu/detail_main")
-            addAttribute(R.attr.menu_more, "@menu/detail_more")
+            addAttribute(R.attr.bottomMenu_main, "@menu/detail_main")
+            addAttribute(R.attr.bottomMenu_more, "@menu/detail_more")
         }.moveToState(Lifecycle.State.RESUMED)
             .withFragment {
                 // exercise
@@ -145,8 +148,8 @@ class ExpandableBottomContextMenuViewTest {
     fun updateMenuItem_changeGroupEnabled_then_applyForGroup() {
         // setup
         val sut = launchContainerFragment {
-            addAttribute(R.attr.menu_main, "@menu/detail_main")
-            addAttribute(R.attr.menu_more, "@menu/detail_more")
+            addAttribute(R.attr.bottomMenu_main, "@menu/detail_main")
+            addAttribute(R.attr.bottomMenu_more, "@menu/detail_more")
         }.moveToState(Lifecycle.State.RESUMED)
             .withFragment {
                 // exercise
