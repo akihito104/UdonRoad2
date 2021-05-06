@@ -173,7 +173,7 @@ class TweetInputFragment : Fragment() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
-            R.id.input_tweet_write -> {
+            R.id.input_tweet_write, R.id.input_tweet_error -> {
                 viewModel.openInput.dispatch()
                 true
             }

@@ -369,6 +369,36 @@ class TweetInputViewModelTest {
         }
 
         @Test
+        fun onSendClicked_whenSendIsFailed_then_canOpenToResend(): Unit = with(rule) {
+            coroutineTestRule.runBlockingTest {
+                // setup
+                setupPost("a", withError = AppTwitterException(-1, -1))
+                sut.openInput.dispatch()
+                sut.updateText.dispatch(editable("a"))
+
+                // exercise
+                val tweet = requireNotNull(sut.state.value)
+                sut.sendTweet.dispatch(tweet)
+
+                sut.openInput.dispatch()
+            }
+
+            // verify
+            inputTaskObserver.verifyInputTaskOrderOfOnChanged(
+                InputTaskState.IDLING,
+                InputTaskState.OPENED,
+                InputTaskState.SENDING,
+                InputTaskState.FAILED,
+                InputTaskState.OPENED,
+            )
+            assertThat(sut.state.value?.taskState).isEqualTo(InputTaskState.OPENED)
+            assertThat(sut.menuItem.value).isEqualTo(InputMenuItem.SEND_ENABLED)
+            assertThat(sut.state.value?.text).isEqualTo("a")
+            assertThat(sut.state.value?.media).isEmpty()
+            assertThat(sut.isExpanded.value).isTrue()
+        }
+
+        @Test
         fun dispatchReply_replyTextIsCreated_then_menuIsSendEnabled(): Unit = with(rule) {
             // setup
             val selectedTweetId = TweetId(2000)
