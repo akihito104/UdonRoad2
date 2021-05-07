@@ -38,7 +38,7 @@ class TimelineRemoteDataSource @Inject constructor(
 ) : RemoteListDataSource<QueryType.TweetQueryType, TweetEntity> {
 
     override suspend fun getList(
-        query: ListQuery<QueryType.TweetQueryType>
+        query: ListQuery<QueryType.TweetQueryType>,
     ): PagedResponseList<TweetEntity> {
         return when (val type = query.type) {
             is QueryType.TweetQueryType.Timeline -> getTimeline(query, type)
@@ -47,7 +47,7 @@ class TimelineRemoteDataSource @Inject constructor(
             is QueryType.TweetQueryType.Conversation -> getConversationList(query, type)
             is QueryType.TweetQueryType.CustomTimeline -> twitter.fetch {
                 val list = getUserListStatuses(type.id.value, query.pageOption.toPaging())
-                PagedResponseList.create(list, query.pageOption.count)
+                PagedResponseList.create(list)
             }
         }
     }
@@ -59,17 +59,17 @@ class TimelineRemoteDataSource @Inject constructor(
         val paging = query.pageOption.toPaging()
         val list = type.userId?.let { id -> getUserTimeline(id.value, paging) }
             ?: getHomeTimeline(paging)
-        PagedResponseList.create(list, query.pageOption.count)
+        PagedResponseList.create(list)
     }
 
     private suspend fun getFavTimeline(
         query: ListQuery<QueryType.TweetQueryType>,
-        type: QueryType.TweetQueryType.Fav
+        type: QueryType.TweetQueryType.Fav,
     ): PagedResponseList<TweetEntity> = twitter.fetch {
         val paging = query.pageOption.toPaging()
         val list = type.userId?.let { id -> getFavorites(id.value, paging) }
             ?: getFavorites(paging)
-        PagedResponseList.create(list, query.pageOption.count)
+        PagedResponseList.create(list)
     }
 
     private suspend fun getMediaTimeline(
@@ -122,13 +122,11 @@ private fun PageOption.toPaging(): Paging {
 
 internal fun PagedResponseList.Companion.create(
     statuses: List<Status>,
-    queryCount: Int,
 ): PagedResponseList<TweetEntity> {
     val list = statuses.map(Status::toEntity)
     return PagedResponseList(
         list = list,
         prependCursor = list.firstOrNull()?.let { it.id.value + 1 },
-        appendCursor = if (list.size >= queryCount) list.lastOrNull()
-            ?.let { it.id.value - 1 } else null,
+        appendCursor = list.lastOrNull()?.let { it.id.value - 1 }
     )
 }
