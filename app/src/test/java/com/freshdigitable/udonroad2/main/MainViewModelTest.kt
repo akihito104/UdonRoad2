@@ -219,7 +219,7 @@ class MainViewModelTest {
 
         @Before
         fun setup(): Unit = with(rule) {
-            val owner = ListOwner(0, QueryType.TweetQueryType.Timeline())
+            val owner = ListOwner(0, QueryType.Tweet.Timeline())
             stateModelSourceRule.tweetRepositoryRule.setupShowTweet(targetId,
                 flowOf(DetailTweetListItem.createMock(targetId)))
             stateModelSourceRule.navDelegateRule.setupContainerState(MainNavHostState.Timeline(owner))
@@ -425,7 +425,7 @@ class MainViewModelTest {
                 sut.effect,
             ) { event ->
                 assertThat(event.owner.query)
-                    .isInstanceOf(QueryType.CustomTimelineListQueryType.Ownership::class.java)
+                    .isInstanceOf(QueryType.CustomTimelineList.Ownership::class.java)
                 assertThat(event.owner.query.userId).isEqualTo(authenticatedUserId)
             }
         }

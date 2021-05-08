@@ -109,7 +109,7 @@ class OauthViewModelTest {
             .assertValueAt(2) { actual -> actual is OauthEvent.SendPinClicked }
         assertThat(navEvents[1]).isInstanceOf(TimelineEffect.Navigate.Timeline::class.java)
         assertThat((navEvents[1] as TimelineEffect.Navigate.Timeline).owner.query)
-            .isInstanceOf(QueryType.TweetQueryType.Timeline::class.java)
+            .isInstanceOf(QueryType.Tweet.Timeline::class.java)
         assertThat(sut.sendPinButtonEnabled.value).isFalse()
     }
 }

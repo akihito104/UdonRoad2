@@ -66,7 +66,7 @@ internal class OauthViewModelSource(
             val t = repository.getAccessToken(token, s.pinText.toString())
             login(t.userId)
             val timelineEvent = listOwnerGenerator.getTimelineEvent(
-                QueryType.TweetQueryType.Timeline(), AppEffect.Navigation.Type.INIT
+                QueryType.Tweet.Timeline(), AppEffect.Navigation.Type.INIT
             )
             navigationChannel.send(timelineEvent)
             OauthViewState()

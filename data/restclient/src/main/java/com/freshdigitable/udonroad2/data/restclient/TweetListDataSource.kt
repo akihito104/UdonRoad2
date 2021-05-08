@@ -35,17 +35,17 @@ import javax.inject.Singleton
 class TimelineRemoteDataSource @Inject constructor(
     private val twitter: AppTwitter,
     private val tweetApi: TweetApiClient,
-) : RemoteListDataSource<QueryType.TweetQueryType, TweetEntity> {
+) : RemoteListDataSource<QueryType.Tweet, TweetEntity> {
 
     override suspend fun getList(
-        query: ListQuery<QueryType.TweetQueryType>,
+        query: ListQuery<QueryType.Tweet>,
     ): PagedResponseList<TweetEntity> {
         return when (val type = query.type) {
-            is QueryType.TweetQueryType.Timeline -> getTimeline(query, type)
-            is QueryType.TweetQueryType.Fav -> getFavTimeline(query, type)
-            is QueryType.TweetQueryType.Media -> getMediaTimeline(query, type)
-            is QueryType.TweetQueryType.Conversation -> getConversationList(query, type)
-            is QueryType.TweetQueryType.CustomTimeline -> twitter.fetch {
+            is QueryType.Tweet.Timeline -> getTimeline(query, type)
+            is QueryType.Tweet.Fav -> getFavTimeline(query, type)
+            is QueryType.Tweet.Media -> getMediaTimeline(query, type)
+            is QueryType.Tweet.Conversation -> getConversationList(query, type)
+            is QueryType.Tweet.CustomTimeline -> twitter.fetch {
                 val list = getUserListStatuses(type.id.value, query.pageOption.toPaging())
                 PagedResponseList.create(list)
             }
@@ -53,8 +53,8 @@ class TimelineRemoteDataSource @Inject constructor(
     }
 
     private suspend fun getTimeline(
-        query: ListQuery<QueryType.TweetQueryType>,
-        type: QueryType.TweetQueryType.Timeline,
+        query: ListQuery<QueryType.Tweet>,
+        type: QueryType.Tweet.Timeline,
     ): PagedResponseList<TweetEntity> = twitter.fetch {
         val paging = query.pageOption.toPaging()
         val list = type.userId?.let { id -> getUserTimeline(id.value, paging) }
@@ -63,8 +63,8 @@ class TimelineRemoteDataSource @Inject constructor(
     }
 
     private suspend fun getFavTimeline(
-        query: ListQuery<QueryType.TweetQueryType>,
-        type: QueryType.TweetQueryType.Fav,
+        query: ListQuery<QueryType.Tweet>,
+        type: QueryType.Tweet.Fav,
     ): PagedResponseList<TweetEntity> = twitter.fetch {
         val paging = query.pageOption.toPaging()
         val list = type.userId?.let { id -> getFavorites(id.value, paging) }
@@ -73,8 +73,8 @@ class TimelineRemoteDataSource @Inject constructor(
     }
 
     private suspend fun getMediaTimeline(
-        query: ListQuery<QueryType.TweetQueryType>,
-        type: QueryType.TweetQueryType.Media,
+        query: ListQuery<QueryType.Tweet>,
+        type: QueryType.Tweet.Media,
     ): PagedResponseList<TweetEntity> = twitter.fetch {
         val q = Query(type.query).apply {
             maxId = query.pageOption.maxId ?: -1
@@ -91,8 +91,8 @@ class TimelineRemoteDataSource @Inject constructor(
     }
 
     private suspend fun getConversationList(
-        query: ListQuery<QueryType.TweetQueryType>,
-        type: QueryType.TweetQueryType.Conversation,
+        query: ListQuery<QueryType.Tweet>,
+        type: QueryType.Tweet.Conversation,
     ): PagedResponseList<TweetEntity> {
         val res = mutableListOf<TweetEntity>()
         var tweetId: TweetId? = type.tweetId

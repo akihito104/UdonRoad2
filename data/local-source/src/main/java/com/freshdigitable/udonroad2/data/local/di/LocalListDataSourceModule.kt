@@ -37,21 +37,21 @@ annotation class LocalListDataSourceKey(val clazz: KClass<out QueryType>)
 interface LocalListDataSourceModule {
     @Binds
     @IntoMap
-    @LocalListDataSourceKey(QueryType.TweetQueryType::class)
+    @LocalListDataSourceKey(QueryType.Tweet::class)
     fun bindTweetListDao(dao: TweetListDao): LocalListDataSource<out QueryType, *>
 
     @Binds
     @IntoMap
-    @LocalListDataSourceKey(QueryType.TweetQueryType.Conversation::class)
+    @LocalListDataSourceKey(QueryType.Tweet.Conversation::class)
     fun bindConversationListDao(dao: ConversationListDao): LocalListDataSource<out QueryType, *>
 
     @Binds
     @IntoMap
-    @LocalListDataSourceKey(QueryType.UserQueryType::class)
+    @LocalListDataSourceKey(QueryType.User::class)
     fun bindUserListDao(dao: UserListDao): LocalListDataSource<out QueryType, *>
 
     @Binds
     @IntoMap
-    @LocalListDataSourceKey(QueryType.CustomTimelineListQueryType::class)
+    @LocalListDataSourceKey(QueryType.CustomTimelineList::class)
     fun bindCustomTimelineListDao(dao: CustomTimelineListDao): LocalListDataSource<out QueryType, *>
 }

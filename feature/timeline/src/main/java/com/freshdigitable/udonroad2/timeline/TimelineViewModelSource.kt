@@ -31,7 +31,7 @@ import kotlinx.coroutines.flow.merge
 import javax.inject.Inject
 
 internal class TimelineViewModelSource(
-    owner: ListOwner<QueryType.TweetQueryType>,
+    owner: ListOwner<QueryType.Tweet>,
     actions: TimelineActions,
     selectedItemRepository: SelectedItemRepository,
     private val baseViewModelSource: ListItemLoadableViewModelSource,

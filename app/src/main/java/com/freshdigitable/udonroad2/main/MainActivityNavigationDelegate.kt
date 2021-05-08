@@ -224,13 +224,13 @@ sealed class MainNavHostState : FragmentContainerState {
 private fun TimelineEffect.Navigate.Timeline.label(context: Context): String {
     return when (val type = owner.query) {
         QueryType.Oauth -> context.getString(R.string.title_oauth)
-        is QueryType.TweetQueryType.Timeline -> {
+        is QueryType.Tweet.Timeline -> {
             if (type.userId == null) context.getString(R.string.title_home) else ""
         }
-        is QueryType.TweetQueryType.Conversation -> context.getString(R.string.title_conversation)
-        is QueryType.CustomTimelineListQueryType.Ownership ->
+        is QueryType.Tweet.Conversation -> context.getString(R.string.title_conversation)
+        is QueryType.CustomTimelineList.Ownership ->
             context.getString(R.string.title_custom_timeline_ownership_list)
-        is QueryType.TweetQueryType.CustomTimeline -> type.title
+        is QueryType.Tweet.CustomTimeline -> type.title
         else -> TODO()
     }
 }

@@ -31,8 +31,8 @@ import org.junit.Test
 class SelectedItemRepositoryTest {
     companion object {
         private val owners = listOf<ListOwner<*>>(
-            ListOwner(ListId(0), QueryType.TweetQueryType.Timeline()),
-            ListOwner(ListId(1), QueryType.TweetQueryType.Fav()),
+            ListOwner(ListId(0), QueryType.Tweet.Timeline()),
+            ListOwner(ListId(1), QueryType.Tweet.Fav()),
         )
         private val tweets = listOf(TweetId(1000), TweetId(2000), TweetId(3000))
         val timeline = mapOf(

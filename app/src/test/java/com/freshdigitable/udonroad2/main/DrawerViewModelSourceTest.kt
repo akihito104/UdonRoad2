@@ -188,7 +188,7 @@ class DrawerViewModelSourceTest {
                 .isInstanceOf(TimelineEffect.Navigate.Timeline::class.java)
             val event = navigationEventActual.last() as TimelineEffect.Navigate.Timeline
             assertThat(event.owner.query)
-                .isInstanceOf(QueryType.CustomTimelineListQueryType.Ownership::class.java)
+                .isInstanceOf(QueryType.CustomTimelineList.Ownership::class.java)
             assertThat(event.owner.query.userId).isEqualTo(authenticatedUser)
         }
     }

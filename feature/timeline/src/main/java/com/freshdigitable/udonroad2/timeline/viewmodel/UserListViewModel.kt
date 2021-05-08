@@ -21,7 +21,7 @@ import kotlinx.coroutines.flow.Flow
 class UserListViewModel(
     viewModelSource: ListItemLoadableViewModelSource,
     userIconViewModelSource: UserIconViewModelSource,
-) : ListItemLoadableViewModel<QueryType.UserQueryType>,
+) : ListItemLoadableViewModel<QueryType.User>,
     ListItemLoadableEventListener by viewModelSource,
     ListItemClickListener<UserListItem>,
     UserIconClickListener by userIconViewModelSource,

@@ -45,7 +45,7 @@ class TweetDaoTest {
         private fun createConversationList(
             startId: Int,
             endId: Int,
-            replyToForOldest: TweetId? = null
+            replyToForOldest: TweetId? = null,
         ): List<TweetEntity> {
             return (startId until endId).map { id ->
                 TweetEntity.createMock(
@@ -184,7 +184,7 @@ class AppDatabaseFixture : TestWatcher() {
             getListById(id)
         }
         db.tweetDao().addTweetsToList(tweet, listEntity)
-        val query = ListQuery(QueryType.TweetQueryType.Timeline(), PageOption.OnInit)
+        val query = ListQuery(QueryType.Tweet.Timeline(), PageOption.OnInit)
         db.listDao().updateCursorById(tweet, query, listEntity.id)
     }
 

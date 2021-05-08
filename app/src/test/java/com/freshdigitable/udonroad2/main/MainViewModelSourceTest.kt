@@ -84,7 +84,7 @@ class MainViewModelSourceTest {
         eventCollector.assertLatestNavigationEvent<TimelineEffect.Navigate.Timeline>(
             sut.initContainer
         ) {
-            assertThat(it.owner.query).isInstanceOf(QueryType.TweetQueryType.Timeline::class.java)
+            assertThat(it.owner.query).isInstanceOf(QueryType.Tweet.Timeline::class.java)
         }
     }
 

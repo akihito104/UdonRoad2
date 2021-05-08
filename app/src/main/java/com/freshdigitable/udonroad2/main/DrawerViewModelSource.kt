@@ -133,7 +133,7 @@ internal class DrawerViewModelSource @Inject constructor(
         actions.launchCustomTimelineList.onEvent { state, _ ->
             val userId = requireNotNull(state.currentUser).id
             navEventChannel.sendTimelineEvent(
-                QueryType.CustomTimelineListQueryType.Ownership(userId),
+                QueryType.CustomTimelineList.Ownership(userId),
             )
             state.toClosedState()
         },
@@ -156,7 +156,7 @@ internal class DrawerViewModelSource @Inject constructor(
                 requireNotNull(state.switchableAccounts.find { it.account == event.accountName })
             login(user.id)
             navEventChannel.sendTimelineEvent(
-                QueryType.TweetQueryType.Timeline(),
+                QueryType.Tweet.Timeline(),
                 AppEffect.Navigation.Type.INIT
             )
             state.toClosedState()

@@ -70,7 +70,7 @@ class ListRepositoryImplTest {
         )
 
         // exercise
-        sut.prependList(QueryType.TweetQueryType.Timeline(), listId)
+        sut.prependList(QueryType.Tweet.Timeline(), listId)
 
         // verify
         assertThat(sut).isNotNull()
@@ -100,11 +100,8 @@ internal class ListRepositoryImplTestRule : TestWatcher() {
     private val local = TweetListDao(db)
     private val remote = TimelineRemoteDataSource(twitterRule.api, tweetApi.mock)
 
-    val sut: ListRepositoryImpl<QueryType.TweetQueryType, TweetEntity> by lazy {
-        ListRepositoryImpl(
-            local,
-            remote as RemoteListDataSource<QueryType.TweetQueryType, TweetEntity>
-        )
+    val sut: ListRepositoryImpl<QueryType.Tweet, TweetEntity> by lazy {
+        ListRepositoryImpl(local, remote as RemoteListDataSource<QueryType.Tweet, TweetEntity>)
     }
 
     override fun apply(base: Statement?, description: Description?): Statement {

@@ -27,7 +27,7 @@ import com.freshdigitable.udonroad2.model.user.UserListItem
 
 class TweetListDao(
     private val db: AppDatabase,
-) : LocalListDataSource<QueryType.TweetQueryType, TweetEntity>,
+) : LocalListDataSource<QueryType.Tweet, TweetEntity>,
     PagedListProvider.DataSourceFactory<TweetListItem> {
     private val dao: TweetDao = db.tweetDao()
     private val listDao: ListDao = db.listDao()
@@ -38,8 +38,8 @@ class TweetListDao(
 
     override suspend fun putList(
         entities: PagedResponseList<TweetEntity>,
-        query: ListQuery<QueryType.TweetQueryType>,
-        owner: ListId
+        query: ListQuery<QueryType.Tweet>,
+        owner: ListId,
     ) {
         db.addTweetToListWithTransaction(entities, query, owner)
     }
@@ -53,8 +53,8 @@ class TweetListDao(
     companion object {
         private suspend fun AppDatabase.addTweetToListWithTransaction(
             entities: PagedResponseList<TweetEntity>,
-            query: ListQuery<out QueryType.TweetQueryType>,
-            owner: ListId
+            query: ListQuery<out QueryType.Tweet>,
+            owner: ListId,
         ) = withTransaction {
             val listEntity = listDao().getListById(owner)
             tweetDao().addTweetsToList(entities, listEntity)
@@ -65,13 +65,13 @@ class TweetListDao(
 
 class ConversationListDao(
     private val db: AppDatabase,
-    private val tweetListDao: TweetListDao
-) : LocalListDataSource<QueryType.TweetQueryType.Conversation, TweetEntity>,
+    private val tweetListDao: TweetListDao,
+) : LocalListDataSource<QueryType.Tweet.Conversation, TweetEntity>,
     PagedListProvider.DataSourceFactory<TweetListItem> by tweetListDao {
 
     override suspend fun prepareList(
-        query: QueryType.TweetQueryType.Conversation,
-        owner: ListId
+        query: QueryType.Tweet.Conversation,
+        owner: ListId,
     ) {
         val tweetDao = db.tweetDao()
         val listDao = db.listDao()
@@ -97,10 +97,10 @@ class ConversationListDao(
 
     override suspend fun putList(
         entities: PagedResponseList<TweetEntity>,
-        query: ListQuery<QueryType.TweetQueryType.Conversation>,
-        owner: ListId
+        query: ListQuery<QueryType.Tweet.Conversation>,
+        owner: ListId,
     ) {
-        tweetListDao.putList(entities, query as ListQuery<QueryType.TweetQueryType>, owner)
+        tweetListDao.putList(entities, query as ListQuery<QueryType.Tweet>, owner)
     }
 
     override suspend fun clean(owner: ListId) {
@@ -110,7 +110,7 @@ class ConversationListDao(
 
 internal suspend fun TweetDao.addTweetsToList(
     tweet: PagedResponseList<TweetEntity>,
-    listEntity: ListEntity
+    listEntity: ListEntity,
 ) {
     addTweets(tweet)
     addTweetListEntities(tweet.map { it.toListEntity(listEntity.id) })
@@ -119,7 +119,7 @@ internal suspend fun TweetDao.addTweetsToList(
 
 class UserListDao(
     private val db: AppDatabase,
-) : LocalListDataSource<QueryType.UserQueryType, UserEntity>,
+) : LocalListDataSource<QueryType.User, UserEntity>,
     PagedListProvider.DataSourceFactory<UserListItem> {
     private val dao: UserDao = db.userDao()
     private val listDao: ListDao = db.listDao()
@@ -130,8 +130,8 @@ class UserListDao(
 
     override suspend fun putList(
         entities: PagedResponseList<UserEntity>,
-        query: ListQuery<QueryType.UserQueryType>,
-        owner: ListId
+        query: ListQuery<QueryType.User>,
+        owner: ListId,
     ) {
         val listEntities = entities.map {
             UserListEntity(userId = it.id, listId = owner)
@@ -153,7 +153,7 @@ class UserListDao(
 
 class CustomTimelineListDao(
     private val db: AppDatabase,
-) : LocalListDataSource<QueryType.CustomTimelineListQueryType, CustomTimelineEntity>,
+) : LocalListDataSource<QueryType.CustomTimelineList, CustomTimelineEntity>,
     PagedListProvider.DataSourceFactory<CustomTimelineItem> {
     private val dao: CustomTimelineDao = db.customTimelineDao()
     private val listDao: ListDao = db.listDao()
@@ -164,8 +164,8 @@ class CustomTimelineListDao(
 
     override suspend fun putList(
         entities: PagedResponseList<CustomTimelineEntity>,
-        query: ListQuery<QueryType.CustomTimelineListQueryType>,
-        owner: ListId
+        query: ListQuery<QueryType.CustomTimelineList>,
+        owner: ListId,
     ) {
         val users = entities.map { it.user.toEntity() }
         val customTimelines = entities.map { it.toEntity() }

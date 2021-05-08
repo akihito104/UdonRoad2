@@ -104,7 +104,7 @@ internal interface TimelineViewModelModule {
 
         @Provides
         @IntoMap
-        @QueryTypeKey(QueryType.TweetQueryType::class)
+        @QueryTypeKey(QueryType.Tweet::class)
         fun provideTimelineViewModelKClass(): KClass<out ViewModel> = TimelineViewModel::class
 
         @Provides
@@ -115,7 +115,7 @@ internal interface TimelineViewModelModule {
             appSettingRepository: AppSettingRepository,
             viewModelSource: ListItemLoadableViewModelSource,
         ): TimelineViewModelSource = TimelineViewModelSource(
-            owner as ListOwner<QueryType.TweetQueryType>,
+            owner as ListOwner<QueryType.Tweet>,
             actions,
             selectedItemRepository,
             viewModelSource,
@@ -160,7 +160,7 @@ internal interface UserListViewModelModule {
 
         @Provides
         @IntoMap
-        @QueryTypeKey(QueryType.UserQueryType::class)
+        @QueryTypeKey(QueryType.User::class)
         fun provideUserListViewModelKClass(): KClass<out ViewModel> = UserListViewModel::class
     }
 }
@@ -188,7 +188,7 @@ internal interface CustomTimelineListViewModelModule {
 
         @Provides
         @IntoMap
-        @QueryTypeKey(QueryType.CustomTimelineListQueryType::class)
+        @QueryTypeKey(QueryType.CustomTimelineList::class)
         fun provideCustomTimelineListViewModelKClass(): KClass<out ViewModel> =
             CustomTimelineListViewModel::class
     }

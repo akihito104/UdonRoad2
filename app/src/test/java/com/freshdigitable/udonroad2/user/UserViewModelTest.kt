@@ -100,9 +100,7 @@ class UserViewModelTest {
 
             // exercise
             selectedItemRepository.put(
-                SelectedItemId(
-                    ListOwner(0, QueryType.TweetQueryType.Timeline(targetId)), TweetId(10000)
-                )
+                SelectedItemId(ListOwner(0, QueryType.Tweet.Timeline(targetId)), TweetId(10000))
             )
 
             // verify
@@ -156,9 +154,7 @@ class UserViewModelTest {
         fun setup(): Unit = with(rule) {
             sut.changePage.dispatch(0)
             selectedItemRepository.put(
-                SelectedItemId(
-                    ListOwner(0, QueryType.TweetQueryType.Timeline(targetId)), TweetId(10000)
-                )
+                SelectedItemId(ListOwner(0, QueryType.Tweet.Timeline(targetId)), TweetId(10000))
             )
         }
 

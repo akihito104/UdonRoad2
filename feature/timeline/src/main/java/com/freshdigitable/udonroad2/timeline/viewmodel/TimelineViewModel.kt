@@ -22,7 +22,7 @@ import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import com.freshdigitable.udonroad2.model.QueryType.TweetQueryType
+import com.freshdigitable.udonroad2.model.QueryType.Tweet
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEffectStream
 import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
 import com.freshdigitable.udonroad2.timeline.ListItemLoadableEventListener
@@ -43,7 +43,7 @@ import kotlinx.coroutines.flow.shareIn
 internal class TimelineViewModel(
     viewModelSource: TimelineViewModelSource,
     userIconViewModelSource: UserIconViewModelSource,
-) : ListItemLoadableViewModel<TweetQueryType>,
+) : ListItemLoadableViewModel<Tweet>,
     ListItemLoadableEventListener by viewModelSource,
     UserIconClickListener by userIconViewModelSource,
     TweetListItemViewModel,
