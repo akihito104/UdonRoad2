@@ -75,7 +75,6 @@ dependencies {
     implementation Libs.MATERIAL_DESIGN
     implementation Libs.ANDROIDX_VIEWPAGER2
 
-    implementation Libs.ANDROIDX_LIFECYCLE_EXT
     implementation Libs.ANDROIDX_LIFECYCLE_LIVEDATA_KTX
     implementation Libs.ANDROIDX_LIFECYCLE_VIEWMODEL_KTX
     implementation Libs.ANDROIDX_LIFECYCLE_RX_KTX

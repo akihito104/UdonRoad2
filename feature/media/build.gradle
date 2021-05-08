@@ -55,7 +55,6 @@ dependencies {
     implementation Libs.ANDROIDX_CORE_KTX
     implementation Libs.ANDROIDX_ACTIVITY_KTX
     implementation Libs.ANDROIDX_FRAGMENT_KTX
-    implementation Libs.ANDROIDX_LIFECYCLE_EXT
     implementation Libs.ANDROIDX_LIFECYCLE_LIVEDATA_KTX
     implementation Libs.ANDROIDX_LIFECYCLE_VIEWMODEL_KTX
 
