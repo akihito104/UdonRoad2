@@ -434,13 +434,13 @@ class TweetRepositoryTestRule : TestWatcher() {
 
     internal suspend fun setupTimeline(
         userId: UserId = currentUser,
-        tweetList: List<TweetEntity>
+        tweetList: List<TweetEntity>,
     ) = db.apply {
         val listId = listDao().addList(userId)
         val tweetListDao = TweetListDao(db)
         tweetListDao.putList(
             PagedResponseList(tweetList),
-            ListQuery(QueryType.TweetQueryType.Timeline()),
+            ListQuery(QueryType.Tweet.Timeline()),
             listId
         )
     }

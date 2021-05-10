@@ -63,7 +63,7 @@ internal class MainViewModelSource @Inject constructor(
 ) {
     internal val initContainer: Flow<AppEffect.Navigation> = actions.showFirstView.mapLatest {
         val type = when {
-            appSettingRepository.currentUserId != null -> QueryType.TweetQueryType.Timeline()
+            appSettingRepository.currentUserId != null -> QueryType.Tweet.Timeline()
             else -> QueryType.Oauth
         }
         listOwnerGenerator.getTimelineEvent(type, AppEffect.Navigation.Type.INIT)

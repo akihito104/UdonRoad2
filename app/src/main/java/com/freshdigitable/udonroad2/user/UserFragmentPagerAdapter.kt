@@ -7,8 +7,8 @@ import androidx.fragment.app.FragmentStatePagerAdapter
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.QueryType
-import com.freshdigitable.udonroad2.model.QueryType.TweetQueryType
-import com.freshdigitable.udonroad2.model.QueryType.UserQueryType
+import com.freshdigitable.udonroad2.model.QueryType.Tweet
+import com.freshdigitable.udonroad2.model.QueryType.User
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.model.user.UserEntity
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragment
@@ -34,35 +34,35 @@ class UserFragmentPagerAdapter(
 enum class UserPage(
     val createQuery: (TweetUserItem) -> QueryType,
     val titleRes: Int,
-    val count: ((UserEntity?) -> Int?)? = null
+    val count: ((UserEntity?) -> Int?)? = null,
 ) {
     TWEET(
-        createQuery = { user -> TweetQueryType.Timeline(user.id) },
+        createQuery = { user -> Tweet.Timeline(user.id) },
         titleRes = R.string.user_tab_tweet,
         count = { user -> user?.tweetCount }
     ),
     FOLLOWER(
-        createQuery = { user -> UserQueryType.Follower(user.id) },
+        createQuery = { user -> User.Follower(user.id) },
         titleRes = R.string.user_tab_follower,
         count = { user -> user?.followerCount }
     ),
     FOLLOWING(
-        createQuery = { user -> UserQueryType.Following(user.id) },
+        createQuery = { user -> User.Following(user.id) },
         titleRes = R.string.user_tab_following,
         count = { user -> user?.followingCount }
     ),
     FAV(
-        createQuery = { user -> TweetQueryType.Fav(user.id) },
+        createQuery = { user -> Tweet.Fav(user.id) },
         titleRes = R.string.user_tab_fav,
         count = { user -> user?.favoriteCount }
     ),
     LISTED(
-        createQuery = { user -> QueryType.CustomTimelineListQueryType.Membership(user.id) },
+        createQuery = { user -> QueryType.CustomTimelineList.Membership(user.id) },
         titleRes = R.string.user_tab_listed,
         count = { user -> user?.listedCount }
     ),
     MEDIA(
-        createQuery = { user -> TweetQueryType.Media(user.screenName) },
+        createQuery = { user -> Tweet.Media(user.screenName) },
         titleRes = R.string.user_tab_media
     )
 }

@@ -84,7 +84,7 @@ class ShortcutViewModelSource @Inject constructor(
             TimelineEffect.Navigate.Detail(it.tweetId)
         },
         actions.showConversation.mapLatest {
-            val queryType = QueryType.TweetQueryType.Conversation(it.tweetId)
+            val queryType = QueryType.Tweet.Conversation(it.tweetId)
             listOwnerGenerator.getTimelineEvent(queryType)
         }
     )

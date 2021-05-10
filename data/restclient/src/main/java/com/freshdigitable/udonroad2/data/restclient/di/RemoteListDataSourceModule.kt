@@ -37,9 +37,9 @@ annotation class RemoteListDataSourceKey(val clazz: KClass<out QueryType>)
 interface TweetTimelineDataSourceModule {
     @Binds
     @IntoMap
-    @RemoteListDataSourceKey(QueryType.TweetQueryType::class)
+    @RemoteListDataSourceKey(QueryType.Tweet::class)
     fun bindHomeTimelineDataSource(
-        dataSource: TimelineRemoteDataSource
+        dataSource: TimelineRemoteDataSource,
     ): RemoteListDataSource<out QueryType, *>
 }
 
@@ -47,16 +47,16 @@ interface TweetTimelineDataSourceModule {
 interface UserListDataSourceModule {
     @Binds
     @IntoMap
-    @RemoteListDataSourceKey(QueryType.UserQueryType.Follower::class)
+    @RemoteListDataSourceKey(QueryType.User.Follower::class)
     fun bindFollowerListDataSource(
-        dataSource: FollowerListDataSource
+        dataSource: FollowerListDataSource,
     ): RemoteListDataSource<out QueryType, *>
 
     @Binds
     @IntoMap
-    @RemoteListDataSourceKey(QueryType.UserQueryType.Following::class)
+    @RemoteListDataSourceKey(QueryType.User.Following::class)
     fun bindFollowingListDataSource(
-        dataSource: FollowingListDataSource
+        dataSource: FollowingListDataSource,
     ): RemoteListDataSource<out QueryType, *>
 }
 
@@ -64,8 +64,8 @@ interface UserListDataSourceModule {
 interface CustomTimelineDataSourceModule {
     @Binds
     @IntoMap
-    @RemoteListDataSourceKey(QueryType.CustomTimelineListQueryType::class)
+    @RemoteListDataSourceKey(QueryType.CustomTimelineList::class)
     fun bindCustomTimelineListDataSource(
-        dataSource: CustomTimelineListDataSource
+        dataSource: CustomTimelineListDataSource,
     ): RemoteListDataSource<out QueryType, *>
 }

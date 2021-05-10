@@ -37,23 +37,23 @@ annotation class PagedListDataSourceFactoryProviderKey(val clazz: KClass<out Que
 interface PagedListDataSourceFactoryModule {
     @Binds
     @IntoMap
-    @PagedListDataSourceFactoryProviderKey(QueryType.TweetQueryType::class)
+    @PagedListDataSourceFactoryProviderKey(QueryType.Tweet::class)
     fun bindTweetListDao(dao: TweetListDao): PagedListProvider.DataSourceFactory<*>
 
     @Binds
     @IntoMap
-    @PagedListDataSourceFactoryProviderKey(QueryType.TweetQueryType.Conversation::class)
+    @PagedListDataSourceFactoryProviderKey(QueryType.Tweet.Conversation::class)
     fun bindConversationListDao(dao: ConversationListDao): PagedListProvider.DataSourceFactory<*>
 
     @Binds
     @IntoMap
-    @PagedListDataSourceFactoryProviderKey(QueryType.UserQueryType::class)
+    @PagedListDataSourceFactoryProviderKey(QueryType.User::class)
     fun bindUserListDao(dao: UserListDao): PagedListProvider.DataSourceFactory<*>
 
     @Binds
     @IntoMap
-    @PagedListDataSourceFactoryProviderKey(QueryType.CustomTimelineListQueryType::class)
+    @PagedListDataSourceFactoryProviderKey(QueryType.CustomTimelineList::class)
     fun bindCustomTimelineListDao(
-        dao: CustomTimelineListDao
+        dao: CustomTimelineListDao,
     ): PagedListProvider.DataSourceFactory<*>
 }

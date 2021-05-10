@@ -52,8 +52,8 @@ import org.junit.runner.Description
 import org.junit.runners.model.Statement
 
 class CustomTimelineListViewModelTest {
-    private val owner: ListOwner<QueryType.CustomTimelineListQueryType> =
-        ListOwner(ListId(2), QueryType.CustomTimelineListQueryType.Ownership())
+    private val owner: ListOwner<QueryType.CustomTimelineList> =
+        ListOwner(ListId(2), QueryType.CustomTimelineList.Ownership())
 
     private val viewStateRule = ListItemLoadableViewStateRule(owner)
     private val eventCollector = ObserverEventCollector(viewStateRule.coroutineTestRule)
@@ -114,7 +114,7 @@ class CustomTimelineListViewModelTest {
         eventCollector.assertLatestNavigationEvent<TimelineEffect.Navigate.Timeline>(
             sut.effect
         ) { actualEvent ->
-            assertThat((actualEvent.owner.query as QueryType.TweetQueryType.CustomTimeline).id)
+            assertThat((actualEvent.owner.query as QueryType.Tweet.CustomTimeline).id)
                 .isEqualTo(item.id)
         }
     }

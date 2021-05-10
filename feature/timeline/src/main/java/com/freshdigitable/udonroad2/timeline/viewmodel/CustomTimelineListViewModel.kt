@@ -9,7 +9,7 @@ import androidx.paging.cachedIn
 import com.freshdigitable.udonroad2.model.CustomTimelineItem
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
-import com.freshdigitable.udonroad2.model.QueryType.CustomTimelineListQueryType
+import com.freshdigitable.udonroad2.model.QueryType.CustomTimelineList
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEffectStream
 import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
@@ -30,7 +30,7 @@ import javax.inject.Inject
 internal class CustomTimelineListViewModel(
     viewModelSource: CustomTimelineListItemLoadableViewState,
     userIconViewModelSource: UserIconViewModelSource,
-) : ListItemLoadableViewModel<CustomTimelineListQueryType>,
+) : ListItemLoadableViewModel<CustomTimelineList>,
     ListItemLoadableEventListener by viewModelSource,
     ListItemClickListener<CustomTimelineItem> by viewModelSource,
     UserIconClickListener by userIconViewModelSource,
@@ -63,7 +63,7 @@ internal class CustomTimelineListItemLoadableViewState(
     override val effect: Flow<AppEffect> = merge(
         viewModelSource.effect,
         actions.selectBodyItem.mapLatest {
-            val queryType = QueryType.TweetQueryType.CustomTimeline(
+            val queryType = QueryType.Tweet.CustomTimeline(
                 it.customTimeline.id,
                 it.customTimeline.name
             )

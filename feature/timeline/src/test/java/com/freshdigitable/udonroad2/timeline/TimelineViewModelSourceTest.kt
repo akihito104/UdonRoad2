@@ -97,14 +97,13 @@ class TimelineViewStatesTestRule(
     internal val coroutineTestRule = CoroutineTestRule()
     internal val eventCollector =
         if (isStateCollected) ObserverEventCollector(coroutineTestRule) else null
-    val owner: ListOwner<QueryType.TweetQueryType> =
-        ListOwner(1, QueryType.TweetQueryType.Timeline())
+    val owner: ListOwner<QueryType.Tweet> = ListOwner(1, QueryType.Tweet.Timeline())
     private val listRepositoryRule =
-        MockVerified.create<ListRepository<QueryType.TweetQueryType, Any>>().apply {
+        MockVerified.create<ListRepository<QueryType.Tweet, Any>>().apply {
             coSetupResponseWithVerify({ mock.clear(any()) }, Unit)
         }
     private val listProviderRule =
-        MockVerified.create<PagedListProvider<QueryType.TweetQueryType, Any>>().apply {
+        MockVerified.create<PagedListProvider<QueryType.Tweet, Any>>().apply {
             setupResponseWithVerify(
                 { mock.getList(owner.query, owner.id) },
                 emptyFlow()
