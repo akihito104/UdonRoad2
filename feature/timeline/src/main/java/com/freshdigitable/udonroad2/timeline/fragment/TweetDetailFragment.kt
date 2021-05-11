@@ -1,5 +1,6 @@
 package com.freshdigitable.udonroad2.timeline.fragment
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
 import android.text.SpannableStringBuilder
@@ -62,27 +63,11 @@ class TweetDetailFragment : Fragment() {
 
         viewModel.state.map { it.tweetItem }.observe(viewLifecycleOwner) { item ->
             binding.detailReactionContainer.removeAllViews()
-            item?.body?.retweetCount?.let {
-                AppCompatTextView(view.context).apply {
-                    text = "RT: $it"
-                }
-            }?.let {
-                binding.detailReactionContainer.addView(
-                    it,
-                    LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
-                        rightMargin = 10 // XXX
-                    }
-                )
+            if (item?.body?.retweetCount != null) {
+                binding.addReaction("RT", item.body.retweetCount)
             }
-            item?.body?.favoriteCount?.let {
-                AppCompatTextView(view.context).apply {
-                    text = "fav: $it"
-                }
-            }?.let {
-                binding.detailReactionContainer.addView(
-                    it,
-                    LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
-                )
+            if (item?.body?.favoriteCount != null) {
+                binding.addReaction("fav", item.body.favoriteCount)
             }
         }
 
@@ -98,6 +83,20 @@ class TweetDetailFragment : Fragment() {
         ): TweetDetailViewModel {
             val viewModelProvider = ViewModelProvider(owner, viewModelProviderFactory)
             return viewModelProvider[TweetDetailViewModel::class.java]
+        }
+
+        @SuppressLint("SetTextI18n")
+        private fun FragmentDetailBinding.addReaction(
+            type: String,
+            count: Int,
+        ) {
+            val iconAttachedTextView = AppCompatTextView(root.context).apply {
+                text = "$type: $count"
+            }
+            val lp = LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
+                rightMargin = 10 // XXX
+            }
+            detailReactionContainer.addView(iconAttachedTextView, lp)
         }
     }
 }

@@ -68,6 +68,7 @@
                     app:layout_constraintEnd_toStartOf="@id/detail_name"
                     app:layout_constraintHorizontal_bias="0"
                     app:layout_constraintHorizontal_chainStyle="packed"
+                    android:contentDescription="@string/desc_user_icon"
                     app:bindUserIcon="@{viewModel.state.tweetItem.body.user.iconUrl}"
                     android:onClick="@{v -> viewModel.onBodyUserClicked(viewModel.state.tweetItem.body.user)}"
                     tools:background="#000"

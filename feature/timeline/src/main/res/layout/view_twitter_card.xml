@@ -51,6 +51,7 @@
             app:layout_constraintEnd_toStartOf="@id/card_title"
             app:layout_constraintHorizontal_chainStyle="spread_inside"
             app:cardImage="@{item}"
+            android:contentDescription="@string/card_desc_image"
             />
 
         <TextView

@@ -21,4 +21,6 @@
     <string name="action_totop">リストの先頭へ</string>
     <string name="title_custom_timeline_ownership_list">自分のリスト</string>
     <string name="format_rt_user_with_icon">%1$s @%2$s さんがリツイート</string>
+    <string name="desc_user_icon">ユーザーアイコン</string>
+    <string name="card_desc_image">外部Webサイトのイメージ</string>
 </resources>
