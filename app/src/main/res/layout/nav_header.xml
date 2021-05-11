@@ -45,6 +45,7 @@
             android:padding="2dp"
             android:background="@drawable/s_rounded_mask_default"
             app:backgroundTint="@color/layer_white_transparent"
+            android:contentDescription="@string/drawer_header_icon_description"
             android:onClick="@{v -> viewModel.showCurrentUser.dispatch()}"
             app:bindUserIcon="@{viewModel.drawerState.currentUser.iconUrl}"
             />
