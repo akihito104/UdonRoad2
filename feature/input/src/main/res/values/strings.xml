@@ -18,6 +18,8 @@
     <string name="title_input_send_tweet">what\'s up?</string>
     <string name="label_input_write_tweet">tweet</string>
     <string name="label_input_send_tweet">send</string>
+    <string name="label_input_retry">retry</string>
 
     <string name="media_chooser_title">choose to upload…</string>
+    <string name="input_desc_user_icon">current user icon</string>
 </resources>

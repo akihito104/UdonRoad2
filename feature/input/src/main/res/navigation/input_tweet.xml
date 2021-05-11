@@ -19,6 +19,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/nav_input_tweet"
+    tools:ignore="InvalidNavigation"
     >
     <fragment
         android:name="com.freshdigitable.udonroad2.input.TweetInputFragment"
