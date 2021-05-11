@@ -15,10 +15,13 @@
   -->
 
 <menu
-    xmlns:android="http://schemas.android.com/apk/res/android">
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    >
     <item
         android:id="@+id/detail_more_delete"
         android:icon="@drawable/ic_add"
         android:title="delete"
+        tools:ignore="HardcodedText"
         />
 </menu>
