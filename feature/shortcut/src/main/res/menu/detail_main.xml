@@ -15,41 +15,39 @@
   -->
 
 <menu
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    >
+    xmlns:android="http://schemas.android.com/apk/res/android">
     <group android:id="@+id/menuGroup_detailMain">
         <item
             android:id="@+id/detail_main_rt"
             android:checkable="true"
             android:enabled="true"
             android:icon="@drawable/ic_retweet"
-            android:title="retweet"
+            android:title="@string/shortcut_title_rt"
             />
         <item
             android:id="@+id/detail_main_fav"
             android:checkable="true"
             android:enabled="true"
             android:icon="@drawable/ic_like"
-            android:title="fav"
+            android:title="@string/shortcut_title_fav"
             />
         <item
             android:id="@+id/detail_main_conv"
             android:enabled="true"
             android:icon="@drawable/ic_conversation"
-            android:title="conversation"
+            android:title="@string/shortcut_title_conversation"
             />
         <item
             android:id="@+id/detail_main_reply"
             android:enabled="true"
             android:icon="@drawable/ic_reply"
-            android:title="reply"
+            android:title="@string/shortcut_title_reply"
             />
         <item
             android:id="@+id/detail_main_quote"
             android:enabled="true"
             android:icon="@drawable/ic_quote"
-            android:title="quote"
+            android:title="@string/shortcut_title_quote"
             />
     </group>
 </menu>

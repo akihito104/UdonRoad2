@@ -16,13 +16,17 @@
 
 <manifest
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.freshdigitable.udonroad2.media"
     >
+
     <application>
-        <activity android:name=".MediaActivity"
+        <activity
+            android:name=".MediaActivity"
             android:theme="@style/Theme.AppTheme.TranslucentStatusBar"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:supportsPictureInPicture="false"
+            tools:targetApi="n"
             />
     </application>
 </manifest>
