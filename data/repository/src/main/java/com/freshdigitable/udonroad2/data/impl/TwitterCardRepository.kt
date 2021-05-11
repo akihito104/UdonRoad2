@@ -27,7 +27,7 @@ import javax.inject.Inject
 
 class TwitterCardRepository @Inject constructor(
     private val localDataSource: TwitterCardDataSource.Local,
-    private val remoteSource: TwitterCardDataSource.Remote
+    private val remoteSource: TwitterCardDataSource.Remote,
 ) : TwitterCardDataSource by localDataSource {
 
     override fun getTwitterCardSource(url: String): Flow<TwitterCard?> = flow {
@@ -35,9 +35,11 @@ class TwitterCardRepository @Inject constructor(
             if (card != null) {
                 emit(card)
             } else {
-                emitAll(remoteSource.getTwitterCardSource(url).onEach { c ->
-                    c?.let { localDataSource.putTwitterCard(url, it) }
-                })
+                emitAll(
+                    remoteSource.getTwitterCardSource(url).onEach { c ->
+                        c?.let { localDataSource.putTwitterCard(url, it) }
+                    }
+                )
             }
         }
     }

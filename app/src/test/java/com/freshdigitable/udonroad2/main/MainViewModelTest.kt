@@ -220,9 +220,13 @@ class MainViewModelTest {
         @Before
         fun setup(): Unit = with(rule) {
             val owner = ListOwner(0, QueryType.Tweet.Timeline())
-            stateModelSourceRule.tweetRepositoryRule.setupShowTweet(targetId,
-                flowOf(DetailTweetListItem.createMock(targetId)))
-            stateModelSourceRule.navDelegateRule.setupContainerState(MainNavHostState.Timeline(owner))
+            stateModelSourceRule.tweetRepositoryRule.setupShowTweet(
+                targetId,
+                flowOf(DetailTweetListItem.createMock(targetId))
+            )
+            stateModelSourceRule.navDelegateRule.setupContainerState(
+                MainNavHostState.Timeline(owner)
+            )
             stateModelSourceRule.selectedItemRepository.put(SelectedItemId(owner, targetId))
         }
 
@@ -463,14 +467,16 @@ internal class MainViewModelTestRule : TestWatcher() {
     )
 
     val sut: MainViewModel by lazy {
-        MainViewModel(dispatcher,
+        MainViewModel(
+            dispatcher,
             stateModelSourceRule.sut,
             drawerViewStateRule.sut,
             ShortcutViewModelSource(
                 ShortcutActions(dispatcher),
                 tweetRepositoryMock.mock,
                 ListOwnerGenerator.create()
-            ))
+            )
+        )
     }
     val navEvents: List<AppEffect>
         get() = eventCollector.nonNullEventsOf(sut.effect)

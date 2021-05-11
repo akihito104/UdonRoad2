@@ -115,10 +115,12 @@ class TimelineViewStatesTestRule(
     internal val dispatcher = EventDispatcher()
     internal val sut: TimelineViewModelSource by lazy {
         val listLoadableActions = ListItemLoadableActions(owner, dispatcher)
-        val actions = TimelineActions(owner,
+        val actions = TimelineActions(
+            owner,
             dispatcher,
             listLoadableActions,
-            LaunchMediaViewerAction(dispatcher))
+            LaunchMediaViewerAction(dispatcher)
+        )
         TimelineViewModelSource(
             owner,
             actions,

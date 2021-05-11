@@ -29,7 +29,8 @@ class FlingFAB @JvmOverloads constructor(
 ) : FloatingActionButton(
     MaterialThemeOverlay.wrap(context, attrs, defStyleAttr, R.style.Widget_FlingFAB),
     attrs,
-    defStyleAttr) {
+    defStyleAttr
+) {
 
     private val presenter = FlingFabPresenter.create(this, attrs, defStyleAttr)
 
