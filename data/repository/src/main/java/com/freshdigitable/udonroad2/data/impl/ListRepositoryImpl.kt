@@ -72,7 +72,7 @@ internal class ListRepositoryImpl<Q : QueryType, E : Any>(
     private suspend fun loadList(
         queryType: Q,
         owner: ListId,
-        option: (ListEntity) -> PageOption?
+        option: (ListEntity) -> PageOption?,
     ): List<E> {
         val listEntity = requireNotNull(findListEntity(owner)) {
             "ListEntity(owner: $owner) should be registered."
@@ -122,7 +122,7 @@ internal class PagedListProviderImpl<Q : QueryType, I : Any>(
     @ExperimentalPagingApi
     private fun getRemoteMediator(
         queryType: Q,
-        owner: ListId
+        owner: ListId,
     ): RemoteMediator<Int, I> = object : RemoteMediator<Int, I>() {
         override suspend fun load(loadType: LoadType, state: PagingState<Int, I>): MediatorResult {
             Timber.tag("PagedListProvider")

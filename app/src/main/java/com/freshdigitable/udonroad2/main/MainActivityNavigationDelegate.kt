@@ -12,7 +12,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
-import androidx.navigation.findNavController
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.onNavDestinationSelected
@@ -75,9 +75,10 @@ internal class MainActivityNavigationDelegate @Inject constructor(
     }
 
     private val navController: NavController by weakRef(mainActivity) { a ->
-        a.findNavController(R.id.main_nav_host).also {
-            it.addOnDestinationChangedListener(onDestinationChanged)
-        }
+        requireNotNull(a.supportFragmentManager.findFragmentById(R.id.main_nav_host))
+            .findNavController().also {
+                it.addOnDestinationChangedListener(onDestinationChanged)
+            }
     }
 
     override fun accept(event: AppEffect) {
