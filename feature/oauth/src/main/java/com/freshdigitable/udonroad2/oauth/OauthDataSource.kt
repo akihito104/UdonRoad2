@@ -18,6 +18,7 @@ package com.freshdigitable.udonroad2.oauth
 
 import android.content.Context
 import androidx.paging.PagingSource
+import androidx.paging.PagingState
 import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.UserId
 
@@ -59,4 +60,6 @@ internal class OauthDataSource(context: Context) : PagingSource<Int, OauthItem>(
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, OauthItem> {
         return LoadResult.Page(items, null, null)
     }
+
+    override fun getRefreshKey(state: PagingState<Int, OauthItem>): Int? = null
 }
