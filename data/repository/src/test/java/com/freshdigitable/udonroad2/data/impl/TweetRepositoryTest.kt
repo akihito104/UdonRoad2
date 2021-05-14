@@ -453,7 +453,8 @@ class TweetRepositoryTestRule : TestWatcher() {
 class TwitterMock : TwitterRobotBase(), TestRule {
     private val restClient = MockVerified.create<Twitter>()
     override val twitter: Twitter = restClient.mock
-    val tweetApi = TweetApiClient(AppTwitter(twitter))
+    val appTwitter = AppTwitter(twitter)
+    val tweetApi = TweetApiClient(appTwitter)
 
     internal fun setupPostRetweet(targetId: TweetId, res: Status) =
         restClient.coSetupResponseWithVerify(
