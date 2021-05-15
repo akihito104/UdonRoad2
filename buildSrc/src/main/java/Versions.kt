@@ -19,11 +19,11 @@ object Versions {
     const val KOTLIN_COROUTINES = "1.4.3"
 
     const val ANDROIDX_APPCOMPAT = "1.2.0"
-    const val ANDROIDX_ACTIVITY = "1.2.0-beta01"
-    const val ANDROIDX_FRAGMENT = "1.3.0-beta01"
+    const val ANDROIDX_ACTIVITY = "1.2.3"
+    const val ANDROIDX_FRAGMENT = "1.3.3"
 
-    const val ANDROIDX_CORE = "1.3.1"
-    const val ANDROIDX_LIFECYCLE = "2.2.0"
+    const val ANDROIDX_CORE = "1.3.2"
+    const val ANDROIDX_LIFECYCLE = "2.3.1"
     const val ANDROIDX_PAGING = "3.0.0-alpha11"
     const val ANDROIDX_ROOM = "2.3.0-alpha03"
     const val ANDROIDX_NAVIGATION = "2.3.0"

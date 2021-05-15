@@ -23,8 +23,7 @@ object Libs {
     const val ANDROIDX_CORE_KTX = "androidx.core:core-ktx:${Versions.ANDROIDX_CORE}"
     const val ANDROIDX_ACTIVITY_KTX = "androidx.activity:activity-ktx:${Versions.ANDROIDX_ACTIVITY}"
     const val ANDROIDX_FRAGMENT_KTX = "androidx.fragment:fragment-ktx:${Versions.ANDROIDX_FRAGMENT}"
-    const val ANDROIDX_LIFECYCLE_EXT =
-        "androidx.lifecycle:lifecycle-extensions:${Versions.ANDROIDX_LIFECYCLE}"
+
     const val ANDROIDX_LIFECYCLE_LIVEDATA_KTX =
         "androidx.lifecycle:lifecycle-livedata-ktx:${Versions.ANDROIDX_LIFECYCLE}"
     const val ANDROIDX_LIFECYCLE_RX_KTX =
