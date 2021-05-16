@@ -211,7 +211,7 @@ class TimelineViewModelTest {
     }
 
     @Test
-    fun onRefresh_prependListReturns0ItemsWhenFirstVisiblePositionIs1_then_isHeadingEnabledIsTrue() {
+    fun prependListReturns0ItemsWhenFirstVisiblePositionIs1_then_isHeadingEnabledIsTrue() {
         // setup
         viewStatesTestRule.setupPrependListResponse()
 

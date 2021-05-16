@@ -50,7 +50,7 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 internal abstract class TweetDao(
-    private val db: AppDatabase
+    private val db: AppDatabase,
 ) {
     companion object {
         private const val QUERY_FIND_DETAIL_TWEET_ITEM_BY_ID = """
@@ -111,7 +111,7 @@ internal abstract class TweetDao(
     )
     internal abstract suspend fun getConversationTweetIdsByTweetId(
         id: TweetId,
-        limit: Int = 20
+        limit: Int = 20,
     ): List<ConversationEntity>
 
     @Transaction
@@ -160,9 +160,9 @@ internal abstract class TweetDao(
         )
         addTweetEntitiesInternal(tweetEntities.map(TweetEntity::toDbEntity))
         addTweetEntities(tweetEntities.map { it.toTweetEntityDb() })
-        db.urlDao().addUrlEntities(tweetEntities.flatMap { t ->
-            t.urlItems.map { it.toEntity(t.id) }
-        })
+        db.urlDao().addUrlEntities(
+            tweetEntities.flatMap { t -> t.urlItems.map { it.toEntity(t.id) } }
+        )
 
         val mediaItems = tweetEntities.filter { it.media.isNotEmpty() }
             .flatMap { t -> t.media.map { t to it } }
@@ -225,7 +225,7 @@ internal abstract class TweetDao(
     @Query(QUERY_FIND_DETAIL_TWEET_ITEM_BY_ID)
     internal abstract suspend fun findTweetEntityUpdatable(
         tweetId: TweetId,
-        currentUserId: UserId
+        currentUserId: UserId,
     ): TweetEntityUpdatableImpl?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -242,7 +242,7 @@ internal abstract class TweetDao(
 
     internal data class ConversationEntity(
         @ColumnInfo(name = "original") val original: TweetId,
-        @ColumnInfo(name = "reply_to") val replyTo: TweetId?
+        @ColumnInfo(name = "reply_to") val replyTo: TweetId?,
     )
 }
 
@@ -270,7 +270,7 @@ internal interface ReactionsDao {
 private fun MediaUrlEntity.Companion.create(
     tweetId: TweetId,
     media: MediaEntity,
-    order: Int
+    order: Int,
 ): MediaUrlEntity = MediaUrlEntity(
     tweetId = tweetId,
     id = media.id,
@@ -281,7 +281,7 @@ private fun MediaUrlEntity.Companion.create(
 
 private fun VideoValiantEntity.Companion.create(
     mediaId: MediaId,
-    video: MediaEntity.VideoValiant
+    video: MediaEntity.VideoValiant,
 ): VideoValiantEntity = VideoValiantEntity(
     mediaId = mediaId,
     url = video.url,

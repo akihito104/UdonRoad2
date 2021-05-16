@@ -15,12 +15,10 @@
   -->
 
 <menu
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    >
+    xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/detail_more_delete"
         android:icon="@drawable/ic_delete"
-        android:title="delete"
+        android:title="@string/shortcut_title_delete"
         />
 </menu>

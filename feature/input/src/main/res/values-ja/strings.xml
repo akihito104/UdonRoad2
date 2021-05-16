@@ -18,6 +18,8 @@
     <string name="title_input_send_tweet">いまどうしてる?</string>
     <string name="label_input_write_tweet">ツイートする</string>
     <string name="label_input_send_tweet">送信する</string>
+    <string name="label_input_retry">再送信する</string>
 
     <string name="media_chooser_title">添付する画像…</string>
+    <string name="input_desc_user_icon">現在のユーザーのアイコン</string>
 </resources>

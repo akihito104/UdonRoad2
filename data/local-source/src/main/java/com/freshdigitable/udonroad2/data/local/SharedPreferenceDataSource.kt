@@ -101,11 +101,10 @@ class TwitterPreferences @Inject constructor(
     internal fun addAccessTokenEntity(token: AccessTokenEntity) {
         val userId = token.userId
         check(userId.isValid) { "invalid token: $token" }
-        val authenticatedUsers = prefs.getStringSet(AUTHENTICATED_USERS, HashSet()) ?: HashSet()
-        authenticatedUsers.add("${userId.value}")
+        val users = prefs.getStringSet(AUTHENTICATED_USERS, setOf()) ?: setOf()
 
         prefs.edit {
-            putStringSet(AUTHENTICATED_USERS, authenticatedUsers)
+            putStringSet(AUTHENTICATED_USERS, users + "${userId.value}")
             putString("$ACCESS_TOKEN_PREFIX${userId.value}", token.token)
             putString("$TOKEN_SECRET_PREFIX${userId.value}", token.tokenSecret)
         }

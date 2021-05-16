@@ -54,6 +54,7 @@
             app:layout_constraintEnd_toStartOf="@id/customTimelineItem_names"
             app:bindUserIcon="@{customTimeline.user.iconUrl}"
             android:onClick="@{v -> viewModel.launchUserInfo.dispatch(customTimeline.user)}"
+            android:contentDescription="@string/desc_user_icon"
             tools:background="#888"
             />
 

@@ -23,17 +23,17 @@
         android:id="@+id/iffabMenu_main_fav"
         android:icon="@drawable/ic_like"
         app:ffab_direction="up"
-        android:title="fav"
+        android:title="@string/shortcut_title_fav"
         />
     <item
         android:id="@+id/iffabMenu_main_rt"
         android:icon="@drawable/ic_retweet"
         app:ffab_direction="right"
-        android:title="retweet"
+        android:title="@string/shortcut_title_rt"
         />
     <item
         android:id="@+id/iffabMenu_main_favRt"
         app:ffab_direction="up_right"
-        android:title="fav and RT"
+        android:title="@string/shortcut_title_fav_rt"
         />
 </menu>

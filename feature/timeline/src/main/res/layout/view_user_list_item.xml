@@ -57,6 +57,7 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@id/userItem_names"
+            android:contentDescription="@string/desc_user_icon"
             app:bindUserIcon="@{user.iconUrl}"
             android:onClick="@{v -> userIconClickListener.launchUserInfo.dispatch(user)}"
             tools:background="#888"

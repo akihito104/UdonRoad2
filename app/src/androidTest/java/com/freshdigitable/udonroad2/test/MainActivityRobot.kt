@@ -32,7 +32,9 @@ import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withParent
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import com.freshdigitable.udonroad2.R
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import org.hamcrest.CoreMatchers.allOf
+import org.hamcrest.CoreMatchers.instanceOf
 
 fun onMainActivity(block: MainActivityRobot.() -> Unit) {
     MainActivityRobot().apply(block)
@@ -40,7 +42,10 @@ fun onMainActivity(block: MainActivityRobot.() -> Unit) {
 
 class MainActivityRobot : ActivityRobot {
     companion object {
-        private val fab: ViewInteraction = onView(withId(R.id.main_fab))
+        private val fab: ViewInteraction
+            get() = onView(
+                allOf(withId(R.id.main_fab), instanceOf(FloatingActionButton::class.java))
+            )
         private val verifyRobot = Verify()
     }
 

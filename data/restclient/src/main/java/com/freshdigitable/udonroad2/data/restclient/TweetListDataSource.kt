@@ -123,7 +123,7 @@ private fun PageOption.toPaging(): Paging {
 internal fun PagedResponseList.Companion.create(
     statuses: List<Status>,
 ): PagedResponseList<TweetEntity> {
-    val list = statuses.map(Status::toEntity)
+    val list = statuses.map(Status::toEntity).sortedByDescending { it.id.value }
     return PagedResponseList(
         list = list,
         prependCursor = list.firstOrNull()?.let { it.id.value + 1 },

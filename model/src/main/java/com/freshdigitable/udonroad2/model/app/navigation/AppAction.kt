@@ -63,6 +63,7 @@ inline fun <T, E : AppEvent> EventDispatcher.toListener(
 
 inline fun <T, reified E : AppEvent> EventDispatcher.toAction(
     crossinline onEvent: (T) -> E,
-): AppAction1<T, E> = object : AppAction1<T, E>,
+): AppAction1<T, E> = object :
+    AppAction1<T, E>,
     AppEventListener1<T> by this.toListener(onEvent),
     Flow<E> by this.toActionFlow() {}

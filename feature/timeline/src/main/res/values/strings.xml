@@ -11,4 +11,6 @@
 
     <string name="rt_user_icon" translatable="false">[img]</string>
     <string name="format_rt_user_with_icon">RT by %1$s @%2$s</string>
+    <string name="desc_user_icon">user icon</string>
+    <string name="card_desc_image">external website image</string>
 </resources>

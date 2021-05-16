@@ -59,7 +59,7 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
         AndroidInjection.inject(this)
         super.onCreate(savedInstanceState)
         val binding: ActivityMainBinding = findViewById<View>(R.id.main_drawer)?.let {
-            DataBindingUtil.findBinding(it)
+            DataBindingUtil.findBinding<ActivityMainBinding>(it)
         } ?: DataBindingUtil.setContentView(this, R.layout.activity_main)
 
         binding.lifecycleOwner = this

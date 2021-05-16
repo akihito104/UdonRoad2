@@ -16,7 +16,7 @@
 
 <menu
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     >
     <group android:id="@+id/menuGroup_detailMain">
         <item
@@ -25,6 +25,7 @@
             android:enabled="true"
             android:icon="@drawable/ic_add"
             android:title="retweet"
+            tools:ignore="HardcodedText"
             />
         <item
             android:id="@+id/detail_main_fav"
@@ -32,24 +33,28 @@
             android:enabled="true"
             android:icon="@drawable/ic_add"
             android:title="fav"
+            tools:ignore="HardcodedText"
             />
         <item
             android:id="@+id/detail_main_conv"
             android:enabled="true"
             android:icon="@drawable/ic_add"
             android:title="conversation"
+            tools:ignore="HardcodedText"
             />
         <item
             android:id="@+id/detail_main_reply"
             android:enabled="true"
             android:icon="@drawable/ic_add"
             android:title="reply"
+            tools:ignore="HardcodedText"
             />
         <item
             android:id="@+id/detail_main_quote"
             android:enabled="true"
             android:icon="@drawable/ic_add"
             android:title="quote"
+            tools:ignore="HardcodedText"
             />
     </group>
 </menu>

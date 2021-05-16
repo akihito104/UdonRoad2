@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?><!--
-  ~ Copyright (c) 2020. Matsuda, Akihit (akihito104)
+  ~ Copyright (c) 2021. Matsuda, Akihit (akihito104)
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -14,14 +14,13 @@
   ~ limitations under the License.
   -->
 
-<menu
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    >
-    <item
-        android:id="@+id/detail_more_delete"
-        android:icon="@drawable/ic_add"
-        android:title="delete"
-        tools:ignore="HardcodedText"
-        />
-</menu>
+<resources>
+    <string name="shortcut_title_fav">fav</string>
+    <string name="shortcut_title_rt">retweet</string>
+    <string name="shortcut_title_fav_rt">fav and RT</string>
+    <string name="shortcut_title_quote">quote</string>
+    <string name="shortcut_title_reply">reply</string>
+    <string name="shortcut_title_detail">detail</string>
+    <string name="shortcut_title_conversation">conversation</string>
+    <string name="shortcut_title_delete">delete</string>
+</resources>

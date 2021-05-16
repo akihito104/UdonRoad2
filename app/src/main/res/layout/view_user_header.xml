@@ -38,6 +38,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintVertical_bias="0"
             app:bindUserIcon="@{item.profileBannerImageUrl}"
+            android:contentDescription="@string/user_desc_header"
             tools:background="#800"
             />
 
@@ -69,6 +70,7 @@
             android:padding="2dp"
             app:bindUserIcon="@{item.iconUrl}"
             tools:background="#8fff"
+            android:contentDescription="@string/user_desc_icon"
             tools:src="@tools:sample/avatars"
             />
 

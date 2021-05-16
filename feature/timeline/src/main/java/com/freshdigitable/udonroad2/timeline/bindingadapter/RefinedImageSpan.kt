@@ -55,8 +55,13 @@ internal class RefinedImageSpan(
 
     override fun draw(
         canvas: Canvas,
-        text: CharSequence?, start: Int, end: Int,
-        x: Float, top: Int, baseline: Int, bottom: Int,
+        text: CharSequence?,
+        start: Int,
+        end: Int,
+        x: Float,
+        top: Int,
+        baseline: Int,
+        bottom: Int,
         paint: Paint,
     ) {
         val drawableHeight = drawable.bounds.bottom

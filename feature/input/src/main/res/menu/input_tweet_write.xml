@@ -32,7 +32,7 @@
     <item
         android:id="@+id/input_tweet_error"
         android:icon="@drawable/ic_send_error"
-        android:title="retry"
+        android:title="@string/label_input_retry"
         app:showAsAction="ifRoom"
         />
 </menu>

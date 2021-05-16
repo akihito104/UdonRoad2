@@ -108,8 +108,10 @@ class MainViewModelSourceTest {
     fun containerUpdatedToDetail_then_shortcutStateIsToolbar(): Unit = with(rule) {
         // setup
         appSettingRepositoryRule.setupCurrentUserId(authenticatedUserId.value)
-        tweetRepositoryRule.setupShowTweet(TweetId(4000),
-            flowOf(DetailTweetListItem.createMock(TweetId(4000))))
+        tweetRepositoryRule.setupShowTweet(
+            TweetId(4000),
+            flowOf(DetailTweetListItem.createMock(TweetId(4000)))
+        )
         dispatchEvents(TimelineEvent.Setup())
 
         // exercise

@@ -80,6 +80,11 @@ class UserActivityInstTest {
                 )
             }
         )
+        twitterRobot.setupGetUserTimeline(
+            tweetingUser.id,
+            pagingBlock = { match { it.maxId in 0..100 } },
+            response = emptyList()
+        )
         twitterRobot.setupGetFollowersList(tweetingUser.id, emptyList())
 
         val context = ApplicationProvider.getApplicationContext<TestApplicationBase>()

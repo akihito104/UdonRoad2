@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ Copyright (c) 2018. Matsuda, Akihit (akihito104)
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,28 +19,36 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:parentTag="android.widget.FrameLayout"
     >
+    <!-- TODO: set contentDescription from attribute of FlingFAB -->
     <ImageView
         android:id="@+id/actionIndicator_up"
         android:layout_width="@dimen/indicator_icon_size"
         android:layout_height="@dimen/indicator_icon_size"
         android:layout_gravity="top|center_horizontal"
+        tools:ignore="ContentDescription"
         />
+
     <ImageView
         android:id="@+id/actionIndicator_left"
         android:layout_width="@dimen/indicator_icon_size"
         android:layout_height="@dimen/indicator_icon_size"
         android:layout_gravity="left|center_vertical"
+        tools:ignore="ContentDescription"
         />
+
     <ImageView
         android:id="@+id/actionIndicator_right"
         android:layout_width="@dimen/indicator_icon_size"
         android:layout_height="@dimen/indicator_icon_size"
         android:layout_gravity="right|center_vertical"
+        tools:ignore="ContentDescription"
         />
+
     <ImageView
         android:id="@+id/actionIndicator_down"
         android:layout_width="@dimen/indicator_icon_size"
         android:layout_height="@dimen/indicator_icon_size"
         android:layout_gravity="bottom|center_horizontal"
+        tools:ignore="ContentDescription"
         />
 </merge>

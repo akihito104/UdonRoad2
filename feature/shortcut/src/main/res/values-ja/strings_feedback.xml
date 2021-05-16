@@ -21,4 +21,10 @@
     <string name="msg_fav_create_failure">ふぁぼできませんでした…</string>
     <string name="msg_already_fav">もうふぁぼしてました</string>
     <string name="msg_already_rt">もうRTしてました</string>
+    <string name="msg_rt_destroy_failure">RTを消せませんでした…</string>
+    <string name="msg_rt_destroy_success">RTを消しました</string>
+    <string name="msg_fav_destroy_success">ふぁぼを消しました</string>
+    <string name="msg_fav_destroy_failure">ふぁぼを消せませんでした…</string>
+    <string name="msg_delete_tweet_success">ツイートを削除しました</string>
+    <string name="msg_delete_tweet_failure">ツイートを削除できませんでした…</string>
 </resources>
