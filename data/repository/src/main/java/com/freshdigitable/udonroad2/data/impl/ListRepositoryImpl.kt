@@ -124,6 +124,8 @@ internal class PagedListProviderImpl<Q : QueryType, I : Any>(
         queryType: Q,
         owner: ListId,
     ): RemoteMediator<Int, I> = object : RemoteMediator<Int, I>() {
+        override suspend fun initialize(): InitializeAction = InitializeAction.SKIP_INITIAL_REFRESH
+
         override suspend fun load(loadType: LoadType, state: PagingState<Int, I>): MediatorResult {
             Timber.tag("PagedListProvider")
                 .d("getList: query>$queryType, owner>$owner type>$loadType")
