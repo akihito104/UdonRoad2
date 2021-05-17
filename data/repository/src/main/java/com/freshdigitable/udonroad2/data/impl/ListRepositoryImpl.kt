@@ -44,13 +44,6 @@ internal class ListRepositoryImpl<Q : QueryType, E : Any>(
 
     override suspend fun loadAtFirst(query: Q, owner: ListId) {
         localDataSource.prepareList(query, owner)
-        loadList(query, owner) {
-            when {
-                it.appendCursor != null -> PageOption.OnTail(it.appendCursor)
-                it.hasNotFetchedYet -> PageOption.OnInit
-                else -> null
-            }
-        }
     }
 
     override suspend fun prependList(query: Q, owner: ListId): List<E> {
@@ -124,16 +117,18 @@ internal class PagedListProviderImpl<Q : QueryType, I : Any>(
         queryType: Q,
         owner: ListId,
     ): RemoteMediator<Int, I> = object : RemoteMediator<Int, I>() {
-        override suspend fun initialize(): InitializeAction = InitializeAction.SKIP_INITIAL_REFRESH
+        override suspend fun initialize(): InitializeAction {
+            repository.loadAtFirst(queryType, owner)
+            return InitializeAction.SKIP_INITIAL_REFRESH
+        }
 
         override suspend fun load(loadType: LoadType, state: PagingState<Int, I>): MediatorResult {
             Timber.tag("PagedListProvider")
                 .d("getList: query>$queryType, owner>$owner type>$loadType")
             return try {
                 when (loadType) {
-                    LoadType.REFRESH -> repository.loadAtFirst(queryType, owner)
                     LoadType.APPEND -> repository.appendList(queryType, owner)
-                    LoadType.PREPEND -> Unit
+                    LoadType.PREPEND, LoadType.REFRESH -> Unit
                 }
                 val listEntity = checkNotNull(repository.findListEntity(owner))
                 MediatorResult.Success(endOfPaginationReached = listEntity.appendCursor == null)
