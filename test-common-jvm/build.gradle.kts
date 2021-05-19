@@ -44,7 +44,7 @@ dependencies {
     implementation(project(":model"))
     api(project(":test-common"))
     implementation(Libs.KOTLIN_STDLIB_JDK)
-    implementation(Libs.KOTLINX_TEST_COROUTINES)
+    api(Libs.KOTLINX_TEST_COROUTINES)
     implementation(Libs.JUNIT)
     implementation(Libs.MOCKK)
     api(Libs.TIMBER)

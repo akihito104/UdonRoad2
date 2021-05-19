@@ -191,7 +191,9 @@ class MainActivityInstTest {
         fun backFromDetailAndThenTweetIsSelected(): Unit = onMainActivity {
             // setup
             mainList {
-                clickListItemOf(0)
+                waitForItems<MainActivity> {
+                    clickListItemOf(0)
+                }
             } verify {
                 checkFabIsDisplayed()
                 stateIsSelectedOnItemOf(0)
