@@ -74,13 +74,16 @@
                     tools:background="#000"
                     />
 
-                <View
+                <ImageView
                     android:id="@+id/detail_twitter"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
                     app:layout_constraintTop_toTopOf="@id/detail_icon"
                     app:layout_constraintEnd_toEndOf="parent"
-                    android:background="#00f"
+                    app:srcCompat="@drawable/ic_twitter_bird"
+                    app:tint="@color/twitter_primary"
+                    android:contentDescription="@string/detail_desc_twitter_app"
+                    android:onClick="@{v -> viewModel.launchExternalTwitterApp.dispatch(viewModel.state.tweetItem)}"
                     />
 
                 <TextView

@@ -53,7 +53,10 @@ interface TweetListItem {
 
     override fun hashCode(): Int
 
-    companion object
+    companion object {
+        val TweetListItem.permalink: String
+            get() = "https://twitter.com/${originalUser.screenName}/status/${originalId.value}"
+    }
 }
 
 interface TweetElement : TweetElementUpdatable {
