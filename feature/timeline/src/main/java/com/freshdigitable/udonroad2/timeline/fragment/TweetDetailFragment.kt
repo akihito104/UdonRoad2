@@ -23,7 +23,7 @@ import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.map
 import androidx.navigation.fragment.navArgs
-import com.bumptech.glide.Glide
+import com.freshdigitable.udonroad2.media.di.GlideApp
 import com.freshdigitable.udonroad2.model.TwitterCard
 import com.freshdigitable.udonroad2.model.tweet.DetailTweetListItem
 import com.freshdigitable.udonroad2.timeline.databinding.FragmentDetailBinding
@@ -141,7 +141,7 @@ fun ImageView.bindCardImage(card: TwitterCard?) {
     if (card == null) {
         return
     }
-    Glide.with(this)
+    GlideApp.with(this)
         .load(card.imageUrl)
         .into(this)
 }

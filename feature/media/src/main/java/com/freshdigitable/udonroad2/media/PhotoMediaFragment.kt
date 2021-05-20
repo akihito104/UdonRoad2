@@ -25,8 +25,8 @@ import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
+import com.freshdigitable.udonroad2.media.di.GlideApp
 import com.freshdigitable.udonroad2.model.MediaEntity
 import dagger.android.support.AndroidSupportInjection
 
@@ -72,7 +72,7 @@ class PhotoMediaFragment : Fragment() {
 
         val imageView = view as ImageView
 
-        Glide.with(this)
+        GlideApp.with(this)
             .load(url)
             .apply(RequestOptions().centerInside())
             .into(imageView)
