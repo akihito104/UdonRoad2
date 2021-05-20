@@ -42,7 +42,7 @@ object Versions {
 
     const val OKHTTP = "4.9.0"
     const val TWITTER4J = "4.0.7"
-    const val GLIDE = "4.11.0"
+    const val GLIDE = "4.12.0"
     const val THREETENBP = "1.1.0"
     const val TIMBER = "4.7.1"
 
