@@ -35,7 +35,7 @@ import java.util.Locale
 import javax.inject.Inject
 
 internal class TwitterCardRemoteSource @Inject constructor(
-    private val httpClient: OkHttpClient
+    private val httpClient: OkHttpClient,
 ) : TwitterCardDataSource.Remote {
     override fun getTwitterCardSource(url: String): Flow<TwitterCard?> {
         val request = Request.Builder()
@@ -135,6 +135,8 @@ internal class TwitterCardRemoteSource @Inject constructor(
         }
 
         private fun XmlPullParser.readContent(): String = getAttributeValue(null, "content")
+            ?: getAttributeValue(null, "value") // for name=twitter:*
+
         private fun String.isHeadTag(): Boolean = "head".equals(this, ignoreCase = true)
         private fun String.isMetaTag(): Boolean = "meta".equals(this, ignoreCase = true)
     }
