@@ -23,8 +23,7 @@ import androidx.lifecycle.viewModelScope
 import com.freshdigitable.udonroad2.data.UserDataSource
 import com.freshdigitable.udonroad2.data.impl.AppSettingRepository
 import com.freshdigitable.udonroad2.model.UserId
-import com.freshdigitable.udonroad2.model.app.AppExecutor
-import com.freshdigitable.udonroad2.model.app.mainContext
+import com.freshdigitable.udonroad2.model.app.DispatcherProvider
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onStart
@@ -33,9 +32,9 @@ import java.util.SortedSet
 internal class AppSettingViewModel(
     repository: AppSettingRepository,
     userRepository: UserDataSource,
-    executor: AppExecutor? = null,
+    dispatcher: DispatcherProvider? = null,
 ) : ViewModel() {
-    private val coroutineContext = executor?.mainContext ?: viewModelScope.coroutineContext
+    private val coroutineContext = dispatcher?.mainContext ?: viewModelScope.coroutineContext
     internal val registeredUserAccount: LiveData<SortedSet<Pair<UserId, String>>> =
         repository.registeredUserIdsSource.onStart { emit(emptySet()) }
             .mapLatest { ids ->

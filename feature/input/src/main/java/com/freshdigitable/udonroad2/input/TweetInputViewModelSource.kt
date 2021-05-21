@@ -25,12 +25,11 @@ import com.freshdigitable.udonroad2.input.InputViewState.Companion.toOpened
 import com.freshdigitable.udonroad2.input.InputViewState.Companion.transTaskState
 import com.freshdigitable.udonroad2.input.MediaChooserResultContract.MediaChooserResult
 import com.freshdigitable.udonroad2.model.TweetId
-import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.AppFilePath
+import com.freshdigitable.udonroad2.model.app.DispatcherProvider
 import com.freshdigitable.udonroad2.model.app.LoadingResult
 import com.freshdigitable.udonroad2.model.app.ScanFun
 import com.freshdigitable.udonroad2.model.app.UpdateFun
-import com.freshdigitable.udonroad2.model.app.ioContext
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
 import com.freshdigitable.udonroad2.model.app.navigation.toActionFlow
@@ -81,7 +80,7 @@ internal class TweetInputViewModelSource @Inject constructor(
     private val sharedState: TweetInputSharedState,
     oauthRepository: AppSettingRepository,
     userRepository: UserDataSource,
-    executor: AppExecutor,
+    dispatcher: DispatcherProvider = DispatcherProvider(),
 ) : TweetInputEventListener by actions {
     private val idlingState = if (collapsible) InputTaskState.IDLING else InputTaskState.OPENED
 
@@ -118,7 +117,7 @@ internal class TweetInputViewModelSource @Inject constructor(
             userRepository.getUserSource(id)
                 .mapLatest { it ?: userRepository.getUser(id) }
         }
-        .flowOn(executor.ioContext)
+        .flowOn(dispatcher.ioContext)
 
     internal val chooserForCameraApp: Flow<CameraApp.State> = stateSourceBuilder<CameraApp.State>(
         init = CameraApp.State.Idling,

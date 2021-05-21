@@ -29,7 +29,6 @@ import com.freshdigitable.udonroad2.data.restclient.di.CustomTimelineDataSourceM
 import com.freshdigitable.udonroad2.data.restclient.di.TweetTimelineDataSourceModule
 import com.freshdigitable.udonroad2.data.restclient.di.UserListDataSourceModule
 import com.freshdigitable.udonroad2.model.QueryType
-import com.freshdigitable.udonroad2.model.app.AppExecutor
 import dagger.BindsInstance
 import dagger.Module
 import dagger.Subcomponent
@@ -56,7 +55,6 @@ interface ListRepositoryComponent {
     val localListDataSourceProvider: LocalListDataSourceProvider
     val remoteListDataSourceProvider: RemoteListDataSourceProvider
     val pagedListDataSourceFactoryProvider: PagedListDataSourceFactoryProvider
-    val appExecutor: AppExecutor
 }
 
 fun <Q : QueryType> ListRepositoryComponent.listRepository(): ListRepository<Q, Any> {
@@ -67,7 +65,7 @@ fun <Q : QueryType> ListRepositoryComponent.listRepository(): ListRepository<Q, 
 }
 
 fun <Q : QueryType, I : Any> ListRepositoryComponent.pagedListProvider(
-    repository: ListRepository<Q, I>
+    repository: ListRepository<Q, I>,
 ): PagedListProvider<Q, I> {
     return PagedListProviderImpl(
         pagedListDataSourceFactoryProvider.get(query as Q),

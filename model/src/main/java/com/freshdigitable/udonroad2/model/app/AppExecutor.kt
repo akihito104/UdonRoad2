@@ -22,31 +22,18 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.launch
-import java.util.concurrent.Executor
 import kotlin.coroutines.CoroutineContext
 
 class AppExecutor(
     private val parentJob: Job = SupervisorJob(),
     val dispatcher: DispatcherProvider = DispatcherProvider(),
-    coroutineScope: CoroutineScope = CoroutineScope(dispatcher.mainContext + parentJob)
-) : CoroutineScope by coroutineScope {
-    val io: Executor = Executor { command ->
-        launchIO { command.run() }
-    }
-
-    fun launchIO(task: suspend CoroutineScope.() -> Unit) {
-        launch(dispatcher.ioContext, block = task)
-    }
-}
-
-val AppExecutor.mainContext: CoroutineContext get() = dispatcher.mainContext
-val AppExecutor.ioContext: CoroutineContext get() = dispatcher.ioContext
+    coroutineScope: CoroutineScope = CoroutineScope(dispatcher.mainContext + parentJob),
+) : CoroutineScope by coroutineScope
 
 class DispatcherProvider(
     val mainDispatcher: CoroutineDispatcher = Dispatchers.Main,
     val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
-    private val exceptionHandler: CoroutineExceptionHandler? = null
+    private val exceptionHandler: CoroutineExceptionHandler? = null,
 ) {
     val mainContext: CoroutineContext
         get() = exceptionHandler?.plus(mainDispatcher) ?: mainDispatcher
