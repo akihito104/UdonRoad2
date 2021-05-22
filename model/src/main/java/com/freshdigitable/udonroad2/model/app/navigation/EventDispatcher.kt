@@ -1,5 +1,6 @@
 package com.freshdigitable.udonroad2.model.app.navigation
 
+import com.freshdigitable.udonroad2.model.app.di.ActivityScope
 import io.reactivex.Observer
 import io.reactivex.disposables.Disposable
 import io.reactivex.disposables.Disposables
@@ -11,9 +12,8 @@ import kotlinx.coroutines.flow.callbackFlow
 import timber.log.Timber
 import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
+@ActivityScope
 class EventDispatcher @Inject constructor() {
     val emitter = PublishSubject.create<AppEvent>()
 

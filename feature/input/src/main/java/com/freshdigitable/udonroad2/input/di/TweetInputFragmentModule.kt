@@ -56,10 +56,7 @@ interface TweetInputFragmentModule {
     @FragmentScope
     @ContributesAndroidInjector
     fun contributeTweetInputFragment(): TweetInputFragment
-}
 
-@Module
-interface MediaChooserModule {
     @ContributesAndroidInjector
     fun contributeMediaChooserBroadcastReceiver(): MediaChooserBroadcastReceiver
 }
