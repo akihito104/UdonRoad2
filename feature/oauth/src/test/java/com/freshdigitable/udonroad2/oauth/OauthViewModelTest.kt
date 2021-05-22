@@ -134,7 +134,7 @@ class OauthViewModelTestRule : TestWatcher() {
                 OauthDataSource(ApplicationProvider.getApplicationContext()),
                 oauthRepository.mock,
                 ListOwnerGenerator.create(),
-                OauthSavedStates(SavedStateHandle(), coroutineRule.coroutineContextProvider),
+                OauthSavedStates(SavedStateHandle()),
             )
         )
     }

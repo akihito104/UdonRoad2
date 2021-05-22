@@ -31,6 +31,7 @@ import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.UserId
+import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.AppTwitterException
 import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
 import com.freshdigitable.udonroad2.model.app.navigation.FeedbackMessage
@@ -474,7 +475,8 @@ internal class MainViewModelTestRule : TestWatcher() {
             ShortcutViewModelSource(
                 ShortcutActions(dispatcher),
                 tweetRepositoryMock.mock,
-                ListOwnerGenerator.create()
+                ListOwnerGenerator.create(),
+                AppExecutor(dispatcher = coroutineRule.coroutineContextProvider),
             )
         )
     }

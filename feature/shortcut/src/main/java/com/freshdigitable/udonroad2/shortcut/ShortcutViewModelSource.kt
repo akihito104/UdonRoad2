@@ -20,6 +20,7 @@ import com.freshdigitable.udonroad2.data.impl.TweetRepository
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.app.AppErrorType
+import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.AppTwitterException.ErrorType
 import com.freshdigitable.udonroad2.model.app.LoadingResult
 import com.freshdigitable.udonroad2.model.app.load
@@ -30,16 +31,20 @@ import com.freshdigitable.udonroad2.model.app.navigation.getTimelineEvent
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class ShortcutViewModelSource @Inject constructor(
     actions: ShortcutActions,
     tweetRepository: TweetRepository,
     listOwnerGenerator: ListOwnerGenerator,
+    appExecutor: AppExecutor,
 ) : ShortcutEventListener by actions, ActivityEffectStream {
     override val effect: Flow<AppEffect> = merge(
         actions.favTweet.mapLatest { event ->
-            tweetRepository.load { updateLike(event.tweetId, true) }.fold(
+            tweetRepository.load {
+                withContext(appExecutor.coroutineContext) { updateLike(event.tweetId, true) }
+            }.fold(
                 loaded = TweetFeedbackMessage.FAV_CREATE_SUCCESS,
                 onFailed = {
                     when (it) {
@@ -50,13 +55,17 @@ class ShortcutViewModelSource @Inject constructor(
             )
         },
         actions.unlikeTweet.mapLatest {
-            tweetRepository.load { updateLike(it.tweetId, false) }.fold(
+            tweetRepository.load {
+                withContext(appExecutor.coroutineContext) { updateLike(it.tweetId, false) }
+            }.fold(
                 loaded = TweetFeedbackMessage.FAV_DESTROY_SUCCESS,
                 failed = TweetFeedbackMessage.FAV_DESTROY_FAILURE
             )
         },
         actions.retweet.mapLatest { event ->
-            tweetRepository.load { updateRetweet(event.tweetId, true) }.fold(
+            tweetRepository.load {
+                withContext(appExecutor.coroutineContext) { updateRetweet(event.tweetId, true) }
+            }.fold(
                 loaded = TweetFeedbackMessage.RT_CREATE_SUCCESS,
                 onFailed = {
                     when (it) {
@@ -67,7 +76,9 @@ class ShortcutViewModelSource @Inject constructor(
             )
         },
         actions.unretweetTweet.mapLatest {
-            tweetRepository.load { updateRetweet(it.tweetId, false) }.fold(
+            tweetRepository.load {
+                withContext(appExecutor.coroutineContext) { updateRetweet(it.tweetId, false) }
+            }.fold(
                 loaded = TweetFeedbackMessage.RT_DESTROY_SUCCESS,
                 failed = TweetFeedbackMessage.RT_DESTROY_FAILURE
             )
@@ -75,7 +86,9 @@ class ShortcutViewModelSource @Inject constructor(
         actions.deleteTweet.mapLatest {
             val detailTweetItem = tweetRepository.findDetailTweetItem(it.tweetId) // TODO
             val id = detailTweetItem?.body?.retweetIdByCurrentUser ?: it.tweetId
-            tweetRepository.load { deleteTweet(id) }.fold(
+            tweetRepository.load {
+                withContext(appExecutor.coroutineContext) { deleteTweet(id) }
+            }.fold(
                 loaded = TweetFeedbackMessage.DELETE_TWEET_SUCCESS,
                 failed = TweetFeedbackMessage.DELETE_TWEET_FAILURE
             )

@@ -23,6 +23,7 @@ import com.freshdigitable.udonroad2.data.impl.create
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.MediaEntity
 import com.freshdigitable.udonroad2.model.TweetId
+import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.tweet.TweetElement
 import com.freshdigitable.udonroad2.model.tweet.TweetListItem
@@ -74,7 +75,8 @@ class MediaViewModelTest {
             ShortcutViewModelSource(
                 ShortcutActions(eventDispatcher),
                 tweetRepositoryRule.mock,
-                ListOwnerGenerator.create()
+                ListOwnerGenerator.create(),
+                AppExecutor(dispatcher = coroutineRule.coroutineContextProvider),
             )
         )
     }

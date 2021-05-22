@@ -25,6 +25,7 @@ import com.freshdigitable.udonroad2.input.InputViewState.Companion.toOpened
 import com.freshdigitable.udonroad2.input.InputViewState.Companion.transTaskState
 import com.freshdigitable.udonroad2.input.MediaChooserResultContract.MediaChooserResult
 import com.freshdigitable.udonroad2.model.TweetId
+import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.AppFilePath
 import com.freshdigitable.udonroad2.model.app.DispatcherProvider
 import com.freshdigitable.udonroad2.model.app.LoadingResult
@@ -43,6 +44,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 internal class TweetInputActions @Inject constructor(
@@ -81,6 +83,7 @@ internal class TweetInputViewModelSource @Inject constructor(
     oauthRepository: AppSettingRepository,
     userRepository: UserDataSource,
     dispatcher: DispatcherProvider = DispatcherProvider(),
+    appExecutor: AppExecutor,
 ) : TweetInputEventListener by actions {
     private val idlingState = if (collapsible) InputTaskState.IDLING else InputTaskState.OPENED
 
@@ -99,14 +102,15 @@ internal class TweetInputViewModelSource @Inject constructor(
         actions.updateText.onTaskStateUpdateEvent { state, event -> state.copy(text = event.text) },
         actions.cancelInput.flatMapLatest { flowOf(InputTaskState.CANCELED, idlingState) }
             .onTaskStateUpdateEvent { state, taskState -> transitTaskState(state, taskState) },
-        actions.sendTweet.flatMapLatest { postTweet(it.tweet) }
-            .flatMapLatest {
-                when (it) {
-                    is LoadingResult.Started -> flowOf(InputTaskState.SENDING)
-                    is LoadingResult.Loaded -> flowOf(InputTaskState.SUCCEEDED, idlingState)
-                    is LoadingResult.Failed -> flowOf(InputTaskState.FAILED)
-                }
+        actions.sendTweet.flatMapLatest {
+            withContext(appExecutor.coroutineContext) { postTweet(it.tweet) }
+        }.flatMapLatest {
+            when (it) {
+                is LoadingResult.Started -> flowOf(InputTaskState.SENDING)
+                is LoadingResult.Loaded -> flowOf(InputTaskState.SUCCEEDED, idlingState)
+                is LoadingResult.Failed -> flowOf(InputTaskState.FAILED)
             }
+        }
             .onTaskStateUpdateEvent { state, taskState -> transitTaskState(state, taskState) },
         sharedState.taskStateSource.onEvent { s, e -> e ?: s }
     )

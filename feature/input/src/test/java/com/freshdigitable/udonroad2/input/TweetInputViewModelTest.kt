@@ -23,6 +23,7 @@ import com.freshdigitable.udonroad2.input.MediaChooserResultContract.MediaChoose
 import com.freshdigitable.udonroad2.model.MediaId
 import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.UserId
+import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.AppFilePath
 import com.freshdigitable.udonroad2.model.app.AppTwitterException
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
@@ -605,6 +606,7 @@ class TweetInputViewModelRule(
                 appSettingRepositoryRule.mock,
                 userRepositoryRule.mock,
                 coroutineTestRule.coroutineContextProvider,
+                AppExecutor(dispatcher = coroutineTestRule.coroutineContextProvider),
             ),
         )
     }
