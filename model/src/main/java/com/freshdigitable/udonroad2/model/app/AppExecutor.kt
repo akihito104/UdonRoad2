@@ -16,19 +16,31 @@
 
 package com.freshdigitable.udonroad2.model.app
 
+import com.freshdigitable.udonroad2.model.app.navigation.ActivityEffectStream
+import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.launch
 import kotlin.coroutines.CoroutineContext
 
 class AppExecutor(
     private val parentJob: Job = SupervisorJob(),
     val dispatcher: DispatcherProvider = DispatcherProvider(),
     coroutineScope: CoroutineScope = CoroutineScope(dispatcher.mainContext + parentJob),
-) : CoroutineScope by coroutineScope
+) : CoroutineScope by coroutineScope, ActivityEffectStream {
+    private val _effect = MutableSharedFlow<AppEffect>()
+    override val effect: Flow<AppEffect> = _effect
+
+    fun launchWithEffect(block: suspend MutableSharedFlow<AppEffect>.() -> Unit) {
+        launch { block(_effect) }
+    }
+}
 
 class DispatcherProvider(
     val mainDispatcher: CoroutineDispatcher = Dispatchers.Main,

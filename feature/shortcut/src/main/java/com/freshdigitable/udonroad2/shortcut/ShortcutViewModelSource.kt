@@ -26,12 +26,13 @@ import com.freshdigitable.udonroad2.model.app.LoadingResult
 import com.freshdigitable.udonroad2.model.app.load
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEffectStream
 import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
+import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.TimelineEffect
 import com.freshdigitable.udonroad2.model.app.navigation.getTimelineEvent
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.merge
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class ShortcutViewModelSource @Inject constructor(
@@ -41,10 +42,8 @@ class ShortcutViewModelSource @Inject constructor(
     appExecutor: AppExecutor,
 ) : ShortcutEventListener by actions, ActivityEffectStream {
     override val effect: Flow<AppEffect> = merge(
-        actions.favTweet.mapLatest { event ->
-            tweetRepository.load {
-                withContext(appExecutor.coroutineContext) { updateLike(event.tweetId, true) }
-            }.fold(
+        actions.favTweet.consume(appExecutor) { event ->
+            tweetRepository.load { updateLike(event.tweetId, true) }.fold(
                 loaded = TweetFeedbackMessage.FAV_CREATE_SUCCESS,
                 onFailed = {
                     when (it) {
@@ -54,18 +53,14 @@ class ShortcutViewModelSource @Inject constructor(
                 }
             )
         },
-        actions.unlikeTweet.mapLatest {
-            tweetRepository.load {
-                withContext(appExecutor.coroutineContext) { updateLike(it.tweetId, false) }
-            }.fold(
+        actions.unlikeTweet.consume(appExecutor) {
+            tweetRepository.load { updateLike(it.tweetId, false) }.fold(
                 loaded = TweetFeedbackMessage.FAV_DESTROY_SUCCESS,
                 failed = TweetFeedbackMessage.FAV_DESTROY_FAILURE
             )
         },
-        actions.retweet.mapLatest { event ->
-            tweetRepository.load {
-                withContext(appExecutor.coroutineContext) { updateRetweet(event.tweetId, true) }
-            }.fold(
+        actions.retweet.consume(appExecutor) { event ->
+            tweetRepository.load { updateRetweet(event.tweetId, true) }.fold(
                 loaded = TweetFeedbackMessage.RT_CREATE_SUCCESS,
                 onFailed = {
                     when (it) {
@@ -75,20 +70,16 @@ class ShortcutViewModelSource @Inject constructor(
                 }
             )
         },
-        actions.unretweetTweet.mapLatest {
-            tweetRepository.load {
-                withContext(appExecutor.coroutineContext) { updateRetweet(it.tweetId, false) }
-            }.fold(
+        actions.unretweetTweet.consume(appExecutor) {
+            tweetRepository.load { updateRetweet(it.tweetId, false) }.fold(
                 loaded = TweetFeedbackMessage.RT_DESTROY_SUCCESS,
                 failed = TweetFeedbackMessage.RT_DESTROY_FAILURE
             )
         },
-        actions.deleteTweet.mapLatest {
+        actions.deleteTweet.consume(appExecutor) {
             val detailTweetItem = tweetRepository.findDetailTweetItem(it.tweetId) // TODO
             val id = detailTweetItem?.body?.retweetIdByCurrentUser ?: it.tweetId
-            tweetRepository.load {
-                withContext(appExecutor.coroutineContext) { deleteTweet(id) }
-            }.fold(
+            tweetRepository.load { deleteTweet(id) }.fold(
                 loaded = TweetFeedbackMessage.DELETE_TWEET_SUCCESS,
                 failed = TweetFeedbackMessage.DELETE_TWEET_FAILURE
             )
@@ -99,7 +90,8 @@ class ShortcutViewModelSource @Inject constructor(
         actions.showConversation.mapLatest {
             val queryType = QueryType.Tweet.Conversation(it.tweetId)
             listOwnerGenerator.getTimelineEvent(queryType)
-        }
+        },
+        appExecutor.effect,
     )
 
     companion object {
@@ -113,5 +105,16 @@ class ShortcutViewModelSource @Inject constructor(
             is LoadingResult.Failed -> failed ?: onFailed(this.errorType)
             else -> throw IllegalStateException()
         }
+
+        private fun <E : AppEvent> Flow<E>.consume(
+            scope: AppExecutor,
+            block: suspend (E) -> AppEffect,
+        ): Flow<AppEffect> = mapLatest { e ->
+            scope.launchWithEffect {
+                val effect = block(e)
+                emit(effect)
+            }
+            null
+        }.filterNotNull()
     }
 }
