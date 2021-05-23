@@ -96,7 +96,7 @@ internal class PagedListProviderImpl<Q : QueryType, I : Any>(
 
     companion object {
         private val config = PagingConfig(
-            enablePlaceholders = false,
+            enablePlaceholders = true,
             pageSize = 20,
             initialLoadSize = 20,
             prefetchDistance = 10,
