@@ -36,15 +36,18 @@ import com.freshdigitable.udonroad2.model.app.navigation.toAction
 import com.freshdigitable.udonroad2.model.app.navigation.toActionFlow
 import com.freshdigitable.udonroad2.model.app.onEvent
 import com.freshdigitable.udonroad2.model.app.stateSourceBuilder
+import com.freshdigitable.udonroad2.model.tweet.TweetEntity
 import com.freshdigitable.udonroad2.model.user.UserEntity
 import com.freshdigitable.udonroad2.shortcut.SelectedItemShortcut
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.flow.receiveAsFlow
 import javax.inject.Inject
 
 internal class TweetInputActions @Inject constructor(
@@ -102,8 +105,10 @@ internal class TweetInputViewModelSource @Inject constructor(
         actions.updateText.onTaskStateUpdateEvent { state, event -> state.copy(text = event.text) },
         actions.cancelInput.flatMapLatest { flowOf(InputTaskState.CANCELED, idlingState) }
             .onTaskStateUpdateEvent { state, taskState -> transitTaskState(state, taskState) },
-        actions.sendTweet.flatMapLatest {
-            withContext(appExecutor.coroutineContext) { postTweet(it.tweet) }
+        actions.sendTweet.flatMapLatest { e ->
+            val c = Channel<LoadingResult<TweetEntity>>()
+            appExecutor.launchWithEffect { postTweet(e.tweet).collect { c.send(it) } }
+            c.receiveAsFlow()
         }.flatMapLatest {
             when (it) {
                 is LoadingResult.Started -> flowOf(InputTaskState.SENDING)
