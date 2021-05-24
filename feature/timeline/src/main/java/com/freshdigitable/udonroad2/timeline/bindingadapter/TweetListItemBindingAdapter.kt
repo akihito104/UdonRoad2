@@ -29,12 +29,12 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.widget.TextViewCompat
 import androidx.databinding.BindingAdapter
-import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
 import com.freshdigitable.udonroad2.media.MediaThumbnailContainer
+import com.freshdigitable.udonroad2.media.di.GlideApp
 import com.freshdigitable.udonroad2.media.mediaViews
 import com.freshdigitable.udonroad2.model.MediaType
 import com.freshdigitable.udonroad2.model.TweetMediaItem
@@ -132,10 +132,10 @@ private fun Resources.getRoundedCornersTransform(cornerRadius: Int? = null): Rou
 @BindingAdapter("bindUserIcon", "corner_radius", requireAll = false)
 fun bindUserIcon(v: ImageView, url: String?, cornerRadius: Float?) {
     if (url == null) {
-        Glide.with(v).clear(v)
+        GlideApp.with(v).clear(v)
         return
     }
-    Glide.with(v)
+    GlideApp.with(v)
         .load(url)
         .placeholder(R.drawable.ic_person_outline_black)
         .transform(v.resources.getRoundedCornersTransform(cornerRadius?.toInt()))
@@ -155,7 +155,7 @@ fun MediaThumbnailContainer.bindMedia(
     mediaCount = items.size
     if (hideForPossiblySensitive == true) {
         mediaViews.forEach {
-            Glide.with(it)
+            GlideApp.with(it)
                 .load(R.drawable.ic_whatshot)
                 .into(it)
         }
@@ -168,7 +168,7 @@ fun MediaThumbnailContainer.bindMedia(
                     }
                 }
             view.isMovie = movieType.contains(item.type)
-            Glide.with(view)
+            GlideApp.with(view)
                 .load(item.thumbMediaUrl)
                 .apply(option)
                 .into(view)
@@ -186,7 +186,7 @@ fun TextView.bindRtUserIcon(user: TweetUserItem?, cornerRadius: Float?) {
     val rtText = context.getString(R.string.format_rt_user_with_icon, iconSpan, user.screenName)
     val start = rtText.indexOf(iconSpan)
     val iconSize = resources.getDimensionPixelSize(R.dimen.icon_size_small)
-    Glide.with(this)
+    GlideApp.with(this)
         .load(user.iconUrl)
         .placeholder(R.drawable.ic_person_outline_black)
         .transform(resources.getRoundedCornersTransform(cornerRadius?.toInt()))
