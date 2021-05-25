@@ -47,11 +47,13 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.receiveAsFlow
 import javax.inject.Inject
 
 internal class TweetInputActions @Inject constructor(
     private val eventDispatcher: EventDispatcher,
+    cameraAppActions: CameraAppActions,
 ) : TweetInputEventListener {
     override val openInput = eventDispatcher.toAction(TweetInputEvent.Open)
     override val startInput = eventDispatcher.toAction(TweetInputEvent.Opened)
@@ -63,7 +65,10 @@ internal class TweetInputActions @Inject constructor(
     }
     override val cancelInput = eventDispatcher.toAction(TweetInputEvent.Cancel)
 
-    internal val cameraApp: Flow<CameraApp.Event> = eventDispatcher.toActionFlow()
+    internal val cameraApp: Flow<CameraApp.Event> = merge(
+        eventDispatcher.toActionFlow(),
+        cameraAppActions.chooseCameraApp
+    )
 
     override fun onCameraAppCandidatesQueried(candidates: List<Components>, path: AppFilePath) {
         eventDispatcher.postEvent(CameraApp.Event.CandidateQueried(candidates, path))
@@ -75,6 +80,13 @@ internal class TweetInputActions @Inject constructor(
 
     internal val reply: Flow<SelectedItemShortcut.Reply> = eventDispatcher.toActionFlow()
     internal val quote: Flow<SelectedItemShortcut.Quote> = eventDispatcher.toActionFlow()
+}
+
+internal class CameraAppActions : CameraAppEventListener {
+    private val dispatcher = EventDispatcher()
+    override val chooseCameraApp = dispatcher.toAction { component: Components ->
+        CameraApp.Event.Chosen(component)
+    }
 }
 
 internal class TweetInputViewModelSource @Inject constructor(

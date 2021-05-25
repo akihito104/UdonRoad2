@@ -59,6 +59,10 @@ internal interface TweetInputEventListener {
     val updateMedia: AppEventListener1<MediaChooserResult>
 }
 
+interface CameraAppEventListener {
+    val chooseCameraApp: AppEventListener1<Components>
+}
+
 @ActivityScope
 class TweetInputSharedState @Inject constructor() {
     internal val taskStateSource = MutableStateFlow<InputViewState?>(null)

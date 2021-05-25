@@ -599,7 +599,7 @@ class TweetInputViewModelRule(
         TweetInputViewModel(
             TweetInputViewModelSource(
                 collapsible,
-                TweetInputActions(eventDispatcher),
+                TweetInputActions(eventDispatcher, CameraAppActions()),
                 createReplyTextUseCaseRule.mock,
                 PostTweetUseCase(repository.mock, createQuoteTextUseCaseRule.mock),
                 TweetInputSharedState(),
