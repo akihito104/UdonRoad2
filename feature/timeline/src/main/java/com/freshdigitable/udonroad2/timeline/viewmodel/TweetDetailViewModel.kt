@@ -16,11 +16,15 @@ import com.freshdigitable.udonroad2.model.app.load
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEffectStream
 import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
+import com.freshdigitable.udonroad2.model.app.navigation.AppEventListener1
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.TimelineEffect
+import com.freshdigitable.udonroad2.model.app.navigation.toAction
 import com.freshdigitable.udonroad2.model.app.navigation.toActionFlow
 import com.freshdigitable.udonroad2.model.app.stateSourceBuilder
 import com.freshdigitable.udonroad2.model.tweet.DetailTweetListItem
+import com.freshdigitable.udonroad2.model.tweet.TweetListItem
+import com.freshdigitable.udonroad2.model.tweet.TweetListItem.Companion.permalink
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.timeline.TimelineEvent
 import com.freshdigitable.udonroad2.timeline.TweetMediaEventListener
@@ -71,6 +75,7 @@ internal class TweetDetailViewModel(
 sealed class DetailEvent : AppEvent {
     internal data class SpanClicked(val urlItem: UrlItem) : DetailEvent()
     internal data class TwitterCardClicked(val card: TwitterCard) : DetailEvent()
+    internal data class TwitterIconClicked(val item: TweetListItem) : DetailEvent()
 }
 
 data class ExternalAppNavigation(
@@ -86,6 +91,7 @@ interface TweetDetailEventListener : SpanClickListener {
     fun onOriginalUserClicked(user: TweetUserItem)
     fun onBodyUserClicked(user: TweetUserItem)
     fun onTwitterCardClicked(card: TwitterCard)
+    val launchExternalTwitterApp: AppEventListener1<TweetListItem>
 }
 
 internal class TweetDetailActions @Inject constructor(
@@ -110,6 +116,10 @@ internal class TweetDetailActions @Inject constructor(
 
     override fun onTwitterCardClicked(card: TwitterCard) {
         eventDispatcher.postEvent(DetailEvent.TwitterCardClicked(card))
+    }
+
+    override val launchExternalTwitterApp = eventDispatcher.toAction { item: TweetListItem ->
+        DetailEvent.TwitterIconClicked(item)
     }
 }
 
@@ -160,6 +170,9 @@ internal class TweetDetailViewStates @Inject constructor(
         },
         actions.launchExternalApp.mapLatest {
             ExternalAppNavigation(url = it.urlItem.url)
+        },
+        actions.launchExternalTwitterApp.mapLatest {
+            ExternalAppNavigation(url = it.item.permalink)
         },
     )
 
