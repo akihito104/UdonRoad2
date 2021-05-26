@@ -21,7 +21,7 @@ import java.io.Serializable
 data class SelectedItemId(
     val owner: ListOwner<*>,
     val originalId: TweetId,
-    val quoteId: TweetId? = null
+    val quoteId: TweetId? = null,
 ) : Serializable {
     @JvmOverloads
     fun equalsTo(originalId: TweetId, quoteId: TweetId? = null): Boolean {
