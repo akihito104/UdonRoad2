@@ -51,7 +51,7 @@
         android:padding="8dp"
         android:background="@drawable/selector_item_background"
         android:onClick="@{v -> itemViewModel.selectBodyItem.dispatch(tweet)}"
-        app:selected="@{itemViewModel.tweetListState.selectedItemId.equalsTo(tweet.originalId)}"
+        app:selected="@{tweet != null ? itemViewModel.tweetListState.selectedItemId.equalsTo(tweet.originalId) : false}"
         >
 
         <TextView
