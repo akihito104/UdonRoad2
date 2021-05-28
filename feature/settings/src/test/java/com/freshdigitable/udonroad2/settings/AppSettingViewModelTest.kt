@@ -20,7 +20,6 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.freshdigitable.udonroad2.data.UserDataSource
 import com.freshdigitable.udonroad2.data.impl.AppSettingRepository
 import com.freshdigitable.udonroad2.model.UserId
-import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.user.UserEntity
 import com.freshdigitable.udonroad2.test_common.MockVerified
 import com.freshdigitable.udonroad2.test_common.jvm.CoroutineTestRule
@@ -50,7 +49,7 @@ class AppSettingViewModelTest {
         AppSettingViewModel(
             repository.mock,
             userRepository.mock,
-            AppExecutor(dispatcher = coroutineTestRule.coroutineContextProvider)
+            coroutineTestRule.coroutineContextProvider,
         )
     }
 

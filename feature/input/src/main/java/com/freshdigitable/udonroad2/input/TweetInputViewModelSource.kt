@@ -27,27 +27,33 @@ import com.freshdigitable.udonroad2.input.MediaChooserResultContract.MediaChoose
 import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.AppFilePath
+import com.freshdigitable.udonroad2.model.app.DispatcherProvider
 import com.freshdigitable.udonroad2.model.app.LoadingResult
 import com.freshdigitable.udonroad2.model.app.ScanFun
 import com.freshdigitable.udonroad2.model.app.UpdateFun
-import com.freshdigitable.udonroad2.model.app.ioContext
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.toAction
 import com.freshdigitable.udonroad2.model.app.navigation.toActionFlow
 import com.freshdigitable.udonroad2.model.app.onEvent
 import com.freshdigitable.udonroad2.model.app.stateSourceBuilder
+import com.freshdigitable.udonroad2.model.tweet.TweetEntity
 import com.freshdigitable.udonroad2.model.user.UserEntity
 import com.freshdigitable.udonroad2.shortcut.SelectedItemShortcut
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.receiveAsFlow
 import javax.inject.Inject
 
 internal class TweetInputActions @Inject constructor(
     private val eventDispatcher: EventDispatcher,
+    cameraAppActions: CameraAppActions,
 ) : TweetInputEventListener {
     override val openInput = eventDispatcher.toAction(TweetInputEvent.Open)
     override val startInput = eventDispatcher.toAction(TweetInputEvent.Opened)
@@ -59,7 +65,10 @@ internal class TweetInputActions @Inject constructor(
     }
     override val cancelInput = eventDispatcher.toAction(TweetInputEvent.Cancel)
 
-    internal val cameraApp: Flow<CameraApp.Event> = eventDispatcher.toActionFlow()
+    internal val cameraApp: Flow<CameraApp.Event> = merge(
+        eventDispatcher.toActionFlow(),
+        cameraAppActions.chooseCameraApp
+    )
 
     override fun onCameraAppCandidatesQueried(candidates: List<Components>, path: AppFilePath) {
         eventDispatcher.postEvent(CameraApp.Event.CandidateQueried(candidates, path))
@@ -73,6 +82,13 @@ internal class TweetInputActions @Inject constructor(
     internal val quote: Flow<SelectedItemShortcut.Quote> = eventDispatcher.toActionFlow()
 }
 
+internal class CameraAppActions : CameraAppEventListener {
+    private val dispatcher = EventDispatcher()
+    override val chooseCameraApp = dispatcher.toAction { component: Components ->
+        CameraApp.Event.Chosen(component)
+    }
+}
+
 internal class TweetInputViewModelSource @Inject constructor(
     collapsible: Boolean,
     actions: TweetInputActions,
@@ -81,7 +97,8 @@ internal class TweetInputViewModelSource @Inject constructor(
     private val sharedState: TweetInputSharedState,
     oauthRepository: AppSettingRepository,
     userRepository: UserDataSource,
-    executor: AppExecutor,
+    dispatcher: DispatcherProvider = DispatcherProvider(),
+    appExecutor: AppExecutor,
 ) : TweetInputEventListener by actions {
     private val idlingState = if (collapsible) InputTaskState.IDLING else InputTaskState.OPENED
 
@@ -100,14 +117,17 @@ internal class TweetInputViewModelSource @Inject constructor(
         actions.updateText.onTaskStateUpdateEvent { state, event -> state.copy(text = event.text) },
         actions.cancelInput.flatMapLatest { flowOf(InputTaskState.CANCELED, idlingState) }
             .onTaskStateUpdateEvent { state, taskState -> transitTaskState(state, taskState) },
-        actions.sendTweet.flatMapLatest { postTweet(it.tweet) }
-            .flatMapLatest {
-                when (it) {
-                    is LoadingResult.Started -> flowOf(InputTaskState.SENDING)
-                    is LoadingResult.Loaded -> flowOf(InputTaskState.SUCCEEDED, idlingState)
-                    is LoadingResult.Failed -> flowOf(InputTaskState.FAILED)
-                }
+        actions.sendTweet.flatMapLatest { e ->
+            val c = Channel<LoadingResult<TweetEntity>>()
+            appExecutor.launchWithEffect { postTweet(e.tweet).collect { c.send(it) } }
+            c.receiveAsFlow()
+        }.flatMapLatest {
+            when (it) {
+                is LoadingResult.Started -> flowOf(InputTaskState.SENDING)
+                is LoadingResult.Loaded -> flowOf(InputTaskState.SUCCEEDED, idlingState)
+                is LoadingResult.Failed -> flowOf(InputTaskState.FAILED)
             }
+        }
             .onTaskStateUpdateEvent { state, taskState -> transitTaskState(state, taskState) },
         sharedState.taskStateSource.onEvent { s, e -> e ?: s }
     )
@@ -118,7 +138,7 @@ internal class TweetInputViewModelSource @Inject constructor(
             userRepository.getUserSource(id)
                 .mapLatest { it ?: userRepository.getUser(id) }
         }
-        .flowOn(executor.ioContext)
+        .flowOn(dispatcher.ioContext)
 
     internal val chooserForCameraApp: Flow<CameraApp.State> = stateSourceBuilder<CameraApp.State>(
         init = CameraApp.State.Idling,

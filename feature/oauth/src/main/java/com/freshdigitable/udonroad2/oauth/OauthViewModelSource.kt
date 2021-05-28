@@ -26,7 +26,6 @@ import com.freshdigitable.udonroad2.data.OAuthTokenDataSource
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.RequestTokenItem
-import com.freshdigitable.udonroad2.model.app.DispatcherProvider
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEffectStream
 import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
 import com.freshdigitable.udonroad2.model.app.navigation.getTimelineEvent
@@ -39,7 +38,6 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
-import kotlinx.coroutines.withContext
 
 internal class OauthViewModelSource(
     actions: OauthAction,
@@ -104,16 +102,13 @@ data class OauthViewState(
 
 class OauthSavedStates(
     handle: SavedStateHandle,
-    private val dispatcherProvider: DispatcherProvider = DispatcherProvider(),
 ) {
     private val requestTokenItem: MutableLiveData<RequestTokenItem?> =
         handle.getLiveData(SAVED_STATE_REQUEST_TOKEN)
 
-    internal suspend fun setToken(token: RequestTokenItem?) {
+    internal fun setToken(token: RequestTokenItem?) {
         if (requestTokenItem.value != token) {
-            withContext(dispatcherProvider.mainContext) {
-                requestTokenItem.value = token
-            }
+            requestTokenItem.postValue(token)
         }
     }
 

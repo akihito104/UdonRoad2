@@ -17,13 +17,19 @@
 package com.freshdigitable.udonroad2.di
 
 import com.freshdigitable.udonroad2.model.app.AppExecutor
+import com.freshdigitable.udonroad2.model.app.DispatcherProvider
 import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton
 
 @Module
-class ExecutorModule {
-    @Provides
-    @Singleton
-    fun provideAppExecutor(): AppExecutor = AppExecutor()
+interface ExecutorModule {
+    companion object {
+        @Provides
+        @Singleton
+        fun provideAppExecutor(): AppExecutor = AppExecutor()
+
+        @Provides
+        fun provideDispatcherProvider(): DispatcherProvider = DispatcherProvider()
+    }
 }

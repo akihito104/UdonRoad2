@@ -139,14 +139,14 @@ private fun AppFileProvider.createMediaPath(context: Context): AppFilePath {
 
 class MediaChooserBroadcastReceiver : BroadcastReceiver() {
     @Inject
-    lateinit var eventDispatcher: EventDispatcher
+    lateinit var eventDispatcher: CameraAppEventListener
 
     override fun onReceive(context: Context?, intent: Intent?) {
         AndroidInjection.inject(this, context)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
             val componentName: ComponentName =
                 intent?.getParcelableExtra(Intent.EXTRA_CHOSEN_COMPONENT) ?: return
-            eventDispatcher.postEvent(CameraApp.Event.Chosen(Components.create(componentName)))
+            eventDispatcher.chooseCameraApp.dispatch(Components.create(componentName))
         }
     }
 }

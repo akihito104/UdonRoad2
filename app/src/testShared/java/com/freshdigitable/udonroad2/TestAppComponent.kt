@@ -25,6 +25,7 @@ import com.freshdigitable.udonroad2.di.ActivityBuilders
 import com.freshdigitable.udonroad2.di.AppComponent
 import com.freshdigitable.udonroad2.di.AppFileProviderModule
 import com.freshdigitable.udonroad2.di.ExecutorModule
+import com.freshdigitable.udonroad2.input.di.MediaChooserModule
 import dagger.BindsInstance
 import dagger.Component
 import dagger.android.support.AndroidSupportInjectionModule
@@ -41,6 +42,7 @@ import javax.inject.Singleton
         DatabaseModule::class,
         MockTwitterModule::class,
         MockSetupModule::class,
+        MediaChooserModule::class,
         AppFileProviderModule::class,
     ]
 )

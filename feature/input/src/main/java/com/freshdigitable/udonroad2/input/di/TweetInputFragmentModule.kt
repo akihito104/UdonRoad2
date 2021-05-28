@@ -18,6 +18,8 @@ package com.freshdigitable.udonroad2.input.di
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.freshdigitable.udonroad2.input.CameraAppActions
+import com.freshdigitable.udonroad2.input.CameraAppEventListener
 import com.freshdigitable.udonroad2.input.MediaChooserBroadcastReceiver
 import com.freshdigitable.udonroad2.input.TweetInputFragment
 import com.freshdigitable.udonroad2.input.TweetInputViewModel
@@ -26,9 +28,11 @@ import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
 import dagger.Binds
 import dagger.BindsInstance
 import dagger.Module
+import dagger.Provides
 import dagger.Subcomponent
 import dagger.android.ContributesAndroidInjector
 import dagger.multibindings.IntoMap
+import javax.inject.Singleton
 
 @Module
 internal interface TweetInputViewModelModule {
@@ -58,8 +62,20 @@ interface TweetInputFragmentModule {
     fun contributeTweetInputFragment(): TweetInputFragment
 }
 
-@Module
+@Module(includes = [MediaChooserModuleImpl::class])
 interface MediaChooserModule {
     @ContributesAndroidInjector
     fun contributeMediaChooserBroadcastReceiver(): MediaChooserBroadcastReceiver
+}
+
+@Module
+internal interface MediaChooserModuleImpl {
+    @Binds
+    fun bindCameraAppEventListener(eventListener: CameraAppActions): CameraAppEventListener
+
+    companion object {
+        @Provides
+        @Singleton
+        fun provideCameraAppActions(): CameraAppActions = CameraAppActions()
+    }
 }
