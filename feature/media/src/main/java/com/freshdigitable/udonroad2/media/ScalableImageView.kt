@@ -151,6 +151,9 @@ class ScalableImageView @JvmOverloads constructor(
                     distanceX: Float,
                     distanceY: Float,
                 ): Boolean {
+                    if (scale <= 1) {
+                        return false
+                    }
                     if (e2.eventTime - e1.eventTime < 200 && shouldGoNextPage(distanceX)) {
                         return false
                     }
