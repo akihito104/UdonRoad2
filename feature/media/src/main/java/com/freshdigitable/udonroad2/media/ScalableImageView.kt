@@ -36,6 +36,7 @@ class ScalableImageView @JvmOverloads constructor(
 ) : AppCompatImageView(context, attrs, defStyleAttr) {
     private val gestureDetector: GestureDetectorCompat
     private val scaleGestureDetector: ScaleGestureDetector
+    var scaleListener: ScaleEventListener? = null
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         scaleGestureDetector.onTouchEvent(event)
@@ -140,6 +141,7 @@ class ScalableImageView @JvmOverloads constructor(
                         scale = detector.scaleFactor
                         focusX = detector.focusX
                         focusY = detector.focusY
+                        scaleListener?.onScale(scale, focusX, focusY)
                         return true
                     }
                 })
@@ -159,6 +161,7 @@ class ScalableImageView @JvmOverloads constructor(
                     }
                     transX = -distanceX
                     transY = -distanceY
+                    scaleListener?.onScroll(distanceX, distanceY)
                     return true
                 }
 
@@ -183,5 +186,10 @@ class ScalableImageView @JvmOverloads constructor(
             })
         gestureDetector.setIsLongpressEnabled(false)
         scaleType = ScaleType.MATRIX
+    }
+
+    interface ScaleEventListener {
+        fun onScale(scale: Float, xFocus: Float, yFocus: Float)
+        fun onScroll(xScroll: Float, yScroll: Float)
     }
 }
