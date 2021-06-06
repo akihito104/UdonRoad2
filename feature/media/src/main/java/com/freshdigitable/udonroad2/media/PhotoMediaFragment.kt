@@ -69,6 +69,7 @@ class PhotoMediaFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         view.setOnClickListener { mediaViewModel.toggleSystemUiVisibility.dispatch() }
+        (view as? ScalableImageView)?.scaleListener = mediaViewModel
 
         val imageView = view as ImageView
 

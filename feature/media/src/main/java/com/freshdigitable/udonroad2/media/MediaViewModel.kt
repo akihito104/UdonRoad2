@@ -27,6 +27,7 @@ import androidx.lifecycle.viewModelScope
 import com.freshdigitable.fabshortcut.FlingFAB
 import com.freshdigitable.udonroad2.data.impl.MediaRepository
 import com.freshdigitable.udonroad2.data.impl.TweetRepository
+import com.freshdigitable.udonroad2.media.MediaViewModelViewStates.Snapshot.Companion.updateScale
 import com.freshdigitable.udonroad2.model.MediaEntity
 import com.freshdigitable.udonroad2.model.TweetId
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEffectStream
@@ -73,13 +74,27 @@ internal class MediaViewModel @Inject constructor(
                 SystemUiVisibility.SHOW -> FlingFAB.Mode.FAB
                 else -> FlingFAB.Mode.HIDDEN
             }
+        val isPictureEnlarged: Boolean
     }
 }
 
-interface MediaEventListener {
+interface MediaEventListener : ScalableImageView.ScaleEventListener {
     val changeSystemUiVisibility: AppEventListener1<Int>
     val toggleSystemUiVisibility: AppEventListener
     val changeCurrentPosition: AppEventListener1<Int>
+    val changePictureScale: AppEventListener1<Scale>
+    val changePictureArea: AppEventListener1<Scroll>
+
+    override fun onScale(scale: Float, xFocus: Float, yFocus: Float) {
+        changePictureScale.dispatch(Scale(scale, xFocus, yFocus))
+    }
+
+    override fun onScroll(xScroll: Float, yScroll: Float) {
+        changePictureArea.dispatch(Scroll(xScroll, yScroll))
+    }
+
+    data class Scale(val scale: Float, val xFocus: Float, val yFocus: Float)
+    data class Scroll(val xScroll: Float, val yScroll: Float)
 }
 
 internal class MediaViewModelActions @Inject constructor(
@@ -89,6 +104,8 @@ internal class MediaViewModelActions @Inject constructor(
         data class CurrentPositionChanged(val index: Int) : Event()
         data class SystemUiVisibilityChanged(val visibility: SystemUiVisibility) : Event()
         object SystemUiVisibilityToggled : Event()
+        data class PictureScaleChanged(val scale: MediaEventListener.Scale) : Event()
+        data class PictureAreaChanged(val scroll: MediaEventListener.Scroll) : Event()
     }
 
     override val changeSystemUiVisibility = eventDispatcher.toAction { visibility: Int ->
@@ -98,6 +115,12 @@ internal class MediaViewModelActions @Inject constructor(
         eventDispatcher.toAction(Event.SystemUiVisibilityToggled)
     override val changeCurrentPosition = eventDispatcher.toAction { pos: Int ->
         Event.CurrentPositionChanged(pos)
+    }
+    override val changePictureScale = eventDispatcher.toAction { scale: MediaEventListener.Scale ->
+        Event.PictureScaleChanged(scale)
+    }
+    override val changePictureArea = eventDispatcher.toAction { scroll: MediaEventListener.Scroll ->
+        Event.PictureAreaChanged(scroll)
     }
 }
 
@@ -124,7 +147,8 @@ internal class MediaViewModelViewStates @Inject constructor(
         actions.toggleSystemUiVisibility.onEvent { s, _ ->
             s.copy(systemUiVisibility = s.systemUiVisibility.toggle())
         },
-        actions.changeCurrentPosition.onEvent { s, e -> s.copy(position = e.index) }
+        actions.changeCurrentPosition.onEvent { s, e -> s.copy(position = e.index) },
+        actions.changePictureScale.onEvent { s, e -> s.updateScale(e.scale) }
     )
 
     private data class Snapshot(
@@ -132,6 +156,7 @@ internal class MediaViewModelViewStates @Inject constructor(
         override val mediaItems: List<MediaEntity> = emptyList(),
         override val systemUiVisibility: SystemUiVisibility = SystemUiVisibility.SHOW,
         private val position: Int,
+        val scale: List<MediaEventListener.Scale?> = emptyList(),
     ) : MediaViewModel.State {
         override val currentPosition: Int?
             get() = when {
@@ -139,6 +164,20 @@ internal class MediaViewModelViewStates @Inject constructor(
                 else -> null
             }
         override val menuItemState: MenuItemState = MenuItemState()
+        override val isPictureEnlarged: Boolean
+            get() {
+                val p = currentPosition ?: return false
+                return scale.getOrNull(p)?.let { it.scale > 1.05f } ?: false
+            }
+
+        companion object {
+            fun Snapshot.updateScale(scale: MediaEventListener.Scale): Snapshot {
+                val p = currentPosition ?: return this
+                return this.copy(scale = List(mediaItems.size) {
+                    if (it == p) scale else this.scale.getOrNull(it)
+                })
+            }
+        }
     }
 }
 
