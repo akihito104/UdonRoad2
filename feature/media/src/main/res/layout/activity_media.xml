@@ -42,7 +42,7 @@
             android:layout_height="match_parent"
             android:onClick="@{v -> viewModel.toggleSystemUiVisibility.dispatch()}"
             app:currentItem="@{viewModel.state.currentPosition}"
-            app:userInputEnabled="@{!viewModel.state.pictureEnlarged}"
+            app:userInputEnabled="@{viewModel.state.userInputEnabled}"
             />
 
         <androidx.appcompat.widget.Toolbar

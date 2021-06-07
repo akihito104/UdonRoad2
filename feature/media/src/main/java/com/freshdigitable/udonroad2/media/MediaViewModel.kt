@@ -74,7 +74,7 @@ internal class MediaViewModel @Inject constructor(
                 SystemUiVisibility.SHOW -> FlingFAB.Mode.FAB
                 else -> FlingFAB.Mode.HIDDEN
             }
-        val isPictureEnlarged: Boolean
+        val isUserInputEnabled: Boolean
     }
 }
 
@@ -164,10 +164,14 @@ internal class MediaViewModelViewStates @Inject constructor(
                 else -> null
             }
         override val menuItemState: MenuItemState = MenuItemState()
-        override val isPictureEnlarged: Boolean
+        override val isUserInputEnabled: Boolean
             get() {
+                if (mediaItems.size <= 1) {
+                    return false
+                }
                 val p = currentPosition ?: return false
-                return scale.getOrNull(p)?.let { it.scale > 1.05f } ?: false
+                val s = scale.getOrNull(p) ?: return false
+                return s.scale < 1.05f
             }
 
         companion object {

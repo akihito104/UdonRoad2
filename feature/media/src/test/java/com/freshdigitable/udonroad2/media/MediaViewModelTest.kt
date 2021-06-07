@@ -101,7 +101,7 @@ class MediaViewModelTest {
         assertThat(sut.state.value?.currentPosition).isNull()
         assertThat(sut.systemUiVisibility.value).isEqualTo(SystemUiVisibility.SHOW)
         assertThat(sut.shortcutState.value?.mode).isEqualTo(FlingFAB.Mode.FAB)
-        assertThat(sut.state.value?.isPictureEnlarged).isFalse()
+        assertThat(sut.state.value?.isUserInputEnabled).isFalse()
     }
 
     @Test
@@ -114,6 +114,7 @@ class MediaViewModelTest {
         // verify
         assertThat(sut.mediaItems.value).hasSize(1)
         assertThat(sut.state.value?.currentPosition).isEqualTo(0)
+        assertThat(sut.state.value?.isUserInputEnabled).isFalse()
     }
 
     @Test
@@ -127,28 +128,19 @@ class MediaViewModelTest {
     }
 
     @Test
-    fun isPictureEnlarged_receiveItem_then_false() {
+    fun onScale_scale1_2_then_userInputEnabledIsTrue() {
         // setup
         coroutineRule.runBlockingTest {
             mediaEntitySource.emit(listOf(mockk()))
         }
-        assertThat(sut.state.value?.isPictureEnlarged).isFalse()
-    }
-
-    @Test
-    fun onScale_scale1_2_then_isPictureEnlargedIsTrue() {
-        // setup
-        coroutineRule.runBlockingTest {
-            mediaEntitySource.emit(listOf(mockk()))
-        }
-        assertThat(sut.state.value?.isPictureEnlarged).isFalse()
+        assertThat(sut.state.value?.isUserInputEnabled).isFalse()
 
         // exercise
         sut.onScale(1.2f, 100f, 100f)
 
         // verify
         assertThat(sut.state.value?.currentPosition).isEqualTo(0)
-        assertThat(sut.state.value?.isPictureEnlarged).isTrue()
+        assertThat(sut.state.value?.isUserInputEnabled).isFalse()
     }
 
     @Test
@@ -164,11 +156,11 @@ class MediaViewModelTest {
 
         // verify
         assertThat(sut.state.value?.currentPosition).isEqualTo(1)
-        assertThat(sut.state.value?.isPictureEnlarged).isFalse()
+        assertThat(sut.state.value?.isUserInputEnabled).isFalse()
     }
 
     @Test
-    fun changeCurrentPosition_goNextPageAndBack_then_isPictureEnlargedTrue() {
+    fun changeCurrentPosition_goNextPageAndBack_then_userInputEnabledIsTrue() {
         // setup
         coroutineRule.runBlockingTest {
             mediaEntitySource.emit(listOf(mockk(), mockk()))
@@ -181,11 +173,11 @@ class MediaViewModelTest {
 
         // verify
         assertThat(sut.state.value?.currentPosition).isEqualTo(0)
-        assertThat(sut.state.value?.isPictureEnlarged).isTrue()
+        assertThat(sut.state.value?.isUserInputEnabled).isFalse()
     }
 
     @Test
-    fun changeCurrentPosition_backToScaleUpPage_then_isPictureEnlargedTrue() {
+    fun changeCurrentPosition_backToScaleUpPage_then_userInputEnabledIsTrue() {
         // setup
         coroutineRule.runBlockingTest {
             mediaEntitySource.emit(listOf(mockk(), mockk()))
@@ -199,6 +191,6 @@ class MediaViewModelTest {
 
         // verify
         assertThat(sut.state.value?.currentPosition).isEqualTo(0)
-        assertThat(sut.state.value?.isPictureEnlarged).isTrue()
+        assertThat(sut.state.value?.isUserInputEnabled).isFalse()
     }
 }
