@@ -149,6 +149,7 @@ class MediaViewModelTest {
         coroutineRule.runBlockingTest {
             mediaEntitySource.emit(listOf(mockk(), mockk()))
         }
+        assertThat(sut.state.value?.isUserInputEnabled).isTrue()
         sut.onScale(1.2f, 100f, 100f)
 
         // exercise
@@ -156,7 +157,7 @@ class MediaViewModelTest {
 
         // verify
         assertThat(sut.state.value?.currentPosition).isEqualTo(1)
-        assertThat(sut.state.value?.isUserInputEnabled).isFalse()
+        assertThat(sut.state.value?.isUserInputEnabled).isTrue()
     }
 
     @Test

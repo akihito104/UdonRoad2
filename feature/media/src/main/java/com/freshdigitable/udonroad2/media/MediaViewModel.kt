@@ -170,7 +170,7 @@ internal class MediaViewModelViewStates @Inject constructor(
                     return false
                 }
                 val p = currentPosition ?: return false
-                val s = scale.getOrNull(p) ?: return false
+                val s = scale.getOrNull(p) ?: return true
                 return s.scale < 1.05f
             }
 
