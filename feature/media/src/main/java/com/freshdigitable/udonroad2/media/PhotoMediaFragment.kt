@@ -19,7 +19,9 @@ package com.freshdigitable.udonroad2.media
 import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
+import android.view.ViewConfiguration
 import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
@@ -29,6 +31,9 @@ import com.bumptech.glide.request.RequestOptions
 import com.freshdigitable.udonroad2.media.di.GlideApp
 import com.freshdigitable.udonroad2.model.MediaEntity
 import dagger.android.support.AndroidSupportInjection
+import kotlin.math.abs
+import kotlin.math.atan2
+import kotlin.math.hypot
 
 class PhotoMediaFragment : Fragment() {
 
@@ -69,6 +74,45 @@ class PhotoMediaFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         view.setOnClickListener { mediaViewModel.toggleSystemUiVisibility.dispatch() }
+        view.setOnTouchListener(object : View.OnTouchListener {
+            private val LOWER_THRESHOLD = (90 - 10) * Math.PI / 180
+            private val UPPER_THRESHOLD = (90 + 10) * Math.PI / 180
+            private var oldEvent: MotionEvent? = null
+                set(value) {
+                    field?.recycle()
+                    field = value
+                }
+
+            override fun onTouch(v: View?, event: MotionEvent?): Boolean {
+                when (event?.actionMasked) {
+                    MotionEvent.ACTION_DOWN -> {
+                        oldEvent = MotionEvent.obtain(event)
+                        return false
+                    }
+                    MotionEvent.ACTION_UP -> {
+                        val old = oldEvent ?: return false
+                        try {
+                            val deltaX = event.getX(event.actionIndex) - old.getX(old.actionIndex)
+                            val deltaY = event.getY(event.actionIndex) - old.getY(old.actionIndex)
+                            val powDist = hypot(deltaX, deltaY)
+                            if (powDist < ViewConfiguration.get(v?.context).scaledTouchSlop) {
+                                // maybe click
+                                return false
+                            }
+                            val rad = atan2(deltaY, deltaX)
+                            val absRad = abs(rad)
+                            if (absRad > LOWER_THRESHOLD || absRad < UPPER_THRESHOLD) {
+                                // maybe swipe to longitude
+                                return true
+                            }
+                        } finally {
+                            oldEvent = null
+                        }
+                    }
+                }
+                return false
+            }
+        })
         (view as? ScalableImageView)?.scaleListener = mediaViewModel
 
         val imageView = view as ImageView
