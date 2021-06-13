@@ -36,8 +36,7 @@ import com.freshdigitable.udonroad2.test_common.jvm.createMock
 import com.google.common.truth.Truth.assertThat
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.consumeAsFlow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -56,7 +55,7 @@ class MediaViewModelTest {
         .around(tweetRepositoryRule)
         .around(mediaRepositoryRule)
 
-    private val mediaEntitySource: Channel<List<MediaEntity>> = Channel()
+    private val mediaEntitySource = MutableSharedFlow<List<MediaEntity>>()
     private val tweetListItem: TweetListItem = TweetListItem.createMock(
         originalTweetId = TweetId(1000),
         body = TweetElement.createMock(TweetId(1000), media = listOf(mockk())),
@@ -85,7 +84,7 @@ class MediaViewModelTest {
     fun setup() {
         mediaRepositoryRule.setupResponseWithVerify(
             { mediaRepositoryRule.mock.getMediaItemSource(tweetListItem.originalId) },
-            mediaEntitySource.consumeAsFlow()
+            mediaEntitySource
         )
         with(sut) {
             listOf(state, mediaItems, systemUiVisibility, shortcutState).forEach {
@@ -102,18 +101,20 @@ class MediaViewModelTest {
         assertThat(sut.state.value?.currentPosition).isNull()
         assertThat(sut.systemUiVisibility.value).isEqualTo(SystemUiVisibility.SHOW)
         assertThat(sut.shortcutState.value?.mode).isEqualTo(FlingFAB.Mode.FAB)
+        assertThat(sut.state.value?.isUserInputEnabled).isFalse()
     }
 
     @Test
-    fun setTweetId_foundTweetItem_mediaItewHasItem() {
+    fun setTweetId_foundTweetItem_mediaItemsHasItem() {
         // exercise
         coroutineRule.runBlockingTest {
-            mediaEntitySource.send(listOf(mockk()))
+            mediaEntitySource.emit(listOf(mockk()))
         }
 
         // verify
         assertThat(sut.mediaItems.value).hasSize(1)
         assertThat(sut.state.value?.currentPosition).isEqualTo(0)
+        assertThat(sut.state.value?.isUserInputEnabled).isFalse()
     }
 
     @Test
@@ -124,5 +125,73 @@ class MediaViewModelTest {
         // verify
         assertThat(sut.systemUiVisibility.value).isEqualTo(SystemUiVisibility.HIDE)
         assertThat(sut.shortcutState.value?.mode).isEqualTo(FlingFAB.Mode.HIDDEN)
+    }
+
+    @Test
+    fun onScale_scale1_2_then_userInputEnabledIsTrue() {
+        // setup
+        coroutineRule.runBlockingTest {
+            mediaEntitySource.emit(listOf(mockk()))
+        }
+        assertThat(sut.state.value?.isUserInputEnabled).isFalse()
+
+        // exercise
+        sut.onScale(1.2f, 100f, 100f)
+
+        // verify
+        assertThat(sut.state.value?.currentPosition).isEqualTo(0)
+        assertThat(sut.state.value?.isUserInputEnabled).isFalse()
+    }
+
+    @Test
+    fun changeCurrentPosition_callAfterOnScale_then_false() {
+        // setup
+        coroutineRule.runBlockingTest {
+            mediaEntitySource.emit(listOf(mockk(), mockk()))
+        }
+        assertThat(sut.state.value?.isUserInputEnabled).isTrue()
+        sut.onScale(1.2f, 100f, 100f)
+
+        // exercise
+        sut.changeCurrentPosition.dispatch(1)
+
+        // verify
+        assertThat(sut.state.value?.currentPosition).isEqualTo(1)
+        assertThat(sut.state.value?.isUserInputEnabled).isTrue()
+    }
+
+    @Test
+    fun changeCurrentPosition_goNextPageAndBack_then_userInputEnabledIsTrue() {
+        // setup
+        coroutineRule.runBlockingTest {
+            mediaEntitySource.emit(listOf(mockk(), mockk()))
+        }
+        sut.onScale(1.2f, 100f, 100f)
+
+        // exercise
+        sut.changeCurrentPosition.dispatch(1)
+        sut.changeCurrentPosition.dispatch(0)
+
+        // verify
+        assertThat(sut.state.value?.currentPosition).isEqualTo(0)
+        assertThat(sut.state.value?.isUserInputEnabled).isFalse()
+    }
+
+    @Test
+    fun changeCurrentPosition_backToScaleUpPage_then_userInputEnabledIsTrue() {
+        // setup
+        coroutineRule.runBlockingTest {
+            mediaEntitySource.emit(listOf(mockk(), mockk()))
+        }
+        sut.onScale(1.2f, 100f, 100f)
+        sut.changeCurrentPosition.dispatch(1)
+        sut.onScale(1.5f, 100f, 100f)
+
+        // exercise
+        sut.changeCurrentPosition.dispatch(0)
+
+        // verify
+        assertThat(sut.state.value?.currentPosition).isEqualTo(0)
+        assertThat(sut.state.value?.isUserInputEnabled).isFalse()
     }
 }
