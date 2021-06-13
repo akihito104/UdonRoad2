@@ -59,7 +59,6 @@ internal class TimelineViewModel(
     override val mediaState: LiveData<TweetMediaItemViewModel.State> = viewModelSource.mediaState
         .asLiveData(viewModelScope.coroutineContext)
     override val listState: LiveData<ListItemLoadableViewModel.State> = state
-        .distinctUntilChangedBy { it.isHeadingEnabled }
         .asLiveData(viewModelScope.coroutineContext)
     override val timeline: Flow<PagingData<Any>> = viewModelSource.pagedList
         .cachedIn(viewModelScope)
