@@ -51,8 +51,6 @@ class TimelineViewModelTest {
         )
     }
 
-    private val isHeadingEnabledFlow: List<Boolean>
-        get() = eventCollector.nonNullEventsOf(sut.listState).map { it.isHeadingEnabled }
     private val navigationEvents: List<AppEffect>
         get() = eventCollector.nonNullEventsOf(sut.effect)
 
@@ -110,7 +108,7 @@ class TimelineViewModelTest {
         }
 
         // verify
-        assertThat(isHeadingEnabledFlow).containsExactly(false, true, false)
+        assertThat(sut.listState.value?.isHeadingEnabled).isFalse()
     }
 
     @Test

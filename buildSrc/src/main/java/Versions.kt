@@ -32,7 +32,7 @@ object Versions {
     const val ANDROIDX_RECYCLER_VIEW = "1.2.0"
     const val ANDROIDX_CONSTRAINT_LAYOUT = "2.0.0-beta6"
     const val ANDROIDX_VIEWPAGER2 = "1.0.0-beta03"
-    const val ANDROIDX_SWIPE_REFRESH_LAYOUT = "1.0.0"
+    const val ANDROIDX_SWIPE_REFRESH_LAYOUT = "1.1.0"
     const val ANDROIDX_PREFERENCE = "1.1.1"
 
     const val DAGGER = "2.29.1"

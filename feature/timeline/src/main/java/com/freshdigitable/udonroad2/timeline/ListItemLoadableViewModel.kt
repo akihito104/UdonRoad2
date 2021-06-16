@@ -7,6 +7,8 @@ import com.freshdigitable.udonroad2.data.ListRepository
 import com.freshdigitable.udonroad2.data.PagedListProvider
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.QueryType
+import com.freshdigitable.udonroad2.model.app.LoadingResult
+import com.freshdigitable.udonroad2.model.app.load
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEffectStream
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction
 import com.freshdigitable.udonroad2.model.app.navigation.AppAction1
@@ -20,6 +22,8 @@ import com.freshdigitable.udonroad2.model.app.onEvent
 import com.freshdigitable.udonroad2.model.app.stateSourceBuilder
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.receiveAsFlow
 import javax.inject.Inject
 
@@ -31,6 +35,7 @@ interface ListItemLoadableViewModel<Q : QueryType> :
 
     interface State {
         val isHeadingEnabled: Boolean
+        val isPrepending: Boolean
     }
 }
 
@@ -89,12 +94,24 @@ internal class ListItemLoadableViewStateImpl(
                 enableHeading = false,
             )
         },
-        actions.prependList.onEvent { state, _ ->
-            val items = listRepository.prependList(owner.query, owner.id)
-            val firstVisibleItemPosition = state.firstVisibleItemPosition + items.size
-            Snapshot(
-                firstVisibleItemPosition = firstVisibleItemPosition,
-            )
+        actions.prependList.flatMapLatest {
+            flow {
+                emit(LoadingResult.Started)
+                emit(listRepository.load { prependList(owner.query, owner.id) })
+            }
+        }.onEvent { state, result ->
+            when (result) {
+                is LoadingResult.Started -> state.copy(isPrepending = true)
+                is LoadingResult.Loaded -> {
+                    val items = result.value
+                    val firstVisibleItemPosition = state.firstVisibleItemPosition + items.size
+                    Snapshot(
+                        firstVisibleItemPosition = firstVisibleItemPosition,
+                        isPrepending = false,
+                    )
+                }
+                is LoadingResult.Failed -> state.copy(isPrepending = false)
+            }
         },
         actions.heading.onEvent { s, _ ->
             if (s.firstVisibleItemPosition > 0) {
@@ -115,6 +132,7 @@ internal class ListItemLoadableViewStateImpl(
     internal data class Snapshot(
         val firstVisibleItemPosition: Int = RecyclerView.NO_POSITION,
         val enableHeading: Boolean = false,
+        override val isPrepending: Boolean = false,
     ) : ListItemLoadableViewModel.State {
         override val isHeadingEnabled: Boolean
             get() = enableHeading || when (firstVisibleItemPosition) {

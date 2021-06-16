@@ -87,6 +87,8 @@ data class TimelineState(
 ) : ListItemLoadableViewModel.State, TweetListItemViewModel.State {
     override val isHeadingEnabled: Boolean
         get() = baseState?.isHeadingEnabled == true || selectedItemId != null
+    override val isPrepending: Boolean
+        get() = baseState?.isPrepending ?: false
 }
 
 class TimelineEffectDelegate @Inject constructor(

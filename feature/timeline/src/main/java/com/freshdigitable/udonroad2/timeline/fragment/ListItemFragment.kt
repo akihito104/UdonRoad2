@@ -12,7 +12,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asFlow
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.map
 import androidx.navigation.fragment.navArgs
 import androidx.paging.LoadState
 import androidx.paging.PagingDataAdapter
@@ -33,7 +35,11 @@ import com.freshdigitable.udonroad2.timeline.di.viewModel
 import dagger.android.support.AndroidSupportInjection
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 class ListItemFragment : Fragment() {
@@ -78,10 +84,16 @@ class ListItemFragment : Fragment() {
 
         val swipeRefresh = binding.mainSwipeRefresh
         viewLifecycleOwner.lifecycleScope.launchWhenResumed {
-            adapter.loadStateFlow.collectLatest {
-                swipeRefresh.isRefreshing = it.refresh is LoadState.Loading ||
-                    it.append is LoadState.Loading ||
-                    it.prepend is LoadState.Loading
+            merge(
+                adapter.loadStateFlow.mapLatest {
+                    it.refresh is LoadState.Loading ||
+                        it.append is LoadState.Loading ||
+                        it.prepend is LoadState.Loading
+                }.distinctUntilChanged(),
+                viewModel.listState.map { it.isPrepending }.asFlow().distinctUntilChanged(),
+            ).collectLatest {
+                Timber.tag("ListItemFragment").d("loadState: $it")
+                swipeRefresh.isRefreshing = it
             }
         }
 
