@@ -101,6 +101,10 @@ internal class TweetInputViewModelSource @Inject constructor(
     appExecutor: AppExecutor,
 ) : TweetInputEventListener by actions {
     private val idlingState = if (collapsible) InputTaskState.IDLING else InputTaskState.OPENED
+    internal val menuItemOnIdling = when {
+        collapsible -> InputMenuItem.WRITE_ENABLED
+        else -> InputMenuItem.SEND_DISABLED
+    }
 
     internal val state: Flow<InputViewState> = stateSourceBuilder(
         init = InputViewState(taskState = idlingState).also {
