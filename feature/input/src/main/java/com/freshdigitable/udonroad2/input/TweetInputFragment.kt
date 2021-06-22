@@ -167,7 +167,7 @@ class TweetInputFragment : Fragment() {
 
     override fun onPrepareOptionsMenu(menu: Menu) {
         super.onPrepareOptionsMenu(menu)
-        val available = viewModel.menuItem.value ?: return
+        val available = viewModel.menuItem.value ?: viewModel.menuItemOnIdling
         menu.prepareItem(available)
     }
 

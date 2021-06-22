@@ -44,6 +44,7 @@ internal class TweetInputViewModel @Inject constructor(
     val user: LiveData<UserEntity?> =
         viewModelSource.user.asLiveData(viewModelScope.coroutineContext)
     internal val menuItem = state.map { it.menuItem }.distinctUntilChanged()
+    internal val menuItemOnIdling = viewModelSource.menuItemOnIdling
 
     val expandAnimationEvent: Flow<TweetInputEvent.Opened> = viewModelSource.expandAnimationEvent
     internal val chooserForCameraApp = viewModelSource.chooserForCameraApp
