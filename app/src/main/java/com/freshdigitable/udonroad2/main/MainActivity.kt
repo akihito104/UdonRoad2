@@ -79,12 +79,7 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
             supportActionBar?.title = it?.invoke(this) ?: ""
         }
 
-        supportFragmentManager.commit {
-            add<TweetInputFragment>(
-                binding.mainInputContainer.id,
-                args = TweetInputFragmentArgs(true).toBundle()
-            )
-        }
+        setupTweetInput()
         viewModel.isTweetInputMenuVisible.observe(this) {
             val tweetInputFragment =
                 supportFragmentManager.findFragmentById(binding.mainInputContainer.id)
@@ -125,6 +120,19 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
         }
 
         viewModel.initialEvent()
+    }
+
+    private fun setupTweetInput() {
+        val fragment = supportFragmentManager.findFragmentById(R.id.main_inputContainer)
+        if (fragment != null) {
+            return
+        }
+        supportFragmentManager.commit {
+            add<TweetInputFragment>(
+                R.id.main_inputContainer,
+                args = TweetInputFragmentArgs(true).toBundle()
+            )
+        }
     }
 
     private fun DrawerLayout.bindOpenState(isOpened: Boolean, navView: NavigationView) {
