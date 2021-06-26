@@ -18,6 +18,7 @@ package com.freshdigitable.udonroad2.main
 
 import android.animation.Animator
 import android.animation.ObjectAnimator
+import android.os.Build
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -171,7 +172,21 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
     }
 
     override fun onBackPressed() {
-        if (!viewModel.onBackPressed()) super.onBackPressed()
+        if (viewModel.onBackPressed()) return
+        // https://issuetracker.google.com/issues/139738913
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q) {
+            val shouldFinishForBackStackCount = supportFragmentManager.run {
+                primaryNavigationFragment?.childFragmentManager?.backStackEntryCount ?: 0 == 0 &&
+                    backStackEntryCount == 0
+            }
+            if (isTaskRoot && shouldFinishForBackStackCount) {
+                finishAfterTransition()
+            } else {
+                super.onBackPressed()
+            }
+        } else {
+            super.onBackPressed()
+        }
     }
 
     override fun onSupportNavigateUp(): Boolean {
