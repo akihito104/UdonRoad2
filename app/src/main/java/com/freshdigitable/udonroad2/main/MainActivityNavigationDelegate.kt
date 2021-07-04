@@ -10,6 +10,7 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.fragment.findNavController
@@ -116,6 +117,11 @@ internal class MainActivityNavigationDelegate @Inject constructor(
                 activity.startActivity(intent)
             }
             is FeedbackMessage -> feedbackDelegate.dispatchFeedbackMessage(event)
+            is TimelineEffect.Navigate.Home -> {
+                while (navController.currentBackStackEntry?.isHomeTimeline == false) {
+                    navController.popBackStack()
+                }
+            }
         }
     }
 
@@ -175,6 +181,15 @@ internal class MainActivityNavigationDelegate @Inject constructor(
                 navController.removeOnDestinationChangedListener(onDestinationChanged)
             else -> Unit
         }
+    }
+
+    companion object {
+        private val NavBackStackEntry.isHomeTimeline: Boolean
+            get() {
+                if (destination.id != R.id.fragment_timeline) return false
+                val args = ListItemFragmentArgs.fromBundle(requireNotNull(arguments))
+                return args.query == QueryType.Tweet.Timeline()
+            }
     }
 }
 
