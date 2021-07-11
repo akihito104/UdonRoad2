@@ -98,7 +98,7 @@ internal class DrawerActions @Inject constructor(
         title: CharSequence,
     ): Boolean {
         when (itemId) {
-//            R.id.menu_item_drawer_home -> MainActivityEvent.DrawerEvent.HomeClicked
+            R.id.menu_item_drawer_home -> popToHome.dispatch()
             R.id.menu_item_drawer_add_account -> launchOAuth.dispatch()
             R.id.menu_item_drawer_lists -> launchCustomTimelineList.dispatch()
             else -> {
@@ -129,7 +129,10 @@ internal class DrawerViewModelSource @Inject constructor(
         actions.showDrawerMenu.onEvent { state, _ -> state.copy(isOpened = true) },
         actions.hideDrawerMenu.onEvent { state, _ -> state.toClosedState() },
 
-        actions.popToHome.onEvent { state, _ -> state.toClosedState() }, // TODO
+        actions.popToHome.onEvent { state, _ ->
+            navEventChannel.send(TimelineEffect.Navigate.Home)
+            state.toClosedState()
+        },
         actions.launchCustomTimelineList.onEvent { state, _ ->
             val userId = requireNotNull(state.currentUser).id
             navEventChannel.sendTimelineEvent(

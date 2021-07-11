@@ -43,6 +43,8 @@ sealed class TimelineEffect : AppEffect {
         ) : Navigate() {
             companion object
         }
+
+        object Home : Navigate()
     }
 }
 
