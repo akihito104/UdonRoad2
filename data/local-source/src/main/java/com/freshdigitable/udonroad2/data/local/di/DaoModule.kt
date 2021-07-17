@@ -47,7 +47,7 @@ object DatabaseModule {
     @Provides
     @Singleton
     fun provideAppDatabase(app: Application): AppDatabase =
-        Room.inMemoryDatabaseBuilder(app, AppDatabase::class.java)
+        Room.databaseBuilder(app, AppDatabase::class.java, "twitter_storage")
             .fallbackToDestructiveMigration()
             .build()
 }
@@ -63,7 +63,7 @@ internal object DaoModule {
     @Provides
     fun provideConversationListDao(
         db: AppDatabase,
-        tweetListDao: TweetListDao
+        tweetListDao: TweetListDao,
     ): ConversationListDao = ConversationListDao(db, tweetListDao)
 
     @Provides
@@ -93,7 +93,7 @@ internal interface LocalSourceModuleInternal {
 
     @Binds
     fun bindAppSettingDataSourceLocal(
-        source: SharedPreferenceDataSource
+        source: SharedPreferenceDataSource,
     ): AppSettingDataSource.Local
 
     @Binds
