@@ -85,7 +85,7 @@ internal class OauthViewModelSource(
 
     override val effect: Flow<AppEffect.Navigation> = navigationChannel.receiveAsFlow()
 
-    override suspend fun clear() {
+    override fun clear() {
         super.clear()
         navigationChannel.close()
     }

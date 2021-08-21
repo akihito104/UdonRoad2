@@ -28,7 +28,7 @@ import kotlinx.coroutines.flow.merge
 import javax.inject.Inject
 
 internal class CustomTimelineListViewModel(
-    viewModelSource: CustomTimelineListItemLoadableViewState,
+    private val viewModelSource: CustomTimelineListItemLoadableViewState,
     userIconViewModelSource: UserIconViewModelSource,
 ) : ListItemLoadableViewModel<CustomTimelineList>,
     ListItemLoadableEventListener by viewModelSource,
@@ -44,6 +44,11 @@ internal class CustomTimelineListViewModel(
         viewModelSource.effect,
         userIconViewModelSource.navEvent,
     )
+
+    override fun onCleared() {
+        super.onCleared()
+        viewModelSource.clear()
+    }
 }
 
 internal class CustomTimelineListActions @Inject constructor(

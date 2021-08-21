@@ -7,6 +7,7 @@ import com.freshdigitable.udonroad2.data.ListRepository
 import com.freshdigitable.udonroad2.data.PagedListProvider
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.QueryType
+import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.LoadingResult
 import com.freshdigitable.udonroad2.model.app.load
 import com.freshdigitable.udonroad2.model.app.navigation.ActivityEffectStream
@@ -25,6 +26,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 interface ListItemLoadableViewModel<Q : QueryType> :
@@ -70,7 +73,13 @@ interface ListItemLoadableViewModelSource : ListItemLoadableEventListener, Activ
     val pagedList: Flow<PagingData<Any>>
     val state: Flow<ListItemLoadableViewModel.State>
 
-    suspend fun clear() {}
+    /**
+     * clear state or dispose some resources.
+     *
+     * expected to be called on androidx.lifecycle.ViewModel.onCleared(),
+     * defined as plain (not suspended) function.
+     */
+    fun clear() {}
 }
 
 internal class ListItemLoadableViewStateImpl(
@@ -78,6 +87,7 @@ internal class ListItemLoadableViewStateImpl(
     actions: ListItemLoadableAction,
     private val listRepository: ListRepository<QueryType, Any>,
     pagedListProvider: PagedListProvider<QueryType, Any>,
+    private val appExecutor: AppExecutor,
 ) : ListItemLoadableViewModelSource,
     ListItemLoadableEventListener by actions,
     ActivityEffectStream {
@@ -124,9 +134,12 @@ internal class ListItemLoadableViewStateImpl(
 
     override val effect: Flow<AppEffect> = channel.receiveAsFlow()
 
-    override suspend fun clear() {
+    override fun clear() {
         channel.close()
-        listRepository.clear(owner.id)
+        Timber.tag("ListItemLoadableVS").d("clear: $owner")
+        appExecutor.launch {
+            listRepository.clear(owner.id)
+        }
     }
 
     internal data class Snapshot(

@@ -41,7 +41,7 @@ import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.shareIn
 
 internal class TimelineViewModel(
-    viewModelSource: TimelineViewModelSource,
+    private val viewModelSource: TimelineViewModelSource,
     userIconViewModelSource: UserIconViewModelSource,
 ) : ListItemLoadableViewModel<Tweet>,
     ListItemLoadableEventListener by viewModelSource,
@@ -66,4 +66,9 @@ internal class TimelineViewModel(
         viewModelSource.effect,
         userIconViewModelSource.navEvent
     )
+
+    override fun onCleared() {
+        super.onCleared()
+        viewModelSource.clear()
+    }
 }
