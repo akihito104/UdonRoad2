@@ -157,7 +157,16 @@ jobs:
         with:
           path: ./**/build/test-results
           key: ${{ runner.os }}-result-${{ github.sha }}-unittest
+      - name: setup Node.js 12.x
+        uses: actions/setup-node@master
+        with:
+          node-version: 12.x
+      - name: install yarn
+        run: |
+          yarn add danger --dev
+          yarn danger init
+          yarn danger ci --dangerfile ..your-repository/dangerfile.js
       - name: Danger
-        uses: danger/kotlin@1.0.0-beta.2
+        run: yarn danger ci
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
