@@ -20,6 +20,7 @@ import android.app.Activity
 import android.app.Application
 import android.os.Bundle
 import android.view.WindowManager
+import com.freshdigitable.udonroad2.data.impl.TweetRepository
 import com.freshdigitable.udonroad2.di.AppComponent
 import com.freshdigitable.udonroad2.di.DaggerAppComponent
 import com.freshdigitable.udonroad2.model.app.AppExecutor
@@ -33,6 +34,7 @@ import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasAndroidInjector
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import java.lang.ref.WeakReference
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -58,6 +60,7 @@ open class AppApplication : HasAndroidInjector, Application() {
         val component = createComponent()
         component.setup()
         component.inject(this)
+        registerActivityLifecycleCallbacks(component.dbCleaner)
     }
 
     protected open fun createComponent(): AppComponent {
@@ -87,4 +90,36 @@ object AppSetupModule {
             login.invokeOnLaunchApp()
         }
     }
+}
+
+class DbCleaner @Inject constructor(
+    private val tweetRepository: TweetRepository,
+    private val appExecutor: AppExecutor,
+) : Application.ActivityLifecycleCallbacks {
+
+    private fun cleanTemporaryEntities() {
+        Timber.tag("DbCleaner").d("cleanTemporaryEntity")
+        appExecutor.launch {
+            tweetRepository.deleteAll()
+        }
+    }
+
+    private val created = mutableListOf<WeakReference<Activity>>()
+
+    override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
+        created.add(WeakReference(activity))
+    }
+
+    override fun onActivityDestroyed(activity: Activity) {
+        created.removeAll { it.get() == activity }
+        if (created.isEmpty() && activity.isFinishing) {
+            cleanTemporaryEntities()
+        }
+    }
+
+    override fun onActivityStarted(activity: Activity) {}
+    override fun onActivityResumed(activity: Activity) {}
+    override fun onActivityPaused(activity: Activity) {}
+    override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {}
+    override fun onActivityStopped(activity: Activity) {}
 }

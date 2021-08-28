@@ -15,7 +15,7 @@ import javax.inject.Singleton
 
 @Singleton
 class TweetApiClient @Inject constructor(
-    private val twitter: AppTwitter
+    private val twitter: AppTwitter,
 ) : TweetDataSource.Remote {
     override suspend fun findTweetEntity(tweetId: TweetId): TweetEntity = twitter.fetch {
         showStatus(tweetId.value).toEntity()
@@ -82,4 +82,5 @@ class TweetApiClient @Inject constructor(
         throw NotImplementedError()
 
     override suspend fun updateTweet(tweet: TweetEntityUpdatable) = throw NotImplementedError()
+    override suspend fun deleteAll() = throw NotImplementedError()
 }

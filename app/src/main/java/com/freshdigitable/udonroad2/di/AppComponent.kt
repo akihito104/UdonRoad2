@@ -21,6 +21,7 @@ import com.freshdigitable.udonroad2.AppApplication
 import com.freshdigitable.udonroad2.AppFileProviderImpl
 import com.freshdigitable.udonroad2.AppSetup
 import com.freshdigitable.udonroad2.AppSetupModule
+import com.freshdigitable.udonroad2.DbCleaner
 import com.freshdigitable.udonroad2.data.impl.di.RepositoryModule
 import com.freshdigitable.udonroad2.data.local.di.DatabaseModule
 import com.freshdigitable.udonroad2.data.restclient.TwitterModule
@@ -62,6 +63,7 @@ interface AppComponent {
     }
 
     val setup: AppSetup
+    val dbCleaner: DbCleaner
 
     fun inject(instance: AppApplication)
 }
