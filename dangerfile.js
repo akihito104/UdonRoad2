@@ -21,6 +21,6 @@ if (changedLine > 500) {
   warn("Big PR, try to keep changes smaller if you can");
 }
 
-if (danger.github.pr.title.contains("WIP", false)) {
+if (danger.github.pr.title.includes("WIP")) {
   warn("PR is classed as Work in Progress");
 }
