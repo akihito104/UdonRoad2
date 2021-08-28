@@ -165,7 +165,6 @@ jobs:
         run: |
           yarn add danger --dev
           yarn danger init
-          yarn danger ci --dangerfile ..your-repository/dangerfile.js
       - name: Danger
         run: yarn danger ci
         env:
