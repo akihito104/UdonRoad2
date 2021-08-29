@@ -16,7 +16,15 @@
 
 package com.freshdigitable.udonroad2.media.di
 
+import android.content.Context
+import com.bumptech.glide.GlideBuilder
 import com.bumptech.glide.annotation.GlideModule
+import com.bumptech.glide.load.engine.cache.InternalCacheDiskCacheFactory
 
 @GlideModule
-class AppGlideModule : com.bumptech.glide.module.AppGlideModule()
+class AppGlideModule : com.bumptech.glide.module.AppGlideModule() {
+    override fun applyOptions(context: Context, builder: GlideBuilder) {
+        val diskCacheSize: Long = 50 * 1024 * 1024
+        builder.setDiskCache(InternalCacheDiskCacheFactory(context, diskCacheSize))
+    }
+}
