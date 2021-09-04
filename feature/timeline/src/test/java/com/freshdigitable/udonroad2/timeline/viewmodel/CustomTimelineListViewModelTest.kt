@@ -26,6 +26,7 @@ import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.UserId
+import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
 import com.freshdigitable.udonroad2.model.app.navigation.TimelineEffect
 import com.freshdigitable.udonroad2.model.user.TweetUserItem
@@ -135,6 +136,7 @@ class ListItemLoadableViewStateRule(
             ListItemLoadableActions(owner, eventDispatcher),
             listRepository.mock,
             pagedListProvider.mock,
+            AppExecutor(dispatcher = coroutineTestRule.coroutineContextProvider),
         )
     }
 

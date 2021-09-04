@@ -14,17 +14,13 @@
  * limitations under the License.
  */
 
-package com.freshdigitable.udonroad2.media.di
+import { danger, fail, markdown, message, peril, schedule, warn } from 'danger'
 
-import android.content.Context
-import com.bumptech.glide.GlideBuilder
-import com.bumptech.glide.annotation.GlideModule
-import com.bumptech.glide.load.engine.cache.InternalCacheDiskCacheFactory
+const changedLine = danger.github.pr.additions + danger.github.deletions;
+if (changedLine > 500) {
+  warn("Big PR, try to keep changes smaller if you can");
+}
 
-@GlideModule
-class AppGlideModule : com.bumptech.glide.module.AppGlideModule() {
-    override fun applyOptions(context: Context, builder: GlideBuilder) {
-        val diskCacheSize: Long = 50 * 1024 * 1024
-        builder.setDiskCache(InternalCacheDiskCacheFactory(context, diskCacheSize))
-    }
+if (danger.github.pr.title.includes("WIP")) {
+  warn("PR is classed as Work in Progress");
 }

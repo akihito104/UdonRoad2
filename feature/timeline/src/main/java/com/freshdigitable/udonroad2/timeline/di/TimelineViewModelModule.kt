@@ -28,6 +28,7 @@ import com.freshdigitable.udonroad2.data.impl.di.pagedListProvider
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.ListOwnerGenerator
 import com.freshdigitable.udonroad2.model.QueryType
+import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.di.IntoFactory
 import com.freshdigitable.udonroad2.model.app.di.QueryTypeKey
 import com.freshdigitable.udonroad2.model.app.di.ViewModelKey
@@ -68,12 +69,19 @@ internal interface ListItemLoadableViewModelSourceModule {
             owner: ListOwner<*>,
             actions: ListItemLoadableActions,
             listRepositoryFactory: ListRepositoryComponent.Factory,
+            appExecutor: AppExecutor,
         ): ListItemLoadableViewStateImpl =
             provideViewState<QueryType, ListItemLoadableViewStateImpl>(
                 owner,
                 listRepositoryFactory
             ) { o, repository, pagedListProvider ->
-                ListItemLoadableViewStateImpl(o, actions, repository, pagedListProvider)
+                ListItemLoadableViewStateImpl(
+                    o,
+                    actions,
+                    repository,
+                    pagedListProvider,
+                    appExecutor,
+                )
             }
     }
 }
@@ -127,12 +135,19 @@ internal interface TimelineViewModelModule {
             owner: ListOwner<*>,
             actions: TimelineActions,
             listRepositoryFactory: ListRepositoryComponent.Factory,
+            appExecutor: AppExecutor,
         ): ListItemLoadableViewModelSource =
             provideViewState<QueryType, ListItemLoadableViewModelSource>(
                 owner,
                 listRepositoryFactory
             ) { o, repository, pagedListProvider ->
-                ListItemLoadableViewStateImpl(o, actions, repository, pagedListProvider)
+                ListItemLoadableViewStateImpl(
+                    o,
+                    actions,
+                    repository,
+                    pagedListProvider,
+                    appExecutor,
+                )
             }
 
         @Provides

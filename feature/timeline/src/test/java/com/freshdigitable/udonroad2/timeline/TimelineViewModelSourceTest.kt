@@ -24,6 +24,7 @@ import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.QueryType
 import com.freshdigitable.udonroad2.model.SelectedItemId
 import com.freshdigitable.udonroad2.model.TweetId
+import com.freshdigitable.udonroad2.model.app.AppExecutor
 import com.freshdigitable.udonroad2.model.app.navigation.AppEffect
 import com.freshdigitable.udonroad2.model.app.navigation.AppEvent
 import com.freshdigitable.udonroad2.model.app.navigation.EventDispatcher
@@ -130,6 +131,7 @@ class TimelineViewStatesTestRule(
                 actions,
                 listRepositoryRule.mock as ListRepository<QueryType, Any>,
                 listProviderRule.mock as PagedListProvider<QueryType, Any>,
+                AppExecutor(dispatcher = coroutineTestRule.coroutineContextProvider),
             ),
             TweetMediaViewModelSource.create(actions, appSettingRepository.mock)
         )

@@ -19,7 +19,7 @@ import com.freshdigitable.udonroad2.timeline.UserIconViewModelSource
 import kotlinx.coroutines.flow.Flow
 
 class UserListViewModel(
-    viewModelSource: ListItemLoadableViewModelSource,
+    private val viewModelSource: ListItemLoadableViewModelSource,
     userIconViewModelSource: UserIconViewModelSource,
 ) : ListItemLoadableViewModel<QueryType.User>,
     ListItemLoadableEventListener by viewModelSource,
@@ -39,4 +39,9 @@ class UserListViewModel(
                 userIconViewModelSource.launchUserInfo.dispatch(t)
             }
         }
+
+    override fun onCleared() {
+        super.onCleared()
+        viewModelSource.clear()
+    }
 }

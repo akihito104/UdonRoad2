@@ -139,7 +139,7 @@ jobs:
 
   report:
     runs-on: ubuntu-latest
-    needs: [androidLint, ktlint, unitTest]
+    needs: [ androidLint, ktlint, unitTest ]
     steps:
       - uses: actions/checkout@v2
       - name: restore lint result
@@ -157,7 +157,15 @@ jobs:
         with:
           path: ./**/build/test-results
           key: ${{ runner.os }}-result-${{ github.sha }}-unittest
+      - name: setup Node.js 12.x
+        uses: actions/setup-node@master
+        with:
+          node-version: 12.x
+      - name: install yarn
+        run: |
+          yarn add danger --dev
+          yarn danger init
       - name: Danger
-        uses: danger/kotlin@0.7.1
+        run: yarn danger ci
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -101,4 +101,10 @@ class TweetLocalDataSource @Inject constructor(
     override suspend fun deleteTweet(id: TweetId) {
         tweetDao.deleteTweet(id)
     }
+
+    override suspend fun deleteAll() {
+        db.withTransaction {
+            db.clearAllTables()
+        }
+    }
 }

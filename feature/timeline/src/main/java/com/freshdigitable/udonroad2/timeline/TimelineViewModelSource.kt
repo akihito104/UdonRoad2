@@ -75,7 +75,7 @@ internal class TimelineViewModelSource(
         baseViewModelSource.effect,
     )
 
-    override suspend fun clear() {
+    override fun clear() {
         super.clear()
         baseViewModelSource.clear()
     }

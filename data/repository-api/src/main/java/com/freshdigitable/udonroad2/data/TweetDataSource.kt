@@ -35,6 +35,7 @@ interface TweetDataSource {
     suspend fun updateTweet(tweet: TweetEntityUpdatable)
 
     suspend fun deleteTweet(id: TweetId)
+    suspend fun deleteAll()
 
     interface Local : TweetDataSource
     interface Remote : TweetDataSource
