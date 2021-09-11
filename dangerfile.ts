@@ -16,7 +16,7 @@
 
 import { danger, fail, markdown, message, peril, schedule, warn } from 'danger'
 
-const changedLine = danger.github.pr.additions + danger.github.deletions;
+const changedLine = danger.github.pr.additions + danger.github.pr.deletions;
 if (changedLine > 500) {
   warn("Big PR, try to keep changes smaller if you can");
 }
