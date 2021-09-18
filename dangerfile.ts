@@ -15,10 +15,12 @@
  */
 
 import { danger, fail, markdown, message, peril, schedule, warn } from 'danger'
-import reporter from "danger-plugin-lint-report/dist/index.js";
+
+const reporter = require("danger-plugin-lint-report");
 
 const changedLine = danger.github.pr.additions + danger.github.pr.deletions;
-danger.git.linesOfCode("yarn.lock").then((ignored: number) => {
+danger.git.linesOfCode("yarn.lock").then((ignored) => {
+  console.log("ignored lines: ", ignored);
   if (changedLine - ignored > 500) {
     warn("Big PR, try to keep changes smaller if you can");
   }  
