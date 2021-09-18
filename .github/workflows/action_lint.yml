@@ -161,6 +161,8 @@ jobs:
         uses: actions/setup-node@master
         with:
           node-version: 12.x
+      - name: install yarn
+        run: npm install -g yarn
       - name: yarn install
         run: |
           yarn install --frozen-lockfile
