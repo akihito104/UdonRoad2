@@ -15,7 +15,7 @@
  */
 
 import { danger, fail, markdown, message, peril, schedule, warn } from 'danger'
-import reporter from "danger-plugin-lint-report";
+import reporter from "danger-plugin-lint-report/dist/index.js";
 
 const changedLine = danger.github.pr.additions + danger.github.pr.deletions;
 danger.git.linesOfCode("yarn.lock").then((ignored: number) => {
