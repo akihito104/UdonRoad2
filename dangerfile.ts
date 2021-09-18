@@ -18,9 +18,11 @@ import { danger, fail, markdown, message, peril, schedule, warn } from 'danger'
 import reporter from "danger-plugin-lint-report";
 
 const changedLine = danger.github.pr.additions + danger.github.pr.deletions;
-if (changedLine > 500) {
-  warn("Big PR, try to keep changes smaller if you can");
-}
+danger.git.linesOfCode("yarn.lock").then((ignored: number) => {
+  if (changedLine - ignored > 500) {
+    warn("Big PR, try to keep changes smaller if you can");
+  }  
+});
 
 if (danger.github.pr.title.includes("WIP")) {
   warn("PR is classed as Work in Progress");
