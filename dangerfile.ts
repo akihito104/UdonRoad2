@@ -15,6 +15,7 @@
  */
 
 import { danger, fail, markdown, message, peril, schedule, warn } from 'danger'
+import reporter from "danger-plugin-lint-report";
 
 const changedLine = danger.github.pr.additions + danger.github.pr.deletions;
 if (changedLine > 500) {
@@ -24,3 +25,9 @@ if (changedLine > 500) {
 if (danger.github.pr.title.includes("WIP")) {
   warn("PR is classed as Work in Progress");
 }
+
+schedule(reporter.scan({
+    fileMask: "**/build/reports/ktlint/**/*.xml",
+    reportSeverity: true,
+    requireLineModification: true,
+}));
