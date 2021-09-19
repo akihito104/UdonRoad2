@@ -10,3 +10,5 @@
 **/licenses.html
 
 !.idea/codeStyles
+
+node_modules/

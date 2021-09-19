@@ -20,7 +20,7 @@ import java.io.Serializable
 
 data class ListOwner<Q : QueryType>(
     val id: ListId,
-    val query: Q
+    val query: Q,
 ) : Serializable {
     constructor(id: Int, query: Q) : this(ListId(id), query)
 

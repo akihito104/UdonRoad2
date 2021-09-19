@@ -56,6 +56,9 @@ subprojects {
         outputToConsole.set(true)
         outputColorName.set("RED")
         ignoreFailures.set(true)
+        reporters {
+            reporter(org.jlleitschuh.gradle.ktlint.reporter.ReporterType.CHECKSTYLE)
+        }
     }
 
     if (path.startsWith(":test-")) {

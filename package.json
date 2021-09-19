@@ -1,0 +1,6 @@
+{
+  "devDependencies": {
+    "danger": "^10.6.6",
+    "danger-plugin-lint-report": "^1.5.4"
+  }
+}
