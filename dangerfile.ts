@@ -31,7 +31,7 @@ if (danger.github.pr.title.includes("WIP")) {
 }
 
 schedule(reporter.scan({
-    fileMask: "**/build/reports/ktlint/**/*.txt",
+    fileMask: "**/build/reports/ktlint/**/ktlint*.xml",
     reportSeverity: true,
     requireLineModification: true,
 }));
