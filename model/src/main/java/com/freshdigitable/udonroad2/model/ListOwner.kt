@@ -57,10 +57,7 @@ interface ListEntity {
 data class ListId(val value: Int) : Serializable
 
 interface ListOwnerGenerator {
-    suspend fun <Q : QueryType> generate(
-        type:
-        Q,
-    ): ListOwner<Q>
+    suspend fun <Q : QueryType> generate(type: Q): ListOwner<Q>
 
     companion object
 }
