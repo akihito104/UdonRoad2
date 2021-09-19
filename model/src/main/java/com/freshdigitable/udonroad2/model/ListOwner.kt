@@ -20,7 +20,7 @@ import java.io.Serializable
 
 data class ListOwner<Q : QueryType>(
     val id: ListId,
-    val query: Q
+    val query: Q,
 ) : Serializable {
     constructor(id: Int, query: Q) : this(ListId(id), query)
 
@@ -57,7 +57,10 @@ interface ListEntity {
 data class ListId(val value: Int) : Serializable
 
 interface ListOwnerGenerator {
-    suspend fun <Q : QueryType> generate(type: Q): ListOwner<Q>
+    suspend fun <Q : QueryType> generate(
+        type:
+        Q,
+    ): ListOwner<Q>
 
     companion object
 }
