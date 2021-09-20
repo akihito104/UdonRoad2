@@ -34,7 +34,7 @@ class LicenseFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View = WebView(container?.context)
+    ): View = WebView(container?.context ?: requireContext())
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)

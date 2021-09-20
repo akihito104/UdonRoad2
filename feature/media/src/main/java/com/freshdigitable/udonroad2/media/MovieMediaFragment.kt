@@ -20,11 +20,7 @@ import android.content.Context
 import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.SurfaceHolder
-import android.view.SurfaceView
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
@@ -35,14 +31,9 @@ import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
 import com.freshdigitable.udonroad2.model.MediaEntity
 import dagger.android.support.AndroidSupportInjection
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.produce
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.CoroutineContext
 
@@ -90,7 +81,6 @@ class MovieMediaFragment(
 
     private val mediaPlayer = MediaPlayer()
 
-    @ExperimentalCoroutinesApi
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -101,20 +91,19 @@ class MovieMediaFragment(
         val progressBar: ProgressBar = view.findViewById(R.id.media_progressBar)
 
         surfaceView.holder.addCallback(object : SurfaceHolder.Callback {
-            override fun surfaceCreated(surfaceHolder: SurfaceHolder?) {
+            override fun surfaceCreated(surfaceHolder: SurfaceHolder) {
                 mediaPlayer.setDisplay(surfaceHolder)
             }
 
-            override fun surfaceDestroyed(surfaceHolder: SurfaceHolder?) {
-                surfaceHolder?.removeCallback(this)
+            override fun surfaceDestroyed(surfaceHolder: SurfaceHolder) {
+                surfaceHolder.removeCallback(this)
             }
 
-            override fun surfaceChanged(p0: SurfaceHolder?, p1: Int, p2: Int, p3: Int) {}
+            override fun surfaceChanged(p0: SurfaceHolder, p1: Int, p2: Int, p3: Int) {}
         })
         mediaPlayer.setup(surfaceView, progressText, progressBar)
     }
 
-    @ExperimentalCoroutinesApi
     private fun MediaPlayer.setup(
         surfaceView: SurfaceView,
         progressText: TextView,

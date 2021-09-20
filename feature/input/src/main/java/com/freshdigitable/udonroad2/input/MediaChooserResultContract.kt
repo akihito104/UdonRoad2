@@ -40,7 +40,7 @@ internal class MediaChooserResultContract @Inject constructor(
     private val cameraContract = ActivityResultContracts.TakePicture()
     private var cameraOutputFilePath: AppFilePath? = null
 
-    override fun createIntent(context: Context, input: Unit?): Intent {
+    override fun createIntent(context: Context, input: Unit): Intent {
         val pickMediaIntent = pictureResultContract.createIntent(context, input)
 
         val cameraOutputPath = fileProvider.createMediaPath(context).also {
@@ -105,7 +105,7 @@ private abstract class PickPicture : ActivityResultContract<Unit, Collection<Uri
                     override val contract: ActivityResultContract<*, out Collection<Uri>> =
                         openDocContract
 
-                    override fun createIntent(context: Context, input: Unit?): Intent {
+                    override fun createIntent(context: Context, input: Unit): Intent {
                         return openDocContract.createIntent(context, arrayOf("image/*"))
                             .addCategory(Intent.CATEGORY_OPENABLE)
                     }
@@ -117,7 +117,7 @@ private abstract class PickPicture : ActivityResultContract<Unit, Collection<Uri
                     override val contract: ActivityResultContract<*, out Collection<Uri>> =
                         contentContract
 
-                    override fun createIntent(context: Context, input: Unit?): Intent {
+                    override fun createIntent(context: Context, input: Unit): Intent {
                         return contentContract.createIntent(context, "image/*")
                     }
                 }
