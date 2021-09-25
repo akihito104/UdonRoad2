@@ -177,9 +177,11 @@ internal class MediaViewModelViewStates @Inject constructor(
         companion object {
             fun Snapshot.updateScale(scale: MediaEventListener.Scale): Snapshot {
                 val p = currentPosition ?: return this
-                return this.copy(scale = List(mediaItems.size) {
-                    if (it == p) scale else this.scale.getOrNull(it)
-                })
+                return this.copy(
+                    scale = List(mediaItems.size) {
+                        if (it == p) scale else this.scale.getOrNull(it)
+                    }
+                )
             }
         }
     }
