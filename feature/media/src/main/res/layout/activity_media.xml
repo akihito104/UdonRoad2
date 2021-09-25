@@ -71,6 +71,7 @@
             app:ffab_menu="@menu/shortcut_media"
             app:menuListener="@{item -> viewModel.onShortcutMenuSelected(item, viewModel.state.tweetId)}"
             app:mode="@{viewModel.shortcutState.mode}"
+            tools:ignore="MissingClass"
             />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

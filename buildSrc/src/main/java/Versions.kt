@@ -44,7 +44,7 @@ object Versions {
     const val TWITTER4J = "4.0.7"
     const val GLIDE = "4.12.0"
     const val THREETENBP = "1.1.0"
-    const val TIMBER = "4.7.1"
+    const val TIMBER = "5.0.1"
 
     const val LEAKCANARY = "2.6"
 

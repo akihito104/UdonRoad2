@@ -85,6 +85,7 @@
             app:ffab_menu="@menu/shortcut_main"
             app:modeNotNull="@{viewModel.state.shortcutMode}"
             app:menuListener="@{viewModel::onFabMenuSelected}"
+            tools:ignore="MissingClass"
             />
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </layout>
