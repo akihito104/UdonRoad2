@@ -43,6 +43,16 @@ allprojects {
         maven { url = uri("https://kotlin.bintray.com/kotlin-eap") }
         maven { url = uri("https://plugins.gradle.org/m2/") }
     }
+
+    val compilerArgs = listOf(
+        "-Xopt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
+    )
+    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class.java).configureEach {
+        kotlinOptions {
+            jvmTarget = "1.8"
+            freeCompilerArgs = freeCompilerArgs + compilerArgs
+        }
+    }
 }
 
 subprojects {
