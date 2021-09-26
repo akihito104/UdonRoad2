@@ -31,7 +31,7 @@ import org.xmlpull.v1.XmlPullParserException
 import timber.log.Timber
 import java.io.IOException
 import java.io.Reader
-import java.util.*
+import java.util.Locale
 import javax.inject.Inject
 
 internal class TwitterCardRemoteSource @Inject constructor(
