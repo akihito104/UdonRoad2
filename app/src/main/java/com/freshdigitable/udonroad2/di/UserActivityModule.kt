@@ -60,7 +60,6 @@ interface UserViewModelModule {
         @IntoMap
         @ViewModelKey(UserViewModel::class)
         fun provideUserViewModel(
-            user: TweetUserItem,
             eventDispatcher: EventDispatcher,
             viewState: UserViewModelSource,
         ): ViewModel = UserViewModel(eventDispatcher, viewState)

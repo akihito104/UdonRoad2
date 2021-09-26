@@ -31,7 +31,7 @@ import org.xmlpull.v1.XmlPullParserException
 import timber.log.Timber
 import java.io.IOException
 import java.io.Reader
-import java.util.Locale
+import java.util.*
 import javax.inject.Inject
 
 internal class TwitterCardRemoteSource @Inject constructor(
@@ -146,7 +146,7 @@ private enum class Property {
     TWITTER_TITLE, TWITTER_IMAGE, OG_TITLE, OG_IMAGE, TWITTER_APP_URL_GOOGLEPLAY, UNKNOWN;
 
     private fun toAttrString(): String {
-        return name.toLowerCase(Locale.ROOT).replace("_", ":")
+        return name.lowercase(Locale.ROOT).replace("_", ":")
     }
 
     companion object {

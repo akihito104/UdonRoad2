@@ -6,7 +6,7 @@ import io.reactivex.disposables.Disposable
 import io.reactivex.disposables.Disposables
 import io.reactivex.subjects.PublishSubject
 import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.channels.sendBlocking
+import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import timber.log.Timber
@@ -39,7 +39,7 @@ inline fun <reified T : AppEvent> EventDispatcher.toActionFlow(
 
         override fun onNext(t: AppEvent) {
             if (t is T && prediction(t)) {
-                sendBlocking(t)
+                trySendBlocking(t)
             }
         }
 

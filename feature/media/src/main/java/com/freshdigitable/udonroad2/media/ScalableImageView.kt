@@ -178,7 +178,8 @@ class ScalableImageView @JvmOverloads constructor(
                         if (drawable == null) {
                             return true
                         }
-                        if (height.toFloat() == drawable.intrinsicHeight * imageMat[Matrix.MSCALE_Y]) {
+                        val scaledHeight = drawable.intrinsicHeight * imageMat[Matrix.MSCALE_Y]
+                        if (height.toFloat() == scaledHeight) {
                             return true
                         }
                         return if (distX > 0) {

@@ -28,7 +28,7 @@ import com.freshdigitable.udonroad2.model.RequestTokenItem
 import com.freshdigitable.udonroad2.model.UserId
 import com.freshdigitable.udonroad2.model.user.UserEntity
 import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.channels.sendBlocking
+import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.onStart
@@ -160,7 +160,7 @@ private fun <T> SharedPreferences.createSource(
 ): Flow<T> = callbackFlow {
     val listener = SharedPreferences.OnSharedPreferenceChangeListener { sp, k ->
         if (k == key) {
-            sendBlocking(update(sp))
+            trySendBlocking(update(sp))
         }
     }
     registerOnSharedPreferenceChangeListener(listener)
