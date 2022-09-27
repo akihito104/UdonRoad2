@@ -103,7 +103,7 @@ internal class PagedListProviderImpl<Q : QueryType, I : Any>(
         )
     }
 
-    @ExperimentalPagingApi
+    @OptIn(ExperimentalPagingApi::class)
     override fun getList(queryType: Q, owner: ListId): Flow<PagingData<I>> {
         return Pager(
             config = config,
@@ -112,7 +112,7 @@ internal class PagedListProviderImpl<Q : QueryType, I : Any>(
         ).flow.distinctUntilChanged()
     }
 
-    @ExperimentalPagingApi
+    @OptIn(ExperimentalPagingApi::class)
     private fun getRemoteMediator(
         queryType: Q,
         owner: ListId,

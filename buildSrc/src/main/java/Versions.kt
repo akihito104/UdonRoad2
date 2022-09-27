@@ -26,7 +26,7 @@ object Versions {
     const val ANDROIDX_LIFECYCLE = "2.3.1"
     const val ANDROIDX_PAGING = "3.0.0"
     const val ANDROIDX_ROOM = "2.3.0"
-    const val ANDROIDX_NAVIGATION = "2.4.0-alpha09"
+    const val ANDROIDX_NAVIGATION = "2.4.1"
 
     const val MATERIAL_DESIGN = "1.3.0-alpha04"
     const val ANDROIDX_RECYCLER_VIEW = "1.2.0"
@@ -71,7 +71,7 @@ object Versions {
     const val KTLINT = "0.40.0"
 
     // build libs
-    const val ANDROID_GRADLE_TOOL = "7.0.2"
+    const val ANDROID_GRADLE_TOOL = "7.1.3"
     const val SCABBARD = "0.5.0"
     const val RELEASES_HUB = "2.0.0"
     const val LICENSE_TOOL = "1.2.5"
