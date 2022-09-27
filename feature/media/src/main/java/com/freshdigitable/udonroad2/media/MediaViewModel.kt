@@ -16,8 +16,7 @@
 
 package com.freshdigitable.udonroad2.media
 
-import android.os.Build
-import android.view.View
+import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
@@ -187,43 +186,22 @@ internal class MediaViewModelViewStates @Inject constructor(
     }
 }
 
-enum class SystemUiVisibility(val visibility: Int) {
-    SHOW(
-        when {
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN -> {
-                View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
-                    View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
-                    View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-            }
-            else -> -1
-        }
-    ),
-    HIDE(
-        when {
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT -> {
-                View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
-                    View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
-                    View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
-                    View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or // hide nav bar
-                    View.SYSTEM_UI_FLAG_FULLSCREEN or // hide status bar
-                    View.SYSTEM_UI_FLAG_IMMERSIVE
-            }
-            else -> View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
-        }
-    ),
+enum class SystemUiVisibility {
+    SHOW,
+    HIDE,
     ;
 
+    val visibility: Int get() = windowInsetsType
     fun toggle(): SystemUiVisibility = when (this) {
         SHOW -> HIDE
         else -> SHOW
     }
 
     companion object {
-        private val FULLSCREEN = when {
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN ->
-                View.SYSTEM_UI_FLAG_FULLSCREEN
-            else -> View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-        }
+        private val windowInsetsType: Int
+            get() =
+                WindowInsetsCompat.Type.displayCutout() or WindowInsetsCompat.Type.systemBars()
+        private val FULLSCREEN = windowInsetsType
 
         fun get(visibility: Int): SystemUiVisibility = when {
             visibility and FULLSCREEN == 0 -> SHOW

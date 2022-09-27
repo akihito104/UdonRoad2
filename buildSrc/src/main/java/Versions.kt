@@ -22,7 +22,7 @@ object Versions {
     const val ANDROIDX_ACTIVITY = "1.4.0-alpha02"
     const val ANDROIDX_FRAGMENT = "1.4.0-alpha09"
 
-    const val ANDROIDX_CORE = "1.3.2"
+    const val ANDROIDX_CORE = "1.6.0"
     const val ANDROIDX_LIFECYCLE = "2.3.1"
     const val ANDROIDX_PAGING = "3.0.0"
     const val ANDROIDX_ROOM = "2.3.0"

@@ -22,6 +22,8 @@ import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
@@ -63,11 +65,14 @@ class MediaActivity : AppCompatActivity(), HasAndroidInjector {
         title = ""
         setSupportActionBar(binding.mediaToolbar)
 
-        window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
-            viewModel.changeSystemUiVisibility.dispatch(visibility)
+        val insetsController = WindowCompat.getInsetsController(window, window.decorView)
+        insetsController?.systemBarsBehavior =
+            WindowInsetsControllerCompat.BEHAVIOR_SHOW_BARS_BY_TOUCH
+        insetsController?.addOnControllableInsetsChangedListener { _, i ->
+            viewModel.changeSystemUiVisibility.dispatch(i)
         }
         viewModel.systemUiVisibility.observe(this) {
-            window.decorView.systemUiVisibility = it.visibility
+            insetsController?.show(it.visibility)
             when (it) {
                 SystemUiVisibility.SHOW -> supportActionBar?.show()
                 SystemUiVisibility.HIDE -> supportActionBar?.hide()
