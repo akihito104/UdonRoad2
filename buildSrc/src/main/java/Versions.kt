@@ -46,7 +46,8 @@ object Versions {
     const val THREETENBP = "1.1.0"
     const val TIMBER = "5.0.1"
 
-    const val LEAKCANARY = "2.6"
+    // https://square.github.io/leakcanary
+    const val LEAKCANARY = "2.9.1"
 
     // test
     const val JUNIT = "4.13.2"
