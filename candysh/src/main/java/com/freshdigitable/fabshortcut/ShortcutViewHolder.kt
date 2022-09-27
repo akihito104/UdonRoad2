@@ -28,10 +28,10 @@ import android.view.ViewAnimationUtils
 import android.view.ViewGroup
 import android.view.ViewPropertyAnimator
 import android.view.animation.AccelerateInterpolator
+import android.view.animation.DecelerateInterpolator
 import androidx.annotation.RequiresApi
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.graphics.plus
-import com.google.android.material.animation.AnimationUtils.DECELERATE_INTERPOLATOR
 import kotlin.math.abs
 import kotlin.math.hypot
 
@@ -206,7 +206,7 @@ internal class ShortcutViewHolder(
             .scaleY(1f)
             .translationX(0f)
             .translationY(0f)
-            .setInterpolator(DECELERATE_INTERPOLATOR)
+            .setInterpolator(DecelerateInterpolator())
             .setDuration(FAB_MOVE_DURATION)
             .setListener(object : AnimatorListenerAdapter() {
                 override fun onAnimationStart(animation: Animator) {
