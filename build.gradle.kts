@@ -5,7 +5,6 @@ buildscript {
         google()
         mavenCentral()
         maven { url = uri("https://oss.sonatype.org/content/repositories/snapshots") }
-        maven { url = uri("https://kotlin.bintray.com/kotlin-eap") }
         maven { url = uri("https://plugins.gradle.org/m2/") }
     }
     dependencies {
@@ -40,8 +39,18 @@ allprojects {
     repositories {
         google()
         maven { url = uri("https://oss.sonatype.org/content/repositories/snapshots") }
-        maven { url = uri("https://kotlin.bintray.com/kotlin-eap") }
         maven { url = uri("https://plugins.gradle.org/m2/") }
+    }
+
+    val compilerArgs = listOf(
+        "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
+        "-opt-in=kotlin.RequiresOptIn",
+    )
+    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class.java).configureEach {
+        kotlinOptions {
+            jvmTarget = "11"
+            freeCompilerArgs = freeCompilerArgs + compilerArgs
+        }
     }
 }
 

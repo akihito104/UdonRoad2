@@ -108,10 +108,12 @@ class ScalableImageView @JvmOverloads constructor(
         if (drawable == null) {
             drawableRect.setEmpty()
         } else {
-            drawableRect.set(0f,
+            drawableRect.set(
+                0f,
                 0f,
                 drawable.intrinsicWidth.toFloat(),
-                drawable.intrinsicHeight.toFloat())
+                drawable.intrinsicHeight.toFloat(),
+            )
         }
         updateMatrixToFit()
     }
@@ -135,7 +137,8 @@ class ScalableImageView @JvmOverloads constructor(
 
     init {
         scaleGestureDetector =
-            ScaleGestureDetector(context,
+            ScaleGestureDetector(
+                context,
                 object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
                     override fun onScale(detector: ScaleGestureDetector): Boolean {
                         scale = detector.scaleFactor
@@ -144,46 +147,51 @@ class ScalableImageView @JvmOverloads constructor(
                         scaleListener?.onScale(scale, focusX, focusY)
                         return true
                     }
-                })
+                },
+            )
         gestureDetector =
-            GestureDetectorCompat(context, object : GestureDetector.SimpleOnGestureListener() {
-                override fun onScroll(
-                    e1: MotionEvent,
-                    e2: MotionEvent,
-                    distanceX: Float,
-                    distanceY: Float,
-                ): Boolean {
-                    if (scale <= 1) {
-                        return false
+            GestureDetectorCompat(
+                context,
+                object : GestureDetector.SimpleOnGestureListener() {
+                    override fun onScroll(
+                        e1: MotionEvent,
+                        e2: MotionEvent,
+                        distanceX: Float,
+                        distanceY: Float,
+                    ): Boolean {
+                        if (scale <= 1) {
+                            return false
+                        }
+                        if (e2.eventTime - e1.eventTime < 200 && shouldGoNextPage(distanceX)) {
+                            return false
+                        }
+                        transX = -distanceX
+                        transY = -distanceY
+                        scaleListener?.onScroll(distanceX, distanceY)
+                        return true
                     }
-                    if (e2.eventTime - e1.eventTime < 200 && shouldGoNextPage(distanceX)) {
-                        return false
-                    }
-                    transX = -distanceX
-                    transY = -distanceY
-                    scaleListener?.onScroll(distanceX, distanceY)
-                    return true
-                }
 
-                private fun shouldGoNextPage(distX: Float): Boolean {
-                    if (abs(distX) < 0.1) {
-                        return false
+                    private fun shouldGoNextPage(distX: Float): Boolean {
+                        if (abs(distX) < 0.1) {
+                            return false
+                        }
+                        if (drawable == null) {
+                            return true
+                        }
+                        val scaledHeight = drawable.intrinsicHeight * imageMat[Matrix.MSCALE_Y]
+                        if (height.toFloat() == scaledHeight) {
+                            return true
+                        }
+                        return if (distX > 0) {
+                            val maxTransX: Float =
+                                width - drawable.intrinsicWidth * imageMat[Matrix.MSCALE_X]
+                            (maxTransX <= 0 && abs(maxTransX - imageMat[Matrix.MTRANS_X]) < 0.01)
+                        } else {
+                            abs(imageMat[Matrix.MTRANS_X]) < 0.01
+                        }
                     }
-                    if (drawable == null) {
-                        return true
-                    }
-                    if (height.toFloat() == drawable.intrinsicHeight * imageMat[Matrix.MSCALE_Y]) {
-                        return true
-                    }
-                    return if (distX > 0) {
-                        val maxTransX: Float =
-                            width - drawable.intrinsicWidth * imageMat[Matrix.MSCALE_X]
-                        (maxTransX <= 0 && abs(maxTransX - imageMat[Matrix.MTRANS_X]) < 0.01)
-                    } else {
-                        abs(imageMat[Matrix.MTRANS_X]) < 0.01
-                    }
-                }
-            })
+                },
+            )
         gestureDetector.setIsLongpressEnabled(false)
         scaleType = ScaleType.MATRIX
     }

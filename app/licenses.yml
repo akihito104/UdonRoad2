@@ -112,6 +112,17 @@
   license: The Apache Software License, Version 2.0
   licenseUrl: http://www.apache.org/licenses/LICENSE-2.0.txt
   url: https://developer.android.com/jetpack/androidx
+- artifact: androidx.databinding:databinding-ktx:+
+  name: databinding-ktx
+  copyrightHolder: The Android Open Source Project
+  license: The Apache Software License, Version 2.0
+  licenseUrl: http://www.apache.org/licenses/LICENSE-2.0.txt
+- artifact: androidx.window:window:+
+  name: window
+  copyrightHolder: The Android Open Source Project
+  license: The Apache Software License, Version 2.0
+  licenseUrl: http://www.apache.org/licenses/LICENSE-2.0.txt
+  url: https://developer.android.com/jetpack/androidx/releases/window#1.0.0-beta02
 - artifact: androidx.databinding:databinding-adapters:+
   name: databinding-adapters
   copyrightHolder: The Android Open Source Project
@@ -259,6 +270,24 @@
   license: The Apache Software License, Version 2.0
   licenseUrl: http://www.apache.org/licenses/LICENSE-2.0.txt
   url: https://developer.android.com/jetpack/androidx/releases/lifecycle#2.3.0-beta01
+- artifact: androidx.lifecycle:lifecycle-extensions:+
+  name: lifecycle-extensions
+  copyrightHolder: The Android Open Source Project
+  license: The Apache Software License, Version 2.0
+  licenseUrl: http://www.apache.org/licenses/LICENSE-2.0.txt
+  url: https://developer.android.com/topic/libraries/architecture/index.html
+- artifact: androidx.lifecycle:lifecycle-process:+
+  name: lifecycle-process
+  copyrightHolder: The Android Open Source Project
+  license: The Apache Software License, Version 2.0
+  licenseUrl: http://www.apache.org/licenses/LICENSE-2.0.txt
+  url: https://developer.android.com/topic/libraries/architecture/index.html
+- artifact: androidx.lifecycle:lifecycle-service:+
+  name: lifecycle-service
+  copyrightHolder: The Android Open Source Project
+  license: The Apache Software License, Version 2.0
+  licenseUrl: http://www.apache.org/licenses/LICENSE-2.0.txt
+  url: https://developer.android.com/topic/libraries/architecture/index.html
 - artifact: androidx.loader:loader:+
   name: loader
   copyrightHolder: The Android Open Source Project
@@ -451,6 +480,12 @@
   license: The Apache Software License, Version 2.0
   licenseUrl: http://www.apache.org/licenses/LICENSE-2.0.txt
   url: https://developer.android.com/jetpack/androidx/releases/tracing#1.0.0
+- artifact: androidx.concurrent:concurrent-futures:+
+  name: concurrent-futures
+  copyrightHolder: The Android Open Source Project
+  license: The Apache Software License, Version 2.0
+  licenseUrl: http://www.apache.org/licenses/LICENSE-2.0.txt
+  url: https://developer.android.com/topic/libraries/architecture/index.html
 - artifact: com.github.bumptech.glide:annotations:+
   name: annotations
   copyrightHolder: Google, Inc.
@@ -624,3 +659,7 @@
   license: Apache License 2.0
   licenseUrl: http://www.apache.org/licenses/LICENSE-2.0
   url: http://twitter4j.org/
+- artifact: com.google.guava:listenablefuture:+
+  name: listenablefuture
+  copyrightHolder: The Guava Authors
+  license: Apache License 2.0

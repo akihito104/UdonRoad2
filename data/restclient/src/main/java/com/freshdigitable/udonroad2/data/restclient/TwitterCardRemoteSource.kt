@@ -146,7 +146,7 @@ private enum class Property {
     TWITTER_TITLE, TWITTER_IMAGE, OG_TITLE, OG_IMAGE, TWITTER_APP_URL_GOOGLEPLAY, UNKNOWN;
 
     private fun toAttrString(): String {
-        return name.toLowerCase(Locale.ROOT).replace("_", ":")
+        return name.lowercase(Locale.ROOT).replace("_", ":")
     }
 
     companion object {

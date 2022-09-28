@@ -22,6 +22,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import androidx.activity.result.contract.ActivityResultContract
@@ -40,7 +41,7 @@ internal class MediaChooserResultContract @Inject constructor(
     private val cameraContract = ActivityResultContracts.TakePicture()
     private var cameraOutputFilePath: AppFilePath? = null
 
-    override fun createIntent(context: Context, input: Unit?): Intent {
+    override fun createIntent(context: Context, input: Unit): Intent {
         val pickMediaIntent = pictureResultContract.createIntent(context, input)
 
         val cameraOutputPath = fileProvider.createMediaPath(context).also {
@@ -51,7 +52,10 @@ internal class MediaChooserResultContract @Inject constructor(
         val title = context.getString(R.string.media_chooser_title)
 
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
-            val candidates = context.packageManager.queryIntentActivities(cameraIntent, 0)
+            val candidates = context.packageManager.queryIntentActivities(
+                cameraIntent,
+                PackageManager.MATCH_DEFAULT_ONLY,
+            )
                 .map { Components.create(it.activityInfo) }
             eventDispatcher.postEvent(
                 CameraApp.Event.CandidateQueried(candidates, cameraOutputPath)
@@ -61,17 +65,21 @@ internal class MediaChooserResultContract @Inject constructor(
                 context,
                 0,
                 Intent(context, MediaChooserBroadcastReceiver::class.java),
-                PendingIntent.FLAG_UPDATE_CURRENT
+                PendingIntent.FLAG_UPDATE_CURRENT or
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE
+                    else 0
             )
-            Intent.createChooser(pickMediaIntent, title, pendingIntent.intentSender)
-        } else {
-            Intent.createChooser(pickMediaIntent, title)
-        }.apply {
-            val altIntentName = when {
-                Build.VERSION.SDK_INT >= Build.VERSION_CODES.M -> Intent.EXTRA_ALTERNATE_INTENTS
-                else -> Intent.EXTRA_INITIAL_INTENTS
+            Intent.createChooser(pickMediaIntent, title, pendingIntent.intentSender).apply {
+                if (Build.VERSION.SDK_INT in (Build.VERSION_CODES.M..Build.VERSION_CODES.Q)) {
+                    putExtra(Intent.EXTRA_ALTERNATE_INTENTS, arrayOf(cameraIntent))
+                } else {
+                    putExtra(Intent.EXTRA_INITIAL_INTENTS, arrayOf(cameraIntent))
+                }
             }
-            putExtra(altIntentName, arrayOf(cameraIntent))
+        } else {
+            Intent.createChooser(pickMediaIntent, title).apply {
+                putExtra(Intent.EXTRA_INITIAL_INTENTS, arrayOf(cameraIntent))
+            }
         }
     }
 
@@ -105,7 +113,7 @@ private abstract class PickPicture : ActivityResultContract<Unit, Collection<Uri
                     override val contract: ActivityResultContract<*, out Collection<Uri>> =
                         openDocContract
 
-                    override fun createIntent(context: Context, input: Unit?): Intent {
+                    override fun createIntent(context: Context, input: Unit): Intent {
                         return openDocContract.createIntent(context, arrayOf("image/*"))
                             .addCategory(Intent.CATEGORY_OPENABLE)
                     }
@@ -117,7 +125,7 @@ private abstract class PickPicture : ActivityResultContract<Unit, Collection<Uri
                     override val contract: ActivityResultContract<*, out Collection<Uri>> =
                         contentContract
 
-                    override fun createIntent(context: Context, input: Unit?): Intent {
+                    override fun createIntent(context: Context, input: Unit): Intent {
                         return contentContract.createIntent(context, "image/*")
                     }
                 }
@@ -143,11 +151,12 @@ class MediaChooserBroadcastReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context?, intent: Intent?) {
         AndroidInjection.inject(this, context)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
-            val componentName: ComponentName =
-                intent?.getParcelableExtra(Intent.EXTRA_CHOSEN_COMPONENT) ?: return
-            eventDispatcher.chooseCameraApp.dispatch(Components.create(componentName))
-        }
+        val event = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+            val componentName: ComponentName? =
+                intent?.getParcelableExtra(Intent.EXTRA_CHOSEN_COMPONENT)
+            if (componentName != null) Components.create(componentName) else Components.UNKNOWN
+        } else Components.UNKNOWN
+        eventDispatcher.chooseCameraApp.dispatch(event)
     }
 }
 

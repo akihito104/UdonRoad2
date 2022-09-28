@@ -41,6 +41,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.produce
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
@@ -90,7 +91,6 @@ class MovieMediaFragment(
 
     private val mediaPlayer = MediaPlayer()
 
-    @ExperimentalCoroutinesApi
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -101,20 +101,19 @@ class MovieMediaFragment(
         val progressBar: ProgressBar = view.findViewById(R.id.media_progressBar)
 
         surfaceView.holder.addCallback(object : SurfaceHolder.Callback {
-            override fun surfaceCreated(surfaceHolder: SurfaceHolder?) {
+            override fun surfaceCreated(surfaceHolder: SurfaceHolder) {
                 mediaPlayer.setDisplay(surfaceHolder)
             }
 
-            override fun surfaceDestroyed(surfaceHolder: SurfaceHolder?) {
-                surfaceHolder?.removeCallback(this)
+            override fun surfaceDestroyed(surfaceHolder: SurfaceHolder) {
+                surfaceHolder.removeCallback(this)
             }
 
-            override fun surfaceChanged(p0: SurfaceHolder?, p1: Int, p2: Int, p3: Int) {}
+            override fun surfaceChanged(p0: SurfaceHolder, p1: Int, p2: Int, p3: Int) {}
         })
         mediaPlayer.setup(surfaceView, progressText, progressBar)
     }
 
-    @ExperimentalCoroutinesApi
     private fun MediaPlayer.setup(
         surfaceView: SurfaceView,
         progressText: TextView,
@@ -155,7 +154,7 @@ class MovieMediaFragment(
                     send(currentPosition)
                     oldPosition = currentPosition
                 }
-                kotlinx.coroutines.delay(200)
+                delay(200)
             }
         }
         progressBar.max = duration

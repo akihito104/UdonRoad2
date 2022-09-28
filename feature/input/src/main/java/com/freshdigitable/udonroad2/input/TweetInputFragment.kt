@@ -133,17 +133,19 @@ class TweetInputFragment : Fragment() {
     private fun onCameraAppStateChanged(state: CameraApp.State) {
         when (state) {
             is CameraApp.State.Selected -> {
-                requireContext().grantUriPermission(
-                    state.app.packageName, state.path.uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-                )
+                state.app.forEach {
+                    requireContext().grantUriPermission(
+                        it.packageName, state.path.uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                    )
+                }
             }
             is CameraApp.State.Finished -> {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    requireContext().revokeUriPermission(
-                        state.app.packageName,
-                        state.path.uri,
-                        Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-                    )
+                    state.app.forEach {
+                        requireContext().revokeUriPermission(
+                            it.packageName, state.path.uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                        )
+                    }
                 } else {
                     requireContext().revokeUriPermission(
                         state.path.uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION
