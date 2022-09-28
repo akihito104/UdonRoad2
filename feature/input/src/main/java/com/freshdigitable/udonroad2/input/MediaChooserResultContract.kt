@@ -65,10 +65,12 @@ internal class MediaChooserResultContract @Inject constructor(
                 context,
                 0,
                 Intent(context, MediaChooserBroadcastReceiver::class.java),
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                PendingIntent.FLAG_UPDATE_CURRENT or
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE
+                    else 0
             )
             Intent.createChooser(pickMediaIntent, title, pendingIntent.intentSender).apply {
-                if ((Build.VERSION_CODES.M..Build.VERSION_CODES.Q).contains(Build.VERSION.SDK_INT)) {
+                if (Build.VERSION.SDK_INT in (Build.VERSION_CODES.M..Build.VERSION_CODES.Q)) {
                     putExtra(Intent.EXTRA_ALTERNATE_INTENTS, arrayOf(cameraIntent))
                 } else {
                     putExtra(Intent.EXTRA_INITIAL_INTENTS, arrayOf(cameraIntent))

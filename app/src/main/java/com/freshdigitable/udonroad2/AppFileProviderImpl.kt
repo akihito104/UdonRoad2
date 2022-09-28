@@ -32,8 +32,8 @@ internal class AppFileProviderImpl : AppFileProvider {
     ): AppFilePath {
         val dir = when (type) {
             AppFileProvider.FileType.MEDIA -> {
-                val mediaRoot = when {
-                    (Build.VERSION_CODES.LOLLIPOP..Build.VERSION_CODES.Q).contains(Build.VERSION.SDK_INT) -> {
+                val mediaRoot = when (Build.VERSION.SDK_INT) {
+                    in (Build.VERSION_CODES.LOLLIPOP..Build.VERSION_CODES.Q) -> {
                         @Suppress("DEPRECATION")
                         context.externalMediaDirs[0]
                     }
