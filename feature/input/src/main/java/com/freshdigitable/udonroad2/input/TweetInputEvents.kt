@@ -38,8 +38,25 @@ internal sealed class CameraApp : TweetInputEvent() {
     sealed class State : CameraApp() {
         object Idling : State()
         data class WaitingForChosen(val apps: List<Components>, val path: AppFilePath) : State()
-        data class Selected(val app: Components, val path: AppFilePath) : State()
-        data class Finished(val app: Components, val path: AppFilePath) : State()
+        data class Selected(
+            /**
+             * component information that selected camera app in intent chooser.
+             * on Android 10+, intent chooser does not pass the information.
+             * so, all components that known at WaitingForChosen are passed for grant uri permission.
+             */
+            val app: List<Components>,
+            val path: AppFilePath,
+        ) : State()
+
+        data class Finished(
+            /**
+             * component information that selected camera app in intent chooser.
+             * on Android 10+, intent chooser does not pass the information.
+             * so, all components that known at WaitingForChosen are passed for revoke uri permission.
+             */
+            val app: List<Components>,
+            val path: AppFilePath,
+        ) : State()
     }
 
     companion object {
@@ -52,7 +69,11 @@ internal sealed class CameraApp : TweetInputEvent() {
             }
             state<State.WaitingForChosen> {
                 accept<Event.Chosen> {
-                    if (apps.contains(it.app)) State.Selected(it.app, path) else State.Idling
+                    when {
+                        it.app == Components.UNKNOWN -> return@accept State.Selected(apps, path)
+                        apps.contains(it.app) -> State.Selected(listOf(it.app), path)
+                        else -> State.Idling
+                    }
                 }
                 accept<Event.CandidateQueried> { State.WaitingForChosen(it.apps, it.path) }
                 accept<Event.OnFinish> { State.Idling }
@@ -71,5 +92,7 @@ data class Components(
     val packageName: String,
     val className: String,
 ) {
-    companion object
+    companion object {
+        val UNKNOWN: Components = Components("", "")
+    }
 }

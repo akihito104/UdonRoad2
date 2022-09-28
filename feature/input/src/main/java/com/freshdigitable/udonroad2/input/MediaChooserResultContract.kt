@@ -22,6 +22,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import androidx.activity.result.contract.ActivityResultContract
@@ -51,8 +52,9 @@ internal class MediaChooserResultContract @Inject constructor(
         val title = context.getString(R.string.media_chooser_title)
 
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
-            val candidates = context.packageManager.queryIntentActivities(cameraIntent, 0)
-                .map { Components.create(it.activityInfo) }
+            val candidates =
+                context.packageManager.queryIntentActivities(cameraIntent, PackageManager.MATCH_ALL)
+                    .map { Components.create(it.activityInfo) }
             eventDispatcher.postEvent(
                 CameraApp.Event.CandidateQueried(candidates, cameraOutputPath)
             )
@@ -61,7 +63,7 @@ internal class MediaChooserResultContract @Inject constructor(
                 context,
                 0,
                 Intent(context, MediaChooserBroadcastReceiver::class.java),
-                PendingIntent.FLAG_UPDATE_CURRENT
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
             Intent.createChooser(pickMediaIntent, title, pendingIntent.intentSender)
         } else {
@@ -143,11 +145,12 @@ class MediaChooserBroadcastReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context?, intent: Intent?) {
         AndroidInjection.inject(this, context)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
-            val componentName: ComponentName =
-                intent?.getParcelableExtra(Intent.EXTRA_CHOSEN_COMPONENT) ?: return
-            eventDispatcher.chooseCameraApp.dispatch(Components.create(componentName))
-        }
+        val event = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+            val componentName: ComponentName? =
+                intent?.getParcelableExtra(Intent.EXTRA_CHOSEN_COMPONENT)
+            if (componentName != null) Components.create(componentName) else Components.UNKNOWN
+        } else Components.UNKNOWN
+        eventDispatcher.chooseCameraApp.dispatch(event)
     }
 }
 
