@@ -52,9 +52,11 @@ internal class MediaChooserResultContract @Inject constructor(
         val title = context.getString(R.string.media_chooser_title)
 
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
-            val candidates =
-                context.packageManager.queryIntentActivities(cameraIntent, PackageManager.MATCH_ALL)
-                    .map { Components.create(it.activityInfo) }
+            val candidates = context.packageManager.queryIntentActivities(
+                cameraIntent,
+                PackageManager.MATCH_DEFAULT_ONLY,
+            )
+                .map { Components.create(it.activityInfo) }
             eventDispatcher.postEvent(
                 CameraApp.Event.CandidateQueried(candidates, cameraOutputPath)
             )
@@ -65,15 +67,17 @@ internal class MediaChooserResultContract @Inject constructor(
                 Intent(context, MediaChooserBroadcastReceiver::class.java),
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
-            Intent.createChooser(pickMediaIntent, title, pendingIntent.intentSender)
-        } else {
-            Intent.createChooser(pickMediaIntent, title)
-        }.apply {
-            val altIntentName = when {
-                Build.VERSION.SDK_INT >= Build.VERSION_CODES.M -> Intent.EXTRA_ALTERNATE_INTENTS
-                else -> Intent.EXTRA_INITIAL_INTENTS
+            Intent.createChooser(pickMediaIntent, title, pendingIntent.intentSender).apply {
+                if ((Build.VERSION_CODES.M..Build.VERSION_CODES.Q).contains(Build.VERSION.SDK_INT)) {
+                    putExtra(Intent.EXTRA_ALTERNATE_INTENTS, arrayOf(cameraIntent))
+                } else {
+                    putExtra(Intent.EXTRA_INITIAL_INTENTS, arrayOf(cameraIntent))
+                }
             }
-            putExtra(altIntentName, arrayOf(cameraIntent))
+        } else {
+            Intent.createChooser(pickMediaIntent, title).apply {
+                putExtra(Intent.EXTRA_INITIAL_INTENTS, arrayOf(cameraIntent))
+            }
         }
     }
 
