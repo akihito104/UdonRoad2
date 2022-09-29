@@ -193,19 +193,19 @@ class MovieMediaFragment(
 }
 
 class MovieMediaCoroutineScope : CoroutineScope, DefaultLifecycleObserver {
-    private lateinit var job: Job
+    private var job: Job? = null
     override val coroutineContext: CoroutineContext
-        get() = Dispatchers.Main + job
+        get() = Dispatchers.Main + (job ?: Job().also { job = it })
 
     @Override
     fun onCreated() {
-        if (!this::job.isInitialized || job.isCancelled) {
+        if (job == null || job?.isCancelled == true) {
             job = Job()
         }
     }
 
     @Override
     fun onDestroy() {
-        job.cancel()
+        job?.cancel()
     }
 }
