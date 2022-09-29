@@ -5,6 +5,8 @@ apply plugin: 'kotlin-kapt'
 apply from: rootProject.file("android_build.gradle")
 
 android {
+    namespace 'com.freshdigitable.udonroad2.data.restclient'
+
     defaultConfig {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
@@ -40,7 +42,6 @@ android {
             consumerProguardFiles 'proguard-rules.pro'
         }
     }
-
 }
 
 dependencies {

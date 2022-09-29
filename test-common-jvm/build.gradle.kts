@@ -22,6 +22,8 @@ plugins {
 apply(from = rootProject.file("android_build.gradle"))
 
 android {
+    namespace = "com.freshdigitable.udonroad2.test_common.jvm"
+
     defaultConfig {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")

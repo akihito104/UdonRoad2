@@ -20,6 +20,8 @@ apply plugin: 'kotlin-android'
 apply from: rootProject.file("android_build.gradle")
 
 android {
+    namespace 'com.freshdigitable.fabshortcut'
+
     defaultConfig {
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }

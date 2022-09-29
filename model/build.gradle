@@ -4,6 +4,8 @@ apply plugin: 'kotlin-android'
 apply from: rootProject.file("android_build.gradle")
 
 android {
+    namespace 'com.freshdigitable.udonroad2.model'
+
     defaultConfig {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -18,7 +20,6 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
-
 }
 
 dependencies {

@@ -19,6 +19,8 @@ apply plugin: 'kotlin-android'
 apply from: rootProject.file("android_build.gradle")
 
 android {
+    namespace 'com.freshdigitable.udonroad2.test_common'
+
     defaultConfig {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"

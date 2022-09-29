@@ -6,6 +6,8 @@ apply plugin: "androidx.navigation.safeargs.kotlin"
 apply from: rootProject.file("android_build.gradle")
 
 android {
+    namespace 'com.freshdigitable.udonroad2'
+
     defaultConfig {
         applicationId "com.freshdigitable.udonroad2"
         testInstrumentationRunner "com.freshdigitable.udonroad2.AppTestRunner"
