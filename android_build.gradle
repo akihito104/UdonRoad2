@@ -23,4 +23,8 @@ android {
             includeAndroidResources = true
         }
     }
+
+    lint {
+        disable "JvmStaticProvidesInObjectDetector", "FieldSiteTargetOnQualifierAnnotation", "ModuleCompanionObjects", "ModuleCompanionObjectsNotInModuleParent"
+    }
 }
