@@ -30,9 +30,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleObserver
-import androidx.lifecycle.OnLifecycleEvent
+import androidx.lifecycle.DefaultLifecycleObserver
 import com.freshdigitable.udonroad2.model.MediaEntity
 import dagger.android.support.AndroidSupportInjection
 import kotlinx.coroutines.CoroutineScope
@@ -194,19 +192,19 @@ class MovieMediaFragment(
     }
 }
 
-class MovieMediaCoroutineScope : CoroutineScope, LifecycleObserver {
+class MovieMediaCoroutineScope : CoroutineScope, DefaultLifecycleObserver {
     private lateinit var job: Job
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Main + job
 
-    @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
+    @Override
     fun onCreated() {
         if (!this::job.isInitialized || job.isCancelled) {
             job = Job()
         }
     }
 
-    @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+    @Override
     fun onDestroy() {
         job.cancel()
     }
