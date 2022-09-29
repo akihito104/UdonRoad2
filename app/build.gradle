@@ -49,7 +49,7 @@ android {
         execution 'ANDROIDX_TEST_ORCHESTRATOR'
     }
 
-    lintOptions {
+    lint {
         checkDependencies true
     }
 }
