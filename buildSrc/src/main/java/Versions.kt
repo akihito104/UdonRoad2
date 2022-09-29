@@ -23,10 +23,10 @@ object Versions {
     const val ANDROIDX_FRAGMENT = "1.4.0-alpha09"
 
     const val ANDROIDX_CORE = "1.6.0"
-    const val ANDROIDX_LIFECYCLE = "2.3.1"
+    const val ANDROIDX_LIFECYCLE = "2.4.0"
     const val ANDROIDX_PAGING = "3.0.0"
     const val ANDROIDX_ROOM = "2.3.0"
-    const val ANDROIDX_NAVIGATION = "2.4.1"
+    const val ANDROIDX_NAVIGATION = "2.4.2"
 
     const val MATERIAL_DESIGN = "1.3.0-alpha04"
     const val ANDROIDX_RECYCLER_VIEW = "1.2.0"
