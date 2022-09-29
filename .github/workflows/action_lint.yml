@@ -177,10 +177,10 @@ jobs:
         with:
           path: ./**/build/test-results
           key: ${{ runner.os }}-result-${{ github.sha }}-unittest
-      - name: setup Node.js 12.x
+      - name: setup Node.js 14.x
         uses: actions/setup-node@master
         with:
-          node-version: 12.x
+          node-version: 14.x
       - name: install yarn
         run: npm install -g yarn
       - name: yarn install
