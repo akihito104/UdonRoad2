@@ -75,7 +75,7 @@ jobs:
           path: ./**/build/reports/lint-results-*.xml
           key: ${{ runner.os }}-result-${{ github.sha }}-lint
       - name: android lint
-        run: ./gradlew lintDebug
+        run: ./gradlew :app:lint
 
   ktlint:
     name: ktlint

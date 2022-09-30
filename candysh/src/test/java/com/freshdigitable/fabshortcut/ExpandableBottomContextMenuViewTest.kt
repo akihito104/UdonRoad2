@@ -74,7 +74,7 @@ class ExpandableBottomContextMenuViewTest {
         assertThat(sut.mainList.childCount).isEqualTo(5)
         assertThat(sut.moreList.childCount).isEqualTo(0)
         checkPeekHeight(sut)
-        assertThat(sut.mainListChildByMenuItem(R.id.detail_main_rt).drawableState).asList()
+        assertThat(sut.mainListChildByMenuItem("detail_main_rt").drawableState).asList()
             .contains(android.R.attr.state_checkable)
     }
 
@@ -107,7 +107,7 @@ class ExpandableBottomContextMenuViewTest {
             .withFragment {
                 // exercise
                 sut.updateMenu {
-                    updateItemOf(R.id.detail_main_rt) {
+                    updateItemOf(sut.getIdValue("detail_main_rt")) {
                         isChecked = true
                     }
                 }
@@ -116,7 +116,7 @@ class ExpandableBottomContextMenuViewTest {
 
         // verify
         assertThat(sut.parent).isNotNull()
-        assertThat(sut.mainListChildByMenuItem(R.id.detail_main_rt).drawableState).asList()
+        assertThat(sut.mainListChildByMenuItem("detail_main_rt").drawableState).asList()
             .containsAtLeast(android.R.attr.state_checked, android.R.attr.state_checkable)
     }
 
@@ -130,7 +130,7 @@ class ExpandableBottomContextMenuViewTest {
             .withFragment {
                 // exercise
                 sut.updateMenu {
-                    updateItemOf(R.id.detail_more_delete) {
+                    updateItemOf(sut.getIdValue("detail_more_delete")) {
                         isVisible = false
                     }
                 }
@@ -154,7 +154,7 @@ class ExpandableBottomContextMenuViewTest {
             .withFragment {
                 // exercise
                 sut.updateMenu {
-                    changeGroupEnabled(R.id.menuGroup_detailMain, true)
+                    changeGroupEnabled(sut.getIdValue("menuGroup_detailMain"), true)
                 }
                 shadowOf(Looper.getMainLooper()).idle()
                 sut
@@ -162,9 +162,9 @@ class ExpandableBottomContextMenuViewTest {
 
         // verify
         assertThat(sut.parent).isNotNull()
-        assertThat(sut.mainListChildByMenuItem(R.id.detail_main_rt).drawableState).asList()
+        assertThat(sut.mainListChildByMenuItem("detail_main_rt").drawableState).asList()
             .contains(android.R.attr.state_enabled)
-        assertThat(sut.mainListChildByMenuItem(R.id.detail_main_fav).drawableState).asList()
+        assertThat(sut.mainListChildByMenuItem("detail_main_fav").drawableState).asList()
             .contains(android.R.attr.state_enabled)
     }
 
@@ -177,7 +177,7 @@ internal fun launchContainerFragment(
     initialState: Lifecycle.State = Lifecycle.State.CREATED,
     additionalAttrs: (AttributeSetBuilder.() -> Unit)? = null,
 ): FragmentScenario<ContainerFragment> {
-    return launchFragmentInContainer<ContainerFragment>(
+    return launchFragmentInContainer(
         initialState = initialState,
         factory = object : FragmentFactory() {
             override fun instantiate(classLoader: ClassLoader, className: String): Fragment {
@@ -199,6 +199,16 @@ private val ExpandableBottomContextMenuView.moreList: ViewGroup
     get() = findViewById(R.id.bottom_menu_more)
 private val ExpandableBottomContextMenuView.toggle: ImageButton?
     get() = findViewById(R.id.expandable_bottom_main_toggle)
+
+private fun View.getIdValue(itemIdName: String) =
+    resources.getIdentifier(itemIdName, "id", context.packageName)
+
+private fun ExpandableBottomContextMenuView.mainListChildByMenuItem(
+    itemIdName: String
+): ImageButton {
+    val itemId = getIdValue(itemIdName)
+    return mainListChildByMenuItem(itemId)
+}
 
 private fun ExpandableBottomContextMenuView.mainListChildByMenuItem(itemId: Int): ImageButton {
     return mainList.children.first { it.id == itemId } as ImageButton

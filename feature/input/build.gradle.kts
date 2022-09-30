@@ -23,6 +23,7 @@ plugins {
 apply(from = rootProject.file("android_build.gradle"))
 
 android {
+    namespace = "com.freshdigitable.udonroad2.input"
 
     buildFeatures {
         dataBinding = true

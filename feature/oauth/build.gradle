@@ -22,6 +22,7 @@ apply plugin: "androidx.navigation.safeargs.kotlin"
 apply from: rootProject.file("android_build.gradle")
 
 android {
+    namespace 'com.freshdigitable.udonroad2.oauth'
 
     defaultConfig {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
