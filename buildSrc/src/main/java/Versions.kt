@@ -15,8 +15,12 @@
  */
 
 object Versions {
-    const val KOTLIN = "1.5.31"
-    const val KOTLIN_COROUTINES = "1.5.2"
+    /// https://kotlinlang.org/
+    const val KOTLIN = "1.6.21"
+
+    /// https://github.com/Kotlin/kotlinx.coroutines
+    /// https://developer.android.com/kotlin/coroutines
+    const val KOTLIN_COROUTINES = "1.6.4"
 
     const val ANDROIDX_APPCOMPAT = "1.2.0"
     const val ANDROIDX_ACTIVITY = "1.4.0-alpha02"
