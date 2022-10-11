@@ -31,8 +31,8 @@ scabbard {
 }
 
 releasesHub {
-    dependenciesBasePath = "buildSrc/src/main/java/"
-    dependenciesClassNames = listOf("Libs.kt", "BuildLibs.kt")
+    autoDetectDependenciesPaths = true
+    dependenciesPaths = listOf("Libs.kt", "BuildLibs.kt").map { "buildSrc/src/main/java/$it" }
 }
 
 allprojects {

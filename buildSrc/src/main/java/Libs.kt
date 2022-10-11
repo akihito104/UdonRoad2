@@ -40,6 +40,7 @@ object Libs {
     const val ANDROIDX_ROOM_COMPILER = "androidx.room:room-compiler:${Versions.ANDROIDX_ROOM}"
     const val ANDROIDX_ROOM_KTX = "androidx.room:room-ktx:${Versions.ANDROIDX_ROOM}"
     const val ANDROIDX_ROOM_RUNTIME = "androidx.room:room-runtime:${Versions.ANDROIDX_ROOM}"
+    const val ANDROIDX_ROOM_PAGING = "androidx.room:room-paging:${Versions.ANDROIDX_ROOM}"
     const val ANDROIDX_SWIPE_REFRESH_LAYOUT =
         "androidx.swiperefreshlayout:swiperefreshlayout:${Versions.ANDROIDX_SWIPE_REFRESH_LAYOUT}"
     const val ANDROIDX_PREFERENCE = "androidx.preference:preference:${Versions.ANDROIDX_PREFERENCE}"

@@ -396,6 +396,12 @@
   license: The Apache Software License, Version 2.0
   licenseUrl: http://www.apache.org/licenses/LICENSE-2.0.txt
   url: https://developer.android.com/jetpack/androidx/releases/room#2.3.0-alpha03
+- artifact: androidx.room:room-paging:+
+  name: room-paging
+  copyrightHolder: The Android Open Source Project
+  license: The Apache Software License, Version 2.0
+  licenseUrl: http://www.apache.org/licenses/LICENSE-2.0.txt
+  url: https://developer.android.com/jetpack/androidx/releases/room#2.5.0-beta01
 - artifact: androidx.savedstate:savedstate-ktx:+
   name: savedstate-ktx
   copyrightHolder: The Android Open Source Project

@@ -51,6 +51,7 @@ class LicenseFragment : Fragment() {
                     return true
                 }
 
+                @Deprecated("Deprecated in Java")
                 override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
                     launchBrowser(Uri.parse(url))
                     return true

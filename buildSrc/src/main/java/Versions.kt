@@ -15,8 +15,12 @@
  */
 
 object Versions {
-    const val KOTLIN = "1.5.31"
-    const val KOTLIN_COROUTINES = "1.5.2"
+    /// https://kotlinlang.org/
+    const val KOTLIN = "1.6.21"
+
+    /// https://github.com/Kotlin/kotlinx.coroutines
+    /// https://developer.android.com/kotlin/coroutines
+    const val KOTLIN_COROUTINES = "1.6.4"
 
     const val ANDROIDX_APPCOMPAT = "1.2.0"
     const val ANDROIDX_ACTIVITY = "1.4.0-alpha02"
@@ -25,7 +29,9 @@ object Versions {
     const val ANDROIDX_CORE = "1.6.0"
     const val ANDROIDX_LIFECYCLE = "2.4.0"
     const val ANDROIDX_PAGING = "3.0.0"
-    const val ANDROIDX_ROOM = "2.3.0"
+
+    /// https://developer.android.com/training/data-storage/room
+    const val ANDROIDX_ROOM = "2.4.3"
     const val ANDROIDX_NAVIGATION = "2.4.2"
 
     const val MATERIAL_DESIGN = "1.3.0-alpha04"
@@ -35,7 +41,7 @@ object Versions {
     const val ANDROIDX_SWIPE_REFRESH_LAYOUT = "1.1.0"
     const val ANDROIDX_PREFERENCE = "1.1.1"
 
-    // https://github.com/google/dagger
+    /// https://github.com/google/dagger
     const val DAGGER = "2.38.1"
 
     const val RXJAVA = "2.2.19"
@@ -47,14 +53,14 @@ object Versions {
     const val THREETENBP = "1.1.0"
     const val TIMBER = "5.0.1"
 
-    // https://square.github.io/leakcanary
+    /// https://square.github.io/leakcanary
     const val LEAKCANARY = "2.9.1"
 
     // test
     const val JUNIT = "4.13.2"
     const val MOCKK = "1.12.0"
 
-    // https://github.com/robolectric/robolectric
+    /// https://github.com/robolectric/robolectric
     const val ROBOLECTRIC = "4.8.2"
     const val TRUTH = "1.1.2"
     const val KOTLINX_TEST_COROUTINES = KOTLIN_COROUTINES
@@ -75,7 +81,11 @@ object Versions {
 
     // build libs
     const val ANDROID_GRADLE_TOOL = "7.3.0"
+
+    /// https://github.com/arunkumar9t2/scabbard
     const val SCABBARD = "0.5.0"
-    const val RELEASES_HUB = "2.0.0"
+
+    /// https://github.com/dipien/releases-hub-gradle-plugin
+    const val RELEASES_HUB = "3.1.0"
     const val LICENSE_TOOL = "1.2.5"
 }

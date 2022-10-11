@@ -38,6 +38,7 @@ dependencies {
     implementation Libs.ANDROIDX_ROOM_RUNTIME
     kapt Libs.ANDROIDX_ROOM_COMPILER
     implementation Libs.ANDROIDX_ROOM_KTX
+    implementation Libs.ANDROIDX_ROOM_PAGING
     api Libs.ANDROIDX_PREFERENCE
 
     implementation Libs.DAGGER_ANDROID
