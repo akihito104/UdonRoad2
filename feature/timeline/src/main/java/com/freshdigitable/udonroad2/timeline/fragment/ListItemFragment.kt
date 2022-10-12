@@ -33,7 +33,6 @@ import com.freshdigitable.udonroad2.timeline.di.ListItemFragmentEffectDelegateCo
 import com.freshdigitable.udonroad2.timeline.di.ListItemViewModelComponent
 import com.freshdigitable.udonroad2.timeline.di.viewModel
 import dagger.android.support.AndroidSupportInjection
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.mapLatest

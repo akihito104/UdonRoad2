@@ -44,7 +44,6 @@ import dagger.android.AndroidInjection
 import dagger.android.AndroidInjector
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasAndroidInjector
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -176,7 +175,7 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
         // https://issuetracker.google.com/issues/139738913
         if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q) {
             val shouldFinishForBackStackCount = supportFragmentManager.run {
-                primaryNavigationFragment?.childFragmentManager?.backStackEntryCount ?: 0 == 0 &&
+                (primaryNavigationFragment?.childFragmentManager?.backStackEntryCount ?: 0) == 0 &&
                     backStackEntryCount == 0
             }
             if (isTaskRoot && shouldFinishForBackStackCount) {

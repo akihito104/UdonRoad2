@@ -31,7 +31,6 @@ import com.freshdigitable.udonroad2.timeline.di.TweetDetailViewModelComponent
 import com.freshdigitable.udonroad2.timeline.viewmodel.SpanClickListener
 import com.freshdigitable.udonroad2.timeline.viewmodel.TweetDetailViewModel
 import dagger.android.support.AndroidSupportInjection
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 

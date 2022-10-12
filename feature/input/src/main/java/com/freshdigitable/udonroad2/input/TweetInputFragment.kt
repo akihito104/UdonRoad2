@@ -46,7 +46,6 @@ import com.freshdigitable.udonroad2.media.MediaThumbnailContainer
 import com.freshdigitable.udonroad2.media.mediaViews
 import com.freshdigitable.udonroad2.model.app.AppFilePath
 import dagger.android.support.AndroidSupportInjection
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
