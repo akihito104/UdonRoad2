@@ -47,7 +47,7 @@ object Versions {
     const val RXJAVA = "2.2.19"
     const val RXJAVA_ANDROID = "2.1.1"
 
-    const val OKHTTP = "4.9.0"
+    const val OKHTTP = "4.10.0"
     const val TWITTER4J = "4.0.7"
     const val GLIDE = "4.12.0"
     const val THREETENBP = "1.1.0"
