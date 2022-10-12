@@ -34,6 +34,8 @@ jobs:
           key: ${{ runner.os }}-assemble-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-assemble-
+      - name: check license
+        run: ./gradlew :app:checkLicenses
       - name: assemble
         run: ./gradlew compileDebugSources
 
