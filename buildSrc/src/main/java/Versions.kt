@@ -28,7 +28,7 @@ object Versions {
 
     const val ANDROIDX_CORE = "1.6.0"
     const val ANDROIDX_LIFECYCLE = "2.4.0"
-    const val ANDROIDX_PAGING = "3.0.0"
+    const val ANDROIDX_PAGING = "3.1.1"
 
     /// https://developer.android.com/training/data-storage/room
     const val ANDROIDX_ROOM = "2.4.3"
