@@ -9,6 +9,8 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.MenuHost
+import androidx.core.view.MenuProvider
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModel
@@ -110,6 +112,30 @@ class ListItemFragment : Fragment() {
                 }
             }
         }
+
+        val menuHost = requireActivity() as MenuHost
+        menuHost.addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menuInflater.inflate(R.menu.timeline, menu)
+
+                val headingItem = menu.findItem(R.id.action_heading)
+                viewLifecycleOwner.lifecycleScope.launchWhenResumed {
+                    viewModel.listState.observe(viewLifecycleOwner) {
+                        headingItem.isEnabled = it.isHeadingEnabled
+                    }
+                }
+            }
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                return when (menuItem.itemId) {
+                    R.id.action_heading -> {
+                        viewModel.heading.dispatch()
+                        true
+                    }
+                    else -> false
+                }
+            }
+        }, viewLifecycleOwner)
     }
 
     private fun RecyclerView.setup(
@@ -134,28 +160,6 @@ class ListItemFragment : Fragment() {
         })
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.timeline.collectLatest(adapter::submitData)
-        }
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        super.onCreateOptionsMenu(menu, inflater)
-        inflater.inflate(R.menu.timeline, menu)
-
-        val headingItem = menu.findItem(R.id.action_heading)
-        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
-            viewModel.listState.observe(viewLifecycleOwner) {
-                headingItem.isEnabled = it.isHeadingEnabled
-            }
-        }
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            R.id.action_heading -> {
-                viewModel.heading.dispatch()
-                true
-            }
-            else -> super.onOptionsItemSelected(item)
         }
     }
 
