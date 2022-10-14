@@ -26,7 +26,7 @@ object Versions {
     const val ANDROIDX_ACTIVITY = "1.4.0-alpha02"
     const val ANDROIDX_FRAGMENT = "1.4.0-alpha09"
 
-    const val ANDROIDX_CORE = "1.6.0"
+    const val ANDROIDX_CORE = "1.7.0"
     const val ANDROIDX_LIFECYCLE = "2.4.0"
     const val ANDROIDX_PAGING = "3.1.1"
 
@@ -87,5 +87,7 @@ object Versions {
 
     /// https://github.com/dipien/releases-hub-gradle-plugin
     const val RELEASES_HUB = "3.1.0"
-    const val LICENSE_TOOL = "1.2.5"
+
+    /// https://github.com/cookpad/LicenseToolsPlugin (deprecated)
+    const val LICENSE_TOOL = "1.2.8"
 }

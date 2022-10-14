@@ -33,7 +33,6 @@ import com.freshdigitable.udonroad2.timeline.TweetMediaViewModelSource
 import com.freshdigitable.udonroad2.timeline.UserIconClickListener
 import com.freshdigitable.udonroad2.timeline.UserIconViewModelSource
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow

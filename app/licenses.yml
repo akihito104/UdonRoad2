@@ -564,10 +564,12 @@
   name: okhttp
   copyrightHolder: Square, Inc.
   license: The Apache Software License, Version 2.0
-- artifact: com.squareup.okio:okio:+
-  name: okio
+- artifact: com.squareup.okio:okio-jvm:+
+  name: okio-jvm
   copyrightHolder: Square, Inc.
   license: The Apache Software License, Version 2.0
+  licenseUrl: http://www.apache.org/licenses/LICENSE-2.0.txt
+  url: https://github.com/square/okio/
 - artifact: io.reactivex.rxjava2:rxandroid:+
   name: rxandroid
   copyrightHolder: RxJava Contributors

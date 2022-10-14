@@ -19,7 +19,6 @@ package com.freshdigitable.udonroad2.data.impl
 import com.freshdigitable.udonroad2.data.TwitterCardDataSource
 import com.freshdigitable.udonroad2.model.TwitterCard
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.onEach
