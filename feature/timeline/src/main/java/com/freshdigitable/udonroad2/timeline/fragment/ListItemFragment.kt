@@ -114,28 +114,31 @@ class ListItemFragment : Fragment() {
         }
 
         val menuHost = requireActivity() as MenuHost
-        menuHost.addMenuProvider(object : MenuProvider {
-            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-                menuInflater.inflate(R.menu.timeline, menu)
+        menuHost.addMenuProvider(
+            object : MenuProvider {
+                override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                    menuInflater.inflate(R.menu.timeline, menu)
 
-                val headingItem = menu.findItem(R.id.action_heading)
-                viewLifecycleOwner.lifecycleScope.launchWhenResumed {
-                    viewModel.listState.observe(viewLifecycleOwner) {
-                        headingItem.isEnabled = it.isHeadingEnabled
+                    val headingItem = menu.findItem(R.id.action_heading)
+                    viewLifecycleOwner.lifecycleScope.launchWhenResumed {
+                        viewModel.listState.observe(viewLifecycleOwner) {
+                            headingItem.isEnabled = it.isHeadingEnabled
+                        }
                     }
                 }
-            }
 
-            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-                return when (menuItem.itemId) {
-                    R.id.action_heading -> {
-                        viewModel.heading.dispatch()
-                        true
+                override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                    return when (menuItem.itemId) {
+                        R.id.action_heading -> {
+                            viewModel.heading.dispatch()
+                            true
+                        }
+                        else -> false
                     }
-                    else -> false
                 }
-            }
-        }, viewLifecycleOwner)
+            },
+            viewLifecycleOwner,
+        )
     }
 
     private fun RecyclerView.setup(
