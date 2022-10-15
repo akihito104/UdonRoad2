@@ -34,6 +34,8 @@ import android.widget.ImageView
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
+import androidx.core.view.MenuHost
+import androidx.core.view.MenuProvider
 import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
@@ -102,9 +104,35 @@ class TweetInputFragment : Fragment() {
         binding.viewModel = viewModel
         binding.lifecycleOwner = viewLifecycleOwner
 
+        val menuHost = requireActivity() as MenuHost
         viewModel.menuItem.observe(viewLifecycleOwner) {
-            requireActivity().invalidateOptionsMenu()
+            menuHost.invalidateMenu()
         }
+        menuHost.addMenuProvider(
+            object : MenuProvider {
+                override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) =
+                    menuInflater.inflate(R.menu.input_tweet_write, menu)
+
+                override fun onMenuItemSelected(menuItem: MenuItem): Boolean =
+                    when (menuItem.itemId) {
+                        R.id.input_tweet_write, R.id.input_tweet_error -> {
+                            viewModel.openInput.dispatch()
+                            true
+                        }
+                        R.id.input_tweet_send -> {
+                            val tweet = requireNotNull(viewModel.state.value)
+                            viewModel.sendTweet.dispatch(tweet)
+                            true
+                        }
+                        android.R.id.closeButton -> {
+                            viewModel.cancelInput.dispatch()
+                            true
+                        }
+                        else -> false
+                    }
+            },
+            viewLifecycleOwner,
+        )
         binding.twIntext.setOnFocusChangeListener { v, hasFocus ->
             if (!hasFocus && viewModel.isExpanded.value == false) {
                 v.hideInputMethod()
@@ -161,34 +189,10 @@ class TweetInputFragment : Fragment() {
         }
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        super.onCreateOptionsMenu(menu, inflater)
-        inflater.inflate(R.menu.input_tweet_write, menu)
-    }
-
     override fun onPrepareOptionsMenu(menu: Menu) {
         super.onPrepareOptionsMenu(menu)
         val available = viewModel.menuItem.value ?: viewModel.menuItemOnIdling
         menu.prepareItem(available)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            R.id.input_tweet_write, R.id.input_tweet_error -> {
-                viewModel.openInput.dispatch()
-                true
-            }
-            R.id.input_tweet_send -> {
-                val tweet = requireNotNull(viewModel.state.value)
-                viewModel.sendTweet.dispatch(tweet)
-                true
-            }
-            android.R.id.closeButton -> {
-                viewModel.cancelInput.dispatch()
-                true
-            }
-            else -> super.onOptionsItemSelected(item)
-        }
     }
 }
 
