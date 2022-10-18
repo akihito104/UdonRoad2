@@ -22,12 +22,12 @@ object Versions {
     /// https://developer.android.com/kotlin/coroutines
     const val KOTLIN_COROUTINES = "1.6.4"
 
-    const val ANDROIDX_APPCOMPAT = "1.2.0"
-    const val ANDROIDX_ACTIVITY = "1.4.0"
-    const val ANDROIDX_FRAGMENT = "1.4.0-alpha09"
+    const val ANDROIDX_APPCOMPAT = "1.4.2"
+    const val ANDROIDX_ACTIVITY = "1.5.1"
+    const val ANDROIDX_FRAGMENT = "1.5.1"
 
     const val ANDROIDX_CORE = "1.7.0"
-    const val ANDROIDX_LIFECYCLE = "2.4.0"
+    const val ANDROIDX_LIFECYCLE = "2.5.1"
     const val ANDROIDX_PAGING = "3.1.1"
 
     /// https://developer.android.com/training/data-storage/room
@@ -37,7 +37,7 @@ object Versions {
     const val MATERIAL_DESIGN = "1.3.0-alpha04"
     const val ANDROIDX_RECYCLER_VIEW = "1.2.0"
     const val ANDROIDX_CONSTRAINT_LAYOUT = "2.0.0-beta6"
-    const val ANDROIDX_VIEWPAGER2 = "1.0.0-beta03"
+    const val ANDROIDX_VIEWPAGER2 = "1.1.0-beta01"
     const val ANDROIDX_SWIPE_REFRESH_LAYOUT = "1.1.0"
     const val ANDROIDX_PREFERENCE = "1.1.1"
 

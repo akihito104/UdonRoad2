@@ -35,4 +35,5 @@ internal class OauthAction(
     override val scrollList: AppEventListener = AppEventListener.empty
     override val stopScrollingList: AppEventListener1<Int> = AppEventListener1.empty()
     override val heading: AppEventListener = AppEventListener.empty
+    override val listVisible: AppEventListener1<Boolean> = AppEventListener1.empty()
 }

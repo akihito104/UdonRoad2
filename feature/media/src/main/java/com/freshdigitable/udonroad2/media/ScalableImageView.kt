@@ -38,7 +38,7 @@ class ScalableImageView @JvmOverloads constructor(
     private val scaleGestureDetector: ScaleGestureDetector
     var scaleListener: ScaleEventListener? = null
 
-    override fun onTouchEvent(event: MotionEvent?): Boolean {
+    override fun onTouchEvent(event: MotionEvent): Boolean {
         scaleGestureDetector.onTouchEvent(event)
         val scaling: Boolean = scaleGestureDetector.isInProgress
         if (scaling) {

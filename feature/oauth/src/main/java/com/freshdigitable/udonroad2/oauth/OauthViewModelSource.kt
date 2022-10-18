@@ -100,6 +100,8 @@ data class OauthViewState(
         get() = requestToken != null && pinText.isNotEmpty()
     override val isPrepending: Boolean
         get() = false
+    override val isHeadingVisible: Boolean
+        get() = true
 }
 
 class OauthSavedStates(

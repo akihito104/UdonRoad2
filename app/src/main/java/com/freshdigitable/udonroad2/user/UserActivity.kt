@@ -10,7 +10,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.lifecycleScope
-import androidx.viewpager.widget.ViewPager
+import androidx.viewpager2.widget.ViewPager2
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.databinding.ActivityUserBinding
 import com.freshdigitable.udonroad2.di.UserViewModelComponent
@@ -19,6 +19,7 @@ import com.freshdigitable.udonroad2.model.user.TweetUserItem
 import com.freshdigitable.udonroad2.model.user.UserEntity
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.tabs.TabLayout
+import com.google.android.material.tabs.TabLayoutMediator
 import dagger.android.AndroidInjection
 import dagger.android.AndroidInjector
 import dagger.android.DispatchingAndroidInjector
@@ -44,7 +45,7 @@ class UserActivity : HasAndroidInjector, AppCompatActivity() {
             this,
             R.layout.activity_user
         )
-        val adapter = UserFragmentPagerAdapter(supportFragmentManager)
+        val adapter = UserFragmentPagerAdapter(this)
 
         binding.setup(viewModel, adapter)
         setSupportActionBar(binding.userToolbar)
@@ -79,7 +80,7 @@ class UserActivity : HasAndroidInjector, AppCompatActivity() {
         )
 
         userPager.apply {
-            addOnPageChangeListener(object : ViewPager.SimpleOnPageChangeListener() {
+            registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
                 override fun onPageSelected(position: Int) {
                     viewModel.changePage.dispatch(position)
                 }
@@ -87,7 +88,7 @@ class UserActivity : HasAndroidInjector, AppCompatActivity() {
             this.adapter = adapter
             viewModel.changePage.dispatch(currentItem)
         }
-        userTabContainer.setupWithViewPager(userPager)
+        TabLayoutMediator(userTabContainer, userPager) { _, _ -> }.attach()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

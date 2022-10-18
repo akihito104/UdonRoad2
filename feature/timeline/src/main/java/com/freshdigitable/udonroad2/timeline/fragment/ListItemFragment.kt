@@ -57,7 +57,6 @@ class ListItemFragment : Fragment() {
     override fun onAttach(context: Context) {
         AndroidSupportInjection.inject(this)
         super.onAttach(context)
-        setHasOptionsMenu(true)
     }
 
     override fun onCreateView(

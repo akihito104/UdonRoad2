@@ -65,13 +65,13 @@ class MediaActivity : AppCompatActivity(), HasAndroidInjector {
         setSupportActionBar(binding.mediaToolbar)
 
         val insetsController = WindowCompat.getInsetsController(window, window.decorView)
-        insetsController?.systemBarsBehavior =
+        insetsController.systemBarsBehavior =
             WindowInsetsControllerCompat.BEHAVIOR_SHOW_BARS_BY_TOUCH
-        insetsController?.addOnControllableInsetsChangedListener { _, i ->
+        insetsController.addOnControllableInsetsChangedListener { _, i ->
             viewModel.changeSystemUiVisibility.dispatch(i)
         }
         viewModel.systemUiVisibility.observe(this) {
-            insetsController?.show(it.visibility)
+            insetsController.show(it.visibility)
             when (it) {
                 SystemUiVisibility.SHOW -> supportActionBar?.show()
                 SystemUiVisibility.HIDE -> supportActionBar?.hide()
