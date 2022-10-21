@@ -81,9 +81,7 @@ class UserActivity : HasAndroidInjector, AppCompatActivity() {
 
         userPager.apply {
             registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
-                override fun onPageSelected(position: Int) {
-                    viewModel.changePage.dispatch(position)
-                }
+                override fun onPageSelected(position: Int) = viewModel.onPageSelected(position)
             })
             this.adapter = adapter
             viewModel.changePage.dispatch(currentItem)

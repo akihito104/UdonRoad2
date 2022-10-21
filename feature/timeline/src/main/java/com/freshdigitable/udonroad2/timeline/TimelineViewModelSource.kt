@@ -89,6 +89,8 @@ data class TimelineState(
         get() = baseState?.isHeadingEnabled == true || selectedItemId != null
     override val isPrepending: Boolean
         get() = baseState?.isPrepending ?: false
+    override val isHeadingVisible: Boolean
+        get() = baseState?.isHeadingVisible ?: false
 }
 
 class TimelineEffectDelegate @Inject constructor(

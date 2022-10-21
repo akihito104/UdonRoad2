@@ -23,6 +23,7 @@ import com.freshdigitable.udonroad2.model.app.onEvent
 import com.freshdigitable.udonroad2.model.app.stateSourceBuilder
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -38,6 +39,7 @@ interface ListItemLoadableViewModel<Q : QueryType> :
 
     interface State {
         val isHeadingEnabled: Boolean
+        val isHeadingVisible: Boolean
         val isPrepending: Boolean
     }
 }
@@ -47,6 +49,7 @@ interface ListItemLoadableEventListener {
     val scrollList: AppEventListener
     val stopScrollingList: AppEventListener1<Int>
     val heading: AppEventListener
+    val listVisible: AppEventListener1<Boolean>
 }
 
 internal interface ListItemLoadableAction : ListItemLoadableEventListener {
@@ -54,6 +57,7 @@ internal interface ListItemLoadableAction : ListItemLoadableEventListener {
     override val scrollList: AppAction<TimelineEvent.ListScrolled.Started>
     override val stopScrollingList: AppAction1<Int, TimelineEvent.ListScrolled.Stopped>
     override val heading: AppAction<TimelineEvent.HeadingClicked>
+    override val listVisible: AppAction1<Boolean, TimelineEvent.ListVisible>
 }
 
 internal class ListItemLoadableActions @Inject constructor(
@@ -67,6 +71,9 @@ internal class ListItemLoadableActions @Inject constructor(
     }
     override val heading: AppAction<TimelineEvent.HeadingClicked> =
         eventDispatcher.toAction(TimelineEvent.HeadingClicked(owner))
+    override val listVisible = eventDispatcher.toAction { it: Boolean ->
+        TimelineEvent.ListVisible(owner, it)
+    }
 }
 
 interface ListItemLoadableViewModelSource : ListItemLoadableEventListener, ActivityEffectStream {
@@ -115,7 +122,7 @@ internal class ListItemLoadableViewStateImpl(
                 is LoadingResult.Loaded -> {
                     val items = result.value
                     val firstVisibleItemPosition = state.firstVisibleItemPosition + items.size
-                    Snapshot(
+                    state.copy(
                         firstVisibleItemPosition = firstVisibleItemPosition,
                         isPrepending = false,
                     )
@@ -123,7 +130,14 @@ internal class ListItemLoadableViewStateImpl(
                 is LoadingResult.Failed -> state.copy(isPrepending = false)
             }
         },
-        actions.heading.onEvent { s, _ ->
+        actions.listVisible.onEvent { s, e ->
+            if (e.owner == owner) {
+                s.copy(isHeadingVisible = e.isVisible)
+            } else {
+                if (e.isVisible) s.copy(isHeadingVisible = false) else s
+            }
+        },
+        actions.heading.filter { it.owner == owner }.onEvent { s, _ ->
             if (s.firstVisibleItemPosition > 0) {
                 val needsSkip = s.firstVisibleItemPosition >= 4
                 channel.send(TimelineEffect.ToTopOfList(needsSkip))
@@ -146,6 +160,7 @@ internal class ListItemLoadableViewStateImpl(
         val firstVisibleItemPosition: Int = RecyclerView.NO_POSITION,
         val enableHeading: Boolean = false,
         override val isPrepending: Boolean = false,
+        override val isHeadingVisible: Boolean = true,
     ) : ListItemLoadableViewModel.State {
         override val isHeadingEnabled: Boolean
             get() = enableHeading || when (firstVisibleItemPosition) {
