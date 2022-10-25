@@ -63,6 +63,14 @@ class UserViewModel(
         return true
     }
 
+    fun onPageSelected(index: Int) {
+        changePage.dispatch(index)
+        val ownerId = state.value?.pages?.get(UserPage.values()[index])
+        if (ownerId != null) {
+            eventDispatcher.postEvent(TimelineEvent.ListVisible(ownerId, true))
+        }
+    }
+
     fun onOptionsItemSelected(item: MenuItem): Boolean {
         val relationMenu = RelationshipMenu.findById(item.itemId) ?: return false
         changeRelationships.dispatch(relationMenu)

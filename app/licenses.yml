@@ -492,6 +492,24 @@
   license: The Apache Software License, Version 2.0
   licenseUrl: http://www.apache.org/licenses/LICENSE-2.0.txt
   url: https://developer.android.com/jetpack/androidx/releases/startup#1.0.0
+- artifact: androidx.emoji2:emoji2-views-helper:+
+  name: emoji2-views-helper
+  copyrightHolder: The Android Open Source Project
+  license: The Apache Software License, Version 2.0
+  licenseUrl: http://www.apache.org/licenses/LICENSE-2.0.txt
+  url: https://developer.android.com/jetpack/androidx/releases/emoji2#1.2.0
+- artifact: androidx.emoji2:emoji2:+
+  name: emoji2
+  copyrightHolder: The Android Open Source Project
+  license: The Apache Software License, Version 2.0
+  licenseUrl: http://www.apache.org/licenses/LICENSE-2.0.txt
+  url: https://developer.android.com/jetpack/androidx/releases/emoji2#1.2.0
+- artifact: androidx.resourceinspection:resourceinspection-annotation:+
+  name: resourceinspection-annotation
+  copyrightHolder: The Android Open Source Project
+  license: The Apache Software License, Version 2.0
+  licenseUrl: http://www.apache.org/licenses/LICENSE-2.0.txt
+  url: https://developer.android.com/jetpack/androidx/releases/resourceinspection#1.0.1
 - artifact: com.github.bumptech.glide:annotations:+
   name: annotations
   copyrightHolder: Google, Inc.

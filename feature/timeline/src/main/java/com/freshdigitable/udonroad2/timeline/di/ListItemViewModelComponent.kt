@@ -40,7 +40,7 @@ interface ListItemViewModelComponent {
 }
 
 fun ListItemViewModelComponent.viewModel(key: String): ListItemLoadableViewModel<*> {
-    return viewModelProvider.get(key, viewModelClass) as ListItemLoadableViewModel<*>
+    return viewModelProvider[key, viewModelClass] as ListItemLoadableViewModel<*>
 }
 
 interface ListItemAdapterComponent {

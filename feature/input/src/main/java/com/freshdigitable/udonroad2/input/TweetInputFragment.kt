@@ -85,11 +85,6 @@ class TweetInputFragment : Fragment() {
         }
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setHasOptionsMenu(true)
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -112,6 +107,12 @@ class TweetInputFragment : Fragment() {
             object : MenuProvider {
                 override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) =
                     menuInflater.inflate(R.menu.input_tweet_write, menu)
+
+                override fun onPrepareMenu(menu: Menu) {
+                    super.onPrepareMenu(menu)
+                    val available = viewModel.menuItem.value ?: viewModel.menuItemOnIdling
+                    menu.prepareItem(available)
+                }
 
                 override fun onMenuItemSelected(menuItem: MenuItem): Boolean =
                     when (menuItem.itemId) {
@@ -146,9 +147,7 @@ class TweetInputFragment : Fragment() {
             }
         }
         binding.twAppendImage.setOnClickListener {
-            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.JELLY_BEAN_MR2 &&
-                !it.context.isWriteExternalStoragePermissionGranted
-            ) {
+            if (!it.context.isWriteExternalStoragePermissionGranted) {
                 requestPermission.launch(WRITE_EXTERNAL_STORAGE)
             } else {
                 it.hideInputMethod()
@@ -187,12 +186,6 @@ class TweetInputFragment : Fragment() {
             }
             else -> Unit
         }
-    }
-
-    override fun onPrepareOptionsMenu(menu: Menu) {
-        super.onPrepareOptionsMenu(menu)
-        val available = viewModel.menuItem.value ?: viewModel.menuItemOnIdling
-        menu.prepareItem(available)
     }
 }
 

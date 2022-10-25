@@ -43,6 +43,7 @@ sealed class TimelineEvent : AppEvent {
 
     data class HeadingClicked(val owner: ListOwner<*>) : TimelineEvent()
     object SwipedToRefresh : TimelineEvent()
+    data class ListVisible(val owner: ListOwner<*>, val isVisible: Boolean) : TimelineEvent()
 }
 
 internal fun TimelineEffect.Navigate.MediaViewer.Companion.create(

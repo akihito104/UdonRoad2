@@ -10,11 +10,12 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.MenuHost
-import androidx.core.view.MenuProvider
+import androidx.core.view.children
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asFlow
+import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.map
 import androidx.navigation.fragment.navArgs
@@ -57,7 +58,6 @@ class ListItemFragment : Fragment() {
     override fun onAttach(context: Context) {
         AndroidSupportInjection.inject(this)
         super.onAttach(context)
-        setHasOptionsMenu(true)
     }
 
     override fun onCreateView(
@@ -113,32 +113,24 @@ class ListItemFragment : Fragment() {
             }
         }
 
+        val menuProvider = MenuProvider(viewModel)
+        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
+            viewModel.listState.map { it.isHeadingEnabled }.distinctUntilChanged()
+                .observe(viewLifecycleOwner) {
+                    menuProvider.headingItem?.isEnabled = it
+                }
+        }
         val menuHost = requireActivity() as MenuHost
-        menuHost.addMenuProvider(
-            object : MenuProvider {
-                override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-                    menuInflater.inflate(R.menu.timeline, menu)
-
-                    val headingItem = menu.findItem(R.id.action_heading)
-                    viewLifecycleOwner.lifecycleScope.launchWhenResumed {
-                        viewModel.listState.observe(viewLifecycleOwner) {
-                            headingItem.isEnabled = it.isHeadingEnabled
-                        }
+        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
+            viewModel.listState.map { it.isHeadingVisible }.distinctUntilChanged()
+                .observe(viewLifecycleOwner) {
+                    if (it) {
+                        menuHost.addMenuProvider(menuProvider, viewLifecycleOwner)
+                    } else {
+                        menuHost.removeMenuProvider(menuProvider)
                     }
                 }
-
-                override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-                    return when (menuItem.itemId) {
-                        R.id.action_heading -> {
-                            viewModel.heading.dispatch()
-                            true
-                        }
-                        else -> false
-                    }
-                }
-            },
-            viewLifecycleOwner,
-        )
+        }
     }
 
     private fun RecyclerView.setup(
@@ -179,6 +171,35 @@ class ListItemFragment : Fragment() {
 
         fun bundle(owner: ListOwner<*>, label: String): Bundle {
             return ListItemFragmentArgs(owner.query, owner.id, label).toBundle()
+        }
+    }
+
+    private class MenuProvider(
+        private val viewModel: ListItemLoadableViewModel<*>,
+    ) : androidx.core.view.MenuProvider {
+        var headingItem: MenuItem? = null
+        override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+            val be = menu.children.filter { it.itemId == R.id.action_heading }.toSet()
+            menuInflater.inflate(R.menu.timeline, menu)
+            val af = menu.children.filter { it.itemId == R.id.action_heading }.toSet()
+
+            check((af - be).size == 1)
+            val headingItem = (af - be).first()
+            val state = viewModel.listState.value ?: return
+            this.headingItem = headingItem.apply {
+                isVisible = state.isHeadingVisible
+                isEnabled = state.isHeadingEnabled
+            }
+        }
+
+        override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+            return when (menuItem.itemId) {
+                R.id.action_heading -> {
+                    viewModel.heading.dispatch()
+                    true
+                }
+                else -> false
+            }
         }
     }
 }

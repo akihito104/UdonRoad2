@@ -15,6 +15,7 @@
  */
 package com.freshdigitable.udonroad2.media
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Matrix
@@ -38,7 +39,8 @@ class ScalableImageView @JvmOverloads constructor(
     private val scaleGestureDetector: ScaleGestureDetector
     var scaleListener: ScaleEventListener? = null
 
-    override fun onTouchEvent(event: MotionEvent?): Boolean {
+    @SuppressLint("ClickableViewAccessibility")
+    override fun onTouchEvent(event: MotionEvent): Boolean {
         scaleGestureDetector.onTouchEvent(event)
         val scaling: Boolean = scaleGestureDetector.isInProgress
         if (scaling) {

@@ -2,8 +2,7 @@ package com.freshdigitable.udonroad2.user
 
 import androidx.annotation.Keep
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
-import androidx.fragment.app.FragmentStatePagerAdapter
+import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.freshdigitable.udonroad2.R
 import com.freshdigitable.udonroad2.model.ListOwner
 import com.freshdigitable.udonroad2.model.QueryType
@@ -14,20 +13,28 @@ import com.freshdigitable.udonroad2.model.user.UserEntity
 import com.freshdigitable.udonroad2.timeline.fragment.ListItemFragment
 
 class UserFragmentPagerAdapter(
-    fragmentManager: FragmentManager,
-) : FragmentStatePagerAdapter(fragmentManager, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
+    activity: UserActivity,
+) : FragmentStateAdapter(activity) {
     private val items = mutableMapOf<UserPage, ListOwner<*>>()
 
-    override fun getItem(position: Int): Fragment {
-        return ListItemFragment.newInstance(requireNotNull(items[UserPage.values()[position]]))
+    override fun createFragment(position: Int): Fragment {
+        return ListItemFragment.newInstance(getOwnerByPosition(position))
     }
 
-    override fun getCount(): Int = items.size
+    private fun getOwnerByPosition(position: Int) =
+        requireNotNull(items[UserPage.values()[position]])
+
+    override fun getItemCount(): Int = items.size
 
     internal fun setItems(items: Map<UserPage, ListOwner<*>>) {
         this.items.clear()
         this.items.putAll(items)
     }
+
+    override fun getItemId(position: Int): Long = getOwnerByPosition(position).id.value.toLong()
+
+    override fun containsItem(itemId: Long): Boolean =
+        items.values.find { it.id.value.toLong() == itemId } != null
 }
 
 @Keep
