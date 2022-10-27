@@ -56,6 +56,9 @@ object Versions {
     /// https://square.github.io/leakcanary
     const val LEAKCANARY = "2.9.1"
 
+    /// https://github.com/google/ExoPlayer
+    const val EXOPLAYER = "2.18.1"
+
     // test
     const val JUNIT = "4.13.2"
     const val MOCKK = "1.12.0"

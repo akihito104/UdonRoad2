@@ -74,6 +74,8 @@ dependencies {
     implementation Libs.GLIDE
     kapt Libs.GLIDE_COMPILER
 
+    implementation Libs.EXOPLAYER
+
     testImplementation project(":test-common-jvm")
     testImplementation Libs.JUNIT
     testImplementation Libs.MOCKK
