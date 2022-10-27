@@ -17,8 +17,6 @@
 package com.freshdigitable.udonroad2.media
 
 import android.content.Context
-import android.media.MediaPlayer
-import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.SurfaceHolder
@@ -30,24 +28,23 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.lifecycleScope
 import com.freshdigitable.udonroad2.model.MediaEntity
+import com.google.android.exoplayer2.ExoPlayer
+import com.google.android.exoplayer2.MediaItem
+import com.google.android.exoplayer2.Player.Listener
+import com.google.android.exoplayer2.Player.STATE_READY
+import com.google.android.exoplayer2.analytics.AnalyticsListener
+import com.google.android.exoplayer2.video.VideoSize
 import dagger.android.support.AndroidSupportInjection
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.produce
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
-import kotlin.coroutines.CoroutineContext
 
-class MovieMediaFragment(
-    private val coroutineScope: MovieMediaCoroutineScope = MovieMediaCoroutineScope(),
-) : Fragment(), CoroutineScope by coroutineScope {
+class MovieMediaFragment : Fragment() {
 
     companion object {
         private const val ARGS_URL = "url"
@@ -76,7 +73,7 @@ class MovieMediaFragment(
     override fun onAttach(context: Context) {
         AndroidSupportInjection.inject(this)
         super.onAttach(context)
-        lifecycle.addObserver(coroutineScope)
+        mediaPlayer = ExoPlayer.Builder(requireContext()).build()
     }
 
     override fun onCreateView(
@@ -87,7 +84,9 @@ class MovieMediaFragment(
         return layoutInflater.inflate(R.layout.view_media_movie, container, false)
     }
 
-    private val mediaPlayer = MediaPlayer()
+    private lateinit var mediaPlayer: ExoPlayer
+    private var listener: Listener? = null
+    private var analyticsListener: AnalyticsListener? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -100,7 +99,7 @@ class MovieMediaFragment(
 
         surfaceView.holder.addCallback(object : SurfaceHolder.Callback {
             override fun surfaceCreated(surfaceHolder: SurfaceHolder) {
-                mediaPlayer.setDisplay(surfaceHolder)
+                mediaPlayer.setVideoSurfaceHolder(surfaceHolder)
             }
 
             override fun surfaceDestroyed(surfaceHolder: SurfaceHolder) {
@@ -109,21 +108,30 @@ class MovieMediaFragment(
 
             override fun surfaceChanged(p0: SurfaceHolder, p1: Int, p2: Int, p3: Int) {}
         })
-        mediaPlayer.setup(surfaceView, progressText, progressBar)
+
+        val listener = createListener(mediaPlayer, progressText, progressBar)
+        val analyticsListener = createAnalyticsListener(surfaceView)
+        mediaPlayer.setup(listener, analyticsListener)
+        this.listener = listener
+        this.analyticsListener = analyticsListener
     }
 
-    private fun MediaPlayer.setup(
-        surfaceView: SurfaceView,
-        progressText: TextView,
-        progressBar: ProgressBar,
+    private fun ExoPlayer.setup(
+        listener: Listener,
+        analyticsListener: AnalyticsListener,
     ) {
-        setOnPreparedListener {
-            it.setupProgress(progressText, progressBar)
-            it.start()
-        }
-        setOnVideoSizeChangedListener { mp, _, _ ->
-            val videoWidth = mp.videoWidth
-            val videoHeight = mp.videoHeight
+        addListener(listener)
+        addAnalyticsListener(analyticsListener)
+        addMediaItem(MediaItem.fromUri(url))
+    }
+
+    private fun createAnalyticsListener(surfaceView: SurfaceView) = object : AnalyticsListener {
+        override fun onVideoSizeChanged(
+            eventTime: AnalyticsListener.EventTime,
+            videoSize: VideoSize
+        ) {
+            val videoWidth = videoSize.width
+            val videoHeight = videoSize.height
             surfaceView.holder.setFixedSize(videoWidth, videoHeight)
             val parentWidth = (surfaceView.parent as View).width
             val parentHeight = (surfaceView.parent as View).height
@@ -138,32 +146,47 @@ class MovieMediaFragment(
             }
             surfaceView.requestLayout()
         }
+    }
 
-        setDataSource(requireContext(), Uri.parse(url))
+    private fun createListener(
+        mediaPlayer: ExoPlayer,
+        progressText: TextView,
+        progressBar: ProgressBar
+    ) = object : Listener {
+        override fun onPlaybackStateChanged(playbackState: Int) {
+            if (playbackState == STATE_READY) {
+                setupProgress(mediaPlayer, progressText, progressBar)
+                mediaPlayer.play()
+            }
+        }
     }
 
     // the function should be called after MediaPlayer is prepared.
     @ExperimentalCoroutinesApi
-    private fun MediaPlayer.setupProgress(progressText: TextView, progressBar: ProgressBar) {
-        val currentPosStream: ReceiveChannel<Int> = produce {
-            var oldPosition = -1
+    private fun setupProgress(
+        mediaPlayer: ExoPlayer,
+        progressText: TextView,
+        progressBar: ProgressBar,
+    ) {
+        val currentPosStream: ReceiveChannel<Long> = viewLifecycleOwner.lifecycleScope.produce {
+            var oldPosition = -1L
             while (isActive) {
-                if (oldPosition != currentPosition) {
-                    send(currentPosition)
-                    oldPosition = currentPosition
+                if (oldPosition != mediaPlayer.currentPosition) {
+                    send(mediaPlayer.currentPosition)
+                    oldPosition = mediaPlayer.currentPosition
                 }
                 delay(200)
             }
         }
-        progressBar.max = duration
+        progressBar.max = mediaPlayer.duration.toInt()
         val timeElapseFormat = getString(R.string.media_remain_time)
-        launch {
+        viewLifecycleOwner.lifecycleScope.launchWhenResumed {
             for (pos in currentPosStream) {
-                val remain: Long = (progressBar.max - pos).toLong()
+                val remain: Long = (progressBar.max - pos)
                 val minutes = TimeUnit.MILLISECONDS.toMinutes(remain)
                 val seconds =
                     TimeUnit.MILLISECONDS.toSeconds(remain - TimeUnit.MINUTES.toMillis(minutes))
-                progressBar.progress = pos
+                progressBar.progress = pos.toInt()
                 progressText.text = String.format(timeElapseFormat, minutes, seconds)
             }
         }
@@ -171,7 +194,7 @@ class MovieMediaFragment(
 
     override fun onResume() {
         super.onResume()
-        mediaPlayer.prepareAsync()
+        mediaPlayer.prepare()
     }
 
     override fun onDestroyView() {
@@ -185,27 +208,11 @@ class MovieMediaFragment(
             if (isPlaying) {
                 stop()
             }
-            setOnVideoSizeChangedListener(null)
-            setOnPreparedListener(null)
+            analyticsListener?.let { removeAnalyticsListener(it) }
+            listener?.let { removeListener(it) }
             release()
         }
-    }
-}
-
-class MovieMediaCoroutineScope : CoroutineScope, DefaultLifecycleObserver {
-    private var job: Job? = null
-    override val coroutineContext: CoroutineContext
-        get() = Dispatchers.Main + (job ?: Job().also { job = it })
-
-    @Override
-    fun onCreated() {
-        if (job == null || job?.isCancelled == true) {
-            job = Job()
-        }
-    }
-
-    @Override
-    fun onDestroy() {
-        job?.cancel()
+        analyticsListener = null
+        listener = null
     }
 }
