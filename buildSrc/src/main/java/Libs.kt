@@ -91,4 +91,5 @@ object Libs {
         "org.twitter4j:twitter4j-http2-support:${Versions.TWITTER4J}"
     const val ANDROIDX_TEST_ORCHESTRATOR =
         "androidx.test:orchestrator:${Versions.ANDROIDX_TEST_ORCHESTRATOR}"
+    const val EXOPLAYER = "com.google.android.exoplayer:exoplayer:${Versions.EXOPLAYER}"
 }
