@@ -689,3 +689,78 @@
   name: listenablefuture
   copyrightHolder: The Guava Authors
   license: Apache License 2.0
+- artifact: androidx.media:media:+
+  name: media
+  copyrightHolder: The Android Open Source Project
+  license: The Apache Software License, Version 2.0
+  licenseUrl: http://www.apache.org/licenses/LICENSE-2.0.txt
+  url: https://developer.android.com/jetpack/androidx/releases/media#1.4.3
+- artifact: com.google.android.exoplayer:exoplayer-common:+
+  name: exoplayer-common
+  copyrightHolder: The Android Open Source Project
+  license: The Apache Software License, Version 2.0
+  licenseUrl: http://www.apache.org/licenses/LICENSE-2.0.txt
+- artifact: com.google.android.exoplayer:exoplayer-core:+
+  name: exoplayer-core
+  copyrightHolder: The Android Open Source Project
+  license: The Apache Software License, Version 2.0
+  licenseUrl: http://www.apache.org/licenses/LICENSE-2.0.txt
+- artifact: com.google.android.exoplayer:exoplayer-dash:+
+  name: exoplayer-dash
+  copyrightHolder: The Android Open Source Project
+  license: The Apache Software License, Version 2.0
+  licenseUrl: http://www.apache.org/licenses/LICENSE-2.0.txt
+- artifact: com.google.android.exoplayer:exoplayer-database:+
+  name: exoplayer-database
+  copyrightHolder: The Android Open Source Project
+  license: The Apache Software License, Version 2.0
+  licenseUrl: http://www.apache.org/licenses/LICENSE-2.0.txt
+- artifact: com.google.android.exoplayer:exoplayer-datasource:+
+  name: exoplayer-datasource
+  copyrightHolder: The Android Open Source Project
+  license: The Apache Software License, Version 2.0
+  licenseUrl: http://www.apache.org/licenses/LICENSE-2.0.txt
+- artifact: com.google.android.exoplayer:exoplayer-decoder:+
+  name: exoplayer-decoder
+  copyrightHolder: The Android Open Source Project
+  license: The Apache Software License, Version 2.0
+  licenseUrl: http://www.apache.org/licenses/LICENSE-2.0.txt
+- artifact: com.google.android.exoplayer:exoplayer-extractor:+
+  name: exoplayer-extractor
+  copyrightHolder: The Android Open Source Project
+  license: The Apache Software License, Version 2.0
+  licenseUrl: http://www.apache.org/licenses/LICENSE-2.0.txt
+- artifact: com.google.android.exoplayer:exoplayer-hls:+
+  name: exoplayer-hls
+  copyrightHolder: The Android Open Source Project
+  license: The Apache Software License, Version 2.0
+  licenseUrl: http://www.apache.org/licenses/LICENSE-2.0.txt
+- artifact: com.google.android.exoplayer:exoplayer-rtsp:+
+  name: exoplayer-rtsp
+  copyrightHolder: The Android Open Source Project
+  license: The Apache Software License, Version 2.0
+  licenseUrl: http://www.apache.org/licenses/LICENSE-2.0.txt
+- artifact: com.google.android.exoplayer:exoplayer-smoothstreaming:+
+  name: exoplayer-smoothstreaming
+  copyrightHolder: The Android Open Source Project
+  license: The Apache Software License, Version 2.0
+  licenseUrl: http://www.apache.org/licenses/LICENSE-2.0.txt
+- artifact: com.google.android.exoplayer:exoplayer-ui:+
+  name: exoplayer-ui
+  copyrightHolder: The Android Open Source Project
+  license: The Apache Software License, Version 2.0
+  licenseUrl: http://www.apache.org/licenses/LICENSE-2.0.txt
+- artifact: com.google.android.exoplayer:exoplayer:+
+  name: exoplayer
+  copyrightHolder: The Android Open Source Project
+  license: The Apache Software License, Version 2.0
+  licenseUrl: http://www.apache.org/licenses/LICENSE-2.0.txt
+- artifact: com.google.guava:failureaccess:+
+  name: failureaccess
+  copyrightHolder: The Guava Authors
+  license: The Apache Software License, Version 2.0
+- artifact: com.google.guava:guava:+
+  name: guava
+  copyrightHolder: The Guava Authors
+  license: The Apache Software License, Version 2.0
+  url: https://github.com/google/guava
