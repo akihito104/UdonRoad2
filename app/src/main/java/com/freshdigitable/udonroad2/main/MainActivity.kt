@@ -23,6 +23,7 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import androidx.activity.addCallback
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.graphics.drawable.DrawerArrowDrawable
@@ -104,7 +105,7 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
                     return@setNavigationItemSelectedListener true
                 }
             }
-            viewModel.onDrawerMenuItemClicked(item.groupId, item.itemId, item.title)
+            viewModel.onDrawerMenuItemClicked(item.groupId, item.itemId, item.title ?: "")
         }
         val headerView = binding.mainGlobalMenu.getHeaderView(0)
         val navHeaderBinding: NavHeaderBinding = requireNotNull<NavHeaderBinding>(

@@ -180,7 +180,12 @@ private val Context.inputMethodManager: InputMethodManager
     }
 
 private fun View.showInputMethod() {
-    context.inputMethodManager.showSoftInput(this, InputMethodManager.SHOW_FORCED)
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        context.inputMethodManager.showSoftInput(this, 0)
+    } else {
+        @Suppress("DEPRECATION")
+        context.inputMethodManager.showSoftInput(this, InputMethodManager.SHOW_FORCED)
+    }
 }
 
 private fun View.hideInputMethod() {

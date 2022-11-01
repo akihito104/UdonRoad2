@@ -135,7 +135,7 @@ class ExpandableBottomContextMenuView @JvmOverloads constructor(
             .setDuration(250)
             .translationY(0f)
             .setListener(object : AnimatorListenerAdapter() {
-                override fun onAnimationStart(animation: Animator?) {
+                override fun onAnimationStart(animation: Animator) {
                     setupToShowAnimForMoreMenu()
                     translationY = mainContextMenuList.height.toFloat()
                     visibility = VISIBLE
@@ -152,7 +152,7 @@ class ExpandableBottomContextMenuView @JvmOverloads constructor(
         animate().setDuration(250)
             .translationY(height.toFloat())
             .setListener(object : AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: Animator?) {
+                override fun onAnimationEnd(animation: Animator) {
                     visibility = INVISIBLE
                 }
             })
