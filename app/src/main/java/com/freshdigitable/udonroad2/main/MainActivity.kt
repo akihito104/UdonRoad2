@@ -120,6 +120,23 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
             binding.mainGlobalMenu.bindMenuState(it)
         }
 
+        val onBackPressedCallback = onBackPressedDispatcher.addCallback(this) {
+            if (viewModel.onBackPressed()) return@addCallback
+            // https://issuetracker.google.com/issues/139738913
+            if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q) {
+                val shouldFinishForBackStackCount = supportFragmentManager.run {
+                    (primaryNavigationFragment?.childFragmentManager?.backStackEntryCount
+                        ?: 0) == 0 &&
+                        backStackEntryCount == 0
+                }
+                if (isTaskRoot && shouldFinishForBackStackCount) {
+                    finishAfterTransition()
+                }
+            }
+        }
+        viewModel.isBackEnabled.observe(this) {
+            onBackPressedCallback.isEnabled = it
+        }
         viewModel.initialEvent()
     }
 
@@ -169,24 +186,6 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
             }
         }
         return super.onOptionsItemSelected(item)
-    }
-
-    override fun onBackPressed() {
-        if (viewModel.onBackPressed()) return
-        // https://issuetracker.google.com/issues/139738913
-        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q) {
-            val shouldFinishForBackStackCount = supportFragmentManager.run {
-                (primaryNavigationFragment?.childFragmentManager?.backStackEntryCount ?: 0) == 0 &&
-                    backStackEntryCount == 0
-            }
-            if (isTaskRoot && shouldFinishForBackStackCount) {
-                finishAfterTransition()
-            } else {
-                super.onBackPressed()
-            }
-        } else {
-            super.onBackPressed()
-        }
     }
 
     override fun onSupportNavigateUp(): Boolean {

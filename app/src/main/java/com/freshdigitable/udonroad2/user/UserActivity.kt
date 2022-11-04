@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import androidx.activity.addCallback
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.BindingAdapter
@@ -51,6 +52,12 @@ class UserActivity : HasAndroidInjector, AppCompatActivity() {
         setSupportActionBar(binding.userToolbar)
         viewModel.relationshipMenuItems.observe(this) {
             invalidateOptionsMenu()
+        }
+        val backPressedCallback = onBackPressedDispatcher.addCallback(this) {
+            viewModel.onBackPressed()
+        }
+        viewModel.isBackEnabled.observe(this) {
+            backPressedCallback.isEnabled = it
         }
         lifecycleScope.launchWhenCreated {
             viewModel.pages.collect {
@@ -103,10 +110,6 @@ class UserActivity : HasAndroidInjector, AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean =
         viewModel.onOptionsItemSelected(item) || super.onOptionsItemSelected(item)
-
-    override fun onBackPressed() {
-        if (!viewModel.onBackPressed()) super.onBackPressed()
-    }
 
     private val args: UserActivityArgs by lazy {
         UserActivityArgs.fromBundle(requireNotNull(intent.extras))

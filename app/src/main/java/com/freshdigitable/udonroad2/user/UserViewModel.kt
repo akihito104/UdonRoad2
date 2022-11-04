@@ -44,6 +44,8 @@ class UserViewModel(
     internal val pages: Flow<Map<UserPage, ListOwner<*>>> = sharedState.mapLatest { it.pages }
         .distinctUntilChanged()
     internal val feedbackMessage: Flow<FeedbackMessage> = viewState.feedbackMessage
+    val isBackEnabled: LiveData<Boolean> =
+        state.map { it.selectedItemId != null }.distinctUntilChanged()
 
     fun onFabMenuSelected(item: ShortcutMenuItem) {
         Timber.tag("UserViewModel").d("onFabSelected: $item")
