@@ -16,6 +16,7 @@
 
 package com.freshdigitable.udonroad2.media
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -83,7 +84,8 @@ class PhotoMediaFragment : Fragment() {
                     field = value
                 }
 
-            override fun onTouch(v: View?, event: MotionEvent?): Boolean {
+            @SuppressLint("ClickableViewAccessibility")
+            override fun onTouch(v: View, event: MotionEvent?): Boolean {
                 when (event?.actionMasked) {
                     MotionEvent.ACTION_DOWN -> {
                         oldEvent = MotionEvent.obtain(event)
@@ -95,7 +97,7 @@ class PhotoMediaFragment : Fragment() {
                             val deltaX = event.getX(event.actionIndex) - old.getX(old.actionIndex)
                             val deltaY = event.getY(event.actionIndex) - old.getY(old.actionIndex)
                             val powDist = hypot(deltaX, deltaY)
-                            if (powDist < ViewConfiguration.get(v?.context).scaledTouchSlop) {
+                            if (powDist < ViewConfiguration.get(v.context).scaledTouchSlop) {
                                 // maybe click
                                 return false
                             }

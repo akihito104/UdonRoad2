@@ -23,6 +23,7 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import androidx.activity.addCallback
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.graphics.drawable.DrawerArrowDrawable
@@ -104,7 +105,7 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
                     return@setNavigationItemSelectedListener true
                 }
             }
-            viewModel.onDrawerMenuItemClicked(item.groupId, item.itemId, item.title)
+            viewModel.onDrawerMenuItemClicked(item.groupId, item.itemId, item.title ?: "")
         }
         val headerView = binding.mainGlobalMenu.getHeaderView(0)
         val navHeaderBinding: NavHeaderBinding = requireNotNull<NavHeaderBinding>(
@@ -119,6 +120,23 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
             binding.mainGlobalMenu.bindMenuState(it)
         }
 
+        val onBackPressedCallback = onBackPressedDispatcher.addCallback(this) {
+            if (viewModel.onBackPressed()) return@addCallback
+            // https://issuetracker.google.com/issues/139738913
+            if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q) {
+                val shouldFinishForBackStackCount = supportFragmentManager.run {
+                    val childBackStackEntryCount =
+                        primaryNavigationFragment?.childFragmentManager?.backStackEntryCount ?: 0
+                    childBackStackEntryCount == 0 && backStackEntryCount == 0
+                }
+                if (isTaskRoot && shouldFinishForBackStackCount) {
+                    finishAfterTransition()
+                }
+            }
+        }
+        viewModel.isBackEnabled.observe(this) {
+            onBackPressedCallback.isEnabled = it
+        }
         viewModel.initialEvent()
     }
 
@@ -168,24 +186,6 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
             }
         }
         return super.onOptionsItemSelected(item)
-    }
-
-    override fun onBackPressed() {
-        if (viewModel.onBackPressed()) return
-        // https://issuetracker.google.com/issues/139738913
-        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q) {
-            val shouldFinishForBackStackCount = supportFragmentManager.run {
-                (primaryNavigationFragment?.childFragmentManager?.backStackEntryCount ?: 0) == 0 &&
-                    backStackEntryCount == 0
-            }
-            if (isTaskRoot && shouldFinishForBackStackCount) {
-                finishAfterTransition()
-            } else {
-                super.onBackPressed()
-            }
-        } else {
-            super.onBackPressed()
-        }
     }
 
     override fun onSupportNavigateUp(): Boolean {

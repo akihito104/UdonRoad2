@@ -29,7 +29,6 @@ import android.view.ViewGroup
 import android.view.ViewPropertyAnimator
 import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
-import androidx.annotation.RequiresApi
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.graphics.plus
 import kotlin.math.abs
@@ -129,7 +128,6 @@ internal class ShortcutViewHolder(
         toolbar.updateMenu(block)
     }
 
-    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     private fun toolbarToFabAnim() {
         val transPoint = transitionPoint
         fab.apply {
@@ -157,7 +155,6 @@ internal class ShortcutViewHolder(
         revealAnimator.start()
     }
 
-    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     private fun fabToToolbarAnim() {
         toolbar.apply {
             translationX = 0f
@@ -174,7 +171,7 @@ internal class ShortcutViewHolder(
             .setDuration(FAB_MOVE_DURATION)
             .setInterpolator(ACCELERATE_INTERPOLATOR)
             .setListener(object : AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: Animator?) {
+                override fun onAnimationEnd(animation: Animator) {
                     fab.visibility = GONE
                     showToolbar()
                 }
@@ -188,7 +185,6 @@ internal class ShortcutViewHolder(
             .start()
     }
 
-    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     private fun showToolbar() { // XXX
         val revealAnimator = toolbar.circularReveal().apply {
             addListener(object : AnimatorListenerAdapter() {
@@ -216,7 +212,6 @@ internal class ShortcutViewHolder(
         animator.start()
     }
 
-    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     private fun ExpandableBottomContextMenuView.circularReveal(
         reveal: Boolean = true,
     ): Animator {

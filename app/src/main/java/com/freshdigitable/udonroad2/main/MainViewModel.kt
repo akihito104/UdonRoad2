@@ -17,6 +17,7 @@
 package com.freshdigitable.udonroad2.main
 
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.distinctUntilChanged
@@ -76,6 +77,11 @@ internal class MainViewModel(
         eventDispatcher.postEvent(TweetInputEvent.Cancel)
     }
 
+    val isBackEnabled: LiveData<Boolean> = mergeLD(
+        mainState.map { it.isTweetInputExpanded || it.isSelectedInCurrentTimeline },
+        drawerState.map { it.isOpened }
+    ).distinctUntilChanged()
+
     fun onBackPressed(): Boolean {
         val currentOwner = (currentState.navHostState as? MainNavHostState.Timeline)?.owner
         val event = when {
@@ -84,7 +90,7 @@ internal class MainViewModel(
                 return true
             }
             currentState.isTweetInputExpanded -> TweetInputEvent.Cancel
-            currentOwner != null && currentState.selectedItem != null ->
+            currentOwner != null && currentState.isSelectedInCurrentTimeline ->
                 TimelineEvent.TweetItemSelection.Unselected(currentOwner)
             else -> return false
         }
@@ -97,7 +103,30 @@ internal class MainViewModel(
 
     val requireSelectedTweetId: TweetId
         get() = requireNotNull(currentState.selectedItem?.originalId)
+
+    companion object {
+        private val MainActivityViewState.isSelectedInCurrentTimeline: Boolean
+            get() =
+                (navHostState as? MainNavHostState.Timeline)?.owner != null && selectedItem != null
+    }
 }
 
 val TweetUserItem.account: String
     get() = "@$screenName"
+
+private fun <T> mergeLD(ld1: LiveData<T>, ld2: LiveData<T>): LiveData<T> {
+    val liveData = MediatorLiveData<T>()
+    liveData.addSource(ld1) {
+        if (liveData.value == it) {
+            return@addSource
+        }
+        liveData.value = it
+    }
+    liveData.addSource(ld2) {
+        if (liveData.value == it) {
+            return@addSource
+        }
+        liveData.value = it
+    }
+    return liveData
+}
