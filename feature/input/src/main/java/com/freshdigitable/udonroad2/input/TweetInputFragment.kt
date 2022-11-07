@@ -16,10 +16,8 @@
 
 package com.freshdigitable.udonroad2.input
 
-import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.media.MediaScannerConnection
 import android.os.Build
 import android.os.Bundle
@@ -32,8 +30,6 @@ import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.ImageView
 import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.app.ActivityCompat
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.databinding.BindingAdapter
@@ -65,13 +61,6 @@ class TweetInputFragment : Fragment() {
     @Inject
     internal lateinit var mediaChooserResultContract: MediaChooserResultContract
     private lateinit var mediaChooser: ActivityResultLauncher<Unit>
-
-    private val requestPermission =
-        registerForActivityResult(ActivityResultContracts.RequestPermission()) {
-            if (it == true) {
-                mediaChooser.launch(Unit)
-            }
-        }
 
     override fun onAttach(context: Context) {
         AndroidSupportInjection.inject(this)
@@ -147,12 +136,8 @@ class TweetInputFragment : Fragment() {
             }
         }
         binding.twAppendImage.setOnClickListener {
-            if (!it.context.isWriteExternalStoragePermissionGranted) {
-                requestPermission.launch(WRITE_EXTERNAL_STORAGE)
-            } else {
-                it.hideInputMethod()
-                mediaChooser.launch(Unit)
-            }
+            it.hideInputMethod()
+            mediaChooser.launch(Unit)
         }
     }
 
@@ -193,11 +178,6 @@ private val Context.inputMethodManager: InputMethodManager
     get() {
         return getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
     }
-
-private val Context.isWriteExternalStoragePermissionGranted: Boolean
-    get() = ActivityCompat.checkSelfPermission(
-        this, WRITE_EXTERNAL_STORAGE
-    ) == PackageManager.PERMISSION_GRANTED
 
 private fun View.showInputMethod() {
     context.inputMethodManager.showSoftInput(this, InputMethodManager.SHOW_FORCED)
