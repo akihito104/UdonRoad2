@@ -125,9 +125,9 @@ class MainActivity : AppCompatActivity(), HasAndroidInjector {
             // https://issuetracker.google.com/issues/139738913
             if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q) {
                 val shouldFinishForBackStackCount = supportFragmentManager.run {
-                    (primaryNavigationFragment?.childFragmentManager?.backStackEntryCount
-                        ?: 0) == 0 &&
-                        backStackEntryCount == 0
+                    val childBackStackEntryCount =
+                        primaryNavigationFragment?.childFragmentManager?.backStackEntryCount ?: 0
+                    childBackStackEntryCount == 0 && backStackEntryCount == 0
                 }
                 if (isTaskRoot && shouldFinishForBackStackCount) {
                     finishAfterTransition()
