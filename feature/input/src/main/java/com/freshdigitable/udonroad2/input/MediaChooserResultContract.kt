@@ -161,7 +161,15 @@ class MediaChooserBroadcastReceiver : BroadcastReceiver() {
         AndroidInjection.inject(this, context)
         val event = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
             val componentName: ComponentName? =
-                intent?.getParcelableExtra(Intent.EXTRA_CHOSEN_COMPONENT)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    intent?.getParcelableExtra(
+                        Intent.EXTRA_CHOSEN_COMPONENT,
+                        ComponentName::class.java
+                    )
+                } else {
+                    @Suppress("DEPRECATION")
+                    intent?.getParcelableExtra(Intent.EXTRA_CHOSEN_COMPONENT)
+                }
             if (componentName != null) Components.create(componentName) else Components.UNKNOWN
         } else Components.UNKNOWN
         eventDispatcher.chooseCameraApp.dispatch(event)

@@ -18,6 +18,8 @@ package com.freshdigitable.udonroad2.settings
 
 import android.content.Context
 import android.content.pm.PackageManager
+import android.content.pm.PackageManager.PackageInfoFlags
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.viewModels
@@ -64,7 +66,15 @@ class AppSettingFragment : PreferenceFragmentCompat() {
 
     private fun setupVersionInfo() {
         val packageInfo = with(requireActivity()) {
-            requireNotNull(packageManager.getPackageInfo(packageName, PackageManager.GET_META_DATA))
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                packageManager.getPackageInfo(
+                    packageName,
+                    PackageInfoFlags.of(PackageManager.GET_META_DATA.toLong())
+                )
+            } else {
+                @Suppress("DEPRECATION")
+                packageManager.getPackageInfo(packageName, PackageManager.GET_META_DATA)
+            }
         }
         val versionKey = getString(R.string.settings_key_version)
         val versionPref: Preference = requireNotNull(findPreference(versionKey))
