@@ -23,8 +23,8 @@ object Versions {
     const val KOTLIN_COROUTINES = "1.6.4"
 
     const val ANDROIDX_APPCOMPAT = "1.4.2"
-    const val ANDROIDX_ACTIVITY = "1.5.1"
-    const val ANDROIDX_FRAGMENT = "1.5.1"
+    const val ANDROIDX_ACTIVITY = "1.6.1"
+    const val ANDROIDX_FRAGMENT = "1.5.4"
 
     const val ANDROIDX_CORE = "1.7.0"
     const val ANDROIDX_LIFECYCLE = "2.5.1"
@@ -32,7 +32,7 @@ object Versions {
 
     /// https://developer.android.com/training/data-storage/room
     const val ANDROIDX_ROOM = "2.4.3"
-    const val ANDROIDX_NAVIGATION = "2.4.2"
+    const val ANDROIDX_NAVIGATION = "2.5.3"
 
     const val MATERIAL_DESIGN = "1.3.0-alpha04"
     const val ANDROIDX_RECYCLER_VIEW = "1.2.0"
@@ -83,7 +83,7 @@ object Versions {
     const val KTLINT = "0.40.0"
 
     // build libs
-    const val ANDROID_GRADLE_TOOL = "7.3.0"
+    const val ANDROID_GRADLE_TOOL = "7.3.1"
 
     /// https://github.com/arunkumar9t2/scabbard
     const val SCABBARD = "0.5.0"
