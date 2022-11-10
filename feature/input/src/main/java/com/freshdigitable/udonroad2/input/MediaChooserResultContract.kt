@@ -52,10 +52,18 @@ internal class MediaChooserResultContract @Inject constructor(
         val title = context.getString(R.string.media_chooser_title)
 
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
-            val candidates = context.packageManager.queryIntentActivities(
-                cameraIntent,
-                PackageManager.MATCH_DEFAULT_ONLY,
-            )
+            val candidates = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                context.packageManager.queryIntentActivities(
+                    cameraIntent,
+                    PackageManager.ResolveInfoFlags.of(PackageManager.MATCH_DEFAULT_ONLY.toLong())
+                )
+            } else {
+                @Suppress("DEPRECATION")
+                context.packageManager.queryIntentActivities(
+                    cameraIntent,
+                    PackageManager.MATCH_DEFAULT_ONLY,
+                )
+            }
                 .map { Components.create(it.activityInfo) }
             eventDispatcher.postEvent(
                 CameraApp.Event.CandidateQueried(candidates, cameraOutputPath)
