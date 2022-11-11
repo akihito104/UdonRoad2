@@ -82,6 +82,12 @@
   license: The Apache Software License, Version 2.0
   licenseUrl: http://www.apache.org/licenses/LICENSE-2.0.txt
   url: http://tools.android.com
+- artifact: androidx.constraintlayout:constraintlayout-core:+
+  name: constraintlayout-core
+  copyrightHolder: The Android Open Source Project
+  license: The Apache Software License, Version 2.0
+  licenseUrl: http://www.apache.org/licenses/LICENSE-2.0.txt
+  url: http://tools.android.com
 - artifact: androidx.coordinatorlayout:coordinatorlayout:+
   name: coordinatorlayout
   copyrightHolder: The Android Open Source Project
