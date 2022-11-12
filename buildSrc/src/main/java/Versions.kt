@@ -50,7 +50,11 @@ object Versions {
     const val OKHTTP = "4.10.0"
     const val TWITTER4J = "4.0.7"
     const val GLIDE = "4.12.0"
-    const val THREETENBP = "1.1.0"
+
+    /// https://github.com/JakeWharton/ThreeTenABP
+    const val THREETENBP = "1.4.3"
+
+    /// https://github.com/JakeWharton/timber
     const val TIMBER = "5.0.1"
 
     /// https://square.github.io/leakcanary
@@ -79,8 +83,12 @@ object Versions {
     const val ANDROIDX_TEST_ORCHESTRATOR = "1.3.0"
 
     // ktlint
-    const val KTLINT_PLUGIN = "10.2.0"
-    const val KTLINT = "0.40.0"
+    /// https://github.com/JLLeitschuh/ktlint-gradle
+    const val KTLINT_PLUGIN = "11.0.0"
+
+    /// https://github.com/pinterest/ktlint
+    // ktlint plugin ver. 11.0.0 does not support 0.46+
+    const val KTLINT = "0.45.2"
 
     // build libs
     const val ANDROID_GRADLE_TOOL = "7.3.1"
