@@ -69,18 +69,18 @@ object Versions {
 
     /// https://github.com/robolectric/robolectric
     const val ROBOLECTRIC = "4.8.2"
-    const val TRUTH = "1.1.2"
+    const val TRUTH = "1.1.3"
     const val KOTLINX_TEST_COROUTINES = KOTLIN_COROUTINES
-    const val ANDROIDX_TEST_CORE = "1.4.0"
-    const val ANDROIDX_TEST_JUNIT_EXT = "1.1.3"
-    const val ANDROIDX_TEST_RULES = "1.3.0"
-    const val ANDROIDX_TEST_TRUTH_EXT = "1.3.0"
+    const val ANDROIDX_TEST_CORE = "1.5.0"
+    const val ANDROIDX_TEST_JUNIT_EXT = "1.1.4"
+    const val ANDROIDX_TEST_RULES = "1.5.0"
+    const val ANDROIDX_TEST_TRUTH_EXT = "1.5.0"
     const val ANDROIDX_TEST_ARCH_CORE = "2.1.0"
 
     // android test
-    const val ANDROIDX_TEST_RUNNER = "1.4.0"
-    const val ANDROIDX_TEST_ESPRESSO = "3.4.0"
-    const val ANDROIDX_TEST_ORCHESTRATOR = "1.3.0"
+    const val ANDROIDX_TEST_RUNNER = "1.5.0"
+    const val ANDROIDX_TEST_ESPRESSO = "3.5.0"
+    const val ANDROIDX_TEST_ORCHESTRATOR = "1.4.2"
 
     // ktlint
     /// https://github.com/JLLeitschuh/ktlint-gradle
