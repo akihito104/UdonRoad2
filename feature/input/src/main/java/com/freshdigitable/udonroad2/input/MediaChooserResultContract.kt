@@ -52,10 +52,18 @@ internal class MediaChooserResultContract @Inject constructor(
         val title = context.getString(R.string.media_chooser_title)
 
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
-            val candidates = context.packageManager.queryIntentActivities(
-                cameraIntent,
-                PackageManager.MATCH_DEFAULT_ONLY,
-            )
+            val candidates = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                context.packageManager.queryIntentActivities(
+                    cameraIntent,
+                    PackageManager.ResolveInfoFlags.of(PackageManager.MATCH_DEFAULT_ONLY.toLong())
+                )
+            } else {
+                @Suppress("DEPRECATION")
+                context.packageManager.queryIntentActivities(
+                    cameraIntent,
+                    PackageManager.MATCH_DEFAULT_ONLY,
+                )
+            }
                 .map { Components.create(it.activityInfo) }
             eventDispatcher.postEvent(
                 CameraApp.Event.CandidateQueried(candidates, cameraOutputPath)
@@ -153,7 +161,15 @@ class MediaChooserBroadcastReceiver : BroadcastReceiver() {
         AndroidInjection.inject(this, context)
         val event = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
             val componentName: ComponentName? =
-                intent?.getParcelableExtra(Intent.EXTRA_CHOSEN_COMPONENT)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    intent?.getParcelableExtra(
+                        Intent.EXTRA_CHOSEN_COMPONENT,
+                        ComponentName::class.java
+                    )
+                } else {
+                    @Suppress("DEPRECATION")
+                    intent?.getParcelableExtra(Intent.EXTRA_CHOSEN_COMPONENT)
+                }
             if (componentName != null) Components.create(componentName) else Components.UNKNOWN
         } else Components.UNKNOWN
         eventDispatcher.chooseCameraApp.dispatch(event)

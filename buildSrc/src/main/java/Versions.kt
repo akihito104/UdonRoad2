@@ -22,24 +22,24 @@ object Versions {
     /// https://developer.android.com/kotlin/coroutines
     const val KOTLIN_COROUTINES = "1.6.4"
 
-    const val ANDROIDX_APPCOMPAT = "1.4.2"
-    const val ANDROIDX_ACTIVITY = "1.5.1"
-    const val ANDROIDX_FRAGMENT = "1.5.1"
+    const val ANDROIDX_APPCOMPAT = "1.5.1"
+    const val ANDROIDX_ACTIVITY = "1.6.1"
+    const val ANDROIDX_FRAGMENT = "1.5.4"
 
-    const val ANDROIDX_CORE = "1.7.0"
+    const val ANDROIDX_CORE = "1.9.0"
     const val ANDROIDX_LIFECYCLE = "2.5.1"
     const val ANDROIDX_PAGING = "3.1.1"
 
     /// https://developer.android.com/training/data-storage/room
     const val ANDROIDX_ROOM = "2.4.3"
-    const val ANDROIDX_NAVIGATION = "2.4.2"
+    const val ANDROIDX_NAVIGATION = "2.5.3"
 
-    const val MATERIAL_DESIGN = "1.3.0-alpha04"
-    const val ANDROIDX_RECYCLER_VIEW = "1.2.0"
-    const val ANDROIDX_CONSTRAINT_LAYOUT = "2.0.0-beta6"
+    const val MATERIAL_DESIGN = "1.7.0"
+    const val ANDROIDX_RECYCLER_VIEW = "1.2.1"
+    const val ANDROIDX_CONSTRAINT_LAYOUT = "2.1.4"
     const val ANDROIDX_VIEWPAGER2 = "1.1.0-beta01"
     const val ANDROIDX_SWIPE_REFRESH_LAYOUT = "1.1.0"
-    const val ANDROIDX_PREFERENCE = "1.1.1"
+    const val ANDROIDX_PREFERENCE = "1.2.0"
 
     /// https://github.com/google/dagger
     const val DAGGER = "2.38.1"
@@ -50,7 +50,11 @@ object Versions {
     const val OKHTTP = "4.10.0"
     const val TWITTER4J = "4.0.7"
     const val GLIDE = "4.12.0"
-    const val THREETENBP = "1.1.0"
+
+    /// https://github.com/JakeWharton/ThreeTenABP
+    const val THREETENBP = "1.4.3"
+
+    /// https://github.com/JakeWharton/timber
     const val TIMBER = "5.0.1"
 
     /// https://square.github.io/leakcanary
@@ -65,25 +69,29 @@ object Versions {
 
     /// https://github.com/robolectric/robolectric
     const val ROBOLECTRIC = "4.8.2"
-    const val TRUTH = "1.1.2"
+    const val TRUTH = "1.1.3"
     const val KOTLINX_TEST_COROUTINES = KOTLIN_COROUTINES
-    const val ANDROIDX_TEST_CORE = "1.4.0"
-    const val ANDROIDX_TEST_JUNIT_EXT = "1.1.3"
-    const val ANDROIDX_TEST_RULES = "1.3.0"
-    const val ANDROIDX_TEST_TRUTH_EXT = "1.3.0"
+    const val ANDROIDX_TEST_CORE = "1.5.0"
+    const val ANDROIDX_TEST_JUNIT_EXT = "1.1.4"
+    const val ANDROIDX_TEST_RULES = "1.5.0"
+    const val ANDROIDX_TEST_TRUTH_EXT = "1.5.0"
     const val ANDROIDX_TEST_ARCH_CORE = "2.1.0"
 
     // android test
-    const val ANDROIDX_TEST_RUNNER = "1.4.0"
-    const val ANDROIDX_TEST_ESPRESSO = "3.4.0"
-    const val ANDROIDX_TEST_ORCHESTRATOR = "1.3.0"
+    const val ANDROIDX_TEST_RUNNER = "1.5.0"
+    const val ANDROIDX_TEST_ESPRESSO = "3.5.0"
+    const val ANDROIDX_TEST_ORCHESTRATOR = "1.4.2"
 
     // ktlint
-    const val KTLINT_PLUGIN = "10.2.0"
-    const val KTLINT = "0.40.0"
+    /// https://github.com/JLLeitschuh/ktlint-gradle
+    const val KTLINT_PLUGIN = "11.0.0"
+
+    /// https://github.com/pinterest/ktlint
+    // ktlint plugin ver. 11.0.0 does not support 0.46+
+    const val KTLINT = "0.45.2"
 
     // build libs
-    const val ANDROID_GRADLE_TOOL = "7.3.0"
+    const val ANDROID_GRADLE_TOOL = "7.3.1"
 
     /// https://github.com/arunkumar9t2/scabbard
     const val SCABBARD = "0.5.0"
